@@ -21,7 +21,7 @@ func (s *Service) GetWorkoutByID(ctx context.Context, id uint) (*workout.Workout
 	return s.repo.GetWorkoutByID(ctx, id)
 }
 
-func (s *Service) ListWorkouts(ctx context.Context) ([]workout.Workout, error) {
+func (s *Service) ListWorkouts(ctx context.Context) ([]*workout.Workout, error) {
 	return s.repo.ListWorkouts(ctx)
 }
 
