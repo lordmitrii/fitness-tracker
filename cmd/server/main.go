@@ -1,24 +1,15 @@
 package main
 
 import (
-	"log"
+	usecase "github.com/lordmitrii/golang-web-gin/internal/usecase/workout"
+	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/inmemory"
+	"github.com/lordmitrii/golang-web-gin/internal/interface/http"
 
-    "github.com/lordmitrii/golang-web-gin/internal/router"
-    "github.com/lordmitrii/golang-web-gin/internal/config"
-    "github.com/lordmitrii/golang-web-gin/internal/model"
 )
 
 func main() {
-    config.InitDB()
-
-    // Migrations
-    if err := config.DB.AutoMigrate(&model.User{}); err != nil {
-		log.Fatal("migration failed: ", err)
-	}
-
-    // Start server
-	r := router.SetupRouter()
-	if err := r.Run(":8080"); err != nil {
-		log.Fatalf("failed to run server: %v", err)
-	}
+	repo := inmemory.NewWorkoutRepo()
+	service := usecase.NewService(repo)
+	server := http.NewServer(service)
+	server.Run(":8080")
 }
