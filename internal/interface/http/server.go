@@ -11,12 +11,13 @@ import (
 	"github.com/lordmitrii/golang-web-gin/internal/interface/http/handler"
 )
 
-func NewServer(workoutService usecase.Service) *gin.Engine {
+func NewServer(workoutService usecase.WorkoutService, userService usecase.UserService) *gin.Engine {
 	r := gin.Default()
 	api := r.Group("/api")
 
 	// Add handlers here
 	handler.NewWorkoutHandler(api, workoutService)
+	handler.NewUserHandler(api, userService)
 
 	// Swagger endpoint at /swagger/index.html
     r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

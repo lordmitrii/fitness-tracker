@@ -23,7 +23,7 @@ func NewWorkoutRepo() *WorkoutRepo {
 	}
 }
 
-func (r *WorkoutRepo) CreateWorkout(ctx context.Context, w *workout.Workout) error {
+func (r *WorkoutRepo) Create(ctx context.Context, w *workout.Workout) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -34,7 +34,7 @@ func (r *WorkoutRepo) CreateWorkout(ctx context.Context, w *workout.Workout) err
 	return nil
 }
 
-func (r *WorkoutRepo) GetWorkoutByID(ctx context.Context, id uint) (*workout.Workout, error) {
+func (r *WorkoutRepo) GetByID(ctx context.Context, id uint) (*workout.Workout, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -46,14 +46,14 @@ func (r *WorkoutRepo) GetWorkoutByID(ctx context.Context, id uint) (*workout.Wor
 	return nil, errors.New("workout not found")
 }
 
-func (r *WorkoutRepo) ListWorkouts(ctx context.Context) ([]*workout.Workout, error) {
+func (r *WorkoutRepo) GetAll(ctx context.Context) ([]*workout.Workout, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	return r.workouts, nil
 }
 
-func (r *WorkoutRepo) UpdateWorkout(ctx context.Context, w *workout.Workout) error {
+func (r *WorkoutRepo) Update(ctx context.Context, w *workout.Workout) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -67,7 +67,7 @@ func (r *WorkoutRepo) UpdateWorkout(ctx context.Context, w *workout.Workout) err
 	return errors.New("workout not found")
 }
 
-func (r *WorkoutRepo) DeleteWorkout(ctx context.Context, id uint) error {
+func (r *WorkoutRepo) Delete(ctx context.Context, id uint) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 

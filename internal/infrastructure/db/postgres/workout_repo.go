@@ -20,11 +20,11 @@ func NewWorkoutRepo(db *gorm.DB) workout.Repository {
     return &WorkoutRepo{db: db}
 }
 
-func (r *WorkoutRepo) CreateWorkout(ctx context.Context, w *workout.Workout) error {
+func (r *WorkoutRepo) Create(ctx context.Context, w *workout.Workout) error {
     return r.db.WithContext(ctx).Create(w).Error
 }
 
-func (r *WorkoutRepo) ListWorkouts(ctx context.Context) ([]*workout.Workout, error) {
+func (r *WorkoutRepo) GetAll(ctx context.Context) ([]*workout.Workout, error) {
     var list []*workout.Workout
 	if err := r.db.WithContext(ctx).
 		Find(&list).
@@ -34,7 +34,7 @@ func (r *WorkoutRepo) ListWorkouts(ctx context.Context) ([]*workout.Workout, err
     return list, nil
 }
 
-func (r *WorkoutRepo) GetWorkoutByID(ctx context.Context, id uint) (*workout.Workout, error) {
+func (r *WorkoutRepo) GetByID(ctx context.Context, id uint) (*workout.Workout, error) {
     var w workout.Workout
     if err := r.db.WithContext(ctx).
         First(&w, id).
@@ -47,7 +47,7 @@ func (r *WorkoutRepo) GetWorkoutByID(ctx context.Context, id uint) (*workout.Wor
     return &w, nil
 }
 
-func (r *WorkoutRepo) UpdateWorkout(ctx context.Context, w *workout.Workout) error {
+func (r *WorkoutRepo) Update(ctx context.Context, w *workout.Workout) error {
     res := r.db.WithContext(ctx).
         Model(&workout.Workout{}).
         Where("id = ?", w.ID).
@@ -61,7 +61,7 @@ func (r *WorkoutRepo) UpdateWorkout(ctx context.Context, w *workout.Workout) err
     return nil
 }
 
-func (r *WorkoutRepo) DeleteWorkout(ctx context.Context, id uint) error {
+func (r *WorkoutRepo) Delete(ctx context.Context, id uint) error {
     res := r.db.WithContext(ctx).
         Delete(&workout.Workout{}, id)
     if res.Error != nil {

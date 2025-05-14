@@ -3,6 +3,7 @@ package postgres
 import (
     "fmt"
     "github.com/lordmitrii/golang-web-gin/internal/domain/workout"
+    "github.com/lordmitrii/golang-web-gin/internal/domain/user"
 
     "gorm.io/driver/postgres"
     "gorm.io/gorm"
@@ -22,5 +23,8 @@ func NewPostgresDB(dsn string) (*gorm.DB, error) {
 
 // AutoMigrate applies schema migrations for all models.
 func AutoMigrate(db *gorm.DB) error {
-    return db.AutoMigrate(&workout.Workout{})
+    return db.AutoMigrate(
+        &user.User{},
+        &user.Profile{},
+        &workout.Workout{},)
 }

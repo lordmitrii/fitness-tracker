@@ -10,11 +10,11 @@ import (
 )
 
 type WorkoutHandler struct {
-    svc usecase.Service
+    svc usecase.WorkoutService
 }
 
 // NewWorkoutHandler instantiates the handler and sets up the routes 
-func NewWorkoutHandler(r *gin.RouterGroup, svc usecase.Service) {
+func NewWorkoutHandler(r *gin.RouterGroup, svc usecase.WorkoutService) {
     h := &WorkoutHandler{svc: svc}
     ws := r.Group("/workouts")
     {

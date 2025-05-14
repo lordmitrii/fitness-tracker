@@ -18,6 +18,7 @@ package main
 import (
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/workout"
+	"github.com/lordmitrii/golang-web-gin/internal/usecase/user"
 	// "github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/inmemory"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/postgres"
 	"github.com/lordmitrii/golang-web-gin/internal/interface/http"
@@ -34,11 +35,14 @@ func main() {
 	if err := postgres.AutoMigrate(db); err != nil {
 		panic(err)
 	}
-	repo := postgres.NewWorkoutRepo(db)
 
-	var svc usecase.Service = workout.NewService(repo)
+	workoutRepo := postgres.NewWorkoutRepo(db)
+	userRepo := postgres.NewUserRepo(db)
+	profileRepo := postgres.NewProfileRepo(db)
 
-	service := workout.NewService(svc)
-	server := http.NewServer(service)
+	var workoutService usecase.WorkoutService = workout.NewService(workoutRepo)
+	var userService usecase.UserService = user.NewService(userRepo, profileRepo)
+
+	server := http.NewServer(workoutService, userService)
 	server.Run(":8080")
 }
