@@ -3,7 +3,7 @@ package workout
 import "time"
 
 type Workout struct {
-	ID        uint      `json:"id"`            
+	ID        uint      `gorm:"primaryKey" json:"id"`       
 	UserID    uint      `json:"user_id"`
 	Exercise  string    `json:"exercise"`
 	Weight    float64   `json:"weight"`

@@ -56,6 +56,8 @@ func (h *WorkoutHandler) Create(c *gin.Context) {
 // @Tags         workouts
 // @Produce      json
 // @Success      200  {array}   workout.Workout
+// @Failure      500  {object}  handler.ErrorResponse
+// @Failure      401  {object}  handler.ErrorResponse
 // @Router       /workouts [get]
 func (h *WorkoutHandler) List(c *gin.Context) {
     workouts, err := h.svc.ListWorkouts(c.Request.Context())
@@ -74,6 +76,8 @@ func (h *WorkoutHandler) List(c *gin.Context) {
 // @Param        id   path      int  true  "Workout ID"
 // @Success      200  {object}  workout.Workout
 // @Failure      404  {object}  handler.ErrorResponse
+// @Failure      500  {object}  handler.ErrorResponse
+// @Failure      401  {object}  handler.ErrorResponse
 // @Router       /workouts/{id} [get]
 func (h *WorkoutHandler) Get(c *gin.Context) {
     id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -118,7 +122,7 @@ func (h *WorkoutHandler) Update(c *gin.Context) {
 // @Tags         workouts
 // @Param        id   path      int  true  "Workout ID"
 // @Success      204
-// @Failure      404  {object}  handler.ErrorResponse
+// @Failure      404  {object}  handler.ErrorResponse	
 // @Router       /workouts/{id} [delete]
 func (h *WorkoutHandler) Delete(c *gin.Context) {
     id, _ := strconv.ParseUint(c.Param("id"), 10, 64)

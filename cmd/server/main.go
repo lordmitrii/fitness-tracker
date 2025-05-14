@@ -18,13 +18,23 @@ package main
 import (
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/workout"
-	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/inmemory"
+	// "github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/inmemory"
+	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/postgres"
 	"github.com/lordmitrii/golang-web-gin/internal/interface/http"
 
 )
 
 func main() {
-	repo := inmemory.NewWorkoutRepo()
+	// repo := inmemory.NewWorkoutRepo()
+	db, err := postgres.NewPostgresDB("postgres://username:password@localhost:5432/fitness_tracker?sslmode=disable")
+	if err != nil {
+		panic(err)
+	}
+
+	if err := postgres.AutoMigrate(db); err != nil {
+		panic(err)
+	}
+	repo := postgres.NewWorkoutRepo(db)
 
 	var svc usecase.Service = workout.NewService(repo)
 
