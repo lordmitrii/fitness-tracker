@@ -6,15 +6,15 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
-	usecase "github.com/lordmitrii/golang-web-gin/internal/usecase/workout"
+	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 )
 
 type WorkoutHandler struct {
-    svc *usecase.Service
+    svc usecase.Service
 }
 
-// NewWorkoutHandler instantiates the handler.
-func NewWorkoutHandler(r *gin.RouterGroup, svc *usecase.Service) {
+// NewWorkoutHandler instantiates the handler and sets up the routes 
+func NewWorkoutHandler(r *gin.RouterGroup, svc usecase.Service) {
     h := &WorkoutHandler{svc: svc}
     ws := r.Group("/workouts")
     {
@@ -26,6 +26,17 @@ func NewWorkoutHandler(r *gin.RouterGroup, svc *usecase.Service) {
     }
 }
 
+// CreateWorkout godoc
+// @Summary      Log a new workout
+// @Description  create a workout record for the authenticated user
+// @Tags         workouts
+// @Accept       json
+// @Produce      json
+// @Param        workout  body      workout.Workout  true  "Workout payload"
+// @Success      201      {object}  workout.Workout
+// @Failure      400      {object}  handler.ErrorResponse
+// @Failure      500      {object}  handler.ErrorResponse
+// @Router       /workouts [post]
 func (h *WorkoutHandler) Create(c *gin.Context) {
     var req workout.Workout
     if err := c.ShouldBindJSON(&req); err != nil {
@@ -39,6 +50,13 @@ func (h *WorkoutHandler) Create(c *gin.Context) {
     c.JSON(http.StatusCreated, req)
 }
 
+// ListWorkouts godoc
+// @Summary      List workouts
+// @Description  get all workouts for the authenticated user
+// @Tags         workouts
+// @Produce      json
+// @Success      200  {array}   workout.Workout
+// @Router       /workouts [get]
 func (h *WorkoutHandler) List(c *gin.Context) {
     workouts, err := h.svc.ListWorkouts(c.Request.Context())
     if err != nil {
@@ -48,16 +66,37 @@ func (h *WorkoutHandler) List(c *gin.Context) {
     c.JSON(http.StatusOK, workouts)
 }
 
+// GetWorkout godoc
+// @Summary      Get a single workout
+// @Description  get workout by its ID
+// @Tags         workouts
+// @Produce      json
+// @Param        id   path      int  true  "Workout ID"
+// @Success      200  {object}  workout.Workout
+// @Failure      404  {object}  handler.ErrorResponse
+// @Router       /workouts/{id} [get]
 func (h *WorkoutHandler) Get(c *gin.Context) {
     id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
     w, err := h.svc.GetWorkoutByID(c.Request.Context(), uint(id))
     if err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
+        c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
         return
     }
     c.JSON(http.StatusOK, w)
 }
 
+// UpdateWorkout godoc
+// @Summary      Update a workout
+// @Description  update a workout record for the authenticated user
+// @Tags         workouts
+// @Accept       json
+// @Produce      json
+// @Param        id      path      int  true  "Workout ID"
+// @Param        workout body      workout.Workout  true  "Workout payload"
+// @Success      200      {object}  workout.Workout
+// @Failure      400      {object}  handler.ErrorResponse
+// @Failure      404      {object}  handler.ErrorResponse
+// @Router       /workouts/{id} [put]
 func (h *WorkoutHandler) Update(c *gin.Context) {
     id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
     var req workout.Workout
@@ -73,10 +112,18 @@ func (h *WorkoutHandler) Update(c *gin.Context) {
     c.JSON(http.StatusOK, req)
 }
 
+// DeleteWorkout godoc
+// @Summary      Delete a workout
+// @Description  delete a workout record for the authenticated user
+// @Tags         workouts
+// @Param        id   path      int  true  "Workout ID"
+// @Success      204
+// @Failure      404  {object}  handler.ErrorResponse
+// @Router       /workouts/{id} [delete]
 func (h *WorkoutHandler) Delete(c *gin.Context) {
     id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
     if err := h.svc.DeleteWorkout(c.Request.Context(), uint(id)); err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
+        c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
         return
     }
     c.Status(http.StatusNoContent)

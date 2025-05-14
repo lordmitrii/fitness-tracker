@@ -5,6 +5,7 @@ import (
 	"errors"
 	"sync"
 	"time"
+	"slices"
 
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 )
@@ -72,7 +73,7 @@ func (r *WorkoutRepo) DeleteWorkout(ctx context.Context, id uint) error {
 
 	for i, w := range r.workouts {
 		if w.ID == id {
-			r.workouts = append(r.workouts[:i], r.workouts[i+1:]...)
+			r.workouts = slices.Delete(r.workouts, i, i+1)
 			return nil
 		}
 	}
