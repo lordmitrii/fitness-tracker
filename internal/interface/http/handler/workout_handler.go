@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
+    "github.com/lordmitrii/golang-web-gin/internal/interface/http/middleware"
 )
 
 type WorkoutHandler struct {
@@ -17,6 +18,7 @@ type WorkoutHandler struct {
 func NewWorkoutHandler(r *gin.RouterGroup, svc usecase.WorkoutService) {
     h := &WorkoutHandler{svc: svc}
     ws := r.Group("/workouts")
+    ws.Use(middleware.JWTMiddleware())
     {
         ws.POST("", h.Create)
         ws.GET("", h.List)

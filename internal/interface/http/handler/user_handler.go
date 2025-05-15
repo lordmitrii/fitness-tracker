@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
+	"github.com/lordmitrii/golang-web-gin/internal/interface/http/middleware"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 )
 
@@ -20,9 +21,15 @@ func NewUserHandler(r *gin.RouterGroup, svc usecase.UserService) {
     {
 		us.POST("/register", h.Register)
 		us.POST("/login", h.Login)
-		us.GET("/profile", h.GetProfile)
-		us.PUT("/profile", h.UpdateProfile)
-		us.DELETE("/profile", h.DeleteProfile)
+
+        protected := us.Group("/")
+        protected.Use(middleware.JWTMiddleware())
+        {
+            protected.POST("/profile", h.CreateProfile)
+            protected.GET("/profile", h.GetProfile)
+            protected.PUT("/profile", h.UpdateProfile)
+            protected.DELETE("/profile", h.DeleteProfile)
+        }
     }
 }
 // RegisterUser godoc
@@ -37,7 +44,11 @@ func NewUserHandler(r *gin.RouterGroup, svc usecase.UserService) {
 // @Failure      500      {object}  handler.ErrorResponse
 // @Router       /users [post]
 func (h *UserHandler) Register(c *gin.Context) {
-    var req struct { Email, Password string }
+    var req struct { 
+        Email     string   `binding:"required,email"` 
+        Password  string   `binding:"required,min=8"`
+    }
+
     if err := c.ShouldBindJSON(&req); err != nil {
         c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()}); return
     }
@@ -48,7 +59,11 @@ func (h *UserHandler) Register(c *gin.Context) {
 }
 
 func (h *UserHandler) Login(c *gin.Context) {
-    var req struct { Email, Password string }
+    var req struct { 
+        Email     string   `binding:"required,email"` 
+        Password  string   `binding:"required,min=8"`
+    }
+
     if err := c.ShouldBindJSON(&req); err != nil {
         c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()}); return
     }
@@ -56,27 +71,64 @@ func (h *UserHandler) Login(c *gin.Context) {
     if err != nil {
         c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"}); return
     }
-    // TODO: issue JWT
-    c.JSON(http.StatusOK, gin.H{"user_id": user.ID})
+
+    token, err := middleware.GenerateToken(user.ID)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "could not generate token"}); return
+    }
+    c.JSON(http.StatusOK, gin.H{"token": token})
 }
 
 func (h *UserHandler) GetProfile(c *gin.Context) {
-    // TODO: extract userID from JWT
-    userID := uint(1)
-    p, err := h.svc.GetProfile(c.Request.Context(), userID)
+    userID, exists := c.Get("userID")
+    if !exists {
+        c.AbortWithStatus(http.StatusUnauthorized)
+        return
+    } 
+    uid := userID.(uint)
+    p, err := h.svc.GetProfile(c.Request.Context(), uid)
     if err != nil {
         c.JSON(http.StatusNotFound, gin.H{"error": "profile not found"}); return
     }
     c.JSON(http.StatusOK, p)
 }
 
-func (h *UserHandler) UpdateProfile(c *gin.Context) {
-    userID := uint(1)
+func (h *UserHandler) CreateProfile(c *gin.Context) {
     var req user.Profile
+
     if err := c.ShouldBindJSON(&req); err != nil {
         c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()}); return
     }
-    req.UserID = userID
+
+    userID, exists := c.Get("userID")
+    if !exists {
+        c.AbortWithStatus(http.StatusUnauthorized)
+        return
+    } 
+    uid := userID.(uint)
+    req.UserID = uid
+
+    if err := h.svc.CreateProfile(c.Request.Context(), &req); err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()}); return
+    }
+    c.JSON(http.StatusCreated, req)
+}
+
+func (h *UserHandler) UpdateProfile(c *gin.Context) {
+    var req user.Profile
+
+    if err := c.ShouldBindJSON(&req); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()}); return
+    }
+
+    userID, exists := c.Get("userID")
+    if !exists {
+        c.AbortWithStatus(http.StatusUnauthorized)
+        return
+    } 
+    uid := userID.(uint)
+    req.UserID = uid
+    // TODO: fix this cause retrieves it check inside by id not by userID
     if err := h.svc.UpdateProfile(c.Request.Context(), &req); err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()}); return
     }
@@ -84,8 +136,14 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 }
 
 func (h *UserHandler) DeleteProfile(c *gin.Context) {
-	userID := uint(1)
-	if err := h.svc.DeleteProfile(c.Request.Context(), userID); err != nil {
+	userID, exists := c.Get("userID")
+    if !exists {
+        c.AbortWithStatus(http.StatusUnauthorized)
+        return
+    } 
+    uid := userID.(uint)
+
+	if err := h.svc.DeleteProfile(c.Request.Context(), uid); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()}); return
 	}
 	c.Status(http.StatusNoContent)
