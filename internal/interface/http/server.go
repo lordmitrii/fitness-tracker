@@ -2,6 +2,7 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/gin-contrib/cors"
 	
 	swaggerFiles "github.com/swaggo/files"
     ginSwagger   "github.com/swaggo/gin-swagger"
@@ -13,6 +14,14 @@ import (
 
 func NewServer(workoutService usecase.WorkoutService, userService usecase.UserService) *gin.Engine {
 	r := gin.Default()
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:5173"},
+		AllowMethods:     []string{"GET", "POST", "DELETE", "PUT", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
+
 	api := r.Group("/api")
 
 	// Add handlers here
