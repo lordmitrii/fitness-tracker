@@ -2,8 +2,9 @@ package usecase
 
 import (
 	"context"
-	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
+
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 )
 
 type (
@@ -13,7 +14,7 @@ type (
 		ListWorkouts(ctx context.Context) ([]*workout.Workout, error)
 		UpdateWorkout(ctx context.Context, w *workout.Workout) error
 		DeleteWorkout(ctx context.Context, id uint) error
-	};
+	}
 	UserService interface {
 		Register(ctx context.Context, email, password string) error
 		Authenticate(ctx context.Context, email, password string) (*user.User, error)
@@ -23,4 +24,3 @@ type (
 		DeleteProfile(ctx context.Context, id uint) error
 	}
 )
-		

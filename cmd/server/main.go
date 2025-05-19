@@ -17,12 +17,12 @@ package main
 
 import (
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
-	"github.com/lordmitrii/golang-web-gin/internal/usecase/workout"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/user"
+	"github.com/lordmitrii/golang-web-gin/internal/usecase/workout"
+
 	// "github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/inmemory"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/postgres"
 	"github.com/lordmitrii/golang-web-gin/internal/interface/http"
-
 )
 
 func main() {

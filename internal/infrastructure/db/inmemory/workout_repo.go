@@ -3,9 +3,9 @@ package inmemory
 import (
 	"context"
 	"errors"
+	"slices"
 	"sync"
 	"time"
-	"slices"
 
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 )

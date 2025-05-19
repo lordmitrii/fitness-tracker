@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"errors"
+
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 	"gorm.io/gorm"
 )
@@ -33,7 +34,7 @@ func (r *ProfileRepo) GetByUserID(ctx context.Context, userID uint) (*user.Profi
 }
 
 func (r *ProfileRepo) Update(ctx context.Context, p *user.Profile) error {
-	res := r.db.WithContext(ctx).Model(&user.Profile{}).Where("id = ?", p.ID).Updates(p)
+	res := r.db.WithContext(ctx).Model(&user.Profile{}).Where("user_id = ?", p.UserID).Updates(p)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -52,4 +53,3 @@ func (r *ProfileRepo) Delete(ctx context.Context, id uint) error {
 	}
 	return nil
 }
-

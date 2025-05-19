@@ -2,6 +2,7 @@ package workout
 
 import (
 	"context"
+
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 )
 

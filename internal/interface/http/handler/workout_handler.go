@@ -6,26 +6,26 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
+	"github.com/lordmitrii/golang-web-gin/internal/interface/http/middleware"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
-    "github.com/lordmitrii/golang-web-gin/internal/interface/http/middleware"
 )
 
 type WorkoutHandler struct {
-    svc usecase.WorkoutService
+	svc usecase.WorkoutService
 }
 
-// NewWorkoutHandler instantiates the handler and sets up the routes 
+// NewWorkoutHandler instantiates the handler and sets up the routes
 func NewWorkoutHandler(r *gin.RouterGroup, svc usecase.WorkoutService) {
-    h := &WorkoutHandler{svc: svc}
-    ws := r.Group("/workouts")
-    ws.Use(middleware.JWTMiddleware())
-    {
-        ws.POST("", h.Create)
-        ws.GET("", h.List)
-        ws.GET(":id", h.Get)
-        ws.PUT(":id", h.Update)
-        ws.DELETE(":id", h.Delete)
-    }
+	h := &WorkoutHandler{svc: svc}
+	ws := r.Group("/workouts")
+	ws.Use(middleware.JWTMiddleware())
+	{
+		ws.POST("", h.Create)
+		ws.GET("", h.List)
+		ws.GET(":id", h.Get)
+		ws.PUT(":id", h.Update)
+		ws.DELETE(":id", h.Delete)
+	}
 }
 
 // CreateWorkout godoc
@@ -40,16 +40,16 @@ func NewWorkoutHandler(r *gin.RouterGroup, svc usecase.WorkoutService) {
 // @Failure      500      {object}  handler.ErrorResponse
 // @Router       /workouts [post]
 func (h *WorkoutHandler) Create(c *gin.Context) {
-    var req workout.Workout
-    if err := c.ShouldBindJSON(&req); err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
-    if err := h.svc.CreateWorkout(c.Request.Context(), &req); err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
-    c.JSON(http.StatusCreated, req)
+	var req workout.Workout
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := h.svc.CreateWorkout(c.Request.Context(), &req); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, req)
 }
 
 // ListWorkouts godoc
@@ -62,12 +62,12 @@ func (h *WorkoutHandler) Create(c *gin.Context) {
 // @Failure      401  {object}  handler.ErrorResponse
 // @Router       /workouts [get]
 func (h *WorkoutHandler) List(c *gin.Context) {
-    workouts, err := h.svc.ListWorkouts(c.Request.Context())
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
-    c.JSON(http.StatusOK, workouts)
+	workouts, err := h.svc.ListWorkouts(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, workouts)
 }
 
 // GetWorkout godoc
@@ -82,13 +82,13 @@ func (h *WorkoutHandler) List(c *gin.Context) {
 // @Failure      401  {object}  handler.ErrorResponse
 // @Router       /workouts/{id} [get]
 func (h *WorkoutHandler) Get(c *gin.Context) {
-    id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
-    w, err := h.svc.GetWorkoutByID(c.Request.Context(), uint(id))
-    if err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
-        return
-    }
-    c.JSON(http.StatusOK, w)
+	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	w, err := h.svc.GetWorkoutByID(c.Request.Context(), uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
+		return
+	}
+	c.JSON(http.StatusOK, w)
 }
 
 // UpdateWorkout godoc
@@ -104,18 +104,18 @@ func (h *WorkoutHandler) Get(c *gin.Context) {
 // @Failure      404      {object}  handler.ErrorResponse
 // @Router       /workouts/{id} [put]
 func (h *WorkoutHandler) Update(c *gin.Context) {
-    id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
-    var req workout.Workout
-    if err := c.ShouldBindJSON(&req); err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
-    req.ID = uint(id)
-    if err := h.svc.UpdateWorkout(c.Request.Context(), &req); err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
-        return
-    }
-    c.JSON(http.StatusOK, req)
+	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	var req workout.Workout
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	req.ID = uint(id)
+	if err := h.svc.UpdateWorkout(c.Request.Context(), &req); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
+		return
+	}
+	c.JSON(http.StatusOK, req)
 }
 
 // DeleteWorkout godoc
@@ -124,13 +124,13 @@ func (h *WorkoutHandler) Update(c *gin.Context) {
 // @Tags         workouts
 // @Param        id   path      int  true  "Workout ID"
 // @Success      204
-// @Failure      404  {object}  handler.ErrorResponse	
+// @Failure      404  {object}  handler.ErrorResponse
 // @Router       /workouts/{id} [delete]
 func (h *WorkoutHandler) Delete(c *gin.Context) {
-    id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
-    if err := h.svc.DeleteWorkout(c.Request.Context(), uint(id)); err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
-        return
-    }
-    c.Status(http.StatusNoContent)
+	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err := h.svc.DeleteWorkout(c.Request.Context(), uint(id)); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
+		return
+	}
+	c.Status(http.StatusNoContent)
 }

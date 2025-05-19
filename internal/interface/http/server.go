@@ -1,15 +1,15 @@
 package http
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/gin-contrib/cors"
-	
-	swaggerFiles "github.com/swaggo/files"
-    ginSwagger   "github.com/swaggo/gin-swagger"
-	_ "github.com/lordmitrii/golang-web-gin/docs" 
+	"github.com/gin-gonic/gin"
 
-	"github.com/lordmitrii/golang-web-gin/internal/usecase"
+	_ "github.com/lordmitrii/golang-web-gin/docs"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
 	"github.com/lordmitrii/golang-web-gin/internal/interface/http/handler"
+	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 )
 
 func NewServer(workoutService usecase.WorkoutService, userService usecase.UserService) *gin.Engine {
@@ -29,7 +29,7 @@ func NewServer(workoutService usecase.WorkoutService, userService usecase.UserSe
 	handler.NewUserHandler(api, userService)
 
 	// Swagger endpoint at /swagger/index.html
-    r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	return r
 }
