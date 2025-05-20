@@ -16,22 +16,12 @@ type WorkoutRepo struct {
 	db *gorm.DB
 }
 
-func NewWorkoutRepo(db *gorm.DB) workout.Repository {
-	return &WorkoutRepo{db: db}
+func NewWorkoutRepo(db *gorm.DB) workout.WorkoutRepository {
+    return &WorkoutRepo{db: db}
 }
 
 func (r *WorkoutRepo) Create(ctx context.Context, w *workout.Workout) error {
 	return r.db.WithContext(ctx).Create(w).Error
-}
-
-func (r *WorkoutRepo) GetAll(ctx context.Context) ([]*workout.Workout, error) {
-	var list []*workout.Workout
-	if err := r.db.WithContext(ctx).
-		Find(&list).
-		Error; err != nil {
-		return nil, err
-	}
-	return list, nil
 }
 
 func (r *WorkoutRepo) GetByID(ctx context.Context, id uint) (*workout.Workout, error) {
@@ -45,6 +35,20 @@ func (r *WorkoutRepo) GetByID(ctx context.Context, id uint) (*workout.Workout, e
 		return nil, err
 	}
 	return &w, nil
+}
+
+func (r *WorkoutRepo) GetByWorkoutPlanID(ctx context.Context, workoutPlanID uint) ([]*workout.Workout, error) {
+    var workouts []*workout.Workout
+    if err := r.db.WithContext(ctx).
+        Where("workout_plan_id = ?", workoutPlanID).
+        Find(&workouts).
+        Error; err != nil {
+        if errors.Is(err, gorm.ErrRecordNotFound) {
+            return nil, ErrNotFound
+        }
+        return nil, err
+    }
+    return workouts, nil
 }
 
 func (r *WorkoutRepo) Update(ctx context.Context, w *workout.Workout) error {

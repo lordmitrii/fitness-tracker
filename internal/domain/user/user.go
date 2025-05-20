@@ -9,5 +9,5 @@ type User struct {
 	CreatedAt    time.Time `json:"-"`
 
 	// One-to-one relation:
-	Profile Profile `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	Profile *Profile `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
