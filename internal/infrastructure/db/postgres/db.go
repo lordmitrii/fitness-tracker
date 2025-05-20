@@ -26,5 +26,8 @@ func AutoMigrate(db *gorm.DB) error {
     return db.AutoMigrate(
         &user.User{},
         &user.Profile{},
-        &workout.Workout{},)
+        &workout.WorkoutPlan{},
+        &workout.Workout{},
+        &workout.Exercise{},
+    )
 }
