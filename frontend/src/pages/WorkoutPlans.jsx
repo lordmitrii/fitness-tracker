@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import api from "../api";
 
 
@@ -30,7 +31,7 @@ const WorkoutPlans = () => {
         <ul>
           {workouts.map((workout) => (
             <li key={workout.id}>
-              <h2 className="text-2xl mb-4">Title: {workout.name}</h2>
+              <Link className="text-2xl mb-4" to={`/workout-plans/${workout.id}`}>Title: {workout.name}</Link>
               <p className="mb-4">Created at: {workout.created_at}</p>
             </li>
           ))}
