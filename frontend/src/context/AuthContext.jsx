@@ -53,6 +53,12 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setIsAuth(false);
     clearAccessToken();
+    try {
+      api.post("/users/logout");
+    }
+    catch (error) {
+      console.error("Logout failed", error);
+    }
     // Optionally, send a logout endpoint to clear cookie on backend
   };
 

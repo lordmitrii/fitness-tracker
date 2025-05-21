@@ -21,6 +21,15 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
+    const originalRequest = error.config;
+
+    if (
+      originalRequest.url.includes("/users/refresh") ||
+      originalRequest.url.includes("/users/logout")
+    ) {
+      return Promise.reject(error);
+    }
+
     if (
       error.response &&
       error.response.status === 401 &&
@@ -34,7 +43,7 @@ api.interceptors.response.use(
         return api(error.config); 
       } catch (refreshErr) {
         accessToken = null;
-        // Optional: logout logic here
+        return Promise.reject(refreshErr);
       }
     }
     return Promise.reject(error);

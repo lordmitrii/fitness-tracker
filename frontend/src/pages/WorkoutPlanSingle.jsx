@@ -6,7 +6,7 @@ import api from '../api';
 const WorkoutPlanSingle = () => {
     const { id } = useParams();
     const [workoutPlan, setWorkoutPlan] = useState(null);
-    const [workouts, setWorkouts] = useState(null);
+    const [workoutCycles, setWorkoutCycles] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -14,7 +14,7 @@ const WorkoutPlanSingle = () => {
         api.get(`/workout-plans/${id}`)
             .then((response) => {
                 setWorkoutPlan(response.data);
-                setWorkouts(response.data.workouts);
+                setWorkoutCycles(response.data.workout_cycles);
                 setLoading(false);
             })
             .catch((error) => {
@@ -41,9 +41,9 @@ const WorkoutPlanSingle = () => {
                     <h2 className="text-xl font-semibold mb-2">{workoutPlan.name}</h2>
                     <p className="mb-4">Created at: {workoutPlan.created_at}</p>
                 </div>
-                {workouts.map((workout) => (
-                    <div key={workout.id} className="mb-4">
-                        <Link className="text-lg font-semibold" to={`/workouts/${workout.id}`}>{workout.name}</Link>
+                {workoutCycles.map((cycle) => (
+                    <div key={cycle.id} className="mb-4">
+                        <Link className="text-lg font-semibold" to={`/workout-cycles/${cycle.id}`}>{cycle.name}</Link>
                     </div>
                 ))}
                 </>

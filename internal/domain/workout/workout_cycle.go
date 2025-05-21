@@ -2,14 +2,13 @@ package workout
 
 import "time"
 
-type Workout struct {
+type WorkoutCycle struct {
 	// @ReadOnly
 	ID            uint        `gorm:"primaryKey" json:"id"`
 	Name          string      `json:"name"`
-	WorkoutCycleID uint        `json:"workout_cycle_id" gorm:"constraint:OnDelete:CASCADE;"`
-	Date          time.Time   `json:"date" example:"2010-10-01T10:00:00Z"`
-	WorkoutExercises     []*WorkoutExercise `json:"exercises"`
-	Index         int         `json:"index"`
+	WorkoutPlanID uint        `json:"workout_plan_id" gorm:"constraint:OnDelete:CASCADE;"`
+	Workouts      []*Workout  `json:"workouts"`
+	Index 	      int         `json:"index"`
 	Completed	  bool        `json:"completed" gorm:"default:false"`
 	// @ReadOnly
 	CreatedAt time.Time `json:"created_at"   example:"2010-10-01T10:00:00Z"`

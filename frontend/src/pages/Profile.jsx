@@ -13,7 +13,6 @@ const Profile = () => {
         setProfile(response.data);
       })
       .catch((error) => {
-        console.error("Error fetching profile:", error);
         setProfile({});
       });
   }, []);
@@ -35,7 +34,7 @@ const Profile = () => {
                 <span className="font-semibold">Height:</span> {profile.height_cm}
               </p>
               <p>
-                <span className="font-semibold">Gender:</span> {profile.gender}
+                <span className="font-semibold">Sex:</span> {profile.sex}
               </p>
               <button
                 className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition-colors"

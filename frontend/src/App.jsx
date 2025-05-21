@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import { CreateProfileForm, UpdateProfileForm } from "./pages/ProfileForm";
 import WorkoutPlans from "./pages/WorkoutPlans";
 import WorkoutPlanSingle from "./pages/WorkoutPlanSingle";
+import WorkoutCycle from "./pages/WorkoutCycle";
 import Workout from "./pages/Workout";
 import PrivateRoute from "./components/PrivateRoute";
 
@@ -30,7 +31,9 @@ function App() {
               <Route path="/workout-plans" element={<WorkoutPlans />} />
               <Route path="/workout-plans/:id" element={<WorkoutPlanSingle />} />
 
+              <Route path="/workout-cycles/:id" element={<WorkoutCycle />} />
               <Route path="/workouts/:id" element={<Workout />} />
+
               <Route path="/create-profile" element={<CreateProfileForm />} />
               <Route path="/update-profile" element={<UpdateProfileForm />} />
             </Route>

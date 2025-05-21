@@ -22,6 +22,7 @@ func NewUserHandler(r *gin.RouterGroup, svc usecase.UserService) {
 	{
 		us.POST("/register", h.Register)
 		us.POST("/login", h.Login)
+		us.POST("/logout", h.Logout)
 		us.POST("/refresh", h.RefreshToken)
 
 		protected := us.Group("/")
@@ -94,6 +95,11 @@ func (h *UserHandler) Login(c *gin.Context) {
 	c.SetCookie("refresh_token", refreshToken, 60*60*24*7, "/", "", false, true)
 
 	c.JSON(http.StatusOK, gin.H{"access_token": accessToken})
+}
+
+func (h *UserHandler) Logout(c *gin.Context) {
+	c.SetCookie("refresh_token", "", -1, "/", "", false, true)
+	c.JSON(http.StatusOK, gin.H{"message": "logged out"})
 }
 
 func (h *UserHandler) RefreshToken(c *gin.Context) {

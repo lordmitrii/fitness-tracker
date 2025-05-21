@@ -8,13 +8,15 @@ import (
 
 type serviceImpl struct {
 	workoutPlanRepo workout.WorkoutPlanRepository
+	workoutCycleRepo workout.WorkoutCycleRepository
 	workoutRepo     workout.WorkoutRepository
 	exerciseRepo    workout.ExerciseRepository
 }
 
-func NewService(workoutPlanRepo workout.WorkoutPlanRepository, workoutRepo workout.WorkoutRepository, exerciseRepo workout.ExerciseRepository) *serviceImpl {
+func NewService(workoutPlanRepo workout.WorkoutPlanRepository, workoutCycleRepo workout.WorkoutCycleRepository, workoutRepo workout.WorkoutRepository, exerciseRepo workout.ExerciseRepository) *serviceImpl {
 	return &serviceImpl{
 		workoutPlanRepo: workoutPlanRepo,
+		workoutCycleRepo: workoutCycleRepo,
 		workoutRepo:     workoutRepo,
 		exerciseRepo:    exerciseRepo,
 	}
@@ -40,6 +42,26 @@ func (s *serviceImpl) DeleteWorkoutPlan(ctx context.Context, id uint) error {
 	return s.workoutPlanRepo.Delete(ctx, id)
 }
 
+func (s *serviceImpl) CreateWorkoutCycle(ctx context.Context, wc *workout.WorkoutCycle) error {
+	return s.workoutCycleRepo.Create(ctx, wc)
+}
+
+func (s *serviceImpl) GetWorkoutCycleByID(ctx context.Context, id uint) (*workout.WorkoutCycle, error) {
+	return s.workoutCycleRepo.GetByID(ctx, id)
+}
+
+func (s *serviceImpl) GetWorkoutCyclesByWorkoutPlanID(ctx context.Context, workoutPlanID uint) ([]*workout.WorkoutCycle, error) {
+	return s.workoutCycleRepo.GetByWorkoutPlanID(ctx, workoutPlanID)
+}
+
+func (s *serviceImpl) UpdateWorkoutCycle(ctx context.Context, wc *workout.WorkoutCycle) error {
+	return s.workoutCycleRepo.Update(ctx, wc)
+}
+
+func (s *serviceImpl) DeleteWorkoutCycle(ctx context.Context, id uint) error {
+	return s.workoutCycleRepo.Delete(ctx, id)
+}
+
 func (s *serviceImpl) CreateWorkout(ctx context.Context, w *workout.Workout) error {
 	return s.workoutRepo.Create(ctx, w)
 }
@@ -47,8 +69,8 @@ func (s *serviceImpl) CreateWorkout(ctx context.Context, w *workout.Workout) err
 func (s *serviceImpl) GetWorkoutByID(ctx context.Context, id uint) (*workout.Workout, error) {
 	return s.workoutRepo.GetByID(ctx, id)
 }
-func (s *serviceImpl) GetWorkoutsByWorkoutPlanID(ctx context.Context, workoutPlanID uint) ([]*workout.Workout, error) {
-	return s.workoutRepo.GetByWorkoutPlanID(ctx, workoutPlanID)
+func (s *serviceImpl) GetWorkoutsByWorkoutCycleID(ctx context.Context, workoutPlanID uint) ([]*workout.Workout, error) {
+	return s.workoutRepo.GetByWorkoutCycleID(ctx, workoutPlanID)
 }
 func (s *serviceImpl) UpdateWorkout(ctx context.Context, w *workout.Workout) error {
 	return s.workoutRepo.Update(ctx, w)
@@ -56,20 +78,20 @@ func (s *serviceImpl) UpdateWorkout(ctx context.Context, w *workout.Workout) err
 func (s *serviceImpl) DeleteWorkout(ctx context.Context, id uint) error {
 	return s.workoutRepo.Delete(ctx, id)
 }
-func (s *serviceImpl) CreateExercise(ctx context.Context, e *workout.Exercise) error {
+func (s *serviceImpl) CreateWorkoutExercise(ctx context.Context, e *workout.WorkoutExercise) error {
 	return s.exerciseRepo.Create(ctx, e)
 }
-func (s *serviceImpl) GetExerciseByID(ctx context.Context, id uint) (*workout.Exercise, error) {
+func (s *serviceImpl) GetWorkoutExerciseByID(ctx context.Context, id uint) (*workout.WorkoutExercise, error) {
 	return s.exerciseRepo.GetByID(ctx, id)
 }
-func (s *serviceImpl) GetExercisesByWorkoutID(ctx context.Context, workoutID uint) ([]*workout.Exercise, error) {
+func (s *serviceImpl) GetWorkoutExercisesByWorkoutID(ctx context.Context, workoutID uint) ([]*workout.WorkoutExercise, error) {
 	return s.exerciseRepo.GetByWorkoutID(ctx, workoutID)
 }
 
-func (s *serviceImpl) UpdateExercise(ctx context.Context, e *workout.Exercise) error {
+func (s *serviceImpl) UpdateWorkoutExercise(ctx context.Context, e *workout.WorkoutExercise) error {
 	return s.exerciseRepo.Update(ctx, e)
 }
 
-func (s *serviceImpl) DeleteExercise(ctx context.Context, id uint) error {
+func (s *serviceImpl) DeleteWorkoutExercise(ctx context.Context, id uint) error {
 	return s.exerciseRepo.Delete(ctx, id)
 }

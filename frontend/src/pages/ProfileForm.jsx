@@ -7,7 +7,7 @@ const ProfileForm = ({ initialData = {}, onSubmit, submitLabel }) => {
     age: "",
     weight_kg: "",
     height_cm: "",
-    gender: "",
+    sex: "",
     ...initialData,
   });
   const [errors, setErrors] = useState({});
@@ -28,7 +28,7 @@ const ProfileForm = ({ initialData = {}, onSubmit, submitLabel }) => {
     if (!formData.height_cm) newErrors.height_cm = "Height is required.";
     else if (isNaN(parseFloat(formData.height_cm)))
       newErrors.height_cm = "Height must be a number.";
-    if (!formData.gender) newErrors.gender = "Please select a gender.";
+    if (!formData.sex) newErrors.sex = "Please select a sex.";
     return newErrors;
   };
 
@@ -44,7 +44,7 @@ const ProfileForm = ({ initialData = {}, onSubmit, submitLabel }) => {
       age: parseInt(formData.age, 10),
       weight_kg: parseFloat(formData.weight_kg),
       height_cm: parseFloat(formData.height_cm),
-      gender: formData.gender,
+      sex: formData.sex,
     };
 
     onSubmit(payload);
@@ -122,25 +122,25 @@ const ProfileForm = ({ initialData = {}, onSubmit, submitLabel }) => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Gender
+              Sex
             </label>
             <div className="flex items-center space-x-4">
-              {["Male", "Female"].map((g) => (
-                <label key={g} className="inline-flex items-center">
+              {["Male", "Female"].map((s) => (
+                <label key={s} className="inline-flex items-center">
                   <input
                     type="radio"
-                    name="gender"
-                    value={g}
-                    checked={formData.gender === g}
+                    name="sex"
+                    value={s}
+                    checked={formData.sex === s}
                     onChange={handleChange}
                     className="form-radio text-blue-600"
                   />
-                  <span className="ml-2">{g}</span>
+                  <span className="ml-2">{s}</span>
                 </label>
               ))}
             </div>
-            {errors.gender && (
-              <p className="text-red-500 text-sm mt-1">{errors.gender}</p>
+            {errors.sex && (
+              <p className="text-red-500 text-sm mt-1">{errors.sex}</p>
             )}
           </div>
 
@@ -187,7 +187,7 @@ export const UpdateProfileForm = () => {
           age: data.age?.toString() || "",
           weight_kg: data.weight_kg?.toString() || "",
           height_cm: data.height_cm?.toString() || "",
-          gender: data.gender || "",
+          sex: data.sex || "",
         });
       })
       .catch((error) => console.error("Error fetching profile:", error));

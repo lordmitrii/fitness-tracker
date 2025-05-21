@@ -37,13 +37,14 @@ func main() {
 	}
 
 	workoutPlanRepo := postgres.NewWorkoutPlanRepo(db)
+	workoutCycleRepo := postgres.NewWorkoutCycleRepo(db)
 	workoutRepo := postgres.NewWorkoutRepo(db)
 	exerciseRepo := postgres.NewExerciseRepo(db)
 
 	userRepo := postgres.NewUserRepo(db)
 	profileRepo := postgres.NewProfileRepo(db)
 
-	var workoutService usecase.WorkoutService = workout.NewService(workoutPlanRepo, workoutRepo, exerciseRepo)
+	var workoutService usecase.WorkoutService = workout.NewService(workoutPlanRepo, workoutCycleRepo, workoutRepo, exerciseRepo)
 	var userService usecase.UserService = user.NewService(userRepo, profileRepo)
 
 	server := http.NewServer(workoutService, userService)

@@ -27,7 +27,7 @@ func (r *WorkoutRepo) Create(ctx context.Context, w *workout.Workout) error {
 func (r *WorkoutRepo) GetByID(ctx context.Context, id uint) (*workout.Workout, error) {
 	var w workout.Workout
 	if err := r.db.WithContext(ctx).
-		Preload("Exercises").
+		Preload("WorkoutExercises").
 		First(&w, id).
 		Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -38,10 +38,10 @@ func (r *WorkoutRepo) GetByID(ctx context.Context, id uint) (*workout.Workout, e
 	return &w, nil
 }
 
-func (r *WorkoutRepo) GetByWorkoutPlanID(ctx context.Context, workoutPlanID uint) ([]*workout.Workout, error) {
+func (r *WorkoutRepo) GetByWorkoutCycleID(ctx context.Context, workoutCycleID uint) ([]*workout.Workout, error) {
 	var workouts []*workout.Workout
 	if err := r.db.WithContext(ctx).
-		Where("workout_plan_id = ?", workoutPlanID).
+		Where("workout_cycle_id = ?", workoutCycleID).
 		Find(&workouts).
 		Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

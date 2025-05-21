@@ -15,17 +15,23 @@ type (
 		UpdateWorkoutPlan(ctx context.Context, wp *workout.WorkoutPlan) error
 		DeleteWorkoutPlan(ctx context.Context, id uint) error
 
+		CreateWorkoutCycle(ctx context.Context, wc *workout.WorkoutCycle) error
+		GetWorkoutCycleByID(ctx context.Context, id uint) (*workout.WorkoutCycle, error)
+		GetWorkoutCyclesByWorkoutPlanID(ctx context.Context, workoutPlanID uint) ([]*workout.WorkoutCycle, error)
+		UpdateWorkoutCycle(ctx context.Context, wc *workout.WorkoutCycle) error
+		DeleteWorkoutCycle(ctx context.Context, id uint) error
+
 		CreateWorkout(ctx context.Context, w *workout.Workout) error
 		GetWorkoutByID(ctx context.Context, id uint) (*workout.Workout, error)
-		GetWorkoutsByWorkoutPlanID(ctx context.Context, workoutPlanID uint) ([]*workout.Workout, error)
+		GetWorkoutsByWorkoutCycleID(ctx context.Context, workoutPlanID uint) ([]*workout.Workout, error)
 		UpdateWorkout(ctx context.Context, w *workout.Workout) error
 		DeleteWorkout(ctx context.Context, id uint) error
 
-		CreateExercise(ctx context.Context, e *workout.Exercise) error
-		GetExerciseByID(ctx context.Context, id uint) (*workout.Exercise, error)
-		GetExercisesByWorkoutID(ctx context.Context, workoutID uint) ([]*workout.Exercise, error)
-		UpdateExercise(ctx context.Context, e *workout.Exercise) error
-		DeleteExercise(ctx context.Context, id uint) error
+		CreateWorkoutExercise(ctx context.Context, e *workout.WorkoutExercise) error
+		GetWorkoutExerciseByID(ctx context.Context, id uint) (*workout.WorkoutExercise, error)
+		GetWorkoutExercisesByWorkoutID(ctx context.Context, workoutID uint) ([]*workout.WorkoutExercise, error)
+		UpdateWorkoutExercise(ctx context.Context, e *workout.WorkoutExercise) error
+		DeleteWorkoutExercise(ctx context.Context, id uint) error
 	}
 
 	UserService interface {
