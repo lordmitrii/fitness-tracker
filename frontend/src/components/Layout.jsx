@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const Layout = ({ children }) => {
-  const { token, logout } = useAuth();
+  const { isAuth, logout } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -66,10 +66,10 @@ const Layout = ({ children }) => {
             >
               Home
             </Link>
-            {token ? (
+            {isAuth ? (
               <>
                 <Link
-                  to="/workouts"
+                  to="/workout-plans"
                   className="block text-gray-600 hover:text-blue-600 transition-colors"
                   onClick={() => setIsOpen(false)}
                 >

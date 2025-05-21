@@ -1,10 +1,9 @@
 package postgres
 
-
 import (
 	"context"
-	"gorm.io/gorm"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
+	"gorm.io/gorm"
 )
 
 type WorkoutPlanRepo struct {

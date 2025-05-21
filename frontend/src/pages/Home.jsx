@@ -1,11 +1,11 @@
 import { useAuth } from "../context/AuthContext";
 
 const Home = () => {
-  const { token } = useAuth();
+  const { isAuth } = useAuth();
   return (
     <div>
-      <h1>Welcome {token ? "Back!" : "to our App"}</h1>
-      {token ? <p className="break-all">Your token: {token}</p> : <p>Please login or register.</p>}
+      <h1>Welcome {isAuth ? "Back!" : "to our App"}</h1>
+      {isAuth ? <p className="break-all">You are logged in!</p> : <p>Please login or register.</p>}
     </div>
   );
 };

@@ -26,8 +26,8 @@ type (
 		GetExercisesByWorkoutID(ctx context.Context, workoutID uint) ([]*workout.Exercise, error)
 		UpdateExercise(ctx context.Context, e *workout.Exercise) error
 		DeleteExercise(ctx context.Context, id uint) error
-	};
-	
+	}
+
 	UserService interface {
 		Register(ctx context.Context, email, password string) error
 		Authenticate(ctx context.Context, email, password string) (*user.User, error)

@@ -1,18 +1,37 @@
-import { createContext, useState, useContext } from "react";
-import { loginRequest, registerRequest } from "../api";
+import { createContext, useState, useContext, useEffect } from "react";
+import api, { loginRequest, registerRequest, setAccessToken, clearAccessToken } from "../api";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [isAuth, setIsAuth] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+  const tryRefresh = async () => {
+    try {
+      const res = await api.post("/users/refresh");
+      if (res.data.access_token) {
+        setIsAuth(true);
+        setAccessToken(res.data.access_token);
+      }
+      } catch (err) {
+        setIsAuth(false);
+        clearAccessToken();
+      } finally {
+        setLoading(false);
+      }
+    };
+    tryRefresh();
+  }, []);
 
   const login = async (email, password) => {
     try {
       const response = await loginRequest(email, password);
       const data = response.data;
-      if (data.token) {
-        setToken(data.token);
-        localStorage.setItem("token", data.token);
+      if (data.access_token) {
+        setIsAuth(true);
+        setAccessToken(data.access_token);
       }
       return data;
     } catch (error) {
@@ -32,12 +51,13 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    setToken(null);
-    localStorage.removeItem("token");
+    setIsAuth(false);
+    clearAccessToken();
+    // Optionally, send a logout endpoint to clear cookie on backend
   };
 
   return (
-    <AuthContext.Provider value={{ token, login, register, logout }}>
+    <AuthContext.Provider value={{ isAuth, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

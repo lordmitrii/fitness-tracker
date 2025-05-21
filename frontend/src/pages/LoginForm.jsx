@@ -12,7 +12,7 @@ const LoginForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const data = await login(email, password);
-    if (data.token) {
+    if (data.access_token) {
       navigate("/");
     } else {
       setError(data.message || "Login failed");

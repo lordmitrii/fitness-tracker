@@ -17,7 +17,7 @@ type WorkoutRepo struct {
 }
 
 func NewWorkoutRepo(db *gorm.DB) workout.WorkoutRepository {
-    return &WorkoutRepo{db: db}
+	return &WorkoutRepo{db: db}
 }
 
 func (r *WorkoutRepo) Create(ctx context.Context, w *workout.Workout) error {
@@ -38,17 +38,17 @@ func (r *WorkoutRepo) GetByID(ctx context.Context, id uint) (*workout.Workout, e
 }
 
 func (r *WorkoutRepo) GetByWorkoutPlanID(ctx context.Context, workoutPlanID uint) ([]*workout.Workout, error) {
-    var workouts []*workout.Workout
-    if err := r.db.WithContext(ctx).
-        Where("workout_plan_id = ?", workoutPlanID).
-        Find(&workouts).
-        Error; err != nil {
-        if errors.Is(err, gorm.ErrRecordNotFound) {
-            return nil, ErrNotFound
-        }
-        return nil, err
-    }
-    return workouts, nil
+	var workouts []*workout.Workout
+	if err := r.db.WithContext(ctx).
+		Where("workout_plan_id = ?", workoutPlanID).
+		Find(&workouts).
+		Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+	return workouts, nil
 }
 
 func (r *WorkoutRepo) Update(ctx context.Context, w *workout.Workout) error {

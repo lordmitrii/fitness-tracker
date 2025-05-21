@@ -8,7 +8,7 @@ import RegisterForm from "./pages/RegisterForm";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import { CreateProfileForm, UpdateProfileForm } from "./pages/ProfileForm";
-import Workouts from "./pages/Workouts";
+import WorkoutPlans from "./pages/WorkoutPlans";
 import PrivateRoute from "./components/PrivateRoute";
 
 function App() {
@@ -25,7 +25,7 @@ function App() {
             <Route element={<PrivateRoute />}>
               <Route path="/profile" element={<Profile />} />
 
-              <Route path="/workouts" element={<Workouts />} />
+              <Route path="/workout-plans" element={<WorkoutPlans />} />
 
               <Route path="/create-profile" element={<CreateProfileForm />} />
               <Route path="/update-profile" element={<UpdateProfileForm />} />

@@ -12,6 +12,8 @@ import (
 
 var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 
+func JwtSecret() []byte { return jwtSecret }
+
 type Claims struct {
 	UserID uint `json:"user_id"`
 	jwt.StandardClaims
@@ -20,6 +22,18 @@ type Claims struct {
 // GenerateToken issues a signed JWT for a given user ID.
 func GenerateToken(userID uint) (string, error) {
 	expiresAt := time.Now().Add(24 * time.Hour)
+	claims := Claims{
+		UserID: userID,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: expiresAt.Unix(),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(jwtSecret)
+}
+
+func GenerateRefreshToken(userID uint) (string, error) {
+	expiresAt := time.Now().Add(7 * 24 * time.Hour)
 	claims := Claims{
 		UserID: userID,
 		StandardClaims: jwt.StandardClaims{

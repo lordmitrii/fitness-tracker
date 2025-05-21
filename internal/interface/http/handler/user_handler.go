@@ -5,6 +5,7 @@ import (
 	// "strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 	"github.com/lordmitrii/golang-web-gin/internal/interface/http/middleware"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
@@ -21,6 +22,7 @@ func NewUserHandler(r *gin.RouterGroup, svc usecase.UserService) {
 	{
 		us.POST("/register", h.Register)
 		us.POST("/login", h.Login)
+		us.POST("/refresh", h.RefreshToken)
 
 		protected := us.Group("/")
 		protected.Use(middleware.JWTMiddleware())
@@ -77,12 +79,45 @@ func (h *UserHandler) Login(c *gin.Context) {
 		return
 	}
 
-	token, err := middleware.GenerateToken(user.ID)
+	accessToken, err := middleware.GenerateToken(user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not generate token"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"token": token})
+
+	refreshToken, err := middleware.GenerateRefreshToken(user.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not generate refresh token"})
+		return
+	}
+
+	c.SetCookie("refresh_token", refreshToken, 60*60*24*7, "/", "", false, true)
+
+	c.JSON(http.StatusOK, gin.H{"access_token": accessToken})
+}
+
+func (h *UserHandler) RefreshToken(c *gin.Context) {
+	refreshToken, err := c.Cookie("refresh_token")
+	if err != nil || refreshToken == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "refresh token missing"})
+		return
+	}
+
+	tok, err := jwt.ParseWithClaims(refreshToken, &middleware.Claims{}, func(t *jwt.Token) (interface{}, error) {
+		return middleware.JwtSecret(), nil // expose jwtSecret with getter
+	})
+	if err != nil || !tok.Valid {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid refresh token"})
+		return
+	}
+
+	claims := tok.Claims.(*middleware.Claims)
+	accessToken, err := middleware.GenerateToken(claims.UserID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not generate token"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"access_token": accessToken})
 }
 
 func (h *UserHandler) GetProfile(c *gin.Context) {

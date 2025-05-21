@@ -24,11 +24,11 @@ func NewPostgresDB(dsn string) (*gorm.DB, error) {
 
 // AutoMigrate applies schema migrations for all models.
 func AutoMigrate(db *gorm.DB) error {
-    return db.AutoMigrate(
-        &user.User{},
-        &user.Profile{},
-        &workout.WorkoutPlan{},
-        &workout.Workout{},
-        &workout.Exercise{},
-    )
+	return db.AutoMigrate(
+		&user.User{},
+		&user.Profile{},
+		&workout.WorkoutPlan{},
+		&workout.Workout{},
+		&workout.Exercise{},
+	)
 }
