@@ -4,14 +4,14 @@ import api from '../api';
 
 
 const WorkoutPlanSingle = () => {
-    const { id } = useParams();
+    const { planID } = useParams();
     const [workoutPlan, setWorkoutPlan] = useState(null);
     const [workoutCycles, setWorkoutCycles] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useState(() => {
-        api.get(`/workout-plans/${id}`)
+        api.get(`/workout-plans/${planID}`)
             .then((response) => {
                 setWorkoutPlan(response.data);
                 setWorkoutCycles(response.data.workout_cycles);
@@ -22,7 +22,7 @@ const WorkoutPlanSingle = () => {
                 setError(error);
                 setLoading(false);
             });
-    }, [id]); 
+    }, [planID]); 
 
     if (loading) {
         return <p>Loading...</p>;
@@ -43,7 +43,7 @@ const WorkoutPlanSingle = () => {
                 </div>
                 {workoutCycles.map((cycle) => (
                     <div key={cycle.id} className="mb-4">
-                        <Link className="text-lg font-semibold" to={`/workout-cycles/${cycle.id}`}>{cycle.name}</Link>
+                        <Link className="text-lg font-semibold" to={`/workout-plans/${planID}/workout-cycles/${cycle.id}`}>{cycle.name}</Link>
                     </div>
                 ))}
                 </>

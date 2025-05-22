@@ -27,10 +27,19 @@ type WorkoutRepository interface {
 	Delete(ctx context.Context, id uint) error
 }
 
-type ExerciseRepository interface {
+type WorkoutExerciseRepository interface {
 	Create(ctx context.Context, e *WorkoutExercise) error
 	GetByID(ctx context.Context, id uint) (*WorkoutExercise, error)
 	GetByWorkoutID(ctx context.Context, workoutID uint) ([]*WorkoutExercise, error)
 	Update(ctx context.Context, e *WorkoutExercise) error
+	Delete(ctx context.Context, id uint) error
+}
+
+type ExerciseRepository interface {
+	Create(ctx context.Context, e *Exercise) error
+	GetByID(ctx context.Context, id uint) (*Exercise, error)
+	GetByMuscleGroup(ctx context.Context, muscleGroup string) ([]*Exercise, error)
+	GetAll(ctx context.Context) ([]*Exercise, error)
+	Update(ctx context.Context, e *Exercise) error
 	Delete(ctx context.Context, id uint) error
 }

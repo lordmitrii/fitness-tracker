@@ -3,17 +3,17 @@ import { useEffect, useState } from 'react';
 import api from '../api';
 
 const Workout = () => {
-    const { id } = useParams();
+    const { planID, cycleID, workoutID } = useParams();
     const [workout, setWorkout] = useState(null);
-    const [exercises, setExercises] = useState(null);
+    const [workoutExercises, setWorkoutExercises] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        api.get(`/workouts/${id}`)
+        api.get(`/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}`)
             .then((response) => {
                 setWorkout(response.data);
-                setExercises(response.data.exercises);
+                setWorkoutExercises(response.data.workout_exercises);
                 setLoading(false);
             })
             .catch((error) => {
@@ -21,7 +21,7 @@ const Workout = () => {
                 setError(error);
                 setLoading(false);
             });
-    }, [id]);
+    }, [planID, cycleID, workoutID]);
 
     if (loading) {
         return <p>Loading...</p>;
@@ -37,15 +37,15 @@ const Workout = () => {
         </div>
         <div className="container mx-auto px-4 py-6">
             <h1 className="text-2xl font-bold mb-4">Exercises:</h1>
-            {exercises && (
+            {workoutExercises && (
                 <ul>
-                    {exercises.map((exercise) => (
-                        <li key={exercise.id}>
-                            <h2 className="text-xl font-semibold mb-2">{exercise.name}</h2>
-                            <p className="mb-4">Muscle: {exercise.muscle}</p>
-                            <p className="mb-4">Weight: {exercise.weight}</p>
-                            <p className="mb-4">Reps: {exercise.reps}</p>
-                            <p className="mb-4">Sets: {exercise.sets}</p>
+                    {workoutExercises.map((workoutExercise) => (
+                        <li key={workoutExercise.id}>
+                            <h2 className="text-xl font-semibold mb-2">{workoutExercise.exercise?.name}</h2>
+                            <p className="mb-4">Muscle: {workoutExercise.exercise?.muscle_group}</p>
+                            <p className="mb-4">Weight: {workoutExercise.weight}</p>
+                            <p className="mb-4">Reps: {workoutExercise.reps}</p>
+                            <p className="mb-4">Sets: {workoutExercise.sets}</p>
                         </li>
                     ))}
                 </ul>

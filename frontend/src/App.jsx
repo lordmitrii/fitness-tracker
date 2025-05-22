@@ -29,10 +29,9 @@ function App() {
               <Route path="/profile" element={<Profile />} />
 
               <Route path="/workout-plans" element={<WorkoutPlans />} />
-              <Route path="/workout-plans/:id" element={<WorkoutPlanSingle />} />
-
-              <Route path="/workout-cycles/:id" element={<WorkoutCycle />} />
-              <Route path="/workouts/:id" element={<Workout />} />
+              <Route path="/workout-plans/:planID" element={<WorkoutPlanSingle />} />
+              <Route path="/workout-plans/:planID/workout-cycles/:cycleID" element={<WorkoutCycle />} />
+              <Route path="/workout-plans/:planID/workout-cycles/:cycleID/workouts/:workoutID" element={<Workout />} />
 
               <Route path="/create-profile" element={<CreateProfileForm />} />
               <Route path="/update-profile" element={<UpdateProfileForm />} />

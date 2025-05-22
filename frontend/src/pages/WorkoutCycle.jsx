@@ -3,13 +3,13 @@ import { Link, useParams } from 'react-router-dom';
 import api from '../api';
 
 const WorkoutCycle = () => {
-    const { id } = useParams();
+    const { planID, cycleID } = useParams();
     const [workouts, setWorkouts] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        api.get(`/workout-cycles/${id}`)
+        api.get(`workout-plans/${planID}/workout-cycles/${cycleID}`)
             .then((response) => {
                 setWorkouts(response.data.workouts);
                 setLoading(false);
@@ -19,7 +19,7 @@ const WorkoutCycle = () => {
                 setError(error);
                 setLoading(false);
             });
-    }, [id]);
+    }, [planID, cycleID]);
 
     if (loading) {
         return <p>Loading...</p>;
@@ -36,11 +36,11 @@ const WorkoutCycle = () => {
                 <ul>
                     {workouts.map((workout) => (
                         <li key={workout.id}>
-                            <Link className="text-2xl mb-4" to={`/workouts/${workout.id}`}>Title: {workout.name}</Link>
+                            <Link className="text-2xl mb-4" to={`/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workout.id}`}>Title: {workout.name}</Link>
                             <p className="mb-4">Created at: {workout.created_at}</p>
                         </li>
                     ))}
-                </ul>
+                </ul>   
             )}
         </div>
     );

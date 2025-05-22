@@ -34,6 +34,15 @@ type (
 		DeleteWorkoutExercise(ctx context.Context, id uint) error
 	}
 
+	ExerciseService interface {
+		CreateExercise(ctx context.Context, e *workout.Exercise) error
+		GetExerciseByID(ctx context.Context, id uint) (*workout.Exercise, error)
+		GetExercisesByMuscleGroup(ctx context.Context, muscleGroup string) ([]*workout.Exercise, error)
+		GetAllExercises(ctx context.Context) ([]*workout.Exercise, error)
+		UpdateExercise(ctx context.Context, e *workout.Exercise) error
+		DeleteExercise(ctx context.Context, id uint) error
+	}
+
 	UserService interface {
 		Register(ctx context.Context, email, password string) error
 		Authenticate(ctx context.Context, email, password string) (*user.User, error)

@@ -28,6 +28,7 @@ func (r *WorkoutRepo) GetByID(ctx context.Context, id uint) (*workout.Workout, e
 	var w workout.Workout
 	if err := r.db.WithContext(ctx).
 		Preload("WorkoutExercises").
+		Preload("WorkoutExercises.Exercise").
 		First(&w, id).
 		Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

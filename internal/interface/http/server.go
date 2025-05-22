@@ -12,7 +12,7 @@ import (
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 )
 
-func NewServer(workoutService usecase.WorkoutService, userService usecase.UserService) *gin.Engine {
+func NewServer(exerciseService usecase.ExerciseService, workoutService usecase.WorkoutService, userService usecase.UserService) *gin.Engine {
 	r := gin.Default()
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173"},
@@ -25,6 +25,7 @@ func NewServer(workoutService usecase.WorkoutService, userService usecase.UserSe
 	api := r.Group("/api")
 
 	// Add handlers here
+	handler.NewExerciseHandler(api, exerciseService)
 	handler.NewWorkoutHandler(api, workoutService)
 	handler.NewUserHandler(api, userService)
 

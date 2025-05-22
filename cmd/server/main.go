@@ -36,17 +36,20 @@ func main() {
 		panic(err)
 	}
 
+	exerciseRepo := postgres.NewExerciseRepo(db)
+
 	workoutPlanRepo := postgres.NewWorkoutPlanRepo(db)
 	workoutCycleRepo := postgres.NewWorkoutCycleRepo(db)
 	workoutRepo := postgres.NewWorkoutRepo(db)
-	exerciseRepo := postgres.NewExerciseRepo(db)
+	workoutExerciseRepo := postgres.NewWorkoutExerciseRepo(db)
 
 	userRepo := postgres.NewUserRepo(db)
 	profileRepo := postgres.NewProfileRepo(db)
 
-	var workoutService usecase.WorkoutService = workout.NewService(workoutPlanRepo, workoutCycleRepo, workoutRepo, exerciseRepo)
-	var userService usecase.UserService = user.NewService(userRepo, profileRepo)
+	var exerciseService usecase.ExerciseService = workout.NewExerciseService(exerciseRepo)
+	var workoutService usecase.WorkoutService = workout.NewWorkoutService(workoutPlanRepo, workoutCycleRepo, workoutRepo, workoutExerciseRepo)
+	var userService usecase.UserService = user.NewUserService(userRepo, profileRepo)
 
-	server := http.NewServer(workoutService, userService)
+	server := http.NewServer(exerciseService, workoutService, userService)
 	server.Run(":8080")
 }
