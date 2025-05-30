@@ -14,6 +14,8 @@ type WorkoutCycleRepository interface {
 	Create(ctx context.Context, wc *WorkoutCycle) error
 	GetByID(ctx context.Context, id uint) (*WorkoutCycle, error)
 	GetByWorkoutPlanID(ctx context.Context, workoutPlanID uint) ([]*WorkoutCycle, error)
+	GetByPlanIDAndWeek(ctx context.Context, planID uint, week int) (*WorkoutCycle, error)
+	GetMaxWeekNumberByPlanID(ctx context.Context, workoutPlanID uint) (int, error)
 	Update(ctx context.Context, wc *WorkoutCycle) error
 	Delete(ctx context.Context, id uint) error
 }
@@ -21,6 +23,7 @@ type WorkoutCycleRepository interface {
 
 type WorkoutRepository interface {
 	Create(ctx context.Context, w *Workout) error
+	BulkCreate(ctx context.Context, workouts []*Workout) error
 	GetByID(ctx context.Context, id uint) (*Workout, error)
 	GetByWorkoutCycleID(ctx context.Context, workoutCycleID uint) ([]*Workout, error)
 	Update(ctx context.Context, w *Workout) error

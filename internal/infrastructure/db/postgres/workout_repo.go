@@ -24,6 +24,10 @@ func (r *WorkoutRepo) Create(ctx context.Context, w *workout.Workout) error {
 	return r.db.WithContext(ctx).Create(w).Error
 }
 
+func (r *WorkoutRepo) BulkCreate(ctx context.Context, workouts []*workout.Workout) error {
+	return r.db.WithContext(ctx).Create(&workouts).Error
+}
+
 func (r *WorkoutRepo) GetByID(ctx context.Context, id uint) (*workout.Workout, error) {
 	var w workout.Workout
 	if err := r.db.WithContext(ctx).

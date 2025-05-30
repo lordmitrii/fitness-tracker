@@ -2,6 +2,9 @@ package workout
 
 import (
 	"context"
+	"fmt"
+	"time"
+
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 )
 
@@ -39,9 +42,17 @@ func (s *workoutServiceImpl) GetWorkoutPlanByID(ctx context.Context, id uint) (*
         }
     }
 
+	maxWeek, err := s.workoutCycleRepo.GetMaxWeekNumberByPlanID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	nextWeek := maxWeek + 1
+
 	wc := &workout.WorkoutCycle{
 		WorkoutPlanID: id,
-		Name: "New Cycle",
+		WeekNumber:    nextWeek,
+		Name: fmt.Sprintf("Week #%d", nextWeek),
 	}
 
 	err = s.CreateWorkoutCycle(ctx, wc)
@@ -68,8 +79,55 @@ func (s *workoutServiceImpl) CreateWorkoutCycle(ctx context.Context, wc *workout
 }
 
 func (s *workoutServiceImpl) GetWorkoutCycleByID(ctx context.Context, id uint) (*workout.WorkoutCycle, error) {
-	return s.workoutCycleRepo.GetByID(ctx, id)
+	cycle, err := s.workoutCycleRepo.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(cycle.Workouts) != 0 {
+		return cycle, nil
+	}
+
+	previousWeek := cycle.WeekNumber - 1
+	if previousWeek < 1 {
+		return cycle, nil 
+	}
+
+	prevCycle, err := s.workoutCycleRepo.GetByPlanIDAndWeek(ctx, cycle.WorkoutPlanID, previousWeek)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(prevCycle.Workouts) == 0 {
+		return cycle, nil
+	}
+
+	var newWorkouts []*workout.Workout
+	for _, w := range prevCycle.Workouts {
+		newWorkout := &workout.Workout{
+			Name:          w.Name,
+			WorkoutCycleID: cycle.ID,
+			Index:         w.Index,
+			Date:          time.Now().AddDate(0, 0, w.Index),
+			Completed:     false,
+		}
+		newWorkouts = append(newWorkouts, newWorkout)
+	}
+
+	// Save new workouts
+	if err := s.workoutRepo.BulkCreate(ctx, newWorkouts); err != nil {
+		return nil, err
+	}
+
+	// Reload cycle with workouts
+	cycle, err = s.workoutCycleRepo.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return cycle, nil
 }
+
 
 func (s *workoutServiceImpl) GetWorkoutCyclesByWorkoutPlanID(ctx context.Context, workoutPlanID uint) ([]*workout.WorkoutCycle, error) {
 	return s.workoutCycleRepo.GetByWorkoutPlanID(ctx, workoutPlanID)

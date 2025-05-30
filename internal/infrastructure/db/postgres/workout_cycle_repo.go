@@ -20,10 +20,20 @@ func (r *WorkoutCycleRepo) Create(ctx context.Context, wc *workout.WorkoutCycle)
 
 func (r *WorkoutCycleRepo) GetByID(ctx context.Context, id uint) (*workout.WorkoutCycle, error) {
 	var wc workout.WorkoutCycle
-	if err := r.db.WithContext(ctx).Preload("Workouts").First(&wc, id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("Workouts", func(db *gorm.DB) *gorm.DB {return db.Order("index ASC").Order("id ASC")}).First(&wc, id).Error; err != nil {
 		return nil, err
 	}
 	return &wc, nil
+}
+
+func (r *WorkoutCycleRepo) GetByPlanIDAndWeek(ctx context.Context, planID uint, week int) (*workout.WorkoutCycle, error) {
+	var cycle workout.WorkoutCycle
+	err := r.db.WithContext(ctx).
+		Preload("Workouts", func(db *gorm.DB) *gorm.DB {return db.Order("index ASC").Order("id ASC")}).
+		Where("workout_plan_id = ? AND week_number = ?", planID, week).
+		First(&cycle).Error
+
+	return &cycle, err
 }
 
 func (r *WorkoutCycleRepo) GetByWorkoutPlanID(ctx context.Context, workoutPlanID uint) ([]*workout.WorkoutCycle, error) {
@@ -32,6 +42,17 @@ func (r *WorkoutCycleRepo) GetByWorkoutPlanID(ctx context.Context, workoutPlanID
 		return nil, err
 	}
 	return workoutCycles, nil
+}
+
+func (r *WorkoutCycleRepo) GetMaxWeekNumberByPlanID(ctx context.Context, planID uint) (int, error) {
+	var max int
+	err := r.db.WithContext(ctx).
+		Model(&workout.WorkoutCycle{}).
+		Where("workout_plan_id = ?", planID).
+		Select("COALESCE(MAX(week_number), 0)").
+		Scan(&max).Error
+
+	return max, err
 }
 
 func (r *WorkoutCycleRepo) Update(ctx context.Context, wc *workout.WorkoutCycle) error {
