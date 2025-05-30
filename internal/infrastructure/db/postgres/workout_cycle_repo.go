@@ -35,7 +35,7 @@ func (r *WorkoutCycleRepo) GetByWorkoutPlanID(ctx context.Context, workoutPlanID
 }
 
 func (r *WorkoutCycleRepo) Update(ctx context.Context, wc *workout.WorkoutCycle) error {
-	return r.db.WithContext(ctx).Save(wc).Error
+	return r.db.WithContext(ctx).Model(&workout.WorkoutCycle{ID: wc.ID}).Updates(wc).Error
 }
 
 func (r *WorkoutCycleRepo) Delete(ctx context.Context, id uint) error {

@@ -2,7 +2,6 @@ package workout
 
 import (
 	"context"
-
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 )
 
@@ -27,7 +26,29 @@ func (s *workoutServiceImpl) CreateWorkoutPlan(ctx context.Context, wp *workout.
 }
 
 func (s *workoutServiceImpl) GetWorkoutPlanByID(ctx context.Context, id uint) (*workout.WorkoutPlan, error) {
-	return s.workoutPlanRepo.GetByID(ctx, id)
+	plan, err := s.workoutPlanRepo.GetByID(ctx, id)
+    if err != nil {
+        return nil, err
+    }
+	
+
+    for _, c := range plan.WorkoutCycles {
+        if !c.Completed {
+            plan.CurrentCycleID = c.ID
+            return plan, nil
+        }
+    }
+
+	wc := &workout.WorkoutCycle{
+		WorkoutPlanID: id,
+		Name: "New Cycle",
+	}
+
+	err = s.CreateWorkoutCycle(ctx, wc)
+	plan.CurrentCycleID = wc.ID
+
+	return plan, err
+    
 }
 
 func (s *workoutServiceImpl) GetWorkoutPlansByUserID(ctx context.Context, userID uint) ([]*workout.WorkoutPlan, error) {

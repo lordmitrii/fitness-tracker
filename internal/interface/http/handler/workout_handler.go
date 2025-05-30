@@ -29,11 +29,11 @@ func NewWorkoutHandler(r *gin.RouterGroup, svc usecase.WorkoutService) {
 		wp.PUT("/:id", h.UpdateWorkoutPlan)
 		wp.DELETE("/:id", h.DeleteWorkoutPlan)
 
-		wp.POST("/:id/workouts-cycles", h.AddWorkoutCycleToWorkoutPlan)
-		wp.GET("/:id/workouts-cycles", h.GetWorkoutCyclesByWorkoutPlanID)
+		wp.POST("/:id/workout-cycles", h.AddWorkoutCycleToWorkoutPlan)
+		wp.GET("/:id/workout-cycles", h.GetWorkoutCyclesByWorkoutPlanID)
 
 		wp.GET("/:id/workout-cycles/:cycleID", h.GetWorkoutCycleByID)
-		wp.PUT("/:id/workout-cycles/:cycleID", h.UpdateWorkoutCycle)
+		wp.PATCH("/:id/workout-cycles/:cycleID", h.UpdateWorkoutCycle)
 		wp.DELETE("/:id/workout-cycles/:cycleID", h.DeleteWorkoutCycle)
 
 		wp.POST("/:id/workout-cycles/:cycleID/workouts", h.AddWorkoutToWorkoutCycle)
