@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../api";
+import { useNavigate } from "react-router-dom";
 
 
 const WorkoutPlans = () => {
-  const [workouts, setWorkouts] = useState(null);
+  const [workouts, setWorkouts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     api.
@@ -27,7 +29,8 @@ const WorkoutPlans = () => {
       <h1 className="text-2xl font-bold mb-4">Workout Plans</h1>
       {loading && <p>Loading...</p>}
       {error && <p>Error: {error.message}</p>}
-      {workouts && (
+      {workouts.length > 0? (
+        <>
         <ul>
           {workouts.map((workout) => (
             <li key={workout.id}>
@@ -36,6 +39,27 @@ const WorkoutPlans = () => {
             </li>
           ))}
         </ul>
+        <button
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition-colors"
+                onClick={() => {
+                  navigate("/create-workout-plan");
+                }}
+              >
+                Create
+          </button>
+          </>
+      ) : (
+        <div className="flex flex-col items-start space-y-4">
+              <p className="text-gray-700">Workout plans not found. Try creating it:</p>
+              <button
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition-colors"
+                onClick={() => {
+                  navigate("/create-workout-plan");
+                }}
+              >
+                Create
+              </button>
+            </div>
       )}
     </div>
   )

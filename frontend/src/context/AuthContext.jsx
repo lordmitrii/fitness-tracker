@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (email, password) => {
     try {
       const response = await registerRequest(email, password);
-      return response.data;
+      return response;
     } catch (error) {
       return {
         message: error.response?.data?.message || "Registration failed",

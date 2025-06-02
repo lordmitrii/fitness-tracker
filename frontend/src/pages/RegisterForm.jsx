@@ -11,10 +11,12 @@ const RegisterForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const data = await register(email, password);
-    if (!data.error && data.code === 201) {
+    const resp = await register(email, password);
+    if (resp.status === 201) {
+      
       navigate("/login");
     } else {
+      console.log(resp);
       setError(data.message || "Registration failed");
     }
   };

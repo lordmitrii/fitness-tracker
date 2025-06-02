@@ -7,8 +7,8 @@ import (
 type WorkoutCycle struct {
 	ID            uint        `gorm:"primaryKey" json:"id"`
 	Name          string      `json:"name"`
-	WorkoutPlanID uint        `json:"workout_plan_id" gorm:"constraint:OnDelete:CASCADE;"`
-	WeekNumber    int         `json:"week_number" gorm:"default:1;uniqueIndex"`
+	WorkoutPlanID uint        `json:"workout_plan_id" gorm:"constraint:OnDelete:CASCADE;uniqueIndex:idx_workout_plan_week_number;"`
+	WeekNumber    int         `json:"week_number" gorm:"default:1;uniqueIndex:idx_workout_plan_week_number;"`
 	Workouts      []*Workout  `json:"workouts"`
 	Completed	  bool        `json:"completed" gorm:"default:false"`
 	

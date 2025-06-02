@@ -8,6 +8,7 @@ import RegisterForm from "./pages/RegisterForm";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import { CreateProfileForm, UpdateProfileForm } from "./pages/ProfileForm";
+import { CreateWorkoutPlanForm, UpdateWorkoutPlanForm } from "./pages/WorkoutPlanForm";
 import WorkoutPlans from "./pages/WorkoutPlans";
 import WorkoutPlanSingle from "./pages/WorkoutPlanSingle";
 import WorkoutCycle from "./pages/WorkoutCycle";
@@ -27,14 +28,17 @@ function App() {
             {/* Private Route */}
             <Route element={<PrivateRoute />}>
               <Route path="/profile" element={<Profile />} />
+              <Route path="/create-profile" element={<CreateProfileForm />} />
+              <Route path="/update-profile" element={<UpdateProfileForm />} />
 
               <Route path="/workout-plans" element={<WorkoutPlans />} />
+              <Route path="/create-workout-plan" element={<CreateWorkoutPlanForm />} />
+              <Route path="/update-workout-plan" element={<UpdateWorkoutPlanForm />} />
+
               <Route path="/workout-plans/:planID" element={<WorkoutPlanSingle />} />
               <Route path="/workout-plans/:planID/workout-cycles/:cycleID" element={<WorkoutCycle />} />
               <Route path="/workout-plans/:planID/workout-cycles/:cycleID/workouts/:workoutID" element={<Workout />} />
 
-              <Route path="/create-profile" element={<CreateProfileForm />} />
-              <Route path="/update-profile" element={<UpdateProfileForm />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

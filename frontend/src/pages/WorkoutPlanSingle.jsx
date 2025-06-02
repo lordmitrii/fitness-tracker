@@ -11,7 +11,7 @@ const WorkoutPlanSingle = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useState(() => {
+  useEffect(() => {
     api
       .get(`/workout-plans/${planID}`)
       .then((response) => {
