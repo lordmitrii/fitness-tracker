@@ -47,7 +47,7 @@ type (
 		Register(ctx context.Context, email, password string) error
 		Authenticate(ctx context.Context, email, password string) (*user.User, error)
 		CreateProfile(ctx context.Context, p *user.Profile) error
-		DeleteUser(ctx context.Context, id uint) error
+		// DeleteUser(ctx context.Context, id uint) error
 		GetProfile(ctx context.Context, userID uint) (*user.Profile, error)
 		UpdateProfile(ctx context.Context, p *user.Profile) error
 		DeleteProfile(ctx context.Context, id uint) error
