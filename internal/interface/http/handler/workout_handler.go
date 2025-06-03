@@ -26,7 +26,7 @@ func NewWorkoutHandler(r *gin.RouterGroup, svc usecase.WorkoutService) {
 		wp.POST("", h.CreateWorkoutPlan)
 		wp.GET("", h.GetWorkoutPlansByUserID)
 		wp.GET("/:id", h.GetWorkoutPlan)
-		wp.PUT("/:id", h.UpdateWorkoutPlan)
+		wp.PATCH("/:id", h.UpdateWorkoutPlan)
 		wp.DELETE("/:id", h.DeleteWorkoutPlan)
 
 		wp.POST("/:id/workout-cycles", h.AddWorkoutCycleToWorkoutPlan)
@@ -40,14 +40,14 @@ func NewWorkoutHandler(r *gin.RouterGroup, svc usecase.WorkoutService) {
 		wp.GET("/:id/workout-cycles/:cycleID/workouts", h.GetWorkoutsByWorkoutCycleID)
 
 		wp.GET("/:id/workout-cycles/:cycleID/workouts/:workoutID", h.GetWorkoutByID)
-		wp.PUT("/:id/workout-cycles/:cycleID/workouts/:workoutID", h.UpdateWorkout)
+		wp.PATCH("/:id/workout-cycles/:cycleID/workouts/:workoutID", h.UpdateWorkout)
 		wp.DELETE("/:id/workout-cycles/:cycleID/workouts/:workoutID", h.DeleteWorkout)
 
 		wp.POST("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises", h.AddWorkoutExerciseToWorkout)
 		wp.GET("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises", h.GetWorkoutExercisesByWorkoutID)
 
 		wp.GET("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID", h.GetWorkoutExerciseByID)
-		wp.PUT("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID", h.UpdateWorkoutExercise)
+		wp.PATCH("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID", h.UpdateWorkoutExercise)
 		wp.DELETE("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID", h.DeleteWorkoutExercise)
 
 	}

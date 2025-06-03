@@ -36,11 +36,34 @@ const WorkoutPlans = () => {
             <li key={workout.id}>
               <Link className="text-2xl mb-4" to={`/workout-plans/${workout.id}`}>Title: {workout.name}</Link>
               <p className="mb-4">Created at: {workout.created_at}</p>
+              <button
+                className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-2 px-4 rounded transition-colors"
+                onClick={() => {
+                  navigate(`/update-workout-plan/${workout.id}`);
+                }}
+              >
+                Update
+              </button>
+              <button
+                className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded transition-colors ml-2"
+                onClick={() => {
+                  api
+                    .delete(`/workout-plans/${workout.id}`)
+                    .then(() => {
+                      setWorkouts(workouts.filter((w) => w.id !== workout.id));
+                    })
+                    .catch((error) => {
+                      console.error("Error deleting workout plan:", error);
+                    });
+                }}
+              >
+                Delete
+              </button>
             </li>
           ))}
         </ul>
         <button
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition-colors"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition-colors mt-4"
                 onClick={() => {
                   navigate("/create-workout-plan");
                 }}

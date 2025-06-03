@@ -3,7 +3,7 @@ import api from "../api";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 
-const WorkoutPlanForm = ({ initialData = {}, onSubmit, submitLabel }) => {
+const WorkoutForm = ({ initialData = {}, onSubmit, submitLabel,  }) => {
   const [formData, setFormData] = useState({
     name: "",
     ...initialData,
@@ -18,7 +18,7 @@ const WorkoutPlanForm = ({ initialData = {}, onSubmit, submitLabel }) => {
   const validate = () => {
     const newErrors = {};
     if (!formData.name.trim()) {
-      newErrors.name = "Workout plan name is required.";
+      newErrors.name = "Workout name is required.";
     }
     return newErrors;
   };
@@ -33,7 +33,6 @@ const WorkoutPlanForm = ({ initialData = {}, onSubmit, submitLabel }) => {
 
     const payload = {
       name: formData.name.trim(),
-      
     };
 
     onSubmit(payload);
@@ -51,7 +50,7 @@ const WorkoutPlanForm = ({ initialData = {}, onSubmit, submitLabel }) => {
               htmlFor="name"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Workout Plan Name
+              Workout Name
             </label>
             <input
               type="text"
@@ -79,56 +78,51 @@ const WorkoutPlanForm = ({ initialData = {}, onSubmit, submitLabel }) => {
   );
 };
 
-// Create workout plan page
-export const CreateWorkoutPlanForm = () => {
+// Create workout page
+export const CreateWorkoutForm = () => {
+  const { planID, cycleID } = useParams();
   const navigate = useNavigate();
 
   const handleCreate = (payload) => {
     api
-      .post("/workout-plans", payload)
+      .post(`/workout-plans/${planID}/workout-cycles/${cycleID}/workouts`, payload)
       .then(() => {
-        navigate("/workout-plans");
+        navigate(`/workout-plans/${planID}`);
       })
       .catch((error) => {
-        console.error("Error creating workout plan:", error);
+        console.error("Error creating workout:", error);
       });
   };
 
-  return (
-    <WorkoutPlanForm
-      onSubmit={handleCreate}
-      submitLabel="Create Workout Plan"
-    />
-  );
+  return <WorkoutForm onSubmit={handleCreate} submitLabel="Create Workout" />;
 };
 
-// Update workout plan page 
-export const UpdateWorkoutPlanForm = () => {
-  const { planID } = useParams();
+// Update workout page
+export const UpdateWorkoutForm = () => {
+  const { planID, cycleID, workoutID } = useParams();
   const navigate = useNavigate();
   const [initialData, setInitialData] = useState(null);
 
   useEffect(() => {
     api
-      .get(`/workout-plans/${planID}`)
+      .get(`/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}`)
       .then((response) => {
         const data = response.data;
         setInitialData({
           name: data.name || "",
         });
-        console.log("Fetched initial data:", data);
       })
-      .catch((error) => console.error("Error fetching workout plan:", error));
+      .catch((error) => console.error("Error fetching workout:", error));
   }, []);
 
   const handleUpdate = (payload) => {
     api
-      .patch(`/workout-plans/${planID}`, payload)
+      .patch(`/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}`, payload)
       .then(() => {
-        navigate("/workout-plans");
+        navigate(`/workout-plans/${planID}`);
       })
       .catch((error) => {
-        console.error("Error updating workout plan:", error);
+        console.error("Error updating workout:", error);
       });
   };
 
@@ -141,10 +135,10 @@ export const UpdateWorkoutPlanForm = () => {
   }
 
   return (
-    <WorkoutPlanForm
+    <WorkoutForm
       initialData={initialData}
       onSubmit={handleUpdate}
-      submitLabel="Update Workout Plan"
+      submitLabel="Update Workout"
     />
   );
 };

@@ -43,7 +43,14 @@ func (r *ExerciseRepo) GetAll(ctx context.Context) ([]*workout.Exercise, error) 
 }
 
 func (r *ExerciseRepo) Update(ctx context.Context, e *workout.Exercise) error {
-	return r.db.WithContext(ctx).Save(e).Error
+	res := r.db.WithContext(ctx).Model(&workout.Exercise{}).Where("id = ?", e.ID).Updates(e)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
 }
 
 func (r *ExerciseRepo) Delete(ctx context.Context, id uint) error {

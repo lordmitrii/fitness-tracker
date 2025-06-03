@@ -16,7 +16,6 @@ const RegisterForm = () => {
       
       navigate("/login");
     } else {
-      console.log(resp);
       setError(data.message || "Registration failed");
     }
   };

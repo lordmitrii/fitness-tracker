@@ -1,8 +1,10 @@
 import { useParams, Link } from "react-router-dom";
-import { use, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import api from "../api";
+import { useNavigate } from "react-router-dom";
 
 const WorkoutPlanSingle = () => {
+  const navigate = useNavigate();
   const { planID } = useParams();
   const [workoutPlan, setWorkoutPlan] = useState(null);
   const [currentWorkoutCycle, setCurrentWorkoutCycle] = useState(null);
@@ -37,20 +39,23 @@ const WorkoutPlanSingle = () => {
       });
   }, [planID]);
 
-    const handleCompleteToggle = () => {
-        setIsComplete(!isComplete);
-    };
+  const handleCompleteToggle = () => {
+    setIsComplete(!isComplete);
+  };
 
-    useEffect(() => {
-        if (!currentWorkoutCycle) return;
-        api.patch(`/workout-plans/${planID}/workout-cycles/${currentWorkoutCycle.id}`, {
-            completed: isComplete,
-        })
-        .catch((error) => {
-            console.error("Error updating workout plan:", error);
-        });
-    }, [isComplete, planID]);
-
+  useEffect(() => {
+    if (!currentWorkoutCycle) return;
+    api
+      .patch(
+        `/workout-plans/${planID}/workout-cycles/${currentWorkoutCycle.id}`,
+        {
+          completed: isComplete,
+        }
+      )
+      .catch((error) => {
+        console.error("Error updating workout plan:", error);
+      });
+  }, [isComplete, planID]);
 
   if (loading) {
     return <p>Loading...</p>;
@@ -60,48 +65,66 @@ const WorkoutPlanSingle = () => {
     return <p>Error: {error.message}</p>;
   }
 
-return (
+  return (
     <div className="container mx-auto px-4 py-6">
-        {workoutPlan && (
+      {workoutPlan && (
+        <>
+          <h1 className="text-2xl font-bold mb-4">
+            Workout Plan: {workoutPlan.name}
+          </h1>
+          {currentWorkoutCycle && (
             <>
-                <h1 className="text-2xl font-bold mb-4">
-                    Workout Plan: {workoutPlan.name}
-                </h1>
-                {currentWorkoutCycle && (
-                    <>
-                        <h2 className="text-xl mb-2">
-                            Current cycle: {currentWorkoutCycle.name}
-                        </h2>
-                        {workouts && (
-                            <ul>
-                                {workouts.map((workout) => (
-                                    <li key={workout.id}>
-                                        <Link
-                                            className="text-2xl mb-4"
-                                            to={`/workout-plans/${planID}/workout-cycles/${currentWorkoutCycle.id}/workouts/${workout.id}`}
-                                        >
-                                            Title: {workout.name}
-                                        </Link>
-                                        <p className="mb-4">Created at: {workout.created_at}</p>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                        <label className="flex items-center mt-4">
-                            <input
-                                type="checkbox"
-                                className="mr-2"
-                                checked={isComplete}
-                                onChange={handleCompleteToggle}
-                            />
-                            <span>Mark as complete</span>
-                        </label>
-                    </>
-                )}
+              <h2 className="text-xl mb-2">
+                Current cycle: {currentWorkoutCycle.name}
+              </h2>
+              {workouts && (
+                <ul>
+                  {workouts.map((workout) => (
+                    <li key={workout.id}>
+                      <Link
+                        className="text-2xl mb-4"
+                        to={`/workout-plans/${planID}/workout-cycles/${currentWorkoutCycle.id}/workouts/${workout.id}`}
+                      >
+                        Title: {workout.name}
+                      </Link>
+                      <p className="mb-4">Created at: {workout.created_at}</p>
+                      <button
+                        className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-2 px-4 rounded transition-colors mr-2"
+                        onClick={() => {
+                          navigate(
+                            `/workout-plans/${planID}/workout-cycles/${currentWorkoutCycle.id}/update-workout/${workout.id}`
+                          );
+                        }}
+                      >
+                        Update
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <button
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition-colors mt-4"
+                onClick={() => {
+                  navigate(`/workout-plans/${planID}/workout-cycles/${currentWorkoutCycle.id}/create-workout`);
+                }}
+              >
+                Create
+              </button>
+              <label className="flex items-center mt-4">
+                <input
+                  type="checkbox"
+                  className="mr-2"
+                  checked={isComplete}
+                  onChange={handleCompleteToggle}
+                />
+                <span>Mark as complete</span>
+              </label>
             </>
-        )}
+          )}
+        </>
+      )}
     </div>
-);
+  );
 };
 
 export default WorkoutPlanSingle;

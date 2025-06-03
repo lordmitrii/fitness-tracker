@@ -35,7 +35,14 @@ func (r *WorkoutPlanRepo) GetByUserID(ctx context.Context, userID uint) ([]*work
 }
 
 func (r *WorkoutPlanRepo) Update(ctx context.Context, wp *workout.WorkoutPlan) error {
-	return r.db.WithContext(ctx).Save(wp).Error
+	res := r.db.WithContext(ctx).Model(&workout.WorkoutPlan{}).Where("id = ?", wp.ID).Updates(wp)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
 }
 
 func (r *WorkoutPlanRepo) Delete(ctx context.Context, id uint) error {

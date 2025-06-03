@@ -9,9 +9,9 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import { CreateProfileForm, UpdateProfileForm } from "./pages/ProfileForm";
 import { CreateWorkoutPlanForm, UpdateWorkoutPlanForm } from "./pages/WorkoutPlanForm";
+import { CreateWorkoutForm, UpdateWorkoutForm } from "./pages/WorkoutForm";
 import WorkoutPlans from "./pages/WorkoutPlans";
 import WorkoutPlanSingle from "./pages/WorkoutPlanSingle";
-import WorkoutCycle from "./pages/WorkoutCycle";
 import Workout from "./pages/Workout";
 import PrivateRoute from "./components/PrivateRoute";
 
@@ -33,10 +33,12 @@ function App() {
 
               <Route path="/workout-plans" element={<WorkoutPlans />} />
               <Route path="/create-workout-plan" element={<CreateWorkoutPlanForm />} />
-              <Route path="/update-workout-plan" element={<UpdateWorkoutPlanForm />} />
+              <Route path="/update-workout-plan/:planID" element={<UpdateWorkoutPlanForm />} />
 
               <Route path="/workout-plans/:planID" element={<WorkoutPlanSingle />} />
-              <Route path="/workout-plans/:planID/workout-cycles/:cycleID" element={<WorkoutCycle />} />
+              <Route path="/workout-plans/:planID/workout-cycles/:cycleID/create-workout" element={<CreateWorkoutForm />} />
+              <Route path="/workout-plans/:planID/workout-cycles/:cycleID/update-workout/:workoutID" element={<UpdateWorkoutForm />} />
+
               <Route path="/workout-plans/:planID/workout-cycles/:cycleID/workouts/:workoutID" element={<Workout />} />
 
             </Route>
