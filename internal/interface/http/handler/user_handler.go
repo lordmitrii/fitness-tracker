@@ -2,7 +2,7 @@ package handler
 
 import (
 	"net/http"
-	// "strconv"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -24,6 +24,7 @@ func NewUserHandler(r *gin.RouterGroup, svc usecase.UserService) {
 		us.POST("/login", h.Login)
 		us.POST("/logout", h.Logout)
 		us.POST("/refresh", h.RefreshToken)
+		us.DELETE("/:id", h.DeleteUser)
 
 		protected := us.Group("/")
 		protected.Use(middleware.JWTMiddleware())
@@ -124,6 +125,17 @@ func (h *UserHandler) RefreshToken(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"access_token": accessToken})
+}
+
+func (h *UserHandler) DeleteUser(c *gin.Context) {
+	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	
+
+	if err := h.svc.DeleteUser(c.Request.Context(), uint(id)); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.Status(http.StatusNoContent)
 }
 
 func (h *UserHandler) GetProfile(c *gin.Context) {

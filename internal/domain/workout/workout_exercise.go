@@ -4,7 +4,7 @@ import "time"
 
 type WorkoutExercise struct {
 	ID        uint    `gorm:"primaryKey" json:"id"`
-	WorkoutID uint    `gorm:"constraint:OnDelete:CASCADE;" json:"workout_id"`
+	WorkoutID uint    `json:"workout_id"`
 	Index	  int     `json:"index"`
 
 	ExerciseID uint    `json:"exercise_id"`
