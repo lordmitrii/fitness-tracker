@@ -16,6 +16,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/user"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/workout"
@@ -27,7 +29,12 @@ import (
 
 func main() {
 	// repo := inmemory.NewWorkoutRepo()
-	db, err := postgres.NewPostgresDB("postgres://username:password@localhost:5432/fitness_tracker?sslmode=disable")
+	var dsn string
+	if dsn = os.Getenv("DATABASE_URL"); dsn == "" {
+	   	dsn = "postgres://username:password@localhost:5432/fitness_tracker?sslmode=disable" // Default DSN if not set
+	}
+
+	db, err := postgres.NewPostgresDB(dsn)
 	if err != nil {
 		panic(err)
 	}
@@ -51,5 +58,10 @@ func main() {
 	var userService usecase.UserService = user.NewUserService(userRepo, profileRepo)
 
 	server := http.NewServer(exerciseService, workoutService, userService)
-	server.Run(":8080")
+
+	var port string
+	if port = os.Getenv("PORT"); port == "" {
+		port = "8080" // Default port if not set
+	}	
+	server.Run(":" + port) 
 }
