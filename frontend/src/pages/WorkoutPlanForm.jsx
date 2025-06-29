@@ -116,7 +116,6 @@ export const UpdateWorkoutPlanForm = () => {
         setInitialData({
           name: data.name || "",
         });
-        console.log("Fetched initial data:", data);
       })
       .catch((error) => console.error("Error fetching workout plan:", error));
   }, []);

@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 
 const WorkoutPlans = () => {
-  const [workouts, setWorkouts] = useState([]);
+  const [workoutPlans, setWorkoutPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -14,11 +14,11 @@ const WorkoutPlans = () => {
     api.
       get("/workout-plans")
       .then((response) => {
-        setWorkouts(response.data);
+        setWorkoutPlans(response.data);
         setLoading(false);
       })
       .catch((error) => {
-        console.error("Error fetching workouts:", error);
+        console.error("Error fetching workout plans:", error);
         setError(error);
         setLoading(false);
       });
@@ -29,17 +29,17 @@ const WorkoutPlans = () => {
       <h1 className="text-2xl font-bold mb-4">Workout Plans</h1>
       {loading && <p>Loading...</p>}
       {error && <p>Error: {error.message}</p>}
-      {workouts.length > 0? (
+      {workoutPlans.length > 0? (
         <>
         <ul>
-          {workouts.map((workout) => (
-            <li key={workout.id}>
-              <Link className="text-2xl mb-4" to={`/workout-plans/${workout.id}`}>Title: {workout.name}</Link>
-              <p className="mb-4">Created at: {workout.created_at}</p>
+          {workoutPlans.map((workoutPlan) => (
+            <li key={workoutPlan.id}>
+              <Link className="text-2xl mb-4" to={`/workout-plans/${workoutPlan.id}`}>Title: {workoutPlan.name}</Link>
+              <p className="mb-4">Created at: {workoutPlan.created_at}</p>
               <button
                 className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-2 px-4 rounded transition-colors"
                 onClick={() => {
-                  navigate(`/update-workout-plan/${workout.id}`);
+                  navigate(`/update-workout-plan/${workoutPlan.id}`);
                 }}
               >
                 Update
@@ -47,10 +47,13 @@ const WorkoutPlans = () => {
               <button
                 className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded transition-colors ml-2"
                 onClick={() => {
+                  if (!window.confirm(`Are you sure you want to delete workout plan "${workoutPlan.name}"? This action cannot be undone.`)) {
+                    return;
+                  }
                   api
-                    .delete(`/workout-plans/${workout.id}`)
+                    .delete(`/workout-plans/${workoutPlan.id}`)
                     .then(() => {
-                      setWorkouts(workouts.filter((w) => w.id !== workout.id));
+                      setWorkoutPlans(workoutPlans.filter((wp) => wp.id !== workoutPlan.id));
                     })
                     .catch((error) => {
                       console.error("Error deleting workout plan:", error);

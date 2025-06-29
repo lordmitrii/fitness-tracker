@@ -1,7 +1,6 @@
-import { useParams, Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { useState, useEffect, Fragment } from "react";
 import api from "../api";
-import { useNavigate } from "react-router-dom";
 
 const WorkoutPlanSingle = () => {
   const navigate = useNavigate();
@@ -14,23 +13,23 @@ const WorkoutPlanSingle = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    setLoading(true);
     api
       .get(`/workout-plans/${planID}`)
       .then((response) => {
         setWorkoutPlan(response.data);
-
-        var currentCycle = response.data.current_cycle_id;
+        const currentCycle = response.data.current_cycle_id;
         api
           .get(`/workout-plans/${planID}/workout-cycles/${currentCycle}`)
-          .then((response) => {
-            setCurrentWorkoutCycle(response.data);
-            setWorkouts(response.data.workouts);
+          .then((res) => {
+            setCurrentWorkoutCycle(res.data);
+            setWorkouts(res.data.workouts);
+            setLoading(false);
           })
           .catch((error) => {
-            console.error("Error fetching current workout cycle:", error);
             setError(error);
+            setLoading(false);
           });
-        setLoading(false);
       })
       .catch((error) => {
         console.error("Error fetching workout plan:", error);
@@ -39,86 +38,178 @@ const WorkoutPlanSingle = () => {
       });
   }, [planID]);
 
-  const handleCompleteToggle = () => {
-    setIsComplete(!isComplete);
-  };
+  const handleCompleteToggle = () => setIsComplete((prev) => !prev);
 
   useEffect(() => {
     if (!currentWorkoutCycle) return;
     api
       .patch(
         `/workout-plans/${planID}/workout-cycles/${currentWorkoutCycle.id}`,
-        {
-          completed: isComplete,
-        }
+        { completed: isComplete }
       )
       .catch((error) => {
-        console.error("Error updating workout plan:", error);
+        console.error("Error updating cycle completion status:", error);
+        setError(error);
       });
-  }, [isComplete, planID]);
+  }, [isComplete, planID, currentWorkoutCycle]);
 
-  if (loading) {
-    return <p>Loading...</p>;
-  }
-
-  if (error) {
-    return <p>Error: {error.message}</p>;
-  }
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error.message}</p>;
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="container mx-auto px-4 py-8">
       {workoutPlan && (
         <>
-          <h1 className="text-2xl font-bold mb-4">
-            Workout Plan: {workoutPlan.name}
-          </h1>
+          <h1 className="text-3xl font-bold mb-2">{workoutPlan.name}</h1>
           {currentWorkoutCycle && (
             <>
-              <h2 className="text-xl mb-2">
-                Current cycle: {currentWorkoutCycle.name}
+              <h2 className="text-xl text-gray-700 mb-6">
+                Cycle:{" "}
+                <span className="font-semibold">
+                  {currentWorkoutCycle.name}
+                </span>
               </h2>
-              {workouts && (
-                <ul>
-                  {workouts.map((workout) => (
-                    <li key={workout.id}>
-                      <Link
-                        className="text-2xl mb-4"
-                        to={`/workout-plans/${planID}/workout-cycles/${currentWorkoutCycle.id}/workouts/${workout.id}`}
+
+              {workouts && workouts.length > 0 ? (
+                <div className="space-y-8">
+                  {workouts
+                    .slice()
+                    .sort((a, b) => a.index - b.index)
+                    .map((workout) => (
+                      <div
+                        key={workout.id}
+                        className="rounded-2xl shadow-xl bg-white border border-gray-100 p-6 hover:shadow-2xl transition flex flex-col gap-3"
                       >
-                        Title: {workout.name}
-                      </Link>
-                      <p className="mb-4">Created at: {workout.created_at}</p>
-                      <button
-                        className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-2 px-4 rounded transition-colors mr-2"
-                        onClick={() => {
-                          navigate(
-                            `/workout-plans/${planID}/workout-cycles/${currentWorkoutCycle.id}/update-workout/${workout.id}`
-                          );
-                        }}
-                      >
-                        Update
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                          <div>
+                            <Link
+                              to={`/workout-plans/${planID}/workout-cycles/${currentWorkoutCycle.id}/workouts/${workout.id}`}
+                              className="text-2xl font-semibold text-blue-800 hover:underline"
+                            >
+                              {workout.name}
+                            </Link>
+                            <div className="text-gray-400 text-sm mt-1">
+                              Last updated:{" "}
+                              {new Date(
+                                workout.updated_at
+                              ).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <div className="mt-2 md:mt-0">
+                            <button
+                              className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors shadow mr-2"
+                              onClick={() =>
+                                navigate(
+                                  `/workout-plans/${planID}/workout-cycles/${currentWorkoutCycle.id}/update-workout/${workout.id}`
+                                )
+                              }
+                            >
+                              Update
+                            </button>
+                            <button
+                              className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors shadow"
+                              onClick={() => {
+                                if (
+                                  !window.confirm(
+                                    `Are you sure you want to delete workout "${workout.name}"? This action cannot be undone.`
+                                  )
+                                ) {
+                                  return;
+                                }
+                                api
+                                  .delete(`/workout-plans/${workout.id}/workout-cycles/${currentWorkoutCycle.id}/workouts/${workout.id}`)
+                                  .then(() => {
+                                    setWorkouts(
+                                      workouts.filter(
+                                        (w) => w.id !== workout.id
+                                      )
+                                    );
+                                  })
+                                  .catch((error) => {
+                                    alert("Error deleting workout: " + error.message);
+                                  });
+                              }}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+
+                        {workout.workout_exercises &&
+                          workout.workout_exercises.length > 0 && (
+                            <div className="mt-4 overflow-x-auto">
+                              <table className="min-w-full bg-gray-50 rounded-xl">
+                                <thead>
+                                  <tr>
+                                    <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b">
+                                      Exercise
+                                    </th>
+                                    <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b">
+                                      Sets
+                                    </th>
+                                    <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b">
+                                      Reps
+                                    </th>
+                                    <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b">
+                                      Weight
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {workout.workout_exercises
+                                    .slice()
+                                    .sort((a, b) => a.index - b.index)
+                                    .map((ex, idx) => (
+                                      <tr
+                                        key={ex.id}
+                                        className={
+                                          idx % 2 === 0
+                                            ? "bg-white border-b last:border-0"
+                                            : "bg-gray-100 border-b last:border-0"
+                                        }
+                                      >
+                                        <td className="py-2 px-4">
+                                          {ex.exercise.name}
+                                        </td>
+                                        <td className="py-2 px-4">{ex.sets}</td>
+                                        <td className="py-2 px-4">{ex.reps}</td>
+                                        <td className="py-2 px-4">
+                                          {ex.weight} kg
+                                        </td>
+                                      </tr>
+                                    ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                      </div>
+                    ))}
+                </div>
+              ) : (
+                <p className="text-gray-500">No workouts in this cycle yet.</p>
               )}
-              <button
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition-colors mt-4"
-                onClick={() => {
-                  navigate(`/workout-plans/${planID}/workout-cycles/${currentWorkoutCycle.id}/create-workout`);
-                }}
-              >
-                Create
-              </button>
-              <label className="flex items-center mt-4">
-                <input
-                  type="checkbox"
-                  className="mr-2"
-                  checked={isComplete}
-                  onChange={handleCompleteToggle}
-                />
-                <span>Mark as complete</span>
-              </label>
+
+              <div className="flex items-center gap-4 mt-10">
+                <button
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition"
+                  onClick={() =>
+                    navigate(
+                      `/workout-plans/${planID}/workout-cycles/${currentWorkoutCycle.id}/create-workout`
+                    )
+                  }
+                >
+                  + Create Workout
+                </button>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    className="form-checkbox accent-blue-600"
+                    checked={isComplete}
+                    onChange={handleCompleteToggle}
+                  />
+                  <span className="text-gray-700">Mark cycle as complete</span>
+                </label>
+              </div>
             </>
           )}
         </>
