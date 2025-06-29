@@ -8,7 +8,6 @@ import (
 	"gorm.io/gorm"
 )
 
-var ErrProfileNotFound = errors.New("profile not found")
 
 type ProfileRepo struct {
 	db *gorm.DB

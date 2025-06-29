@@ -8,8 +8,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// ErrNotFound is returned when a workout is not found.
-var ErrNotFound = errors.New("workout not found")
 
 // WorkoutRepo implements workout.Repository using PostgreSQL.
 type WorkoutRepo struct {

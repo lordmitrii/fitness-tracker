@@ -46,5 +46,12 @@ func (r *WorkoutPlanRepo) Update(ctx context.Context, wp *workout.WorkoutPlan) e
 }
 
 func (r *WorkoutPlanRepo) Delete(ctx context.Context, id uint) error {
-	return r.db.WithContext(ctx).Delete(&workout.WorkoutPlan{}, id).Error
+	res := r.db.WithContext(ctx).Delete(&workout.WorkoutPlan{}, id)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return ErrNotFound
+	}
+	return nil
 }
