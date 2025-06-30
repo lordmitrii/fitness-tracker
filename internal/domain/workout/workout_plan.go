@@ -13,7 +13,7 @@ type WorkoutPlan struct {
 	User   user.User  `json:"-" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
 	WorkoutCycles  []*WorkoutCycle `json:"workout_cycles" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	CurrentCycleID uint            `gorm:"-" json:"current_cycle_id,omitempty"`
+	CurrentCycleID uint            `json:"current_cycle_id,omitempty"`
 
 	CreatedAt time.Time `json:"created_at"   example:"2010-10-01T10:00:00Z"`
 	UpdatedAt time.Time `json:"updated_at"   example:"2010-10-01T10:00:00Z"`

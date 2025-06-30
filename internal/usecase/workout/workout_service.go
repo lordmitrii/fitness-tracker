@@ -33,30 +33,47 @@ func (s *workoutServiceImpl) GetWorkoutPlanByID(ctx context.Context, id uint) (*
     if err != nil {
         return nil, err
     }
-	
 
-    for _, c := range plan.WorkoutCycles {
-        if !c.Completed {
-            plan.CurrentCycleID = c.ID
-            return plan, nil
+	if plan.CurrentCycleID == 0 {
+        wc := &workout.WorkoutCycle{
+            WorkoutPlanID: id, 	
+            WeekNumber:    1,
+            Name:          "Week #1",
         }
+        if err := s.workoutCycleRepo.Create(ctx, wc); err != nil {
+            return nil, err
+        }
+        plan.CurrentCycleID = wc.ID
+		s.workoutPlanRepo.Update(ctx, plan)
+        return plan, nil
     }
+	
+	currentWorkoutCycle, err := s.workoutCycleRepo.GetByID(ctx, plan.CurrentCycleID)
 
-	maxWeek, err := s.workoutCycleRepo.GetMaxWeekNumberByPlanID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	nextWeek := maxWeek + 1
+	if !currentWorkoutCycle.Completed {
+		return plan, nil
+	} 
+	
+	nextWeek := currentWorkoutCycle.WeekNumber + 1
 
 	wc := &workout.WorkoutCycle{
 		WorkoutPlanID: id,
 		WeekNumber:    nextWeek,
 		Name: fmt.Sprintf("Week #%d", nextWeek),
+		PreviousCycleID: currentWorkoutCycle.ID,
 	}
 
-	err = s.CreateWorkoutCycle(ctx, wc)
+	err = s.workoutCycleRepo.Create(ctx, wc)
 	plan.CurrentCycleID = wc.ID
+
+	if err != nil {
+		return nil, err
+	}
+	err = s.workoutPlanRepo.Update(ctx, plan)
 
 	return plan, err
     
@@ -110,6 +127,7 @@ func (s *workoutServiceImpl) GetWorkoutCycleByID(ctx context.Context, id uint) (
 			Index:         w.Index,
 			Date:          time.Now().AddDate(0, 0, w.Index),
 			Completed:     false,
+			PreviousWorkoutID: w.ID,
 		}
 		newWorkouts = append(newWorkouts, newWorkout)
 	}

@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useState, useEffect, Fragment } from "react";
+import { useState, useEffect } from "react";
 import api from "../api";
 
 const WorkoutPlanSingle = () => {
@@ -117,7 +117,9 @@ const WorkoutPlanSingle = () => {
                                   return;
                                 }
                                 api
-                                  .delete(`/workout-plans/${workout.id}/workout-cycles/${currentWorkoutCycle.id}/workouts/${workout.id}`)
+                                  .delete(
+                                    `/workout-plans/${workout.id}/workout-cycles/${currentWorkoutCycle.id}/workouts/${workout.id}`
+                                  )
                                   .then(() => {
                                     setWorkouts(
                                       workouts.filter(
@@ -126,7 +128,9 @@ const WorkoutPlanSingle = () => {
                                     );
                                   })
                                   .catch((error) => {
-                                    alert("Error deleting workout: " + error.message);
+                                    alert(
+                                      "Error deleting workout: " + error.message
+                                    );
                                   });
                               }}
                             >
