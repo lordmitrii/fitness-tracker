@@ -35,6 +35,7 @@ func NewWorkoutHandler(r *gin.RouterGroup, svc usecase.WorkoutService) {
 		wp.GET("/:id/workout-cycles/:cycleID", h.GetWorkoutCycleByID)
 		wp.PATCH("/:id/workout-cycles/:cycleID", h.UpdateWorkoutCycle)
 		wp.DELETE("/:id/workout-cycles/:cycleID", h.DeleteWorkoutCycle)
+		wp.PATCH("/:id/workout-cycles/:cycleID/update-complete", h.CompleteWorkoutCycle)
 
 		wp.POST("/:id/workout-cycles/:cycleID/workouts", h.AddWorkoutToWorkoutCycle)
 		wp.GET("/:id/workout-cycles/:cycleID/workouts", h.GetWorkoutsByWorkoutCycleID)
@@ -177,6 +178,26 @@ func (h *WorkoutHandler) DeleteWorkoutCycle(c *gin.Context) {
 	c.JSON(http.StatusNoContent, nil)
 }
 
+func (h *WorkoutHandler) CompleteWorkoutCycle(c *gin.Context) {
+	workoutPlanID, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	cycleID, _ := strconv.ParseUint(c.Param("cycleID"), 10, 64)
+
+
+	var req workout.WorkoutCycle
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	req.WorkoutPlanID = uint(workoutPlanID)
+	req.ID = uint(cycleID)
+
+	if err := h.svc.CompleteWorkoutCycle(c.Request.Context(), &req); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, req)
+}
 func (h *WorkoutHandler) AddWorkoutToWorkoutCycle(c *gin.Context) {
 	id, _ := strconv.ParseUint(c.Param("cycleID"), 10, 64)
 	var req workout.Workout

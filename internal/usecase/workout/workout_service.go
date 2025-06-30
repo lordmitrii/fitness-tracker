@@ -25,57 +25,31 @@ func NewWorkoutService(workoutPlanRepo workout.WorkoutPlanRepository, workoutCyc
 }
 
 func (s *workoutServiceImpl) CreateWorkoutPlan(ctx context.Context, wp *workout.WorkoutPlan) error {
-	return s.workoutPlanRepo.Create(ctx, wp)
+	// Create the workout plan with the initial cycle
+	if err := s.workoutPlanRepo.Create(ctx, wp); err != nil {
+		return err
+	}
+
+	firstCycle := &workout.WorkoutCycle{
+		WorkoutPlanID: wp.ID,
+		WeekNumber:    1,
+		Name:          "Week #1",
+	}
+
+	if err := s.workoutCycleRepo.Create(ctx, firstCycle); err != nil {
+		return err
+	}
+
+	wp.CurrentCycleID = firstCycle.ID
+	if err := s.workoutPlanRepo.Update(ctx, wp); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *workoutServiceImpl) GetWorkoutPlanByID(ctx context.Context, id uint) (*workout.WorkoutPlan, error) {
-	plan, err := s.workoutPlanRepo.GetByID(ctx, id)
-    if err != nil {
-        return nil, err
-    }
-
-	if plan.CurrentCycleID == 0 {
-        wc := &workout.WorkoutCycle{
-            WorkoutPlanID: id, 	
-            WeekNumber:    1,
-            Name:          "Week #1",
-        }
-        if err := s.workoutCycleRepo.Create(ctx, wc); err != nil {
-            return nil, err
-        }
-        plan.CurrentCycleID = wc.ID
-		s.workoutPlanRepo.Update(ctx, plan)
-        return plan, nil
-    }
-	
-	currentWorkoutCycle, err := s.workoutCycleRepo.GetByID(ctx, plan.CurrentCycleID)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if !currentWorkoutCycle.Completed {
-		return plan, nil
-	} 
-	
-	nextWeek := currentWorkoutCycle.WeekNumber + 1
-
-	wc := &workout.WorkoutCycle{
-		WorkoutPlanID: id,
-		WeekNumber:    nextWeek,
-		Name: fmt.Sprintf("Week #%d", nextWeek),
-		PreviousCycleID: currentWorkoutCycle.ID,
-	}
-
-	err = s.workoutCycleRepo.Create(ctx, wc)
-	plan.CurrentCycleID = wc.ID
-
-	if err != nil {
-		return nil, err
-	}
-	err = s.workoutPlanRepo.Update(ctx, plan)
-
-	return plan, err
+	return s.workoutPlanRepo.GetByID(ctx, id)
     
 }
 
@@ -153,6 +127,49 @@ func (s *workoutServiceImpl) GetWorkoutCyclesByWorkoutPlanID(ctx context.Context
 
 func (s *workoutServiceImpl) UpdateWorkoutCycle(ctx context.Context, wc *workout.WorkoutCycle) error {
 	return s.workoutCycleRepo.Update(ctx, wc)
+}
+
+func (s *workoutServiceImpl) CompleteWorkoutCycle(ctx context.Context, wc *workout.WorkoutCycle) error {
+	if err := s.workoutCycleRepo.Update(ctx, wc); err != nil {
+		return err
+	}
+
+	// Get the instance to retrieve its week number
+	wc, err := s.workoutCycleRepo.GetByID(ctx, wc.ID)
+	if err != nil {
+		return err
+	}
+
+	// If the cycle is completed, we need to create a new cycle for the next week if it is not already created
+	if wc.Completed {
+		wp, err := s.workoutPlanRepo.GetByID(ctx, wc.WorkoutPlanID) 
+		if err != nil {
+			return err
+		}
+
+		if wp.CurrentCycleID == wc.ID {
+			// Create a new cycle for the next week
+			nextWeek := wc.WeekNumber + 1
+
+			newCycle := &workout.WorkoutCycle{
+				WorkoutPlanID: wp.ID,
+				WeekNumber:    nextWeek,
+				Name:          fmt.Sprintf("Week #%d", nextWeek),
+				PreviousCycleID: wc.ID,
+			}
+
+			if err := s.workoutCycleRepo.Create(ctx, newCycle); err != nil {
+				return err
+			}
+
+			wp.CurrentCycleID = newCycle.ID
+			if err := s.workoutPlanRepo.Update(ctx, wp); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func (s *workoutServiceImpl) DeleteWorkoutCycle(ctx context.Context, id uint) error {

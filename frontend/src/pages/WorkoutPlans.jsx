@@ -34,7 +34,7 @@ const WorkoutPlans = () => {
         <ul>
           {workoutPlans.map((workoutPlan) => (
             <li key={workoutPlan.id}>
-              <Link className="text-2xl mb-4" to={`/workout-plans/${workoutPlan.id}`}>Title: {workoutPlan.name}</Link>
+              <Link className="text-2xl mb-4" to={`/workout-plans/${workoutPlan.id}/workout-cycles/${workoutPlan.current_cycle_id}`}>Title: {workoutPlan.name}</Link>
               <p className="mb-4">Created at: {workoutPlan.created_at}</p>
               <button
                 className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-2 px-4 rounded transition-colors"

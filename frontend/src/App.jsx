@@ -35,7 +35,7 @@ function App() {
               <Route path="/create-workout-plan" element={<CreateWorkoutPlanForm />} />
               <Route path="/update-workout-plan/:planID" element={<UpdateWorkoutPlanForm />} />
 
-              <Route path="/workout-plans/:planID" element={<WorkoutPlanSingle />} />
+              <Route path="/workout-plans/:planID/workout-cycles/:cycleID" element={<WorkoutPlanSingle />} />
               <Route path="/workout-plans/:planID/workout-cycles/:cycleID/create-workout" element={<CreateWorkoutForm />} />
               <Route path="/workout-plans/:planID/workout-cycles/:cycleID/update-workout/:workoutID" element={<UpdateWorkoutForm />} />
 

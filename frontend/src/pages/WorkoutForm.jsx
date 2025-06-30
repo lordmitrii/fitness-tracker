@@ -87,7 +87,7 @@ export const CreateWorkoutForm = () => {
     api
       .post(`/workout-plans/${planID}/workout-cycles/${cycleID}/workouts`, payload)
       .then(() => {
-        navigate(`/workout-plans/${planID}`);
+        navigate(`/workout-plans/${planID}/workout-cycles/${cycleID}`);
       })
       .catch((error) => {
         console.error("Error creating workout:", error);
@@ -119,7 +119,7 @@ export const UpdateWorkoutForm = () => {
     api
       .patch(`/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}`, payload)
       .then(() => {
-        navigate(`/workout-plans/${planID}`);
+        navigate(`/workout-plans/${planID}/workout-cycles/${cycleID}`);
       })
       .catch((error) => {
         console.error("Error updating workout:", error);
