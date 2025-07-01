@@ -17,6 +17,7 @@ type WorkoutCycleRepository interface {
 	GetByPlanIDAndWeek(ctx context.Context, planID uint, week int) (*WorkoutCycle, error)
 	GetMaxWeekNumberByPlanID(ctx context.Context, workoutPlanID uint) (int, error)
 	Update(ctx context.Context, wc *WorkoutCycle) error
+	Complete(ctx context.Context, wc *WorkoutCycle) error
 	Delete(ctx context.Context, id uint) error
 }
 

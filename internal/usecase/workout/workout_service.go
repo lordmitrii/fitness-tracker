@@ -130,7 +130,7 @@ func (s *workoutServiceImpl) UpdateWorkoutCycle(ctx context.Context, wc *workout
 }
 
 func (s *workoutServiceImpl) CompleteWorkoutCycle(ctx context.Context, wc *workout.WorkoutCycle) error {
-	if err := s.workoutCycleRepo.Update(ctx, wc); err != nil {
+	if err := s.workoutCycleRepo.Complete(ctx, wc); err != nil {
 		return err
 	}
 
@@ -161,6 +161,13 @@ func (s *workoutServiceImpl) CompleteWorkoutCycle(ctx context.Context, wc *worko
 			if err := s.workoutCycleRepo.Create(ctx, newCycle); err != nil {
 				return err
 			}
+
+			wc.NextCycleID = newCycle.ID
+			if err := s.workoutCycleRepo.Update(ctx, wc); err != nil {
+				return err
+			}
+
+			fmt.Println(wc.NextCycleID)
 
 			wp.CurrentCycleID = newCycle.ID
 			if err := s.workoutPlanRepo.Update(ctx, wp); err != nil {

@@ -59,6 +59,10 @@ func (r *WorkoutCycleRepo) Update(ctx context.Context, wc *workout.WorkoutCycle)
 	return r.db.WithContext(ctx).Model(&workout.WorkoutCycle{ID: wc.ID}).Updates(wc).Error
 }
 
+func (r *WorkoutCycleRepo) Complete(ctx context.Context, wc *workout.WorkoutCycle) error {
+	return r.db.WithContext(ctx).Model(&workout.WorkoutCycle{}).Where("id = ?", wc.ID).Select("completed").Updates(wc).Error
+}
+
 func (r *WorkoutCycleRepo) Delete(ctx context.Context, id uint) error {
 	return r.db.WithContext(ctx).Delete(&workout.WorkoutCycle{}, id).Error
 }

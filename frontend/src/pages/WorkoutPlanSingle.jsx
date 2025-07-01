@@ -16,8 +16,10 @@ const WorkoutPlanSingle = () => {
     api
       .get(`/workout-plans/${planID}/workout-cycles/${cycleID}`)
       .then((res) => {
+        console.log("Fetched workout cycle:", res.data);
         setWorkoutCycle(res.data);
         setWorkouts(res.data.workouts);
+        setIsComplete(res.data.completed);
         setLoading(false);
       })
       .catch((error) => {
@@ -27,20 +29,22 @@ const WorkoutPlanSingle = () => {
       });
   }, [planID, cycleID]);
 
-  const handleCompleteToggle = () => setIsComplete((prev) => !prev);
+  const handleCompleteToggle = () => {
+    const nextComplete = !isComplete;
 
-  useEffect(() => {
-    if (!workoutCycle) return;
+    setIsComplete(nextComplete);
     api
       .patch(
         `/workout-plans/${planID}/workout-cycles/${workoutCycle.id}/update-complete`,
-        { completed: isComplete }
+        {
+          completed: nextComplete,
+        }
       )
       .catch((error) => {
         console.error("Error updating cycle completion status:", error);
         setError(error);
       });
-  }, [isComplete]);
+  };
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
@@ -52,21 +56,38 @@ const WorkoutPlanSingle = () => {
           {/* <h1 className="text-3xl font-bold mb-2">{workoutPlan.name}</h1> */}
           <h1 className="text-3xl font-bold mb-2">Workout Plan View</h1>
           <h2 className="text-xl text-gray-700 mb-6">
-            Cycle:{" "}
-            <span className="font-semibold">
-              {workoutCycle.name}
-            </span>
+            Cycle: <span className="font-semibold">{workoutCycle.name}</span>
           </h2>
-          <button
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition mb-6"
-            onClick={() =>
-              navigate(
-                `/workout-plans/${planID}/workout-cycles/${workoutCycle.previous_cycle_id}`
-              )
-            }
-          >
-            View Previous Cycle
-          </button>
+          <div className="flex flex-col md:flex-row gap-4 mb-8">
+            <div className="w-1/2">
+              {workoutCycle.previous_cycle_id && (
+                <button
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-full md:w-auto"
+                  onClick={() =>
+                    navigate(
+                      `/workout-plans/${planID}/workout-cycles/${workoutCycle.previous_cycle_id}`
+                    )
+                  }
+                >
+                  &lt; View Previous Cycle
+                </button>
+              )}
+            </div>
+            <div className="w-1/2 text-right">
+              {workoutCycle.next_cycle_id && (
+                <button
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-full md:w-auto md:ml-auto"
+                  onClick={() =>
+                    navigate(
+                      `/workout-plans/${planID}/workout-cycles/${workoutCycle.next_cycle_id}`
+                    )
+                  }
+                >
+                  View Next Cycle &gt;
+                </button>
+              )}
+            </div>
+          </div>
           {workouts && workouts.length > 0 ? (
             <div className="space-y-8">
               {workouts
@@ -87,9 +108,7 @@ const WorkoutPlanSingle = () => {
                         </Link>
                         <div className="text-gray-400 text-sm mt-1">
                           Last updated:{" "}
-                          {new Date(
-                            workout.updated_at
-                          ).toLocaleDateString()}
+                          {new Date(workout.updated_at).toLocaleDateString()}
                         </div>
                       </div>
                       <div className="mt-2 md:mt-0">
@@ -119,9 +138,7 @@ const WorkoutPlanSingle = () => {
                               )
                               .then(() => {
                                 setWorkouts(
-                                  workouts.filter(
-                                    (w) => w.id !== workout.id
-                                  )
+                                  workouts.filter((w) => w.id !== workout.id)
                                 );
                               })
                               .catch((error) => {
