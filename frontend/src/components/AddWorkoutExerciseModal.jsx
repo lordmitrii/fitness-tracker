@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import api from "../api"; // Adjust the import path as necessary
+import api from "../api"; 
 
-const AddExerciseModal = ({ open, onClose, onSave, workout }) => {
+const AddWorkoutExerciseModal = ({ open, onClose, onSave, workout }) => {
   const [exercisesArray, setExercisesArray] = useState([]);
   const [exercisesFetched, setExercisesFetched] = useState(false);
 
@@ -112,4 +112,4 @@ const AddExerciseModal = ({ open, onClose, onSave, workout }) => {
   );
 };
 
-export default AddExerciseModal;
+export default AddWorkoutExerciseModal;
