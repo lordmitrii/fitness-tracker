@@ -20,7 +20,7 @@ type (
 		GetWorkoutCyclesByWorkoutPlanID(ctx context.Context, workoutPlanID uint) ([]*workout.WorkoutCycle, error)
 		UpdateWorkoutCycle(ctx context.Context, wc *workout.WorkoutCycle) error
 		DeleteWorkoutCycle(ctx context.Context, id uint) error
-		CompleteWorkoutCycle(ctx context.Context, wc *workout.WorkoutCycle) error
+		CompleteWorkoutCycle(ctx context.Context, wc *workout.WorkoutCycle) (uint, error)
 
 		CreateWorkout(ctx context.Context, w *workout.Workout) error
 		GetWorkoutByID(ctx context.Context, id uint) (*workout.Workout, error)

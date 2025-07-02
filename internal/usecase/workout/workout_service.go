@@ -9,18 +9,18 @@ import (
 )
 
 type workoutServiceImpl struct {
-	workoutPlanRepo workout.WorkoutPlanRepository
+	workoutPlanRepo  workout.WorkoutPlanRepository
 	workoutCycleRepo workout.WorkoutCycleRepository
-	workoutRepo     workout.WorkoutRepository
-	exerciseRepo    workout.WorkoutExerciseRepository
+	workoutRepo      workout.WorkoutRepository
+	exerciseRepo     workout.WorkoutExerciseRepository
 }
 
 func NewWorkoutService(workoutPlanRepo workout.WorkoutPlanRepository, workoutCycleRepo workout.WorkoutCycleRepository, workoutRepo workout.WorkoutRepository, exerciseRepo workout.WorkoutExerciseRepository) *workoutServiceImpl {
 	return &workoutServiceImpl{
-		workoutPlanRepo: workoutPlanRepo,
+		workoutPlanRepo:  workoutPlanRepo,
 		workoutCycleRepo: workoutCycleRepo,
-		workoutRepo:     workoutRepo,
-		exerciseRepo:    exerciseRepo,
+		workoutRepo:      workoutRepo,
+		exerciseRepo:     exerciseRepo,
 	}
 }
 
@@ -50,7 +50,7 @@ func (s *workoutServiceImpl) CreateWorkoutPlan(ctx context.Context, wp *workout.
 
 func (s *workoutServiceImpl) GetWorkoutPlanByID(ctx context.Context, id uint) (*workout.WorkoutPlan, error) {
 	return s.workoutPlanRepo.GetByID(ctx, id)
-    
+
 }
 
 func (s *workoutServiceImpl) GetWorkoutPlansByUserID(ctx context.Context, userID uint) ([]*workout.WorkoutPlan, error) {
@@ -75,16 +75,11 @@ func (s *workoutServiceImpl) GetWorkoutCycleByID(ctx context.Context, id uint) (
 		return nil, err
 	}
 
-	if len(cycle.Workouts) != 0 {
+	if len(cycle.Workouts) != 0 || cycle.PreviousCycleID == 0 {
 		return cycle, nil
 	}
 
-	previousWeek := cycle.WeekNumber - 1
-	if previousWeek < 1 {
-		return cycle, nil 
-	}
-
-	prevCycle, err := s.workoutCycleRepo.GetByPlanIDAndWeek(ctx, cycle.WorkoutPlanID, previousWeek)
+	prevCycle, err := s.workoutCycleRepo.GetByID(ctx, cycle.PreviousCycleID)
 	if err != nil {
 		return nil, err
 	}
@@ -96,12 +91,24 @@ func (s *workoutServiceImpl) GetWorkoutCycleByID(ctx context.Context, id uint) (
 	var newWorkouts []*workout.Workout
 	for _, w := range prevCycle.Workouts {
 		newWorkout := &workout.Workout{
-			Name:          w.Name,
-			WorkoutCycleID: cycle.ID,
-			Index:         w.Index,
-			Date:          time.Now().AddDate(0, 0, w.Index),
-			Completed:     false,
+			Name:              w.Name,
+			WorkoutCycleID:    cycle.ID,
+			Index:             w.Index,
+			Date:              time.Now().AddDate(0, 0, w.Index),
+			Completed:         false,
 			PreviousWorkoutID: w.ID,
+		}
+		// Copy exercises from the previous workout
+		for _, we := range w.WorkoutExercises {
+			newExercise := &workout.WorkoutExercise{
+				WorkoutID:  newWorkout.ID,
+				ExerciseID: we.ExerciseID,
+				Sets:       we.Sets,
+				Reps:       we.Reps,
+				Weight:     we.Weight,
+				Completed:  false,
+			}
+			newWorkout.WorkoutExercises = append(newWorkout.WorkoutExercises, newExercise)
 		}
 		newWorkouts = append(newWorkouts, newWorkout)
 	}
@@ -120,7 +127,6 @@ func (s *workoutServiceImpl) GetWorkoutCycleByID(ctx context.Context, id uint) (
 	return cycle, nil
 }
 
-
 func (s *workoutServiceImpl) GetWorkoutCyclesByWorkoutPlanID(ctx context.Context, workoutPlanID uint) ([]*workout.WorkoutCycle, error) {
 	return s.workoutCycleRepo.GetByWorkoutPlanID(ctx, workoutPlanID)
 }
@@ -129,22 +135,22 @@ func (s *workoutServiceImpl) UpdateWorkoutCycle(ctx context.Context, wc *workout
 	return s.workoutCycleRepo.Update(ctx, wc)
 }
 
-func (s *workoutServiceImpl) CompleteWorkoutCycle(ctx context.Context, wc *workout.WorkoutCycle) error {
+func (s *workoutServiceImpl) CompleteWorkoutCycle(ctx context.Context, wc *workout.WorkoutCycle) (uint, error) {
 	if err := s.workoutCycleRepo.Complete(ctx, wc); err != nil {
-		return err
+		return 0, err
 	}
 
 	// Get the instance to retrieve its week number
 	wc, err := s.workoutCycleRepo.GetByID(ctx, wc.ID)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	// If the cycle is completed, we need to create a new cycle for the next week if it is not already created
 	if wc.Completed {
-		wp, err := s.workoutPlanRepo.GetByID(ctx, wc.WorkoutPlanID) 
+		wp, err := s.workoutPlanRepo.GetByID(ctx, wc.WorkoutPlanID)
 		if err != nil {
-			return err
+			return 0, err
 		}
 
 		if wp.CurrentCycleID == wc.ID {
@@ -152,35 +158,75 @@ func (s *workoutServiceImpl) CompleteWorkoutCycle(ctx context.Context, wc *worko
 			nextWeek := wc.WeekNumber + 1
 
 			newCycle := &workout.WorkoutCycle{
-				WorkoutPlanID: wp.ID,
-				WeekNumber:    nextWeek,
-				Name:          fmt.Sprintf("Week #%d", nextWeek),
+				WorkoutPlanID:   wp.ID,
+				WeekNumber:      nextWeek,
+				Name:            fmt.Sprintf("Week #%d", nextWeek),
 				PreviousCycleID: wc.ID,
 			}
 
 			if err := s.workoutCycleRepo.Create(ctx, newCycle); err != nil {
-				return err
+				return 0, err
 			}
 
 			wc.NextCycleID = newCycle.ID
 			if err := s.workoutCycleRepo.Update(ctx, wc); err != nil {
-				return err
+				return 0, err
 			}
 
 			fmt.Println(wc.NextCycleID)
 
 			wp.CurrentCycleID = newCycle.ID
 			if err := s.workoutPlanRepo.Update(ctx, wp); err != nil {
-				return err
+				return 0, err
 			}
 		}
 	}
 
-	return nil
+	return wc.NextCycleID, nil
 }
 
 func (s *workoutServiceImpl) DeleteWorkoutCycle(ctx context.Context, id uint) error {
-	return s.workoutCycleRepo.Delete(ctx, id)
+	cycle, err := s.workoutCycleRepo.GetByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	plan, err := s.workoutPlanRepo.GetByID(ctx, cycle.WorkoutPlanID)
+	if err != nil {
+		return err
+	}
+
+	if cycle.PreviousCycleID == 0 {
+		return fmt.Errorf("cannot delete the first cycle of a workout plan")
+	}
+
+	if cycle.NextCycleID != 0 {
+		// Move pointer from the previous cycle to the next cycle
+
+		if err := s.workoutCycleRepo.UpdateNextCycleID(ctx, cycle.PreviousCycleID, cycle.NextCycleID); err != nil {
+			return err
+		}
+
+		if err := s.workoutCycleRepo.UpdatePrevCycleID(ctx, cycle.NextCycleID, cycle.PreviousCycleID); err != nil {
+			return err
+		}
+
+
+		if plan.CurrentCycleID == cycle.ID {
+			plan.CurrentCycleID = cycle.NextCycleID
+			if err := s.workoutPlanRepo.Update(ctx, plan); err != nil {
+				return err
+			}
+		}
+		return s.workoutCycleRepo.Delete(ctx, id)
+	} else {
+		// If there is no next cycle, we just delete the current cycle data and dont change anything
+		if err := s.workoutCycleRepo.ClearData(ctx, id); err != nil {
+			return err
+		}
+
+		return nil
+	}
 }
 
 func (s *workoutServiceImpl) CreateWorkout(ctx context.Context, w *workout.Workout) error {

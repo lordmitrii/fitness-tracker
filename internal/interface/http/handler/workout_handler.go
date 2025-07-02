@@ -191,10 +191,13 @@ func (h *WorkoutHandler) CompleteWorkoutCycle(c *gin.Context) {
 	req.WorkoutPlanID = uint(workoutPlanID)
 	req.ID = uint(cycleID)
 
-	if err := h.svc.CompleteWorkoutCycle(c.Request.Context(), &req); err != nil {
+	nextCycleID, err := h.svc.CompleteWorkoutCycle(c.Request.Context(), &req) 
+
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	req.NextCycleID = nextCycleID
 
 	c.JSON(http.StatusOK, req)
 }

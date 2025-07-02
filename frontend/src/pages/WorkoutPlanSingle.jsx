@@ -1,6 +1,7 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import api from "../api";
+import AddExerciseModal from "../components/AddExerciseModal";
 
 const WorkoutPlanSingle = () => {
   const navigate = useNavigate();
@@ -10,16 +11,18 @@ const WorkoutPlanSingle = () => {
   const [workouts, setWorkouts] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const [nextCycleID, setNextCycleID] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedWorkout, setSelectedWorkout] = useState(null);
   useEffect(() => {
     setLoading(true);
     api
       .get(`/workout-plans/${planID}/workout-cycles/${cycleID}`)
       .then((res) => {
-        console.log("Fetched workout cycle:", res.data);
         setWorkoutCycle(res.data);
         setWorkouts(res.data.workouts);
         setIsComplete(res.data.completed);
+        setNextCycleID(res.data.next_cycle_id);
         setLoading(false);
       })
       .catch((error) => {
@@ -32,14 +35,17 @@ const WorkoutPlanSingle = () => {
   const handleCompleteToggle = () => {
     const nextComplete = !isComplete;
 
-    setIsComplete(nextComplete);
     api
       .patch(
-        `/workout-plans/${planID}/workout-cycles/${workoutCycle.id}/update-complete`,
+        `/workout-plans/${planID}/workout-cycles/${cycleID}/update-complete`,
         {
           completed: nextComplete,
         }
       )
+      .then((res) => {
+        setIsComplete(nextComplete);
+        setNextCycleID(res.data.next_cycle_id);
+      })
       .catch((error) => {
         console.error("Error updating cycle completion status:", error);
         setError(error);
@@ -59,7 +65,7 @@ const WorkoutPlanSingle = () => {
             Cycle: <span className="font-semibold">{workoutCycle.name}</span>
           </h2>
           <div className="flex flex-col md:flex-row gap-4 mb-8">
-            <div className="w-1/2">
+            <div className="w-1/3">
               {workoutCycle.previous_cycle_id && (
                 <button
                   className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-full md:w-auto"
@@ -73,13 +79,45 @@ const WorkoutPlanSingle = () => {
                 </button>
               )}
             </div>
-            <div className="w-1/2 text-right">
-              {workoutCycle.next_cycle_id && (
+            <div className="w-1/3 text-center">
+            {workoutCycle.previous_cycle_id && (
+              <button
+                className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-full md:w-auto"
+                onClick={() => {
+                  if (
+                    !window.confirm(
+                      `Are you sure you want to delete cycle "${workoutCycle.name}"? This action cannot be undone.`
+                    )
+                  ) {
+                    return;
+                  }
+                  api
+                    .delete(
+                      `/workout-plans/${planID}/workout-cycles/${cycleID}`
+                    )
+                    .then(() => {
+                      navigate(`/workout-plans/${planID}/workout-cycles/${workoutCycle.previous_cycle_id}`);
+                      setNextCycleID(null);
+                    })
+                    .catch((error) => {
+                      alert("Error deleting cycle: " + error.message);
+                      console.error("Error deleting cycle:", error);
+                    });
+                }}
+              >
+                Delete Cycle
+              </button>
+            )}
+            </div>
+            <div className="w-1/3 text-right">
+              {(workoutCycle.next_cycle_id || nextCycleID) && (
                 <button
                   className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-full md:w-auto md:ml-auto"
                   onClick={() =>
                     navigate(
-                      `/workout-plans/${planID}/workout-cycles/${workoutCycle.next_cycle_id}`
+                      `/workout-plans/${planID}/workout-cycles/${
+                        workoutCycle.next_cycle_id || nextCycleID
+                      }`
                     )
                   }
                 >
@@ -101,7 +139,7 @@ const WorkoutPlanSingle = () => {
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                       <div>
                         <Link
-                          to={`/workout-plans/${planID}/workout-cycles/${workoutCycle.id}/workouts/${workout.id}`}
+                          to={`/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workout.id}`}
                           className="text-2xl font-semibold text-blue-800 hover:underline"
                         >
                           {workout.name}
@@ -116,7 +154,7 @@ const WorkoutPlanSingle = () => {
                           className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors shadow mr-2"
                           onClick={() =>
                             navigate(
-                              `/workout-plans/${planID}/workout-cycles/${workoutCycle.id}/update-workout/${workout.id}`
+                              `/workout-plans/${planID}/workout-cycles/${cycleID}/update-workout/${workout.id}`
                             )
                           }
                         >
@@ -134,7 +172,7 @@ const WorkoutPlanSingle = () => {
                             }
                             api
                               .delete(
-                                `/workout-plans/${workout.id}/workout-cycles/${workoutCycle.id}/workouts/${workout.id}`
+                                `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workout.id}`
                               )
                               .then(() => {
                                 setWorkouts(
@@ -159,16 +197,16 @@ const WorkoutPlanSingle = () => {
                           <table className="min-w-full bg-gray-50 rounded-xl">
                             <thead>
                               <tr>
-                                <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b">
+                                <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b w-1/4">
                                   Exercise
                                 </th>
-                                <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b">
+                                <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b w-1/4">
                                   Sets
                                 </th>
-                                <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b">
+                                <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b w-1/4">
                                   Reps
                                 </th>
-                                <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b">
+                                <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b w-1/4">
                                   Weight
                                 </th>
                               </tr>
@@ -200,6 +238,17 @@ const WorkoutPlanSingle = () => {
                           </table>
                         </div>
                       )}
+                    <div className="flex justify-center mt-4">
+                      <button
+                        className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-full md:w-auto"
+                        onClick={() => {
+                          setSelectedWorkout(workout);
+                          setModalOpen(true);
+                        }}
+                      >
+                        <span>+ Add Exercise</span>
+                      </button>
+                    </div>
                   </div>
                 ))}
             </div>
@@ -212,7 +261,7 @@ const WorkoutPlanSingle = () => {
               className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition"
               onClick={() =>
                 navigate(
-                  `/workout-plans/${planID}/workout-cycles/${workoutCycle.id}/create-workout`
+                  `/workout-plans/${planID}/workout-cycles/${cycleID}/create-workout`
                 )
               }
             >
@@ -230,6 +279,44 @@ const WorkoutPlanSingle = () => {
           </div>
         </>
       )}
+      <AddExerciseModal
+        open={modalOpen}
+        workout={selectedWorkout}
+        onClose={() => setModalOpen(false)}
+        onSave={(newExercise) => {
+          api
+            .post(
+              `workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${selectedWorkout.id}/workout-exercises`,
+              {
+                exercise_id: newExercise.exercise.id,
+                sets: newExercise.sets,
+                reps: newExercise.reps,
+                weight: newExercise.weight,
+              }
+            )
+            .then(() => {
+              setWorkouts((prevWorkouts) =>
+                prevWorkouts.map((w) =>
+                  w.id === selectedWorkout.id
+                    ? {
+                        ...w,
+                        workout_exercises: [
+                          ...w.workout_exercises,
+                          newExercise,
+                        ],
+                      }
+                    : w
+                )
+              );
+              setModalOpen(false);
+              setSelectedWorkout(null);
+            })
+            .catch((error) => {
+              alert("Error saving exercise: " + error.message);
+              console.error("Error saving exercise:", error);
+            });
+        }}
+      />
     </div>
   );
 };

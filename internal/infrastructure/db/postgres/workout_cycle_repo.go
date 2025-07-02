@@ -30,6 +30,7 @@ func (r *WorkoutCycleRepo) GetByPlanIDAndWeek(ctx context.Context, planID uint, 
 	var cycle workout.WorkoutCycle
 	err := r.db.WithContext(ctx).
 		Preload("Workouts", func(db *gorm.DB) *gorm.DB {return db.Order("index ASC").Order("id ASC")}).
+		Preload("Workouts.WorkoutExercises").
 		Where("workout_plan_id = ? AND week_number = ?", planID, week).
 		First(&cycle).Error
 
@@ -59,10 +60,37 @@ func (r *WorkoutCycleRepo) Update(ctx context.Context, wc *workout.WorkoutCycle)
 	return r.db.WithContext(ctx).Model(&workout.WorkoutCycle{ID: wc.ID}).Updates(wc).Error
 }
 
+func (r *WorkoutCycleRepo) UpdateNextCycleID(ctx context.Context, id, nextID uint) error {
+    return r.db.WithContext(ctx).Model(&workout.WorkoutCycle{}).Where("id = ?", id).Update("next_cycle_id", nextID).Error
+}
+
+func (r *WorkoutCycleRepo) UpdatePrevCycleID(ctx context.Context, id, previousID uint) error {
+	return r.db.WithContext(ctx).Model(&workout.WorkoutCycle{}).Where("id = ?", id).Update("previous_cycle_id", previousID).Error
+}
+
 func (r *WorkoutCycleRepo) Complete(ctx context.Context, wc *workout.WorkoutCycle) error {
 	return r.db.WithContext(ctx).Model(&workout.WorkoutCycle{}).Where("id = ?", wc.ID).Select("completed").Updates(wc).Error
 }
 
 func (r *WorkoutCycleRepo) Delete(ctx context.Context, id uint) error {
 	return r.db.WithContext(ctx).Delete(&workout.WorkoutCycle{}, id).Error
+}
+
+func (r *WorkoutCycleRepo) ClearData(ctx context.Context, id uint) error {
+    // Delete all workouts attached to this cycle
+    if err := r.db.WithContext(ctx).
+        Where("workout_cycle_id = ?", id).
+        Delete(&workout.Workout{}).Error; err != nil {
+        return err
+    }
+
+    // Set Completed to false
+    if err := r.db.WithContext(ctx).
+        Model(&workout.WorkoutCycle{}).
+        Where("id = ?", id).
+        Update("completed", false).Error; err != nil {
+        return err
+    }
+
+    return nil
 }
