@@ -140,7 +140,6 @@ func (s *workoutServiceImpl) CompleteWorkoutCycle(ctx context.Context, wc *worko
 		return 0, err
 	}
 
-	// Get the instance to retrieve its week number
 	wc, err := s.workoutCycleRepo.GetByID(ctx, wc.ID)
 	if err != nil {
 		return 0, err
@@ -172,8 +171,6 @@ func (s *workoutServiceImpl) CompleteWorkoutCycle(ctx context.Context, wc *worko
 			if err := s.workoutCycleRepo.Update(ctx, wc); err != nil {
 				return 0, err
 			}
-
-			fmt.Println(wc.NextCycleID)
 
 			wp.CurrentCycleID = newCycle.ID
 			if err := s.workoutPlanRepo.Update(ctx, wp); err != nil {

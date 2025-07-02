@@ -1,43 +1,20 @@
 import { Link, useNavigate } from "react-router-dom";
 import WorkoutExerciseTable from "./WorkoutExerciseTable";
-import api from "../api";
 
 const WorkoutCard = ({
   planID,
   cycleID,
   workout,
-  setWorkouts,
+  onToggleExercise,
   setModalOpen,
   setSelectedWorkout,
-  workouts,
+  onDelete,
 }) => {
   const navigate = useNavigate();
-  const handleDelete = () => {
-    if (
-      !window.confirm(
-        `Are you sure you want to delete workout "${workout.name}"? This action cannot be undone.`
-      )
-    ) {
-      return;
-    }
-    api
-      .delete(
-        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workout.id}`
-      )
-      .then(() => {
-        setWorkouts(workouts.filter((w) => w.id !== workout.id));
-      })
-      .catch((error) => {
-        alert("Error deleting workout: " + error.message);
-        console.error("Error deleting workout:", error);
-      });
-  };
+  
 
   return (
-    <div
-      key={workout.id}
-      className="rounded-2xl shadow-xl bg-white border border-gray-100 p-6 hover:shadow-2xl transition flex flex-col gap-3"
-    >
+    <div className="rounded-2xl shadow-xl bg-white border border-gray-100 p-6 hover:shadow-2xl transition flex flex-col gap-3">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
         <div>
           <Link
@@ -70,16 +47,19 @@ const WorkoutCard = ({
           </button>
           <button
             className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors shadow"
-            onClick={handleDelete}
+            onClick={() => onDelete(workout.id)}
           >
             Delete
           </button>
         </div>
       </div>
-
       {workout.workout_exercises && workout.workout_exercises.length > 0 && (
         <div className="mt-4 overflow-x-auto">
-          <WorkoutExerciseTable workout={workout} />
+          <WorkoutExerciseTable
+            key={workout.id}
+            exercises={workout.workout_exercises}
+            onToggle={(exId) => onToggleExercise(workout.id, exId)}
+          />
         </div>
       )}
       <div className="flex justify-center mt-4">

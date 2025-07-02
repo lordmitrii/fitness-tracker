@@ -1,22 +1,25 @@
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import api from "../api";
 import AddWorkoutExerciseModal from "../components/AddWorkoutExerciseModal";
-import WorkoutExerciseTable from "../components/WorkoutExerciseTable";
 import WorkoutCard from "../components/WorkoutCard";
 
 const WorkoutPlanSingle = () => {
   const navigate = useNavigate();
   const { planID, cycleID } = useParams();
   const [workoutCycle, setWorkoutCycle] = useState(null);
-  const [isComplete, setIsComplete] = useState(false);
-  const [workouts, setWorkouts] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [workouts, setWorkouts] = useState([]);
+
   const [nextCycleID, setNextCycleID] = useState(null);
+
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
-  const [allWorkoutsComplete, setAllWorkoutsComplete] = useState(false);
+
+  const [allWorkoutsCompleted, setAllWorkoutsCompleted] = useState(false);
+  const [cycleCompleted, setCycleCompleted] = useState(false);
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     setLoading(true);
@@ -25,7 +28,7 @@ const WorkoutPlanSingle = () => {
       .then((res) => {
         setWorkoutCycle(res.data);
         setWorkouts(res.data.workouts);
-        setIsComplete(res.data.completed);
+        setCycleCompleted(res.data.completed);
         setNextCycleID(res.data.next_cycle_id);
         setLoading(false);
       })
@@ -36,22 +39,70 @@ const WorkoutPlanSingle = () => {
       });
   }, [planID, cycleID]);
 
-  const handleCompleteToggle = () => {
-    const nextComplete = !isComplete;
+  useEffect(() => {
+    const allCompleted =
+      workouts.length > 0 && workouts.every((w) => w.completed);
+    setAllWorkoutsCompleted(allCompleted);
+    // Optionally: PATCH to API here if you want to sync automatically
+  }, [workouts]);
+
+  const handleToggleExercise = (workoutId, exId) => {
+    setWorkouts((prev) =>
+      prev.map((w) => {
+        if (w.id === workoutId) {
+          const newExercises = w.workout_exercises.map((ex) =>
+            ex.id === exId ? { ...ex, completed: !ex.completed } : ex
+          );
+          const completed =
+            newExercises.length > 0 && newExercises.every((ex) => ex.completed);
+          return {
+            ...w,
+            workout_exercises: newExercises,
+            completed,
+          };
+        }
+        return w;
+      })
+    );
+  };
+
+  const handleCycleComplete = () => {
+    if (
+      !allWorkoutsCompleted &&
+      !window.confirm(
+        `Are you sure you want to complete this cycle? Some workouts are not completed.`
+      )
+    ) {
+      return;
+    }
+
+    setCycleCompleted(true);
+
+    // Optionally, mark all workouts as completed
+    // if (nextCompleted) {
+    //   setWorkouts((prev) =>
+    //     prev.map((w) => ({
+    //       ...w,
+    //       completed: true,
+    //       workout_exercises: w.workout_exercises.map((ex) => ({
+    //         ...ex,
+    //         completed: true,
+    //       })),
+    //     }))
+    //   );
+    // }
 
     api
       .patch(
         `/workout-plans/${planID}/workout-cycles/${cycleID}/update-complete`,
         {
-          completed: nextComplete,
+          completed: true,
         }
       )
       .then((res) => {
-        setIsComplete(nextComplete);
         setNextCycleID(res.data.next_cycle_id);
       })
       .catch((error) => {
-        console.error("Error updating cycle completion status:", error);
         setError(error);
       });
   };
@@ -82,8 +133,7 @@ const WorkoutPlanSingle = () => {
         setSelectedWorkout(null);
       })
       .catch((error) => {
-        alert("Error saving exercise: " + error.message);
-        console.error("Error saving exercise:", error);
+        setError(error);
       });
   };
 
@@ -104,22 +154,31 @@ const WorkoutPlanSingle = () => {
         setNextCycleID(null);
       })
       .catch((error) => {
-        alert("Error deleting cycle: " + error.message);
-        console.error("Error deleting cycle:", error);
+        setError(error);
       });
   };
 
-  useEffect(() => {
-    if (workouts) {
-      const allComplete = workouts.every(
-        (workout) =>
-          (workout.workout_exercises ||
-            workout.workout_exercises.length <= 0) &&
-          workout.completed
-      );
-      setAllWorkoutsComplete(allComplete);
+  const handleDeleteWorkout = (workoutId) => {
+    const workout = workouts.find((w) => w.id === workoutId);
+    if (
+      !window.confirm(
+        `Are you sure you want to delete workout "${workout.name}"? This action cannot be undone.`
+      )
+    ) {
+      return;
     }
-  }, [workouts]);
+    api
+      .delete(
+        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workout.id}`
+      )
+      .then(() => {
+        setWorkouts(workouts.filter((w) => w.id !== workout.id));
+      })
+      .catch((error) => {
+        alert("Error deleting workout: " + error.message);
+        console.error("Error deleting workout:", error);
+      });
+  };
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
@@ -182,13 +241,14 @@ const WorkoutPlanSingle = () => {
                 .sort((a, b) => a.index - b.index)
                 .map((workout) => (
                   <WorkoutCard
+                    key={workout.id}
                     planID={planID}
                     cycleID={cycleID}
                     workout={workout}
-                    setWorkouts={setWorkouts}
+                    onToggleExercise={handleToggleExercise}
                     setModalOpen={setModalOpen}
                     setSelectedWorkout={setSelectedWorkout}
-                    workouts={workouts}
+                    onDelete={handleDeleteWorkout}
                   />
                 ))}
             </div>
@@ -207,16 +267,18 @@ const WorkoutPlanSingle = () => {
             >
               + Create Workout
             </button>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                className="form-checkbox accent-blue-600 h-5 w-5"
-                checked={isComplete}
-                onChange={handleCompleteToggle}
-                disabled={!allWorkoutsComplete}
-              />
-              <span className="text-gray-700">Mark cycle as complete</span>
-            </label>
+            {!cycleCompleted && !nextCycleID && (
+              <button
+                className={`${
+                  allWorkoutsCompleted
+                    ? "bg-green-600 hover:bg-green-700"
+                    : "bg-gray-400 cursor-not-allowed"
+                } text-white font-semibold py-2 px-6 rounded-lg shadow transition`}
+                onClick={handleCycleComplete}
+              >
+                Complete Cycle
+              </button>
+            )}
           </div>
         </>
       )}
@@ -224,9 +286,7 @@ const WorkoutPlanSingle = () => {
         open={modalOpen}
         workout={selectedWorkout}
         onClose={() => setModalOpen(false)}
-        onSave={(newExercise) => {
-          handleSaveExercise(newExercise);
-        }}
+        onSave={handleSaveExercise}
       />
     </div>
   );
