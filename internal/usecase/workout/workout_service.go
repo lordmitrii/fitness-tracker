@@ -208,22 +208,43 @@ func (s *workoutServiceImpl) DeleteWorkoutCycle(ctx context.Context, id uint) er
 			return err
 		}
 
-
 		if plan.CurrentCycleID == cycle.ID {
 			plan.CurrentCycleID = cycle.NextCycleID
 			if err := s.workoutPlanRepo.Update(ctx, plan); err != nil {
 				return err
 			}
 		}
-		return s.workoutCycleRepo.Delete(ctx, id)
 	} else {
-		// If there is no next cycle, we just delete the current cycle data and dont change anything
-		if err := s.workoutCycleRepo.ClearData(ctx, id); err != nil {
+		prevCycleIncompleteWorkoutsCounts, err := s.workoutRepo.GetIncompleteWorkoutsCount(ctx, cycle.PreviousCycleID)
+		if err != nil {
 			return err
 		}
 
-		return nil
+		// If there is no next cycle and all previous workouts are completed, we just clear the current cycle data and dont change anything
+		if prevCycleIncompleteWorkoutsCounts == 0 {
+			if err := s.workoutCycleRepo.ClearData(ctx, id); err != nil {
+				return err
+			}
+			return nil
+		}
+
+		if err := s.workoutCycleRepo.Complete(ctx, &workout.WorkoutCycle{ID: cycle.PreviousCycleID, Completed: false}); err != nil {
+			return err
+		}
+
+		if err := s.workoutCycleRepo.UpdateNextCycleID(ctx, cycle.PreviousCycleID, 0); err != nil {
+			return err
+		}
+
+		if plan.CurrentCycleID == cycle.ID {
+			plan.CurrentCycleID = cycle.PreviousCycleID
+			if err := s.workoutPlanRepo.Update(ctx, plan); err != nil {
+				return err
+			}
+		}
 	}
+	return s.workoutCycleRepo.Delete(ctx, id)
+
 }
 
 func (s *workoutServiceImpl) CreateWorkout(ctx context.Context, w *workout.Workout) error {
@@ -267,14 +288,14 @@ func (s *workoutServiceImpl) CompleteWorkoutExercise(ctx context.Context, e *wor
 		return err
 	}
 
-	incompletedExercisesCount, err := s.workoutRepo.GetIncompleteExercisesCount(ctx, w.ID)
+	incompletedExercisesCount, err := s.exerciseRepo.GetIncompleteExercisesCount(ctx, w.ID)
 	if err != nil {
-		return err 
+		return err
 	}
 
 	w.Completed = incompletedExercisesCount == 0
 
-    err = s.workoutRepo.Complete(ctx, w)
+	err = s.workoutRepo.Complete(ctx, w)
 	if err != nil {
 		return err
 	}

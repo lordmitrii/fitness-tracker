@@ -33,7 +33,7 @@ type WorkoutRepository interface {
 	Update(ctx context.Context, w *Workout) error
 	Delete(ctx context.Context, id uint) error
 	Complete(ctx context.Context, w *Workout) error
-	GetIncompleteExercisesCount(ctx context.Context, id uint) (int64, error)
+	GetIncompleteWorkoutsCount(ctx context.Context, workoutCycleID uint) (int64, error)
 }
 
 type WorkoutExerciseRepository interface {
@@ -43,6 +43,7 @@ type WorkoutExerciseRepository interface {
 	Update(ctx context.Context, e *WorkoutExercise) error
 	Complete(ctx context.Context, e *WorkoutExercise) error
 	Delete(ctx context.Context, id uint) error
+	GetIncompleteExercisesCount(ctx context.Context, workoutId uint) (int64, error)
 }
 
 type ExerciseRepository interface {

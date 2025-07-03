@@ -9,6 +9,7 @@ const WorkoutCard = ({
   setModalOpen,
   setSelectedWorkout,
   onDelete,
+  isCurrentCycle,
 }) => {
   const navigate = useNavigate();
 
@@ -60,10 +61,12 @@ const WorkoutCard = ({
             onToggle={(exId, sets, reps, weight, checked) =>
               onToggleExercise(workout.id, exId, sets, reps, weight, checked)
             }
+            isCurrentCycle={isCurrentCycle}
           />
         </div>
       )}
       <div className="flex justify-center mt-4">
+        {isCurrentCycle && (
         <button
           className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-full md:w-auto"
           onClick={() => {
@@ -73,6 +76,7 @@ const WorkoutCard = ({
         >
           <span>+ Add Exercise</span>
         </button>
+        )}
       </div>
     </div>
   );

@@ -45,18 +45,26 @@ const WorkoutPlanSingle = () => {
     setAllWorkoutsCompleted(allCompleted);
   }, [workouts]);
 
-  const handleToggleExercise = (workoutId, exId, sets, reps, weight, checked) => {
+  const handleToggleExercise = (
+    workoutId,
+    exId,
+    sets,
+    reps,
+    weight,
+    checked
+  ) => {
     const workout = workouts.find((w) => w.id === workoutId);
     if (!workout) return;
     const exercise = workout.workout_exercises.find((ex) => ex.id === exId);
     if (!exercise) return;
 
-
     setWorkouts((prev) =>
       prev.map((w) => {
         if (w.id === workoutId) {
           const newExercises = w.workout_exercises.map((ex) =>
-            ex.id === exId ? { ...ex, completed: checked, sets, reps, weight } : ex
+            ex.id === exId
+              ? { ...ex, completed: checked, sets, reps, weight }
+              : ex
           );
           const workoutCompleted =
             newExercises.length > 0 && newExercises.every((ex) => ex.completed);
@@ -79,10 +87,10 @@ const WorkoutPlanSingle = () => {
         setError(error);
       });
 
-      api
+    api
       .patch(
         `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutId}/workout-exercises/${exId}`,
-        { sets, reps , weight }
+        { sets, reps, weight }
       )
       .catch((error) => {
         setError(error);
@@ -270,6 +278,7 @@ const WorkoutPlanSingle = () => {
                     setModalOpen={setModalOpen}
                     setSelectedWorkout={setSelectedWorkout}
                     onDelete={handleDeleteWorkout}
+                    isCurrentCycle={!nextCycleID}
                   />
                 ))}
             </div>
@@ -278,27 +287,31 @@ const WorkoutPlanSingle = () => {
           )}
 
           <div className="flex items-center gap-4 mt-10">
-            <button
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition"
-              onClick={() =>
-                navigate(
-                  `/workout-plans/${planID}/workout-cycles/${cycleID}/create-workout`
-                )
-              }
-            >
-              + Create Workout
-            </button>
-            {!cycleCompleted && !nextCycleID && (
-              <button
-                className={`${
-                  allWorkoutsCompleted
-                    ? "bg-green-600 hover:bg-green-700"
-                    : "bg-gray-400 cursor-not-allowed"
-                } text-white font-semibold py-2 px-6 rounded-lg shadow transition`}
-                onClick={handleCycleComplete}
-              >
-                Complete Cycle
-              </button>
+            {!nextCycleID && (
+              <>
+                <button
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition"
+                  onClick={() =>
+                    navigate(
+                      `/workout-plans/${planID}/workout-cycles/${cycleID}/create-workout`
+                    )
+                  }
+                >
+                  + Create Workout
+                </button>
+                {!cycleCompleted && (
+                  <button
+                    className={`${
+                      allWorkoutsCompleted
+                        ? "bg-green-600 hover:bg-green-700"
+                        : "bg-gray-400 cursor-not-allowed"
+                    } text-white font-semibold py-2 px-6 rounded-lg shadow transition`}
+                    onClick={handleCycleComplete}
+                  >
+                    Complete Cycle
+                  </button>
+                )}
+              </>
             )}
           </div>
         </>

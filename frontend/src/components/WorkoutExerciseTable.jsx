@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const WorkoutExerciseTable = ({ exercises, onToggle }) => {
+const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
   const [localExercises, setLocalExercises] = useState(exercises || []);
 
   useEffect(() => {
@@ -58,6 +58,7 @@ const WorkoutExerciseTable = ({ exercises, onToggle }) => {
                     );
                     onToggle(ex.id, ex.sets, ex.reps, ex.weight, checked);
                   }}
+                  disabled={!isCurrentCycle}
                 />
               </td>
               <td className="py-2 px-4">{ex.exercise.name}</td>
@@ -83,6 +84,7 @@ const WorkoutExerciseTable = ({ exercises, onToggle }) => {
                       ? "w-16 border border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 opacity-50 cursor-not-allowed focus:cursor-auto focus:opacity-100"
                       : "w-16 border border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   }
+                  disabled={!isCurrentCycle}
                 />
               </td>
               <td className="py-2 px-4">
@@ -107,6 +109,7 @@ const WorkoutExerciseTable = ({ exercises, onToggle }) => {
                       ? "w-16 border border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 opacity-50 cursor-not-allowed focus:cursor-auto focus:opacity-100"
                       : "w-16 border border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   }
+                  disabled={!isCurrentCycle}
                 />
               </td>
               <td className="py-2 px-4">
@@ -131,6 +134,7 @@ const WorkoutExerciseTable = ({ exercises, onToggle }) => {
                       ? "w-16 border border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 opacity-50 cursor-not-allowed focus:cursor-auto focus:opacity-100"
                       : "w-16 border border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   }
+                  disabled={!isCurrentCycle}
                 />
               </td>
             </tr>

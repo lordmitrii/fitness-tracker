@@ -58,3 +58,14 @@ func (r *WorkoutExerciseRepo) Delete(ctx context.Context, id uint) error {
 	}
 	return nil
 }
+
+func (r *WorkoutExerciseRepo) GetIncompleteExercisesCount(ctx context.Context, workoutId uint) (int64, error) {
+	var count int64
+	if err := r.db.WithContext(ctx).Model(&workout.WorkoutExercise{}).
+		Where("workout_id = ? AND completed = ?", workoutId, false).
+		Count(&count).
+		Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
