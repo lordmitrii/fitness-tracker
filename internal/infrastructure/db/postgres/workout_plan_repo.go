@@ -40,7 +40,7 @@ func (r *WorkoutPlanRepo) Update(ctx context.Context, wp *workout.WorkoutPlan) e
 		return res.Error
 	}
 	if res.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
+		return ErrNotFound
 	}
 	return nil
 }

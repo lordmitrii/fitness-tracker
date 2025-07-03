@@ -45,19 +45,18 @@ const WorkoutPlanSingle = () => {
     setAllWorkoutsCompleted(allCompleted);
   }, [workouts]);
 
-  const handleToggleExercise = (workoutId, exId) => {
+  const handleToggleExercise = (workoutId, exId, sets, reps, weight, checked) => {
     const workout = workouts.find((w) => w.id === workoutId);
     if (!workout) return;
     const exercise = workout.workout_exercises.find((ex) => ex.id === exId);
     if (!exercise) return;
 
-    const nextCompleted = !exercise.completed;
 
     setWorkouts((prev) =>
       prev.map((w) => {
         if (w.id === workoutId) {
           const newExercises = w.workout_exercises.map((ex) =>
-            ex.id === exId ? { ...ex, completed: nextCompleted } : ex
+            ex.id === exId ? { ...ex, completed: checked, sets, reps, weight } : ex
           );
           const workoutCompleted =
             newExercises.length > 0 && newExercises.every((ex) => ex.completed);
@@ -74,11 +73,17 @@ const WorkoutPlanSingle = () => {
     api
       .patch(
         `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutId}/workout-exercises/${exId}/update-complete`,
-        { completed: nextCompleted }
+        { completed: checked }
       )
-      .then(() => {
-        console.log("Exercise completion updated successfully");
-      })
+      .catch((error) => {
+        setError(error);
+      });
+
+      api
+      .patch(
+        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutId}/workout-exercises/${exId}`,
+        { sets, reps , weight }
+      )
       .catch((error) => {
         setError(error);
       });

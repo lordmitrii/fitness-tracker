@@ -11,7 +11,6 @@ const WorkoutCard = ({
   onDelete,
 }) => {
   const navigate = useNavigate();
-  
 
   return (
     <div className="rounded-2xl shadow-xl bg-white border border-gray-100 p-6 hover:shadow-2xl transition flex flex-col gap-3">
@@ -58,7 +57,9 @@ const WorkoutCard = ({
           <WorkoutExerciseTable
             key={workout.id}
             exercises={workout.workout_exercises}
-            onToggle={(exId) => onToggleExercise(workout.id, exId)}
+            onToggle={(exId, sets, reps, weight, checked) =>
+              onToggleExercise(workout.id, exId, sets, reps, weight, checked)
+            }
           />
         </div>
       )}

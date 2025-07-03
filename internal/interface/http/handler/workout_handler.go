@@ -302,12 +302,14 @@ func (h *WorkoutHandler) GetWorkoutExerciseByID(c *gin.Context) {
 
 func (h *WorkoutHandler) UpdateWorkoutExercise(c *gin.Context) {
 	id, _ := strconv.ParseUint(c.Param("exerciseID"), 10, 64)
+	workoutID, _ := strconv.ParseUint(c.Param("workoutID"), 10, 64)
 	var req workout.WorkoutExercise
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	req.ID = uint(id)
+	req.WorkoutID = uint(workoutID)
 
 	if err := h.svc.UpdateWorkoutExercise(c.Request.Context(), &req); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

@@ -34,7 +34,14 @@ func (r *WorkoutExerciseRepo) GetByWorkoutID(ctx context.Context, workoutID uint
 }
 
 func (r *WorkoutExerciseRepo) Update(ctx context.Context, e *workout.WorkoutExercise) error {
-	return r.db.WithContext(ctx).Save(e).Error
+	res := r.db.WithContext(ctx).Model(&workout.WorkoutExercise{}).Where("id = ?", e.ID).Updates(e)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return ErrNotFound
+	}
+	return nil
 }
 
 func (r *WorkoutExerciseRepo) Complete(ctx context.Context, e *workout.WorkoutExercise) error {
