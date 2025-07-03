@@ -32,6 +32,8 @@ type WorkoutRepository interface {
 	GetByWorkoutCycleID(ctx context.Context, workoutCycleID uint) ([]*Workout, error)
 	Update(ctx context.Context, w *Workout) error
 	Delete(ctx context.Context, id uint) error
+	Complete(ctx context.Context, w *Workout) error
+	GetIncompleteExercisesCount(ctx context.Context, id uint) (int64, error)
 }
 
 type WorkoutExerciseRepository interface {
@@ -39,6 +41,7 @@ type WorkoutExerciseRepository interface {
 	GetByID(ctx context.Context, id uint) (*WorkoutExercise, error)
 	GetByWorkoutID(ctx context.Context, workoutID uint) ([]*WorkoutExercise, error)
 	Update(ctx context.Context, e *WorkoutExercise) error
+	Complete(ctx context.Context, e *WorkoutExercise) error
 	Delete(ctx context.Context, id uint) error
 }
 

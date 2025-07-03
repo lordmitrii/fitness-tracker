@@ -3,11 +3,9 @@ package postgres
 import (
 	"context"
 	"errors"
-
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 	"gorm.io/gorm"
 )
-
 
 // WorkoutRepo implements workout.Repository using PostgreSQL.
 type WorkoutRepo struct {
@@ -69,6 +67,10 @@ func (r *WorkoutRepo) Update(ctx context.Context, w *workout.Workout) error {
 	return nil
 }
 
+func (r *WorkoutRepo) Complete(ctx context.Context, w *workout.Workout) error {
+	return r.db.WithContext(ctx).Model(&workout.Workout{}).Where("id = ?", w.ID).Select("completed").Updates(w).Error
+}
+
 func (r *WorkoutRepo) Delete(ctx context.Context, id uint) error {
 	res := r.db.WithContext(ctx).
 		Delete(&workout.Workout{}, id)
@@ -79,4 +81,15 @@ func (r *WorkoutRepo) Delete(ctx context.Context, id uint) error {
 		return ErrNotFound
 	}
 	return nil
+}
+
+func (r *WorkoutRepo) GetIncompleteExercisesCount(ctx context.Context, id uint) (int64, error) {
+	var count int64
+	if err := r.db.WithContext(ctx).Model(&workout.WorkoutExercise{}).
+		Where("workout_id = ? AND completed = ?", id, false).
+		Count(&count).
+		Error; err != nil {
+		return 0, err
+	}
+	return count, nil
 }

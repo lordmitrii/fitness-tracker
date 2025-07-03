@@ -43,27 +43,45 @@ const WorkoutPlanSingle = () => {
     const allCompleted =
       workouts.length > 0 && workouts.every((w) => w.completed);
     setAllWorkoutsCompleted(allCompleted);
-    // Optionally: PATCH to API here if you want to sync automatically
   }, [workouts]);
 
   const handleToggleExercise = (workoutId, exId) => {
+    const workout = workouts.find((w) => w.id === workoutId);
+    if (!workout) return;
+    const exercise = workout.workout_exercises.find((ex) => ex.id === exId);
+    if (!exercise) return;
+
+    const nextCompleted = !exercise.completed;
+
     setWorkouts((prev) =>
       prev.map((w) => {
         if (w.id === workoutId) {
           const newExercises = w.workout_exercises.map((ex) =>
-            ex.id === exId ? { ...ex, completed: !ex.completed } : ex
+            ex.id === exId ? { ...ex, completed: nextCompleted } : ex
           );
-          const completed =
+          const workoutCompleted =
             newExercises.length > 0 && newExercises.every((ex) => ex.completed);
           return {
             ...w,
             workout_exercises: newExercises,
-            completed,
+            completed: workoutCompleted,
           };
         }
         return w;
       })
     );
+
+    api
+      .patch(
+        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutId}/workout-exercises/${exId}/update-complete`,
+        { completed: nextCompleted }
+      )
+      .then(() => {
+        console.log("Exercise completion updated successfully");
+      })
+      .catch((error) => {
+        setError(error);
+      });
   };
 
   const handleCycleComplete = () => {
@@ -95,9 +113,7 @@ const WorkoutPlanSingle = () => {
     api
       .patch(
         `/workout-plans/${planID}/workout-cycles/${cycleID}/update-complete`,
-        {
-          completed: true,
-        }
+        { completed: true }
       )
       .then((res) => {
         setNextCycleID(res.data.next_cycle_id);

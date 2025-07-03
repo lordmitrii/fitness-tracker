@@ -256,6 +256,32 @@ func (s *workoutServiceImpl) UpdateWorkoutExercise(ctx context.Context, e *worko
 	return s.exerciseRepo.Update(ctx, e)
 }
 
+func (s *workoutServiceImpl) CompleteWorkoutExercise(ctx context.Context, e *workout.WorkoutExercise) error {
+	err := s.exerciseRepo.Complete(ctx, e)
+	if err != nil {
+		return err
+	}
+
+	w, err := s.workoutRepo.GetByID(ctx, e.WorkoutID)
+	if err != nil {
+		return err
+	}
+
+	incompletedExercisesCount, err := s.workoutRepo.GetIncompleteExercisesCount(ctx, w.ID)
+	if err != nil {
+		return err 
+	}
+
+	w.Completed = incompletedExercisesCount == 0
+
+    err = s.workoutRepo.Complete(ctx, w)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *workoutServiceImpl) DeleteWorkoutExercise(ctx context.Context, id uint) error {
 	return s.exerciseRepo.Delete(ctx, id)
 }

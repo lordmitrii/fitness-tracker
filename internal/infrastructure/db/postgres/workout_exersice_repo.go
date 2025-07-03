@@ -37,6 +37,10 @@ func (r *WorkoutExerciseRepo) Update(ctx context.Context, e *workout.WorkoutExer
 	return r.db.WithContext(ctx).Save(e).Error
 }
 
+func (r *WorkoutExerciseRepo) Complete(ctx context.Context, e *workout.WorkoutExercise) error {
+	return r.db.WithContext(ctx).Model(&workout.WorkoutExercise{}).Where("id = ?", e.ID).Select("completed").Updates(e).Error
+}
+
 func (r *WorkoutExerciseRepo) Delete(ctx context.Context, id uint) error {
 	res := r.db.WithContext(ctx).Delete(&workout.WorkoutExercise{}, id)
 	if res.Error != nil {
