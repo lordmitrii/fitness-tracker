@@ -44,6 +44,7 @@ type WorkoutExerciseRepository interface {
 	Complete(ctx context.Context, e *WorkoutExercise) error
 	Delete(ctx context.Context, id uint) error
 	GetIncompleteExercisesCount(ctx context.Context, workoutId uint) (int64, error)
+	GetRelatedIndividualExercise(ctx context.Context, id uint) (*IndividualExercise, error)
 }
 
 type ExerciseRepository interface {

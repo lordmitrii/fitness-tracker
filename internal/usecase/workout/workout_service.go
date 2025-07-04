@@ -19,12 +19,12 @@ type workoutServiceImpl struct {
 
 func NewWorkoutService(workoutPlanRepo workout.WorkoutPlanRepository, workoutCycleRepo workout.WorkoutCycleRepository, workoutRepo workout.WorkoutRepository, workoutExerciseRepo workout.WorkoutExerciseRepository, individualExerciseRepo workout.IndividualExerciseRepository, exerciseRepo workout.ExerciseRepository) *workoutServiceImpl {
 	return &workoutServiceImpl{
-		workoutPlanRepo:     workoutPlanRepo,
-		workoutCycleRepo:    workoutCycleRepo,
-		workoutRepo:         workoutRepo,
-		workoutExerciseRepo: workoutExerciseRepo,
+		workoutPlanRepo:        workoutPlanRepo,
+		workoutCycleRepo:       workoutCycleRepo,
+		workoutRepo:            workoutRepo,
+		workoutExerciseRepo:    workoutExerciseRepo,
 		individualExerciseRepo: individualExerciseRepo,
-		exerciseRepo:        exerciseRepo,
+		exerciseRepo:           exerciseRepo,
 	}
 }
 
@@ -278,6 +278,23 @@ func (s *workoutServiceImpl) GetWorkoutExercisesByWorkoutID(ctx context.Context,
 }
 
 func (s *workoutServiceImpl) UpdateWorkoutExercise(ctx context.Context, e *workout.WorkoutExercise) error {
+	individualExercise, err := s.workoutExerciseRepo.GetRelatedIndividualExercise(ctx, e.ID)
+	if err != nil {
+		return err
+	}
+
+	currentVolume := individualExercise.CurrentWeight * float64(individualExercise.CurrentReps)
+	newVolume := e.Weight * float64(e.Reps)
+
+	if newVolume > currentVolume {
+		individualExercise.CurrentReps = e.Reps
+		individualExercise.CurrentWeight = e.Weight
+	}
+
+	if err := s.individualExerciseRepo.Update(ctx, individualExercise); err != nil {
+		return err
+	}
+
 	return s.workoutExerciseRepo.Update(ctx, e)
 }
 
@@ -311,8 +328,8 @@ func (s *workoutServiceImpl) DeleteWorkoutExercise(ctx context.Context, id uint)
 	return s.workoutExerciseRepo.Delete(ctx, id)
 }
 
-func (s *workoutServiceImpl) GetIndividualExercisesByUserID(ctx context.Context, workoutPlanID uint) ([]*workout.IndividualExercise, error) {
-	return s.individualExerciseRepo.GetByUserID(ctx, workoutPlanID)
+func (s *workoutServiceImpl) GetIndividualExercisesByUserID(ctx context.Context, userID uint) ([]*workout.IndividualExercise, error) {
+	return s.individualExerciseRepo.GetByUserID(ctx, userID)
 }
 
 // This function has 4 cases:
@@ -331,7 +348,7 @@ func (s *workoutServiceImpl) GetIndividualExercisesByUserID(ctx context.Context,
 //   "user_id": 1,                            "user_id": 1,
 //   "exercise_id": 2,                        "exercise_id": 0,  (not provided)
 //   "name": "",                              "name": "Bench Press",
-//   "muscle_group": "",                      "muscle_group": "Chest",        
+//   "muscle_group": "",                      "muscle_group": "Chest",
 // }                                          }
 
 func (s *workoutServiceImpl) GetOrCreateIndividualExercise(ctx context.Context, individualExercise *workout.IndividualExercise) (*workout.IndividualExercise, error) {
@@ -359,10 +376,10 @@ func (s *workoutServiceImpl) GetOrCreateIndividualExercise(ctx context.Context, 
 			return nil, err
 		}
 		return individualExercise, nil
-	} 
-	
+	}
+
 	// Case 2 & 4: exerciseID is not provided (0)
-	existingIndividualExercise, err := s.individualExerciseRepo.GetByNameMuscleGroupAndUser(ctx, individualExercise.Name, individualExercise.MuscleGroup, individualExercise.UserID) 
+	existingIndividualExercise, err := s.individualExerciseRepo.GetByNameMuscleGroupAndUser(ctx, individualExercise.Name, individualExercise.MuscleGroup, individualExercise.UserID)
 	if err == nil {
 		// Case 2: Found existing individual exercise
 		return existingIndividualExercise, nil

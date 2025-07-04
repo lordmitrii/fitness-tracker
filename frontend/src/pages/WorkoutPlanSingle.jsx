@@ -86,7 +86,10 @@ const WorkoutPlanSingle = () => {
       .catch((error) => {
         setError(error);
       });
-
+    
+    // If the exerrcise is not completed, we don't need to update sets, reps, and weight
+    if (!checked) return;
+    
     api
       .patch(
         `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutId}/workout-exercises/${exId}`,

@@ -70,3 +70,13 @@ func (r *WorkoutExerciseRepo) GetIncompleteExercisesCount(ctx context.Context, w
 	}
 	return count, nil
 }
+
+func (r *WorkoutExerciseRepo) GetRelatedIndividualExercise(ctx context.Context, id uint) (*workout.IndividualExercise, error) {
+    var we workout.WorkoutExercise
+    if err := r.db.WithContext(ctx).
+        Preload("IndividualExercise").
+        First(&we, id).Error; err != nil {
+        return nil, err
+    }
+    return we.IndividualExercise, nil
+}

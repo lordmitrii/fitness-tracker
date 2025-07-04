@@ -30,35 +30,27 @@ const ExerciseStats = () => {
           <table className="min-w-full bg-gray-50 rounded-xl">
             <thead>
               <tr>
-                <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b w-1/6">
-                  ID
-                </th>
-                <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b w-1/6">
+                <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b w-1/4">
                   Exercise
                 </th>
-                <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b w-1/5">
+                <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b w-1/4">
                   Muscle Group
                 </th>
-                <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b w-1/6">
-                  Current Sets
-                </th>
-                <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b w-1/6">
-                  Current Reps
-                </th>
-                <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b w-1/6">
-                  Current Weight
+                <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b w-2/4">
+                  Current Best Working Weight
                 </th>
               </tr>
             </thead>
             <tbody>
               {stats.map((exercise) => (
                 <tr key={exercise.id} className="border-b last:border-0">
-                  <td className="py-2 px-4">{exercise.id}</td>
                   <td className="py-2 px-4">{exercise.name}</td>
                   <td className="py-2 px-4">{exercise.muscle_group}</td>
-                  <td className="py-2 px-4">{exercise.sets}</td>
-                  <td className="py-2 px-4">{exercise.reps}</td>
-                  <td className="py-2 px-4">{exercise.weight}</td>
+                  <td className="py-2 px-4">
+                    {exercise.current_reps && exercise.current_weight
+                      ? `${exercise.current_reps} reps * ${exercise.current_weight} kg`
+                      : "N/A"}
+                  </td>
                 </tr>
               ))}
             </tbody>
