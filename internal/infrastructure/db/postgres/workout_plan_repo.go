@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 	"gorm.io/gorm"
 )
@@ -20,7 +21,7 @@ func (r *WorkoutPlanRepo) Create(ctx context.Context, wp *workout.WorkoutPlan) e
 
 func (r *WorkoutPlanRepo) GetByID(ctx context.Context, id uint) (*workout.WorkoutPlan, error) {
 	var wp workout.WorkoutPlan
-	if err := r.db.WithContext(ctx).Preload("WorkoutCycles", func(db *gorm.DB) *gorm.DB {return db.Order("week_number ASC").Order("id ASC")}).First(&wp, id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("WorkoutCycles", func(db *gorm.DB) *gorm.DB { return db.Order("week_number ASC").Order("id ASC") }).First(&wp, id).Error; err != nil {
 		return nil, err
 	}
 	return &wp, nil
@@ -40,7 +41,7 @@ func (r *WorkoutPlanRepo) Update(ctx context.Context, wp *workout.WorkoutPlan) e
 		return res.Error
 	}
 	if res.RowsAffected == 0 {
-		return ErrNotFound
+		return custom_err.ErrNotFound
 	}
 	return nil
 }
@@ -51,7 +52,7 @@ func (r *WorkoutPlanRepo) Delete(ctx context.Context, id uint) error {
 		return res.Error
 	}
 	if res.RowsAffected == 0 {
-		return ErrNotFound
+		return custom_err.ErrNotFound
 	}
 	return nil
 }

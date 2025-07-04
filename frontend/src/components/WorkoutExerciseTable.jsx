@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { getExerciseProgressBadge } from "../utils/exerciseUtils";
 
 const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
   const [localExercises, setLocalExercises] = useState(exercises || []);
@@ -7,14 +8,34 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
     setLocalExercises(exercises);
   }, [exercises]);
 
+  const checkInputFields = (ex) => {
+    if (
+      typeof ex.sets !== "number" ||
+      typeof ex.reps !== "number" ||
+      typeof ex.weight !== "number" ||
+      isNaN(ex.sets) ||
+      isNaN(ex.reps) ||
+      isNaN(ex.weight)
+    ) {
+      return false;
+    }
+    if (ex.sets <= 0 || ex.reps <= 0 || ex.weight < 0) {
+      return false;
+    }
+    if (!Number.isInteger(ex.sets) || !Number.isInteger(ex.reps)) {
+      return false;
+    }
+    return true;
+  };
+
   return (
     <table className="min-w-full bg-gray-50 rounded-xl">
       <thead>
         <tr>
-          <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b w-1/20">
+          <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b w-1/40">
             Done
           </th>
-          <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b w-7/20">
+          <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b w-14/40">
             Exercise
           </th>
           <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b w-2/10">
@@ -25,6 +46,9 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
           </th>
           <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b w-2/10">
             Weight
+          </th>
+          <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b w-1/40">
+            Badge
           </th>
         </tr>
       </thead>
@@ -49,6 +73,12 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
                   title="Exercise completed"
                   onChange={(e) => {
                     const checked = e.target.checked;
+                    if (checked && !checkInputFields(ex)) {
+                      alert(
+                        "Please fill in valid sets, reps, and weight before completing this exercise."
+                      );
+                      return;
+                    }
                     setLocalExercises((prev) =>
                       prev.map((item) =>
                         item.id === ex.id
@@ -61,11 +91,12 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
                   disabled={!isCurrentCycle}
                 />
               </td>
-              <td className="py-2 px-4">{ex.exercise.name}</td>
+              <td className="py-2 px-4">{ex.individual_exercise.name}</td>
               <td className="py-2 px-4">
                 <input
                   type="number"
-                  value={ex.sets}
+                  placeholder={ex.previous_sets}
+                  value={ex.sets || ""}
                   onChange={(e) => {
                     setLocalExercises((prev) =>
                       prev.map((item) =>
@@ -82,7 +113,7 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
                   className={
                     ex.completed
                       ? "w-16 border border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 opacity-50 cursor-not-allowed focus:cursor-auto focus:opacity-100"
-                      : "w-16 border border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      : "placeholder:italic w-16 border border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   }
                   disabled={!isCurrentCycle}
                 />
@@ -90,7 +121,8 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
               <td className="py-2 px-4">
                 <input
                   type="number"
-                  value={ex.reps}
+                  placeholder={ex.previous_reps}
+                  value={ex.reps || ""}
                   onChange={(e) => {
                     setLocalExercises((prev) =>
                       prev.map((item) =>
@@ -107,7 +139,7 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
                   className={
                     ex.completed
                       ? "w-16 border border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 opacity-50 cursor-not-allowed focus:cursor-auto focus:opacity-100"
-                      : "w-16 border border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      : "placeholder:italic w-16 border border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   }
                   disabled={!isCurrentCycle}
                 />
@@ -115,7 +147,8 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
               <td className="py-2 px-4">
                 <input
                   type="number"
-                  value={ex.weight}
+                  placeholder={ex.previous_weight}
+                  value={ex.weight || ""}
                   onChange={(e) => {
                     setLocalExercises((prev) =>
                       prev.map((item) =>
@@ -132,11 +165,12 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
                   className={
                     ex.completed
                       ? "w-16 border border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 opacity-50 cursor-not-allowed focus:cursor-auto focus:opacity-100"
-                      : "w-16 border border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      : "placeholder:italic w-16 border border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   }
                   disabled={!isCurrentCycle}
                 />
               </td>
+              <td className="py-2 px-4">{getExerciseProgressBadge(ex)}</td>
             </tr>
           ))}
       </tbody>

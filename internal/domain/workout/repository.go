@@ -54,3 +54,13 @@ type ExerciseRepository interface {
 	Update(ctx context.Context, e *Exercise) error
 	Delete(ctx context.Context, id uint) error
 }
+
+type IndividualExerciseRepository interface {
+	Create(ctx context.Context, pe *IndividualExercise) error
+	GetByID(ctx context.Context, id uint) (*IndividualExercise, error)
+	GetByUserID(ctx context.Context, workoutPlanID uint) ([]*IndividualExercise, error)
+	GetByUserAndExerciseID(ctx context.Context, planID, exerciseID uint) (*IndividualExercise, error)
+	GetByNameMuscleGroupAndUser(ctx context.Context, name, muscleGroup string, userID uint) (*IndividualExercise, error)
+	Update(ctx context.Context, pe *IndividualExercise) error
+	Delete(ctx context.Context, id uint) error
+}

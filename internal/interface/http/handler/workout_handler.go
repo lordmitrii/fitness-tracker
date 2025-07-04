@@ -20,6 +20,12 @@ func NewWorkoutHandler(r *gin.RouterGroup, svc usecase.WorkoutService) {
 	auth := r.Group("")
 	auth.Use(middleware.JWTMiddleware())
 
+	ie := auth.Group("/individual-exercises")
+	{
+		ie.GET("", h.GetIndividualExercises)
+		ie.POST("", h.GetOrCreateIndividualExercise)
+	}
+
 	// Workout Plan Routes
 	wp := auth.Group("/workout-plans")
 	{
@@ -346,4 +352,32 @@ func (h *WorkoutHandler) DeleteWorkoutExercise(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusNoContent, nil)
+}
+
+func (h *WorkoutHandler) GetIndividualExercises(c *gin.Context) {
+	userID, _ := c.Get("userID")
+
+	exercises, err := h.svc.GetIndividualExercisesByUserID(c.Request.Context(), userID.(uint))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
+		return
+	}
+	c.JSON(http.StatusOK, exercises)
+}
+
+func (h *WorkoutHandler) GetOrCreateIndividualExercise(c *gin.Context) {
+	userID, _ := c.Get("userID")
+	var req workout.IndividualExercise
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	
+	req.UserID = userID.(uint)
+	individualExercise, err := h.svc.GetOrCreateIndividualExercise(c.Request.Context(), &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, individualExercise)
 }

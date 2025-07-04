@@ -138,31 +138,49 @@ const WorkoutPlanSingle = () => {
 
   const handleSaveExercise = (newExercise) => {
     api
-      .post(
-        `workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${selectedWorkout.id}/workout-exercises`,
-        {
-          exercise_id: newExercise.exercise.id,
-          sets: newExercise.sets,
-          reps: newExercise.reps,
-          weight: newExercise.weight,
-        }
-      )
-      .then(() => {
-        setWorkouts((prevWorkouts) =>
-          prevWorkouts.map((w) =>
-            w.id === selectedWorkout.id
-              ? {
-                  ...w,
-                  workout_exercises: [...w.workout_exercises, newExercise],
-                }
-              : w
+      .post(`individual-exercises`, {
+        exercise_id: newExercise.exercise.id,
+        name: newExercise.exercise.name,
+        muscle_group: newExercise.exercise.muscle_group,
+      })
+      .then((res1) => {
+        delete newExercise.exercise; // Remove the exercise object to match the API structure
+        const individualExercise = res1.data;
+        api
+          .post(
+            `workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${selectedWorkout.id}/workout-exercises`,
+            {
+              individual_exercise_id: individualExercise.id,
+              sets: newExercise.sets,
+              reps: newExercise.reps,
+              weight: newExercise.weight,
+            }
           )
-        );
-        setModalOpen(false);
-        setSelectedWorkout(null);
+          .then((res2) => {
+            const exerciseToAdd = {
+              ...res2.data,
+              individual_exercise: individualExercise,
+            };
+            setWorkouts((prevWorkouts) =>
+              prevWorkouts.map((w) =>
+                w.id === selectedWorkout.id
+                  ? {
+                      ...w,
+                      workout_exercises: [...w.workout_exercises, exerciseToAdd],
+                    }
+                  : w
+              )
+            );
+            setModalOpen(false);
+            setSelectedWorkout(null);
+          })
+          .catch((error) => {
+            setError(error);
+          });
       })
       .catch((error) => {
         setError(error);
+        return;
       });
   };
 

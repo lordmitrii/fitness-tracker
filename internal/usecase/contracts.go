@@ -34,6 +34,9 @@ type (
 		UpdateWorkoutExercise(ctx context.Context, e *workout.WorkoutExercise) error
 		CompleteWorkoutExercise(ctx context.Context, e *workout.WorkoutExercise) error
 		DeleteWorkoutExercise(ctx context.Context, id uint) error
+
+		GetIndividualExercisesByUserID(ctx context.Context, workoutPlanID uint) ([]*workout.IndividualExercise, error)
+		GetOrCreateIndividualExercise(ctx context.Context, individualExercise *workout.IndividualExercise) (*workout.IndividualExercise, error)
 	}
 
 	ExerciseService interface {

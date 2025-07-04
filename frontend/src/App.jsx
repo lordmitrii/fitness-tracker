@@ -12,6 +12,7 @@ import { CreateWorkoutPlanForm, UpdateWorkoutPlanForm } from "./pages/WorkoutPla
 import { CreateWorkoutForm, UpdateWorkoutForm } from "./pages/WorkoutForm";
 import WorkoutPlans from "./pages/WorkoutPlans";
 import WorkoutPlanSingle from "./pages/WorkoutPlanSingle";
+import ExerciseStats from "./pages/ExerciseStats";
 import Workout from "./pages/Workout";
 import PrivateRoute from "./components/PrivateRoute";
 
@@ -30,6 +31,8 @@ function App() {
               <Route path="/profile" element={<Profile />} />
               <Route path="/create-profile" element={<CreateProfileForm />} />
               <Route path="/update-profile" element={<UpdateProfileForm />} />
+
+              <Route path="/exercise-stats" element={<ExerciseStats />} />
 
               <Route path="/workout-plans" element={<WorkoutPlans />} />
               <Route path="/create-workout-plan" element={<CreateWorkoutPlanForm />} />

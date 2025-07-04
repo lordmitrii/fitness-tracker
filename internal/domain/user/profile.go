@@ -2,13 +2,13 @@ package user
 
 type Profile struct {
 	// @ReadOnly
-	ID       uint    `gorm:"primaryKey" json:"-"`
+	ID uint `gorm:"primaryKey" json:"-"`
 
-	UserID   uint    `gorm:"uniqueIndex;not null" json:"-"`
-	User     User   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"-"`
+	UserID uint `gorm:"uniqueIndex;not null" json:"-"`
+	User   User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"-"`
 
 	Age      int     `json:"age"`
 	HeightCm float64 `json:"height_cm"`
 	WeightKg float64 `json:"weight_kg"`
-	Sex   string  `json:"sex"`
+	Sex      string  `json:"sex"`
 }

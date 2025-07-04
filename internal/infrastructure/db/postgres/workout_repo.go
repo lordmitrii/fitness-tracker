@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"errors"
+	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 	"gorm.io/gorm"
 )
@@ -28,11 +29,11 @@ func (r *WorkoutRepo) GetByID(ctx context.Context, id uint) (*workout.Workout, e
 	var w workout.Workout
 	if err := r.db.WithContext(ctx).
 		Preload("WorkoutExercises").
-		Preload("WorkoutExercises.Exercise").
+		Preload("WorkoutExercises.IndividualExercise").
 		First(&w, id).
 		Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrNotFound
+			return nil, custom_err.ErrNotFound
 		}
 		return nil, err
 	}
@@ -46,7 +47,7 @@ func (r *WorkoutRepo) GetByWorkoutCycleID(ctx context.Context, workoutCycleID ui
 		Find(&workouts).
 		Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrNotFound
+			return nil, custom_err.ErrNotFound
 		}
 		return nil, err
 	}
@@ -62,7 +63,7 @@ func (r *WorkoutRepo) Update(ctx context.Context, w *workout.Workout) error {
 		return res.Error
 	}
 	if res.RowsAffected == 0 {
-		return ErrNotFound
+		return custom_err.ErrNotFound
 	}
 	return nil
 }
@@ -78,7 +79,7 @@ func (r *WorkoutRepo) Delete(ctx context.Context, id uint) error {
 		return res.Error
 	}
 	if res.RowsAffected == 0 {
-		return ErrNotFound
+		return custom_err.ErrNotFound
 	}
 	return nil
 }

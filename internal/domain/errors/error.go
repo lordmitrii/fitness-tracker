@@ -1,4 +1,4 @@
-package postgres
+package errors
 
 import (
 	"errors"
@@ -7,5 +7,6 @@ import (
 var ErrNotFound = errors.New("data not found")
 var ErrUserNotFound = errors.New("user not found")
 var ErrProfileNotFound = errors.New("profile not found")
+var ErrIndividualExerciseNotFound = errors.New("plan exercise not found")
 
 // more errors can be added here as needed

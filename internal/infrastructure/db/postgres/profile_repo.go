@@ -3,11 +3,10 @@ package postgres
 import (
 	"context"
 	"errors"
-
+	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 	"gorm.io/gorm"
 )
-
 
 type ProfileRepo struct {
 	db *gorm.DB
@@ -25,7 +24,7 @@ func (r *ProfileRepo) GetByUserID(ctx context.Context, userID uint) (*user.Profi
 	var p user.Profile
 	if err := r.db.WithContext(ctx).Where("user_id = ?", userID).First(&p).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrProfileNotFound
+			return nil, custom_err.ErrProfileNotFound
 		}
 		return nil, err
 	}
@@ -38,7 +37,7 @@ func (r *ProfileRepo) Update(ctx context.Context, p *user.Profile) error {
 		return res.Error
 	}
 	if res.RowsAffected == 0 {
-		return ErrProfileNotFound
+		return custom_err.ErrProfileNotFound
 	}
 	return nil
 }
@@ -48,7 +47,7 @@ func (r *ProfileRepo) Delete(ctx context.Context, id uint) error {
 		return res.Error
 	}
 	if res.RowsAffected == 0 {
-		return ErrProfileNotFound
+		return custom_err.ErrProfileNotFound
 	}
 	return nil
 }

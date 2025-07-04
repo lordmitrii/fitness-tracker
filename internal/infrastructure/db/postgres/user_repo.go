@@ -3,12 +3,11 @@ package postgres
 import (
 	"context"
 	"errors"
-
+	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 
 	"gorm.io/gorm"
 )
-
 
 type UserRepo struct {
 	db *gorm.DB
@@ -26,7 +25,7 @@ func (r *UserRepo) GetByEmail(ctx context.Context, email string) (*user.User, er
 	var u user.User
 	if err := r.db.WithContext(ctx).Where("email = ?", email).First(&u).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrUserNotFound
+			return nil, custom_err.ErrUserNotFound
 		}
 		return nil, err
 	}
@@ -37,7 +36,7 @@ func (r *UserRepo) GetByID(ctx context.Context, id uint) (*user.User, error) {
 	var u user.User
 	if err := r.db.WithContext(ctx).Where("id = ?", id).First(&u).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrUserNotFound
+			return nil, custom_err.ErrUserNotFound
 		}
 		return nil, err
 	}
@@ -50,7 +49,7 @@ func (r *UserRepo) Update(ctx context.Context, u *user.User) error {
 		return res.Error
 	}
 	if res.RowsAffected == 0 {
-		return ErrUserNotFound
+		return custom_err.ErrUserNotFound
 	}
 	return nil
 }
@@ -61,7 +60,7 @@ func (r *UserRepo) Delete(ctx context.Context, id uint) error {
 		return res.Error
 	}
 	if res.RowsAffected == 0 {
-		return ErrUserNotFound
+		return custom_err.ErrUserNotFound
 	}
 	return nil
 }

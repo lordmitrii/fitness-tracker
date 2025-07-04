@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 	"gorm.io/gorm"
 )
@@ -48,20 +49,20 @@ func (r *ExerciseRepo) Update(ctx context.Context, e *workout.Exercise) error {
 		return res.Error
 	}
 	if res.RowsAffected == 0 {
-		return ErrNotFound
+		return custom_err.ErrNotFound
 	}
 	return nil
 }
 
 func (r *ExerciseRepo) Delete(ctx context.Context, id uint) error {
 	res := r.db.WithContext(ctx).Delete(&workout.Exercise{}, id)
-	
+
 	if res.Error != nil {
 		return res.Error
 	}
 
 	if res.RowsAffected == 0 {
-		return ErrNotFound
+		return custom_err.ErrNotFound
 	}
 
 	return nil

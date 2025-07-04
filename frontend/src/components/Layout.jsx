@@ -76,6 +76,13 @@ const Layout = ({ children }) => {
                   Workouts
                 </Link>
                 <Link
+                to="/exercise-stats"
+                className="block text-gray-600 hover:text-blue-600 transition-colors"
+                onClick={() => setIsOpen(false)}
+                >
+                  Stats
+                </Link>
+                <Link
                   to="/profile"
                   className="block text-gray-600 hover:text-blue-600 transition-colors"
                   onClick={() => setIsOpen(false)}

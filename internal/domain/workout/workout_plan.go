@@ -1,16 +1,16 @@
 package workout
 
 import (
-	"time"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
+	"time"
 )
 
 type WorkoutPlan struct {
-	ID     uint   `gorm:"primaryKey" json:"id"`
-	Name   string `json:"name"`
+	ID   uint   `gorm:"primaryKey" json:"id"`
+	Name string `json:"name"`
 
-	UserID uint   `json:"user_id"`
-	User   user.User  `json:"-" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	UserID uint      `json:"user_id"`
+	User   user.User `json:"-" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
 	WorkoutCycles  []*WorkoutCycle `json:"workout_cycles" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	CurrentCycleID uint            `json:"current_cycle_id,omitempty"`
