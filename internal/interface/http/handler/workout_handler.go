@@ -24,6 +24,7 @@ func NewWorkoutHandler(r *gin.RouterGroup, svc usecase.WorkoutService) {
 	{
 		ie.GET("", h.GetIndividualExercises)
 		ie.POST("", h.GetOrCreateIndividualExercise)
+		ie.GET("/stats", h.GetIndividualExercisesStats)
 	}
 
 	// Workout Plan Routes
@@ -366,34 +367,6 @@ func (h *WorkoutHandler) DeleteWorkoutExercise(c *gin.Context) {
 	c.JSON(http.StatusNoContent, nil)
 }
 
-func (h *WorkoutHandler) GetIndividualExercises(c *gin.Context) {
-	userID, _ := c.Get("userID")
-
-	exercises, err := h.svc.GetIndividualExercisesByUserID(c.Request.Context(), userID.(uint))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
-		return
-	}
-	c.JSON(http.StatusOK, exercises)
-}
-
-func (h *WorkoutHandler) GetOrCreateIndividualExercise(c *gin.Context) {
-	userID, _ := c.Get("userID")
-	var req workout.IndividualExercise
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	
-	req.UserID = userID.(uint)
-	individualExercise, err := h.svc.GetOrCreateIndividualExercise(c.Request.Context(), &req)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, individualExercise)
-}
-
 func (h *WorkoutHandler) AddWorkoutSetToWorkoutExercise(c *gin.Context) {
 	workoutExerciseID, _ := strconv.ParseUint(c.Param("exerciseID"), 10, 64)
 	var req workout.WorkoutSet
@@ -475,4 +448,42 @@ func (h *WorkoutHandler) CompleteWorkoutSet(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, req)
+}
+
+func (h *WorkoutHandler) GetIndividualExercises(c *gin.Context) {
+	userID, _ := c.Get("userID")
+
+	exercises, err := h.svc.GetIndividualExercisesByUserID(c.Request.Context(), userID.(uint))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
+		return
+	}
+	c.JSON(http.StatusOK, exercises)
+}
+
+func (h *WorkoutHandler) GetOrCreateIndividualExercise(c *gin.Context) {
+	userID, _ := c.Get("userID")
+	var req workout.IndividualExercise
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	
+	req.UserID = userID.(uint)
+	individualExercise, err := h.svc.GetOrCreateIndividualExercise(c.Request.Context(), &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, individualExercise)
+}
+
+func (h *WorkoutHandler) GetIndividualExercisesStats(c *gin.Context) {
+	userID, _ := c.Get("userID")
+	stats, err := h.svc.GetIndividualExerciseStats(c.Request.Context(), userID.(uint))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, stats)
 }

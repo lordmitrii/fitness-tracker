@@ -43,8 +43,9 @@ type (
 		DeleteWorkoutSet(ctx context.Context, id uint) error
 		GetIncompleteSetsCount(ctx context.Context, workoutExerciseID uint) (int64, error)
 
-		GetIndividualExercisesByUserID(ctx context.Context, workoutPlanID uint) ([]*workout.IndividualExercise, error)
+		GetIndividualExercisesByUserID(ctx context.Context, userID uint) ([]*workout.IndividualExercise, error)
 		GetOrCreateIndividualExercise(ctx context.Context, individualExercise *workout.IndividualExercise) (*workout.IndividualExercise, error)
+		GetIndividualExerciseStats(ctx context.Context, userID uint) ([]*workout.IndividualExercise, error)
 	}
 
 	ExerciseService interface {

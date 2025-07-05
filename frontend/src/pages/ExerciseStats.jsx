@@ -8,7 +8,7 @@ const ExerciseStats = () => {
 
   useEffect(() => {
     api
-      .get("/individual-exercises")
+      .get("/individual-exercises/stats")
       .then((response) => {
         setStats(response.data);
         setLoading(false);

@@ -11,8 +11,8 @@ type IndividualExercise struct {
 	MuscleGroup string `json:"muscle_group"    gorm:"uniqueIndex:idx_name_muscle_group_user_id;not null"`
 
 	// TODO: remove these and add sercvice to calculate current best weight and reps
-	CurrentWeight float64 `json:"current_weight"  gorm:"default:0"`
-	CurrentReps   int     `json:"current_reps"    gorm:"default:0"`
+	CurrentWeight float64 `json:"current_weight"  gorm:"-"`
+	CurrentReps   int     `json:"current_reps"    gorm:"-"`
 
 	UserID uint      `json:"user_id"            gorm:"uniqueIndex:idx_name_muscle_group_user_id;not null"`
 	User   user.User `json:"-"                  gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`

@@ -80,3 +80,15 @@ func (r *WorkoutExerciseRepo) GetRelatedIndividualExercise(ctx context.Context, 
     }
     return we.IndividualExercise, nil
 }
+
+func (r *WorkoutExerciseRepo) GetLast5ByIndividualExerciseID(ctx context.Context, individualExerciseID uint) ([]*workout.WorkoutExercise, error) {
+	var exercises []*workout.WorkoutExercise
+	if err := r.db.WithContext(ctx).
+		Where("individual_exercise_id = ?", individualExerciseID).
+		Order("individual_exercise_id, created_at DESC").
+		Preload("WorkoutSets").Limit(5).
+		Find(&exercises).Error; err != nil {
+		return nil, err
+	}
+	return exercises, nil
+}
