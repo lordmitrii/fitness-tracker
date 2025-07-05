@@ -3,19 +3,29 @@ import { useNavigate } from "react-router-dom";
 import api from "../api";
 
 const Profile = () => {
-  const [profile, setProfile] = useState(null);
   const navigate = useNavigate();
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState(null);
+
 
   useEffect(() => {
+    setLoading(true);
     api
       .get("/users/profile")
       .then((response) => {
         setProfile(response.data);
+        setLoading(false);
       })
       .catch((error) => {
         setProfile({});
+        setError(error);
+        setLoading(false);
       });
   }, []);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error.message}</p>;
 
   return (
     <div className="flex flex-col min-h-screen items-center justify-start bg-gray-100 py-12">

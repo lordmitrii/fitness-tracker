@@ -133,7 +133,7 @@ const ProfileForm = ({ initialData = {}, onSubmit, submitLabel }) => {
                     value={s}
                     checked={formData.sex === s}
                     onChange={handleChange}
-                    className="form-radio text-blue-600"
+                    className="form-radio text-blue-600 accent-blue-600"
                   />
                   <span className="ml-2">{s}</span>
                 </label>

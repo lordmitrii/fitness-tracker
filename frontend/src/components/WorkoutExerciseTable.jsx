@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { getExerciseProgressBadge } from "../utils/exerciseUtils";
 
 const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
@@ -8,80 +8,71 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
     setLocalExercises(exercises);
   }, [exercises]);
 
-  const checkInputFields = (ex) => {
+  const checkInputFields = (set) => {
     if (
-      typeof ex.reps !== "number" ||
-      typeof ex.weight !== "number" ||
-      isNaN(ex.reps) ||
-      isNaN(ex.weight)
+      typeof set.reps !== "number" ||
+      typeof set.weight !== "number" ||
+      isNaN(set.reps) ||
+      isNaN(set.weight)
     ) {
       return false;
     }
-    if (ex.reps <= 0 || ex.weight < 0) {
+    if (set.reps <= 0 || set.weight < 0) {
       return false;
     }
-    if (!Number.isInteger(ex.reps)) {
+    if (!Number.isInteger(set.reps)) {
       return false;
     }
     return true;
   };
 
   return (
-    <table className="min-w-full bg-gray-50 rounded-xl">
-      <tbody>
-        {localExercises
-          .slice()
-          .sort((a, b) => a.index - b.index)
-          .map((ex) => (
-            <React.Fragment key={ex.id}>
-              <tr>
-                <td
-                  colSpan={5}
-                  className="py-3 px-4 font-bold text-lg border-b"
-                >
-                  {ex.index}. {ex.individual_exercise.name}
-                  <span className="ml-2 text-gray-600 text-base font-normal">
-                    ({ex.individual_exercise.muscle_group})
-                  </span>
-                </td>
-              </tr>
-              {/* Sets Table Header */}
-              <tr>
-                <th className="py-2 px-4 text-left font-semibold text-gray-700">
-                  Set
-                </th>
-                <th className="py-2 px-4 text-left font-semibold text-gray-700">
-                  Reps
-                </th>
-                <th className="py-2 px-4 text-left font-semibold text-gray-700">
-                  Weight
-                </th>
-                <th className="py-2 px-4 text-left font-semibold text-gray-700">
-                  Badge
-                </th>
-                <th className="py-2 px-4 text-left font-semibold text-gray-700">
-                  Done
-                </th>
-              </tr>
-              {/* Sets Table Rows */}
-              {(ex.workout_sets || [])
-                .sort((a, b) => a.index - b.index)
-                .map((set, setIdx) => (
-                  <tr
-                    key={set.id}
-                    className={
-                      setIdx % 2 === 0
-                        ? "bg-white border-b last:border-0"
-                        : "bg-gray-100 border-b last:border-0"
-                    }
-                  >
-                    <td className="py-2 px-4">#{setIdx + 1}</td>
-                    <td className="py-2 px-4">
+    <div className="flex flex-col gap-6 bg-gray-100 p-4 rounded-lg shadow-md">
+      {localExercises
+        .slice()
+        .sort((a, b) => a.index - b.index)
+        .map((ex) => (
+          <div
+            key={ex.id}
+            className="rounded-2xl shadow bg-white p-4 flex flex-col gap-4 border border-gray-100"
+          >
+            {/* Exercise header */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1">
+              <div className="font-bold text-lg text-blue-700">
+                {ex.index}. {ex.individual_exercise.name}
+                <span className="ml-2 text-gray-600 text-base font-normal">
+                  ({ex.individual_exercise.muscle_group})
+                </span>
+              </div>
+            </div>
+
+            {/* Sets table */}
+            <div className="overflow-x-auto">
+              <div className="min-w-full grid grid-cols-4 sm:grid-cols-5 gap-4 text-gray-600 font-semibold border-b pb-2">
+                <div className="hidden sm:block">Set</div>
+                <div className="">Reps</div>
+                <div className="">Weight (kg)</div>
+                <div className="invisible sm:visible text-center">Badge</div>
+                <div className="">Done</div>
+              </div>
+              <div className="flex flex-col divide-y">
+                {(ex.workout_sets || [])
+                  .sort((a, b) => a.index - b.index)
+                  .map((set, setIdx) => (
+                    <div
+                      key={set.id}
+                      className="min-w-full grid grid-cols-4 sm:grid-cols-5 gap-4 items-center py-2"
+                    >
+                      <div className="hidden sm:block font-medium text-gray-700">
+                        {setIdx + 1}
+                      </div>
                       <input
                         type="number"
                         placeholder={set.previous_reps}
                         value={set.reps || ""}
+                        min={1}
                         onChange={(e) => {
+                          const value = Number(e.target.value);
                           setLocalExercises((prev) =>
                             prev.map((item) =>
                               item.id === ex.id
@@ -92,7 +83,7 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
                                         sIdx === setIdx
                                           ? {
                                               ...s,
-                                              reps: Number(e.target.value),
+                                              reps: value,
                                               completed: false,
                                             }
                                           : s
@@ -102,20 +93,21 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
                             )
                           );
                         }}
-                        className={
+                        className={`w-full border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:italic ${
                           set.completed || !isCurrentCycle
-                            ? "w-16 border border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 opacity-50 cursor-not-allowed focus:cursor-auto focus:opacity-100"
-                            : "placeholder:italic w-16 border border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        }
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }`}
                         disabled={!isCurrentCycle}
                       />
-                    </td>
-                    <td className="py-2 px-4">
                       <input
                         type="number"
                         placeholder={set.previous_weight}
                         value={set.weight || ""}
+                        min={0}
+                        inputMode="decimal"
                         onChange={(e) => {
+                          const value = Number(e.target.value);
                           setLocalExercises((prev) =>
                             prev.map((item) =>
                               item.id === ex.id
@@ -126,7 +118,7 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
                                         sIdx === setIdx
                                           ? {
                                               ...s,
-                                              weight: Number(e.target.value),
+                                              weight: value,
                                               completed: false,
                                             }
                                           : s
@@ -136,18 +128,16 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
                             )
                           );
                         }}
-                        className={
+                        className={`w-full border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:italic ${
                           set.completed || !isCurrentCycle
-                            ? "w-16 border border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 opacity-50 cursor-not-allowed focus:cursor-auto focus:opacity-100"
-                            : "placeholder:italic w-16 border border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        }
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }`}
                         disabled={!isCurrentCycle}
                       />
-                    </td>
-                    <td className="py-2 px-4">
-                      {getExerciseProgressBadge(set)}
-                    </td>
-                    <td className="py-2 px-4">
+                      <span className="text-gray-500 text-sm w-5 justify-self-center">
+                        {getExerciseProgressBadge(set)}
+                      </span>
                       <input
                         type="checkbox"
                         checked={!!set.completed}
@@ -186,13 +176,13 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
                         title="Set completed"
                         disabled={!isCurrentCycle}
                       />
-                    </td>
-                  </tr>
-                ))}
-            </React.Fragment>
-          ))}
-      </tbody>
-    </table>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+        ))}
+    </div>
   );
 };
 

@@ -15,14 +15,11 @@ const WorkoutCard = ({
 
   return (
     <div className="rounded-2xl shadow-xl bg-white border border-gray-100 p-6 hover:shadow-2xl transition flex flex-col gap-3">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <Link
-            to={`/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workout.id}`}
-            className="text-2xl font-semibold text-blue-800 hover:underline"
-          >
+          <span className="text-2xl font-semibold text-blue-800">
             {workout.name}
-          </Link>
+          </span>
           <div className="text-gray-400 text-sm mt-1">
             Last updated: {new Date(workout.updated_at).toLocaleDateString()}
             <br />
@@ -34,7 +31,7 @@ const WorkoutCard = ({
             )}
           </div>
         </div>
-        <div className="mt-2 md:mt-0">
+        <div className="mt-2 sm:mt-0">
           <button
             className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors shadow mr-2"
             onClick={() =>
@@ -68,7 +65,7 @@ const WorkoutCard = ({
       <div className="flex justify-center mt-4">
         {isCurrentCycle && (
         <button
-          className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-full md:w-auto"
+          className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-full sm:w-auto"
           onClick={() => {
             setSelectedWorkout(workout);
             setModalOpen(true);

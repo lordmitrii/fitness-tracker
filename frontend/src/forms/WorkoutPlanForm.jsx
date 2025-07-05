@@ -3,7 +3,7 @@ import api from "../api";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 
-const WorkoutPlanForm = ({ initialData = {}, onSubmit, submitLabel }) => {
+const WorkoutPlanForm = ({ initialData = {}, onSubmit, label, submitText }) => {
   const [formData, setFormData] = useState({
     name: "",
     ...initialData,
@@ -43,7 +43,7 @@ const WorkoutPlanForm = ({ initialData = {}, onSubmit, submitLabel }) => {
     <div className="flex flex-col min-h-screen items-center justify-center bg-gray-100">
       <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
         <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">
-          {submitLabel}
+          {label}
         </h1>
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
@@ -71,7 +71,7 @@ const WorkoutPlanForm = ({ initialData = {}, onSubmit, submitLabel }) => {
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition-colors font-semibold"
           >
-            {submitLabel}
+            {submitText}
           </button>
         </form>
       </div>
@@ -97,7 +97,8 @@ export const CreateWorkoutPlanForm = () => {
   return (
     <WorkoutPlanForm
       onSubmit={handleCreate}
-      submitLabel="Create Workout Plan"
+      label="Create Workout Plan"
+      submitText="Create"
     />
   );
 };
@@ -143,7 +144,8 @@ export const UpdateWorkoutPlanForm = () => {
     <WorkoutPlanForm
       initialData={initialData}
       onSubmit={handleUpdate}
-      submitLabel="Update Workout Plan"
+      label="Update Workout Plan"
+      submitText="Update"
     />
   );
 };

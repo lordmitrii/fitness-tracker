@@ -1,10 +1,39 @@
+import { Link } from "react-router-dom";
+
 function NotFound() {
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      <h1 className="text-4xl font-bold">404 - Not Found</h1>
-      <p className="mt-4 text-lg">
-        The page you are looking for does not exist.
-      </p>
+    <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50 px-4">
+      <div className="bg-white rounded-2xl shadow-lg px-8 py-12 flex flex-col items-center max-w-md w-full">
+        <div className="flex w-16 h-16 text-yellow-400 mb-4 justify-center items-center rounded-full bg-yellow-100">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={1.5}
+          stroke="currentColor"
+          className="size-6"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
+          />
+        </svg>
+        </div>
+        <h1 className="text-5xl font-bold text-gray-800 mb-2">404</h1>
+        <p className="text-xl font-semibold text-gray-700 mb-2">
+          Page Not Found
+        </p>
+        <p className="text-gray-500 mb-6 text-center">
+          Oops! The page you are looking for doesn't exist or has been moved.
+        </p>
+        <Link
+          to="/"
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition"
+        >
+          Back Home
+        </Link>
+      </div>
     </div>
   );
 }

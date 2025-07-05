@@ -176,7 +176,7 @@ const WorkoutPlanSingle = () => {
                         ...w.workout_exercises,
                         exerciseToAdd,
                       ],
-                      completed: false, 
+                      completed: false,
                     }
                   : w
               )
@@ -249,25 +249,41 @@ const WorkoutPlanSingle = () => {
           <h2 className="text-xl text-gray-700 mb-6">
             Cycle: <span className="font-semibold">{workoutCycle.name}</span>
           </h2>
-          <div className="flex flex-col md:flex-row gap-4 mb-8">
+          <div className="flex flex-row gap-4 mb-8">
             <div className="w-1/3">
               {workoutCycle.previous_cycle_id && (
                 <button
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-full md:w-auto"
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-auto"
                   onClick={() =>
                     navigate(
                       `/workout-plans/${planID}/workout-cycles/${workoutCycle.previous_cycle_id}`
                     )
                   }
                 >
-                  &lt; View Previous Cycle
+                  <span className="flex items-center justify-between">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="size-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M15.75 19.5 8.25 12l7.5-7.5"
+                      />
+                    </svg>
+                    <div className="hidden sm:block">View Next Cycle</div>
+                  </span>
                 </button>
               )}
             </div>
             <div className="w-1/3 text-center">
               {workoutCycle.previous_cycle_id && (
                 <button
-                  className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-full md:w-auto"
+                  className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-full sm:w-auto"
                   onClick={handleDelete}
                 >
                   Delete Cycle
@@ -277,7 +293,7 @@ const WorkoutPlanSingle = () => {
             <div className="w-1/3 text-right">
               {(workoutCycle.next_cycle_id || nextCycleID) && (
                 <button
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-full md:w-auto md:ml-auto"
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-auto sm:ml-auto"
                   onClick={() =>
                     navigate(
                       `/workout-plans/${planID}/workout-cycles/${
@@ -286,7 +302,23 @@ const WorkoutPlanSingle = () => {
                     )
                   }
                 >
-                  View Next Cycle &gt;
+                  <span className="flex items-center justify-between">
+                    <div className="hidden sm:block">View Next Cycle</div>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="size-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                      />
+                    </svg>
+                  </span>
                 </button>
               )}
             </div>

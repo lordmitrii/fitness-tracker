@@ -3,17 +3,16 @@ import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
-import LoginForm from "./pages/LoginForm";
-import RegisterForm from "./pages/RegisterForm";
+import LoginForm from "./forms/LoginForm";
+import RegisterForm from "./forms/RegisterForm";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
-import { CreateProfileForm, UpdateProfileForm } from "./pages/ProfileForm";
-import { CreateWorkoutPlanForm, UpdateWorkoutPlanForm } from "./pages/WorkoutPlanForm";
-import { CreateWorkoutForm, UpdateWorkoutForm } from "./pages/WorkoutForm";
+import { CreateProfileForm, UpdateProfileForm } from "./forms/ProfileForm";
+import { CreateWorkoutPlanForm, UpdateWorkoutPlanForm } from "./forms/WorkoutPlanForm";
+import { CreateWorkoutForm, UpdateWorkoutForm } from "./forms/WorkoutForm";
 import WorkoutPlans from "./pages/WorkoutPlans";
 import WorkoutPlanSingle from "./pages/WorkoutPlanSingle";
 import ExerciseStats from "./pages/ExerciseStats";
-import Workout from "./pages/Workout";
 import PrivateRoute from "./components/PrivateRoute";
 
 function App() {
@@ -41,9 +40,6 @@ function App() {
               <Route path="/workout-plans/:planID/workout-cycles/:cycleID" element={<WorkoutPlanSingle />} />
               <Route path="/workout-plans/:planID/workout-cycles/:cycleID/create-workout" element={<CreateWorkoutForm />} />
               <Route path="/workout-plans/:planID/workout-cycles/:cycleID/update-workout/:workoutID" element={<UpdateWorkoutForm />} />
-
-              <Route path="/workout-plans/:planID/workout-cycles/:cycleID/workouts/:workoutID" element={<Workout />} />
-
             </Route>
 
             <Route path="*" element={<NotFound />} />

@@ -15,17 +15,17 @@ const Layout = ({ children }) => {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <header className="bg-white shadow">
-        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+        <div className="container mx-auto px-4 py-3 flex justify-between sm:items-center items-start">
           <Link
             to="/"
-            className="text-xl font-semibold text-gray-800 hover:text-blue-600"
+            className="text-xl font-semibold text-gray-800 hover:text-blue-600 w-full sm:w-auto"
           >
             Fitness Tracker
           </Link>
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden text-gray-800 focus:outline-none"
+            className="sm:hidden text-gray-800 focus:outline-none w-full justify-items-end"
             onClick={() => setIsOpen(!isOpen)}
           >
             <svg
@@ -57,7 +57,7 @@ const Layout = ({ children }) => {
           <nav
             className={`${
               isOpen ? "flex flex-col items-center" : "hidden"
-            } md:flex md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-4 mt-2 md:mt-0`}
+            } sm:flex sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 mt-2 sm:mt-0`}
           >
             <Link
               to="/"
@@ -94,7 +94,7 @@ const Layout = ({ children }) => {
                     handleLogout();
                     setIsOpen(false);
                   }}
-                  className="text-left md:text-center bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition-colors"
+                  className="text-left sm:text-center bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition-colors"
                 >
                   Logout
                 </button>
@@ -110,7 +110,7 @@ const Layout = ({ children }) => {
                 </Link>
                 <Link
                   to="/register"
-                  className="block md:inline-block bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
+                  className="block sm:inline-block bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
                   onClick={() => setIsOpen(false)}
                 >
                   Register
