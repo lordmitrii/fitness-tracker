@@ -263,6 +263,13 @@ func (s *workoutServiceImpl) DeleteWorkoutCycle(ctx context.Context, id uint) er
 }
 
 func (s *workoutServiceImpl) CreateWorkout(ctx context.Context, w *workout.Workout) error {
+	maxIndex, err := s.workoutRepo.GetMaxWorkoutIndexByWorkoutCycleID(ctx, w.WorkoutCycleID)
+	if err != nil {
+		return err
+	}
+
+	w.Index = maxIndex + 1
+
 	return s.workoutRepo.Create(ctx, w)
 }
 
@@ -276,16 +283,38 @@ func (s *workoutServiceImpl) UpdateWorkout(ctx context.Context, w *workout.Worko
 	return s.workoutRepo.Update(ctx, w)
 }
 func (s *workoutServiceImpl) DeleteWorkout(ctx context.Context, id uint) error {
-	return s.workoutRepo.Delete(ctx, id)
+	workout , err := s.workoutRepo.GetByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	workoutCycleID := workout.WorkoutCycleID
+	deletedIndex := workout.Index
+
+	if err := s.workoutRepo.Delete(ctx, id); err != nil {
+		return err
+	}
+
+	if err := s.workoutRepo.DecrementIndexesAfterWorkout(ctx,  workoutCycleID, deletedIndex); err != nil {
+        return err
+    }
+    return nil
 }
 func (s *workoutServiceImpl) CreateWorkoutExercise(ctx context.Context, e *workout.WorkoutExercise, qt int64) error {
+	maxIndex, err := s.workoutExerciseRepo.GetMaxIndexByWorkoutID(ctx, e.WorkoutID)
+	if err != nil {
+		return err
+	}
+
+	e.Index = maxIndex + 1
+
 	if qt <= 0 {
 		return fmt.Errorf("sets quantity must be greater than 0")
 	}
 	for i := int64(0); i < qt; i++ {
 		set := &workout.WorkoutSet{
 			WorkoutExerciseID: e.ID,
-			Index:             int(i),
+			Index:             int(i) + 1,
 			Completed:         false,
 		}
 		e.WorkoutSets = append(e.WorkoutSets, set)
@@ -360,10 +389,32 @@ func (s *workoutServiceImpl) CompleteWorkoutExercise(ctx context.Context, e *wor
 }
 
 func (s *workoutServiceImpl) DeleteWorkoutExercise(ctx context.Context, id uint) error {
-	return s.workoutExerciseRepo.Delete(ctx, id)
+	workoutExercise, err := s.workoutExerciseRepo.GetByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	workoutID := workoutExercise.WorkoutID
+	deletedIndex := workoutExercise.Index
+
+	if err := s.workoutExerciseRepo.Delete(ctx, id); err != nil {
+		return err
+	}
+
+	if err := s.workoutExerciseRepo.DecrementIndexesAfter(ctx, workoutID, deletedIndex); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *workoutServiceImpl) CreateWorkoutSet(ctx context.Context, ws *workout.WorkoutSet) error {
+	maxIndex, err := s.workoutSetRepo.GetMaxIndexByWorkoutExerciseID(ctx, ws.WorkoutExerciseID)
+	if err != nil {
+		return err
+	}
+	ws.Index = maxIndex + 1
+
 	we, err := s.workoutExerciseRepo.GetByID(ctx, ws.WorkoutExerciseID)
 	if err != nil {
 		return err
@@ -429,7 +480,23 @@ func (s *workoutServiceImpl) CompleteWorkoutSet(ctx context.Context, ws *workout
 }
 
 func (s *workoutServiceImpl) DeleteWorkoutSet(ctx context.Context, id uint) error {
-	return s.workoutSetRepo.Delete(ctx, id)
+	workoutSet, err := s.workoutSetRepo.GetByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	workoutExerciseID := workoutSet.WorkoutExerciseID
+	deletedIndex := workoutSet.Index
+
+	if err := s.workoutSetRepo.Delete(ctx, id); err != nil {
+		return err
+	}
+
+	if err := s.workoutSetRepo.DecrementIndexesAfter(ctx, workoutExerciseID, deletedIndex); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *workoutServiceImpl) GetIncompleteSetsCount(ctx context.Context, workoutExerciseID uint) (int64, error) {

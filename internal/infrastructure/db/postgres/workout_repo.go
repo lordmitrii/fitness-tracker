@@ -95,3 +95,26 @@ func (r *WorkoutRepo) GetIncompleteWorkoutsCount(ctx context.Context, workoutCyc
 	}
 	return count, nil
 }
+
+func (r *WorkoutRepo) GetMaxWorkoutIndexByWorkoutCycleID(ctx context.Context, workoutCycleID uint) (int, error) {
+	var max int
+	err := r.db.WithContext(ctx).
+		Model(&workout.Workout{}).
+		Where("workout_cycle_id = ?", workoutCycleID).
+		Select("COALESCE(MAX(index), 0)").
+		Scan(&max).Error
+
+	if err != nil {
+		return 0, err
+	}
+	return max, nil
+}
+
+
+func (r *WorkoutRepo) DecrementIndexesAfterWorkout(ctx context.Context,  workoutCycleID uint, deletedIndex int) error {
+	return r.db.WithContext(ctx).
+		Model(&workout.Workout{}).
+		Where("workout_cycle_id = ? AND index > ?", workoutCycleID, deletedIndex).
+		Update("index", gorm.Expr("index - 1")).
+		Error
+}

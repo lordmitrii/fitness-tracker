@@ -72,13 +72,13 @@ func (r *WorkoutExerciseRepo) GetIncompleteExercisesCount(ctx context.Context, w
 }
 
 func (r *WorkoutExerciseRepo) GetRelatedIndividualExercise(ctx context.Context, id uint) (*workout.IndividualExercise, error) {
-    var we workout.WorkoutExercise
-    if err := r.db.WithContext(ctx).
-        Preload("IndividualExercise").
-        First(&we, id).Error; err != nil {
-        return nil, err
-    }
-    return we.IndividualExercise, nil
+	var we workout.WorkoutExercise
+	if err := r.db.WithContext(ctx).
+		Preload("IndividualExercise").
+		First(&we, id).Error; err != nil {
+		return nil, err
+	}
+	return we.IndividualExercise, nil
 }
 
 func (r *WorkoutExerciseRepo) GetLast5ByIndividualExerciseID(ctx context.Context, individualExerciseID uint) ([]*workout.WorkoutExercise, error) {
@@ -91,4 +91,23 @@ func (r *WorkoutExerciseRepo) GetLast5ByIndividualExerciseID(ctx context.Context
 		return nil, err
 	}
 	return exercises, nil
+}
+
+func (r *WorkoutExerciseRepo) GetMaxIndexByWorkoutID(ctx context.Context, workoutID uint) (int, error) {
+	var maxIndex int
+	err := r.db.WithContext(ctx).
+		Model(&workout.WorkoutExercise{}).
+		Where("workout_id = ?", workoutID).
+		Select("COALESCE(MAX(index), 0)").
+		Scan(&maxIndex).Error
+
+	return maxIndex, err
+}
+
+func (r *WorkoutExerciseRepo) DecrementIndexesAfter(ctx context.Context, workoutID uint, deletedIndex int) error {
+	return r.db.WithContext(ctx).
+		Model(&workout.WorkoutExercise{}).
+		Where("workout_id = ? AND index > ?", workoutID, deletedIndex).
+		Update("index", gorm.Expr("index - 1")).
+		Error
 }
