@@ -28,8 +28,8 @@ func (r *WorkoutRepo) BulkCreate(ctx context.Context, workouts []*workout.Workou
 func (r *WorkoutRepo) GetByID(ctx context.Context, id uint) (*workout.Workout, error) {
 	var w workout.Workout
 	if err := r.db.WithContext(ctx).
-		Preload("WorkoutExercises").
 		Preload("WorkoutExercises.IndividualExercise").
+		Preload("WorkoutExercises.WorkoutSets").
 		First(&w, id).
 		Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

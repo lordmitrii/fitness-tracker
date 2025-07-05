@@ -57,6 +57,14 @@ func NewWorkoutHandler(r *gin.RouterGroup, svc usecase.WorkoutService) {
 		wp.PATCH("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID", h.UpdateWorkoutExercise)
 		wp.DELETE("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID", h.DeleteWorkoutExercise)
 		wp.PATCH("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/update-complete", h.CompleteWorkoutExercise)
+
+		wp.POST("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/workout-sets", h.AddWorkoutSetToWorkoutExercise)
+		wp.GET("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/workout-sets", h.GetWorkoutSetsByWorkoutExerciseID)
+
+		wp.GET("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/workout-sets/:setID", h.GetWorkoutSetByID)
+		wp.PATCH(":id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/workout-sets/:setID", h.UpdateWorkoutSet)
+		wp.DELETE("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/workout-sets/:setID", h.DeleteWorkoutSet)
+		wp.PATCH(":id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/workout-sets/:setID/update-complete", h.CompleteWorkoutSet)
 	}
 
 }
@@ -268,17 +276,21 @@ func (h *WorkoutHandler) DeleteWorkout(c *gin.Context) {
 	}
 	c.JSON(http.StatusNoContent, nil)
 }
-
 func (h *WorkoutHandler) AddWorkoutExerciseToWorkout(c *gin.Context) {
 	id, _ := strconv.ParseUint(c.Param("workoutID"), 10, 64)
-	var req workout.WorkoutExercise
+
+	var req struct {
+		workout.WorkoutExercise
+		Qt int64 `json:"sets_qt"`
+	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	req.WorkoutID = uint(id)
 
-	if err := h.svc.CreateWorkoutExercise(c.Request.Context(), &req); err != nil {
+	err := h.svc.CreateWorkoutExercise(c.Request.Context(), &req.WorkoutExercise, req.Qt)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -380,4 +392,87 @@ func (h *WorkoutHandler) GetOrCreateIndividualExercise(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, individualExercise)
+}
+
+func (h *WorkoutHandler) AddWorkoutSetToWorkoutExercise(c *gin.Context) {
+	workoutExerciseID, _ := strconv.ParseUint(c.Param("exerciseID"), 10, 64)
+	var req workout.WorkoutSet
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	req.WorkoutExerciseID = uint(workoutExerciseID)
+
+	if err := h.svc.CreateWorkoutSet(c.Request.Context(), &req); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, req)
+}
+
+func (h *WorkoutHandler) GetWorkoutSetsByWorkoutExerciseID(c *gin.Context) {
+	workoutExerciseID, _ := strconv.ParseUint(c.Param("exerciseID"), 10, 64)
+	sets, err := h.svc.GetWorkoutSetsByWorkoutExerciseID(c.Request.Context(), uint(workoutExerciseID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
+		return
+	}
+	c.JSON(http.StatusOK, sets)
+}
+func (h *WorkoutHandler) DeleteWorkoutSet(c *gin.Context) {
+	setID, _ := strconv.ParseUint(c.Param("setID"), 10, 64)
+	if err := h.svc.DeleteWorkoutSet(c.Request.Context(), uint(setID)); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusNoContent, nil)
+}
+
+func (h *WorkoutHandler) GetWorkoutSetByID(c *gin.Context) {
+	setID, _ := strconv.ParseUint(c.Param("setID"), 10, 64)
+	set, err := h.svc.GetWorkoutSetByID(c.Request.Context(), uint(setID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
+		return
+	}
+	c.JSON(http.StatusOK, set)
+}
+
+func (h *WorkoutHandler) UpdateWorkoutSet(c *gin.Context) {
+	setID, _ := strconv.ParseUint(c.Param("setID"), 10, 64)
+	workoutExerciseID, _ := strconv.ParseUint(c.Param("exerciseID"), 10, 64)
+	var req workout.WorkoutSet
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	req.ID = uint(setID)
+	req.WorkoutExerciseID = uint(workoutExerciseID)
+
+	if err := h.svc.UpdateWorkoutSet(c.Request.Context(), &req); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, req)
+}
+
+func (h *WorkoutHandler) CompleteWorkoutSet(c *gin.Context) {
+	setID, _ := strconv.ParseUint(c.Param("setID"), 10, 64)
+	workoutExerciseID, _ := strconv.ParseUint(c.Param("exerciseID"), 10, 64)
+	var req workout.WorkoutSet
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	req.ID = uint(setID)
+	req.WorkoutExerciseID = uint(workoutExerciseID)
+
+	if err := h.svc.CompleteWorkoutSet(c.Request.Context(), &req); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, req)
 }

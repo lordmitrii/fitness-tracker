@@ -28,12 +28,20 @@ type (
 		UpdateWorkout(ctx context.Context, w *workout.Workout) error
 		DeleteWorkout(ctx context.Context, id uint) error
 
-		CreateWorkoutExercise(ctx context.Context, e *workout.WorkoutExercise) error
+		CreateWorkoutExercise(ctx context.Context, e *workout.WorkoutExercise, qt int64) error
 		GetWorkoutExerciseByID(ctx context.Context, id uint) (*workout.WorkoutExercise, error)
 		GetWorkoutExercisesByWorkoutID(ctx context.Context, workoutID uint) ([]*workout.WorkoutExercise, error)
 		UpdateWorkoutExercise(ctx context.Context, e *workout.WorkoutExercise) error
 		CompleteWorkoutExercise(ctx context.Context, e *workout.WorkoutExercise) error
 		DeleteWorkoutExercise(ctx context.Context, id uint) error
+
+		CreateWorkoutSet(ctx context.Context, ws *workout.WorkoutSet) error
+		GetWorkoutSetByID(ctx context.Context, id uint) (*workout.WorkoutSet, error)
+		GetWorkoutSetsByWorkoutExerciseID(ctx context.Context, workoutExerciseID uint) ([]*workout.WorkoutSet, error)
+		UpdateWorkoutSet(ctx context.Context, ws *workout.WorkoutSet) error
+		CompleteWorkoutSet(ctx context.Context, ws *workout.WorkoutSet) error
+		DeleteWorkoutSet(ctx context.Context, id uint) error
+		GetIncompleteSetsCount(ctx context.Context, workoutExerciseID uint) (int64, error)
 
 		GetIndividualExercisesByUserID(ctx context.Context, workoutPlanID uint) ([]*workout.IndividualExercise, error)
 		GetOrCreateIndividualExercise(ctx context.Context, individualExercise *workout.IndividualExercise) (*workout.IndividualExercise, error)

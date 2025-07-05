@@ -48,52 +48,57 @@ const WorkoutPlanSingle = () => {
   const handleToggleExercise = (
     workoutId,
     exId,
-    sets,
+    setId,
     reps,
     weight,
     checked
   ) => {
-    const workout = workouts.find((w) => w.id === workoutId);
-    if (!workout) return;
-    const exercise = workout.workout_exercises.find((ex) => ex.id === exId);
-    if (!exercise) return;
-
     setWorkouts((prev) =>
       prev.map((w) => {
-        if (w.id === workoutId) {
-          const newExercises = w.workout_exercises.map((ex) =>
-            ex.id === exId
-              ? { ...ex, completed: checked, sets, reps, weight }
-              : ex
+        if (w.id !== workoutId) return w;
+
+        const newExercises = w.workout_exercises.map((ex) => {
+          if (ex.id !== exId) return ex;
+          const newSets = ex.workout_sets.map((s) =>
+            s.id === setId ? { ...s, completed: checked, reps, weight } : s
           );
-          const workoutCompleted =
-            newExercises.length > 0 && newExercises.every((ex) => ex.completed);
-          return {
-            ...w,
-            workout_exercises: newExercises,
-            completed: workoutCompleted,
-          };
-        }
-        return w;
+          const exerciseCompleted =
+            newSets.length > 0 && newSets.every((s) => s.completed);
+          return { ...ex, workout_sets: newSets, completed: exerciseCompleted };
+        });
+
+        const workoutCompleted =
+          newExercises.length > 0 &&
+          newExercises.every(
+            (ex) =>
+              ex.workout_sets.length > 0 &&
+              ex.workout_sets.every((s) => s.completed)
+          );
+
+        return {
+          ...w,
+          workout_exercises: newExercises,
+          completed: workoutCompleted,
+        };
       })
     );
 
     api
       .patch(
-        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutId}/workout-exercises/${exId}/update-complete`,
+        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutId}/workout-exercises/${exId}/workout-sets/${setId}/update-complete`,
         { completed: checked }
       )
       .catch((error) => {
         setError(error);
       });
-    
-    // If the exerrcise is not completed, we don't need to update sets, reps, and weight
+
+    // If the set is not completed, we don't need to update sets, reps, and weight
     if (!checked) return;
-    
+
     api
       .patch(
-        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutId}/workout-exercises/${exId}`,
-        { sets, reps, weight }
+        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutId}/workout-exercises/${exId}/workout-sets/${setId}`,
+        { reps, weight }
       )
       .catch((error) => {
         setError(error);
@@ -154,9 +159,7 @@ const WorkoutPlanSingle = () => {
             `workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${selectedWorkout.id}/workout-exercises`,
             {
               individual_exercise_id: individualExercise.id,
-              sets: newExercise.sets,
-              reps: newExercise.reps,
-              weight: newExercise.weight,
+              sets_qt: newExercise.sets,
             }
           )
           .then((res2) => {
@@ -169,7 +172,11 @@ const WorkoutPlanSingle = () => {
                 w.id === selectedWorkout.id
                   ? {
                       ...w,
-                      workout_exercises: [...w.workout_exercises, exerciseToAdd],
+                      workout_exercises: [
+                        ...w.workout_exercises,
+                        exerciseToAdd,
+                      ],
+                      completed: false, 
                     }
                   : w
               )

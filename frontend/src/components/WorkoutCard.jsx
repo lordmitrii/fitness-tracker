@@ -58,8 +58,8 @@ const WorkoutCard = ({
           <WorkoutExerciseTable
             key={workout.id}
             exercises={workout.workout_exercises}
-            onToggle={(exId, sets, reps, weight, checked) =>
-              onToggleExercise(workout.id, exId, sets, reps, weight, checked)
+            onToggle={(exId, setId, reps, weight, checked) =>
+              onToggleExercise(workout.id, exId, setId, reps, weight, checked)
             }
             isCurrentCycle={isCurrentCycle}
           />

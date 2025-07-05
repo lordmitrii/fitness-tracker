@@ -21,7 +21,7 @@ func (r *WorkoutCycleRepo) Create(ctx context.Context, wc *workout.WorkoutCycle)
 func (r *WorkoutCycleRepo) GetByID(ctx context.Context, id uint) (*workout.WorkoutCycle, error) {
 	var wc workout.WorkoutCycle
 	if err := r.db.WithContext(ctx).Preload("Workouts", func(db *gorm.DB) *gorm.DB {
-		return db.Preload("WorkoutExercises").Preload("WorkoutExercises.IndividualExercise").Order("index ASC").Order("id ASC")
+		return db.Preload("WorkoutExercises.IndividualExercise").Preload("WorkoutExercises.WorkoutSets").Order("index ASC").Order("id ASC")
 	}).First(&wc, id).Error; err != nil {
 		return nil, err
 	}

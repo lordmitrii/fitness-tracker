@@ -44,7 +44,6 @@ type WorkoutExerciseRepository interface {
 	Complete(ctx context.Context, e *WorkoutExercise) error
 	Delete(ctx context.Context, id uint) error
 	GetIncompleteExercisesCount(ctx context.Context, workoutId uint) (int64, error)
-	GetRelatedIndividualExercise(ctx context.Context, id uint) (*IndividualExercise, error)
 }
 
 type ExerciseRepository interface {
@@ -64,4 +63,14 @@ type IndividualExerciseRepository interface {
 	GetByNameMuscleGroupAndUser(ctx context.Context, name, muscleGroup string, userID uint) (*IndividualExercise, error)
 	Update(ctx context.Context, pe *IndividualExercise) error
 	Delete(ctx context.Context, id uint) error
+}
+
+type WorkoutSetRepository interface {
+	Create(ctx context.Context, ws *WorkoutSet) error
+	GetByID(ctx context.Context, id uint) (*WorkoutSet, error)
+	GetByWorkoutExerciseID(ctx context.Context, workoutExerciseID uint) ([]*WorkoutSet, error)
+	Update(ctx context.Context, ws *WorkoutSet) error
+	Complete(ctx context.Context, ws *WorkoutSet) error
+	Delete(ctx context.Context, id uint) error
+	GetIncompleteSetsCount(ctx context.Context, workoutExerciseID uint) (int64, error)
 }

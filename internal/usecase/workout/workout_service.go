@@ -13,16 +13,18 @@ type workoutServiceImpl struct {
 	workoutCycleRepo       workout.WorkoutCycleRepository
 	workoutRepo            workout.WorkoutRepository
 	workoutExerciseRepo    workout.WorkoutExerciseRepository
+	workoutSetRepo         workout.WorkoutSetRepository
 	individualExerciseRepo workout.IndividualExerciseRepository
 	exerciseRepo           workout.ExerciseRepository
 }
 
-func NewWorkoutService(workoutPlanRepo workout.WorkoutPlanRepository, workoutCycleRepo workout.WorkoutCycleRepository, workoutRepo workout.WorkoutRepository, workoutExerciseRepo workout.WorkoutExerciseRepository, individualExerciseRepo workout.IndividualExerciseRepository, exerciseRepo workout.ExerciseRepository) *workoutServiceImpl {
+func NewWorkoutService(workoutPlanRepo workout.WorkoutPlanRepository, workoutCycleRepo workout.WorkoutCycleRepository, workoutRepo workout.WorkoutRepository, workoutExerciseRepo workout.WorkoutExerciseRepository, workoutSetRepo workout.WorkoutSetRepository, individualExerciseRepo workout.IndividualExerciseRepository, exerciseRepo workout.ExerciseRepository) *workoutServiceImpl {
 	return &workoutServiceImpl{
 		workoutPlanRepo:        workoutPlanRepo,
 		workoutCycleRepo:       workoutCycleRepo,
 		workoutRepo:            workoutRepo,
 		workoutExerciseRepo:    workoutExerciseRepo,
+		workoutSetRepo:         workoutSetRepo,
 		individualExerciseRepo: individualExerciseRepo,
 		exerciseRepo:           exerciseRepo,
 	}
@@ -105,12 +107,21 @@ func (s *workoutServiceImpl) GetWorkoutCycleByID(ctx context.Context, id uint) (
 		// Copy exercises from the previous workout
 		for _, we := range w.WorkoutExercises {
 			newExercise := &workout.WorkoutExercise{
-				WorkoutID:            newWorkout.ID,
+				WorkoutID: newWorkout.ID,
 				IndividualExerciseID: we.IndividualExerciseID,
-				PreviousSets:         we.Sets,
-				PreviousReps:         we.Reps,
-				PreviousWeight:       we.Weight,
-				Completed:            false,
+				Index:     we.Index,
+				Completed: false,
+			}
+			// Copy sets from the previous workout exercise
+			for _, ws := range we.WorkoutSets {
+				newSet := &workout.WorkoutSet{
+					WorkoutExerciseID:    newExercise.ID,
+					Index:                ws.Index,
+					PreviousWeight:       ws.Weight,
+					PreviousReps:         ws.Reps,
+					Completed:            false,
+				}
+				newExercise.WorkoutSets = append(newExercise.WorkoutSets, newSet)
 			}
 			newWorkout.WorkoutExercises = append(newWorkout.WorkoutExercises, newExercise)
 		}
@@ -267,7 +278,31 @@ func (s *workoutServiceImpl) UpdateWorkout(ctx context.Context, w *workout.Worko
 func (s *workoutServiceImpl) DeleteWorkout(ctx context.Context, id uint) error {
 	return s.workoutRepo.Delete(ctx, id)
 }
-func (s *workoutServiceImpl) CreateWorkoutExercise(ctx context.Context, e *workout.WorkoutExercise) error {
+func (s *workoutServiceImpl) CreateWorkoutExercise(ctx context.Context, e *workout.WorkoutExercise, qt int64) error {
+	if qt <= 0 {
+		return fmt.Errorf("sets quantity must be greater than 0")
+	}
+	for i := int64(0); i < qt; i++ {
+		set := &workout.WorkoutSet{
+			WorkoutExerciseID: e.ID,
+			Index:             int(i),
+			Completed:         false,
+		}
+		e.WorkoutSets = append(e.WorkoutSets, set)
+	}
+
+	w, err := s.workoutRepo.GetByID(ctx, e.WorkoutID)
+	if err != nil {
+		return err
+	}
+
+	w.Completed = false
+
+	if err := s.workoutRepo.Complete(ctx, w); err != nil {
+		return err
+	}
+
+
 	return s.workoutExerciseRepo.Create(ctx, e)
 }
 func (s *workoutServiceImpl) GetWorkoutExerciseByID(ctx context.Context, id uint) (*workout.WorkoutExercise, error) {
@@ -278,22 +313,22 @@ func (s *workoutServiceImpl) GetWorkoutExercisesByWorkoutID(ctx context.Context,
 }
 
 func (s *workoutServiceImpl) UpdateWorkoutExercise(ctx context.Context, e *workout.WorkoutExercise) error {
-	individualExercise, err := s.workoutExerciseRepo.GetRelatedIndividualExercise(ctx, e.ID)
-	if err != nil {
-		return err
-	}
+	// individualExercise, err := s.workoutExerciseRepo.GetRelatedIndividualExercise(ctx, e.ID)
+	// if err != nil {
+	// 	return err
+	// }
 
-	currentVolume := individualExercise.CurrentWeight * float64(individualExercise.CurrentReps)
-	newVolume := e.Weight * float64(e.Reps)
+	// currentVolume := individualExercise.CurrentWeight * float64(individualExercise.CurrentReps)
+	// newVolume := e.Weight * float64(e.Reps)
 
-	if newVolume > currentVolume {
-		individualExercise.CurrentReps = e.Reps
-		individualExercise.CurrentWeight = e.Weight
-	}
+	// if newVolume > currentVolume {
+	// 	individualExercise.CurrentReps = e.Reps
+	// 	individualExercise.CurrentWeight = e.Weight
+	// }
 
-	if err := s.individualExerciseRepo.Update(ctx, individualExercise); err != nil {
-		return err
-	}
+	// if err := s.individualExerciseRepo.Update(ctx, individualExercise); err != nil {
+	// 	return err
+	// }
 
 	return s.workoutExerciseRepo.Update(ctx, e)
 }
@@ -397,4 +432,77 @@ func (s *workoutServiceImpl) GetOrCreateIndividualExercise(ctx context.Context, 
 		return nil, err
 	}
 	return individualExercise, nil
+}
+
+func (s *workoutServiceImpl) CreateWorkoutSet(ctx context.Context, ws *workout.WorkoutSet) error {
+	we, err := s.workoutExerciseRepo.GetByID(ctx, ws.WorkoutExerciseID)
+	if err != nil {
+		return err
+	}
+
+	we.Completed = false
+	if err := s.workoutExerciseRepo.Complete(ctx, we); err != nil {
+		return err
+	}
+
+	return s.workoutSetRepo.Create(ctx, ws)
+}
+
+func (s *workoutServiceImpl) GetWorkoutSetByID(ctx context.Context, id uint) (*workout.WorkoutSet, error) {
+	return s.workoutSetRepo.GetByID(ctx, id)
+}
+
+func (s *workoutServiceImpl) GetWorkoutSetsByWorkoutExerciseID(ctx context.Context, workoutExerciseID uint) ([]*workout.WorkoutSet, error) {
+	return s.workoutSetRepo.GetByWorkoutExerciseID(ctx, workoutExerciseID)
+}
+
+func (s *workoutServiceImpl) UpdateWorkoutSet(ctx context.Context, ws *workout.WorkoutSet) error {
+	return s.workoutSetRepo.Update(ctx, ws)
+}
+func (s *workoutServiceImpl) CompleteWorkoutSet(ctx context.Context, ws *workout.WorkoutSet) error {
+	err := s.workoutSetRepo.Complete(ctx, ws)
+	if err != nil {
+		return err
+	}
+
+	we, err := s.workoutExerciseRepo.GetByID(ctx, ws.WorkoutExerciseID)
+	if err != nil {
+		return err
+	}
+
+	incompletedSetsCount, err := s.workoutSetRepo.GetIncompleteSetsCount(ctx, we.ID)
+	if err != nil {
+		return err
+	}
+
+	we.Completed = incompletedSetsCount == 0
+	err = s.workoutExerciseRepo.Complete(ctx, we)
+	if err != nil {
+		return err
+	}
+
+	w, err := s.workoutRepo.GetByID(ctx, we.WorkoutID)
+	if err != nil {
+		return err
+	}
+
+	incompletedExercisesCount, err := s.workoutExerciseRepo.GetIncompleteExercisesCount(ctx, w.ID)
+	if err != nil {
+		return err
+	}
+
+	w.Completed = incompletedExercisesCount == 0
+	err = s.workoutRepo.Complete(ctx, w)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *workoutServiceImpl) DeleteWorkoutSet(ctx context.Context, id uint) error {
+	return s.workoutSetRepo.Delete(ctx, id)
+}
+
+func (s *workoutServiceImpl) GetIncompleteSetsCount(ctx context.Context, workoutExerciseID uint) (int64, error) {
+	return s.workoutSetRepo.GetIncompleteSetsCount(ctx, workoutExerciseID)
 }

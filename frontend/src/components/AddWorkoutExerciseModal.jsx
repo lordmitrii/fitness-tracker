@@ -11,8 +11,6 @@ const AddWorkoutExerciseModal = ({ open, onClose, onSave, workout }) => {
   const [name, setName] = useState("");
   const [muscleGroup, setMuscleGroup] = useState("");
   const [sets, setSets] = useState("");
-  const [reps, setReps] = useState("");
-  const [weight, setWeight] = useState("");
 
   // Fetch exercises when the modal opens
   useEffect(() => {
@@ -48,8 +46,6 @@ const AddWorkoutExerciseModal = ({ open, onClose, onSave, workout }) => {
       setName("");
       setMuscleGroup("");
       setSets("");
-      setReps("");
-      setWeight("");
     }
   }, [open, workout, makingCustomExercise]);
 
@@ -65,8 +61,6 @@ const AddWorkoutExerciseModal = ({ open, onClose, onSave, workout }) => {
       onSave({
         exercise: { name, muscle_group: muscleGroup },
         sets,
-        reps,
-        weight,
       });
       return;
     }
@@ -81,15 +75,13 @@ const AddWorkoutExerciseModal = ({ open, onClose, onSave, workout }) => {
     }
 
     if (source === "pool") {
-      onSave({ exercise: { id: exObj.id }, sets, reps, weight });
+      onSave({ exercise: { id: exObj.id }, sets, });
     }
     // If picked from custom, send name and muscle group only
     else {
       onSave({
         exercise: { name: exObj.name, muscle_group: exObj.muscle_group },
         sets,
-        reps,
-        weight,
       });
     }
   };
@@ -148,24 +140,6 @@ const AddWorkoutExerciseModal = ({ open, onClose, onSave, workout }) => {
             value={sets}
             onChange={(e) => setSets(Number(e.target.value))}
             min={1}
-            required
-          />
-          <input
-            className="border rounded p-2"
-            type="number"
-            placeholder="Reps"
-            value={reps}
-            onChange={(e) => setReps(Number(e.target.value))}
-            min={1}
-            required
-          />
-          <input
-            className="border rounded p-2"
-            type="number"
-            placeholder="Weight (kg)"
-            value={weight}
-            onChange={(e) => setWeight(Number(e.target.value))}
-            min={0}
             required
           />
           <button
