@@ -12,10 +12,11 @@ const ExerciseStats = () => {
       .get("/individual-exercises/stats")
       .then((response) => {
         setStats(response.data);
-        setLoading(false);
       })
       .catch((error) => {
         setError(error);
+      })
+      .finally(() => {
         setLoading(false);
       });
   }, []);
@@ -24,40 +25,46 @@ const ExerciseStats = () => {
   if (error) return <p>Error: {error.message}</p>;
 
   return (
-    <div className="flex flex-col min-h-screen items-center justify-start bg-gray-100 py-12">
-      <div className="w-full max-w-xl bg-white rounded shadow p-8">
-        <h2 className="text-2xl font-bold mb-6 text-gray-800">Your stats:</h2>
+    <div className="min-h-screen bg-gray-50 px-4">
+      <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8 mt-8">
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-8 text-center">
+          Your Exercise Stats
+        </h1>
         {stats && stats.length > 0 ? (
-          <table className="min-w-full bg-gray-50 rounded-xl">
-            <thead>
-              <tr>
-                <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b w-1/4">
-                  Exercise
-                </th>
-                <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b w-1/4">
-                  Muscle Group
-                </th>
-                <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b w-2/4">
-                  Current Best Working Weight
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {stats.map((exercise) => (
-                <tr key={exercise.id} className="border-b last:border-0">
-                  <td className="py-2 px-4">{exercise.name}</td>
-                  <td className="py-2 px-4">{exercise.muscle_group}</td>
-                  <td className="py-2 px-4">
-                    {exercise.current_reps && exercise.current_weight
-                      ? `${exercise.current_reps} reps * ${exercise.current_weight} kg`
-                      : "N/A"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="flex flex-col gap-6">
+            {stats.map((exercise) => (
+              <div
+                key={exercise.id}
+                className="bg-gray-50 rounded-xl shadow p-6 flex flex-row items-center justify-between gap-4 hover:shadow-md transition"
+              >
+                <div>
+                  <div className="text-lg font-semibold text-blue-700">
+                    {exercise.name}
+                  </div>
+                  <div className="text-sm text-gray-500 capitalize mb-2">
+                    {exercise.muscle_group}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-gray-600 text-sm mb-1">Current Best</div>
+                  {exercise.current_reps && exercise.current_weight ? (
+                    <div className="inline-block rounded-lg bg-blue-100 text-blue-800 px-4 py-2 text-base font-semibold">
+                      {exercise.current_reps} reps × {exercise.current_weight}{" "}
+                      kg
+                    </div>
+                  ) : (
+                    <div className="text-gray-400 italic">N/A</div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         ) : (
-          <p className="text-gray-600">No exercise stats available.</p>
+          <div className="text-gray-600 text-center py-8">
+            No exercise stats available yet.
+            <br />
+            Start logging workouts to see your progress!
+          </div>
         )}
       </div>
     </div>

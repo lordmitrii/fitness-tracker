@@ -2,8 +2,8 @@ import { Link } from "react-router-dom";
 
 function NotFound() {
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50 px-4">
-      <div className="bg-white rounded-2xl shadow-lg px-8 py-12 flex flex-col items-center max-w-md w-full">
+    <div className="min-h-screen bg-gray-50 px-4">
+      <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center max-w-2xl mx-auto mt-8">
         <div className="flex w-16 h-16 text-yellow-400 mb-4 justify-center items-center rounded-full bg-yellow-100">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -20,7 +20,7 @@ function NotFound() {
           />
         </svg>
         </div>
-        <h1 className="text-5xl font-bold text-gray-800 mb-2">404</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-2">404</h1>
         <p className="text-xl font-semibold text-gray-700 mb-2">
           Page Not Found
         </p>

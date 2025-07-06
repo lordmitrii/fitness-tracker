@@ -27,7 +27,7 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
   };
 
   return (
-    <div className="flex flex-col gap-6 bg-gray-100 p-4 rounded-lg shadow-md">
+    <div className="flex flex-col gap-6 bg-gray-50 p-4 rounded-lg shadow-md">
       {localExercises
         .slice()
         .sort((a, b) => a.index - b.index)

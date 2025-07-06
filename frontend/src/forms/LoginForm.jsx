@@ -1,68 +1,90 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const LoginForm = () => {
-  const { login } = useAuth();
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const data = await login(email, password);
-    if (data.access_token) {
+    setError(null);
+    const resp = await login(email, password);
+    if (resp.access_token) {
       navigate("/");
     } else {
-      setError(data.message || "Login failed");
+      setError(resp.message);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 py-12">
+    <div className="min-h-screen bg-gray-50 px-4">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm bg-white rounded-lg shadow-md p-8 flex flex-col gap-4"
+        className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8 mt-8 flex flex-col gap-6"
       >
-        <h2 className="text-3xl font-bold text-center mb-4 text-gray-800">Login</h2>
+        <h1 className="text-3xl sm:text-4xl font-bold text-center mb-8 text-gray-800">
+          Login
+        </h1>
         {error && (
-          <p className="text-red-600 text-center mb-2">{error}</p>
+          <div className="bg-red-100 border border-red-200 text-red-700 text-center rounded py-2 px-3 mb-2 text-sm">
+            {error}
+          </div>
         )}
-        <div className="flex flex-col gap-1">
-          <label className="block text-gray-700 mb-1" htmlFor="email">
-            Email:
+        <div>
+          <label
+            className="block text-gray-700 font-semibold mb-1"
+            htmlFor="email"
+          >
+            Email
           </label>
           <input
             id="email"
-            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="username"
+            placeholder="username@example.com"
           />
         </div>
-        <div className="flex flex-col gap-1">
-          <label className="block text-gray-700 mb-1" htmlFor="password">
-            Password:
+        <div>
+          <label
+            className="block text-gray-700 font-semibold mb-1"
+            htmlFor="password"
+          >
+            Password
           </label>
           <input
             id="password"
-            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
             autoComplete="current-password"
+            placeholder="Enter your password"
           />
         </div>
         <button
-          className="w-full bg-blue-600 text-white font-semibold py-2 rounded hover:bg-blue-700 transition-colors"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition"
           type="submit"
         >
           Login
         </button>
+        <div className="text-center text-sm text-gray-600 mt-2">
+          Not registered yet?{" "}
+          <Link
+            to="/register"
+            className="text-blue-600 hover:underline font-semibold"
+          >
+            Register
+          </Link>
+        </div>
       </form>
     </div>
   );

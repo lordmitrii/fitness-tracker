@@ -1,5 +1,10 @@
 import { createContext, useState, useContext, useEffect } from "react";
-import api, { loginRequest, registerRequest, setAccessToken, clearAccessToken } from "../api";
+import api, {
+  loginRequest,
+  registerRequest,
+  setAccessToken,
+  clearAccessToken,
+} from "../api";
 
 const AuthContext = createContext();
 
@@ -8,13 +13,14 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  const tryRefresh = async () => {
-    try {
-      const res = await api.post("/users/refresh");
-      if (res.data.access_token) {
-        setIsAuth(true);
-        setAccessToken(res.data.access_token);
-      }
+    const tryRefresh = async () => {
+      setLoading(true);
+      try {
+        const res = await api.post("/users/refresh");
+        if (res.data.access_token) {
+          setIsAuth(true);
+          setAccessToken(res.data.access_token);
+        }
       } catch (err) {
         setIsAuth(false);
         clearAccessToken();
@@ -55,8 +61,7 @@ export const AuthProvider = ({ children }) => {
     clearAccessToken();
     try {
       api.post("/users/logout");
-    }
-    catch (error) {
+    } catch (error) {
       console.error("Logout failed", error);
     }
     // Optionally, send a logout endpoint to clear cookie on backend

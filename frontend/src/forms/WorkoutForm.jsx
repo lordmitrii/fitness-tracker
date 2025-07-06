@@ -39,16 +39,16 @@ const WorkoutForm = ({ initialData = {}, onSubmit, submitLabel,  }) => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen items-center justify-center bg-gray-100">
-      <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">
+    <div className="min-h-screen items-center bg-gray-50 px-4">
+      <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8 mt-8 flex flex-col gap-6">
+        <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-center text-gray-800">
           {submitLabel}
         </h1>
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label
               htmlFor="name"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-lg font-medium text-gray-700 mb-1"
             >
               Workout Name
             </label>

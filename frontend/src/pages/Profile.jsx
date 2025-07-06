@@ -8,18 +8,21 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
 
-
   useEffect(() => {
     setLoading(true);
     api
       .get("/users/profile")
       .then((response) => {
         setProfile(response.data);
-        setLoading(false);
       })
       .catch((error) => {
-        setProfile({});
+        if (error.response && error.response.status === 404) {
+          setProfile({});
+          return;
+        }
         setError(error);
+      })
+      .finally(() => {
         setLoading(false);
       });
   }, []);
@@ -28,48 +31,50 @@ const Profile = () => {
   if (error) return <p>Error: {error.message}</p>;
 
   return (
-    <div className="flex flex-col min-h-screen items-center justify-start bg-gray-100 py-12">
-      <div className="w-full max-w-md bg-white rounded shadow p-8">
-        <h2 className="text-2xl font-bold mb-6 text-gray-800">Your profile:</h2>
-        {profile ? (
-          profile.age ? (
-            <div className="space-y-3 text-gray-700">
-              <p>
-                <span className="font-semibold">Age:</span> {profile.age}
-              </p>
-              <p>
-                <span className="font-semibold">Weight:</span> {profile.weight_kg}
-              </p>
-              <p>
-                <span className="font-semibold">Height:</span> {profile.height_cm}
-              </p>
-              <p>
-                <span className="font-semibold">Sex:</span> {profile.sex}
-              </p>
-              <button
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition-colors"
-                onClick={() => {
-                  navigate("/update-profile");
-                }}
-              >
-                Update
-              </button>
+    <div className="min-h-screen bg-gray-50 px-4">
+      <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8 mt-8">
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-8 text-center">
+          Your Profile
+        </h1>
+
+        {profile && profile.age ? (
+          <>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-gray-700 mb-8">
+              <div className="font-semibold">Age:</div>
+              <div>{profile.age}</div>
+
+              <div className="font-semibold">
+                Weight:
+              </div>
+              <div>{profile.weight_kg} kg</div>
+
+              <div className="font-semibold">
+                Height:
+              </div>
+              <div>{profile.height_cm} cm</div>
+
+              <div className="font-semibold">Sex:</div>
+              <div className="capitalize">{profile.sex}</div>
             </div>
-          ) : (
-            <div className="flex flex-col items-start space-y-4">
-              <p className="text-gray-700">Profile not found. Try creating it:</p>
-              <button
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition-colors"
-                onClick={() => {
-                  navigate("/create-profile");
-                }}
-              >
-                Create
-              </button>
-            </div>
-          )
+            <button
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-full"
+              onClick={() => navigate("/update-profile")}
+            >
+              Update
+            </button>
+          </>
         ) : (
-          <p className="text-gray-500">Loading profile...</p>
+          <div className="flex flex-col items-center space-y-4">
+            <p className="text-gray-700 text-center">
+              No profile found. Get started:
+            </p>
+            <button
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-full"
+              onClick={() => navigate("/create-profile")}
+            >
+              Create Profile
+            </button>
+          </div>
         )}
       </div>
     </div>

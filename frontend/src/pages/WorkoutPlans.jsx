@@ -14,10 +14,11 @@ const WorkoutPlans = () => {
       .get("/workout-plans")
       .then((response) => {
         setWorkoutPlans(response.data);
-        setLoading(false);
       })
       .catch((error) => {
         setError(error);
+      })
+      .finally(() => {
         setLoading(false);
       });
   }, []);
@@ -26,8 +27,8 @@ const WorkoutPlans = () => {
   if (error) return <p>Error: {error.message}</p>;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-2 sm:px-4">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-gray-50 px-4">
+      <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8 mt-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">
             Workout Plans
