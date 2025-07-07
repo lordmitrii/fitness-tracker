@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 function NotFound() {
   return (
     <div className="min-h-screen bg-gray-50 px-4">
-      <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center max-w-2xl mx-auto mt-8">
+      <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center max-w-4xl mx-auto mt-8">
         <div className="flex w-16 h-16 text-yellow-400 mb-4 justify-center items-center rounded-full bg-yellow-100">
         <svg
           xmlns="http://www.w3.org/2000/svg"

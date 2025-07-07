@@ -26,7 +26,7 @@ const ExerciseStats = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 px-4">
-      <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8 mt-8">
+      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-8 mt-8">
         <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-8 text-center">
           Your Exercise Stats
         </h1>
@@ -35,7 +35,7 @@ const ExerciseStats = () => {
             {stats.map((exercise) => (
               <div
                 key={exercise.id}
-                className="bg-gray-50 rounded-xl shadow p-6 flex flex-row items-center justify-between gap-4 hover:shadow-md transition"
+                className="bg-gray-50 rounded-xl shadow p-6 flex flex-row items-center justify-between gap-4 hover:shadow-lg transition border border-gray-200 shadow-md"
               >
                 <div>
                   <div className="text-lg font-semibold text-blue-700">

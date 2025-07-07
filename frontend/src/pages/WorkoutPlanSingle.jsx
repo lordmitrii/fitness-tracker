@@ -12,7 +12,7 @@ const WorkoutPlanSingle = () => {
 
   const [nextCycleID, setNextCycleID] = useState(null);
 
-  const [modalOpen, setModalOpen] = useState(false);
+  const [AddWorkoutModal, setAddWorkoutModal] = useState(false);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
 
   const [allWorkoutsCompleted, setAllWorkoutsCompleted] = useState(false);
@@ -182,7 +182,7 @@ const WorkoutPlanSingle = () => {
                   : w
               )
             );
-            setModalOpen(false);
+            setAddWorkoutModal(false);
             setSelectedWorkout(null);
           })
           .catch((error) => {
@@ -243,7 +243,7 @@ const WorkoutPlanSingle = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 px-4">
-      <div className="mx-auto p-8 mt-8">
+      <div className="mx-auto p-2 sm:p-8 mt-8">
         {workoutCycle && (
           <>
             {/* <h1 className="text-3xl font-bold mb-2">{workoutPlan.name}</h1> */}
@@ -332,18 +332,26 @@ const WorkoutPlanSingle = () => {
                 {workouts
                   .slice()
                   .sort((a, b) => a.index - b.index)
-                  .map((workout) => (
-                    <WorkoutCard
+                  .map((workout, idx) => (
+                    <div
                       key={workout.id}
-                      planID={planID}
-                      cycleID={cycleID}
-                      workout={workout}
-                      onToggleExercise={handleToggleExercise}
-                      setModalOpen={setModalOpen}
-                      setSelectedWorkout={setSelectedWorkout}
-                      onDelete={handleDeleteWorkout}
-                      isCurrentCycle={!nextCycleID}
-                    />
+                      className={`pb-6 sm:pb-0 ${
+                        idx !== workouts.length - 1
+                          ? "sm:border-none border-b-3 border-gray-600"
+                          : ""
+                      }`}
+                    >
+                      <WorkoutCard
+                        planID={planID}
+                        cycleID={cycleID}
+                        workout={workout}
+                        onToggleExercise={handleToggleExercise}
+                        setModalOpen={setAddWorkoutModal}
+                        setSelectedWorkout={setSelectedWorkout}
+                        onDelete={handleDeleteWorkout}
+                        isCurrentCycle={!nextCycleID}
+                      />
+                    </div>
                   ))}
               </div>
             ) : (
@@ -381,9 +389,9 @@ const WorkoutPlanSingle = () => {
           </>
         )}
         <AddWorkoutExerciseModal
-          open={modalOpen}
+          open={AddWorkoutModal}
           workout={selectedWorkout}
-          onClose={() => setModalOpen(false)}
+          onClose={() => setAddWorkoutModal(false)}
           onSave={handleSaveExercise}
         />
       </div>

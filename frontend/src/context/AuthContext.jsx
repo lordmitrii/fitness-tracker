@@ -41,7 +41,8 @@ export const AuthProvider = ({ children }) => {
       }
       return data;
     } catch (error) {
-      return { message: error.response?.data?.message || "Login failed" };
+      if (!error.respone) return { message: "Network error. Please, check server status" };
+      return { message: error.response.data?.message || "Login failed" };
     }
   };
 
@@ -50,8 +51,9 @@ export const AuthProvider = ({ children }) => {
       const response = await registerRequest(email, password);
       return response;
     } catch (error) {
+      if (!error.response) return { message: "Network error. Please, check server status" };
       return {
-        message: error.response?.data?.message || "Registration failed",
+        message: error.response.data?.message || "Registration failed",
       };
     }
   };

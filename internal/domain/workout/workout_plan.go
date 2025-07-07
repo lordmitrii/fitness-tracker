@@ -6,8 +6,9 @@ import (
 )
 
 type WorkoutPlan struct {
-	ID   uint   `gorm:"primaryKey" json:"id"`
-	Name string `json:"name"`
+	ID     uint   `gorm:"primaryKey" json:"id"`
+	Name   string `json:"name"`
+	Active bool   `json:"active" gorm:"default:false"`
 
 	UserID uint      `json:"user_id"`
 	User   user.User `json:"-" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`

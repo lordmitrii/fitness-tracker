@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { getExerciseProgressBadge } from "../utils/exerciseUtils";
+import DropdownMenu from "./DropdownMenu";
+import WorkoutExerciseDetailsMenu from "./WorkoutExerciseDetailsMenu";
 
 const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
   const [localExercises, setLocalExercises] = useState(exercises || []);
@@ -27,23 +29,32 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
   };
 
   return (
-    <div className="flex flex-col gap-6 bg-gray-50 p-4 rounded-lg shadow-md">
+    <div className="flex flex-col gap-6 bg-gray-50 sm:p-4 rounded-lg shadow-md">
       {localExercises
         .slice()
         .sort((a, b) => a.index - b.index)
         .map((ex) => (
           <div
             key={ex.id}
-            className="rounded-2xl shadow bg-white p-4 flex flex-col gap-4 border border-gray-100"
+            className="rounded-2xl sm:shadow bg-white sm:p-4 flex flex-col gap-4 sm:border sm:border-gray-100"
           >
             {/* Exercise header */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1">
+            <div className="flex flex-row items-start sm:items-center justify-between gap-1">
               <div className="font-bold text-lg text-blue-700">
                 {ex.index}. {ex.individual_exercise.name}
                 <span className="ml-2 text-gray-600 text-base font-normal">
                   ({ex.individual_exercise.muscle_group})
                 </span>
               </div>
+              <DropdownMenu
+                menu={({ close }) => (
+                  <WorkoutExerciseDetailsMenu
+                    exercise={ex}
+                    setLocalExercises={setLocalExercises}
+                    closeMenu={close}
+                  />
+                )}
+              />
             </div>
 
             {/* Sets table */}

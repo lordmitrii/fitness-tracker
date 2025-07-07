@@ -14,7 +14,7 @@ const WorkoutCard = ({
   const navigate = useNavigate();
 
   return (
-    <div className="rounded-2xl shadow-xl bg-white border border-gray-100 p-6 hover:shadow-2xl transition flex flex-col gap-3">
+    <div className="rounded-2xl sm:shadow-md bg-white sm:border sm:border-gray-200 sm:p-6 sm:hover:shadow-lg transition flex flex-col gap-3">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
           <span className="text-2xl font-semibold text-blue-800">
@@ -64,15 +64,15 @@ const WorkoutCard = ({
       )}
       <div className="flex justify-center mt-4">
         {isCurrentCycle && (
-        <button
-          className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-full sm:w-auto"
-          onClick={() => {
-            setSelectedWorkout(workout);
-            setModalOpen(true);
-          }}
-        >
-          <span>+ Add Exercise</span>
-        </button>
+          <button
+            className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-full sm:w-auto"
+            onClick={() => {
+              setSelectedWorkout(workout);
+              setModalOpen(true);
+            }}
+          >
+            <span>+ Add Exercise</span>
+          </button>
         )}
       </div>
     </div>
