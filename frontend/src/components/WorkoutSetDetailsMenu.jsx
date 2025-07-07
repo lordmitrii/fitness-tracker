@@ -1,36 +1,150 @@
+import api from "../api";
+
 const WorkoutSetDetailsMenu = ({
+  planID,
+  cycleID,
+  workoutID,
   set,
   exercise,
   setLocalExercises,
   closeMenu,
 }) => {
+  const handleMoveUp = () => {
+    setLocalExercises((prev) => {
+      // Find the set just above
+      const upperSet = (exercise.workout_sets || []).find(
+        (s) => s.index === set.index - 1
+      );
+      if (!upperSet) return prev; // Already at the top
+      return prev.map((ex) => {
+        if (ex.id !== exercise.id) return ex;
+        return {
+          ...ex,
+          workout_sets: ex.workout_sets.map((s) =>
+            s.id === set.id
+              ? { ...s, index: s.index - 1 }
+              : s.id === upperSet.id
+              ? { ...s, index: s.index + 1 }
+              : s
+          ),
+        };
+      });
+    });
+    closeMenu();
+  };
+
+  const handleMoveDown = () => {
+    setLocalExercises((prev) => {
+      // Find the set just below
+      const lowerSet = (exercise.workout_sets || []).find(
+        (s) => s.index === set.index + 1
+      );
+      if (!lowerSet) return prev; // Already at the bottom
+      return prev.map((ex) => {
+        if (ex.id !== exercise.id) return ex;
+        return {
+          ...ex,
+          workout_sets: ex.workout_sets.map((s) =>
+            s.id === set.id
+              ? { ...s, index: s.index + 1 }
+              : s.id === lowerSet.id
+              ? { ...s, index: s.index - 1 }
+              : s
+          ),
+        };
+      });
+    });
+    closeMenu();
+  };
+
+  const handleAddSetAbove = () => {
+    setLocalExercises((prev) => {
+      return prev.map((ex) => {
+        if (ex.id !== exercise.id) return ex;
+        const updatedSets = [
+          {
+            id: Date.now(), // Temporary ID
+            exercise_id: exercise.id,
+            index: set.index,
+            reps: set.reps || 0,
+            weight: set.weight || 0,
+            previous_weight: set.previous_weight || 0,
+            previous_reps: set.previous_reps || 0,
+            completed: false,
+          },
+          // Increment indexes of other sets
+          ...ex.workout_sets.map((s) =>
+            s.index >= set.index ? { ...s, index: s.index + 1 } : s
+          ),
+        ];
+
+        return { ...ex, workout_sets: updatedSets };
+      });
+    });
+    closeMenu();
+  };
+
+  const handleAddSetBelow = () => {
+    setLocalExercises((prev) => {
+      return prev.map((ex) => {
+        if (ex.id !== exercise.id) return ex;
+        const updatedSets = [
+          // Increment index if greater than set.index for existing sets
+          ...ex.workout_sets.map((s) =>
+            s.index > set.index ? { ...s, index: s.index + 1 } : s
+          ),
+          // Insert new set below
+          {
+            id: Date.now(),
+            exercise_id: exercise.id,
+            index: set.index + 1,
+            reps: set.reps || 0,
+            weight: set.weight || 0,
+            previous_weight: set.previous_weight || 0,
+            previous_reps: set.previous_reps || 0,
+            completed: false,
+          },
+        ];
+
+        return { ...ex, workout_sets: updatedSets };
+      });
+    });
+    closeMenu();
+  };
+
+  const handleDeleteSet = () => {
+    if (confirm("Are you sure you want to delete this set?")) {
+      setLocalExercises((prev) => {
+        return prev.map((ex) => {
+          if (ex.id !== exercise.id) return ex;
+          // Remove the current set
+          const filteredSets = ex.workout_sets
+            .filter((s) => s.id !== set.id)
+            .map((s) =>
+              s.index > set.index ? { ...s, index: s.index - 1 } : s
+            );
+          return { ...ex, workout_sets: filteredSets };
+        });
+      });
+
+      api
+        .delete(
+          `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exercise.id}/workout-sets/${set.id}`
+        )
+        .catch((error) => {
+          console.error("Error deleting set:", error);
+        });
+      closeMenu();
+    }
+  };
+
+  if (!set || !exercise) return null;
+
   return (
     <div className="flex flex-col space-y-1">
       <button
         className="text-left px-3 py-2 rounded hover:bg-gray-100"
-        onClick={() => {
-          setLocalExercises((prev) => {
-            // Find the set just above
-            const upperSet = (exercise.workout_sets || []).find(
-              (s) => s.index === set.index - 1
-            );
-            if (!upperSet) return prev; // Already at the top
-            return prev.map((ex) => {
-              if (ex.id !== exercise.id) return ex;
-              return {
-                ...ex,
-                workout_sets: ex.workout_sets.map((s) =>
-                  s.id === set.id
-                    ? { ...s, index: s.index - 1 }
-                    : s.id === upperSet.id
-                    ? { ...s, index: s.index + 1 }
-                    : s
-                ),
-              };
-            });
-          });
-          closeMenu();
-        }}
+        onClick={handleMoveUp}
       >
         <span className="flex items-center gap-2">
           <svg
@@ -52,29 +166,7 @@ const WorkoutSetDetailsMenu = ({
       </button>
       <button
         className="text-left px-3 py-2 rounded hover:bg-gray-100"
-        onClick={() => {
-          setLocalExercises((prev) => {
-            // Find the set just below
-            const lowerSet = (exercise.workout_sets || []).find(
-              (s) => s.index === set.index + 1
-            );
-            if (!lowerSet) return prev; // Already at the bottom
-            return prev.map((ex) => {
-              if (ex.id !== exercise.id) return ex;
-              return {
-                ...ex,
-                workout_sets: ex.workout_sets.map((s) =>
-                  s.id === set.id
-                    ? { ...s, index: s.index + 1 }
-                    : s.id === lowerSet.id
-                    ? { ...s, index: s.index - 1 }
-                    : s
-                ),
-              };
-            });
-          });
-          closeMenu();
-        }}
+        onClick={handleMoveDown}
       >
         <span className="flex items-center gap-2">
           <svg
@@ -96,32 +188,7 @@ const WorkoutSetDetailsMenu = ({
       </button>
       <button
         className="text-left px-3 py-2 rounded hover:bg-gray-100"
-        onClick={() => {
-          setLocalExercises((prev) => {
-            return prev.map((ex) => {
-              if (ex.id !== exercise.id) return ex;
-              const updatedSets = [
-                {
-                  id: Date.now(), // Temporary ID
-                  exercise_id: exercise.id,
-                  index: set.index,
-                  reps: set.reps || 0,
-                  weight: set.weight || 0,
-                  previous_weight: set.previous_weight || 0,
-                  previous_reps: set.previous_reps || 0,
-                  completed: false,
-                },
-                // Increment indexes of other sets
-                ...ex.workout_sets.map((s) =>
-                  s.index >= set.index ? { ...s, index: s.index + 1 } : s
-                ),
-              ];
-
-              return { ...ex, workout_sets: updatedSets };
-            });
-          });
-          closeMenu();
-        }}
+        onClick={handleAddSetAbove}
       >
         <span className="flex items-center gap-2">
           <svg
@@ -147,33 +214,7 @@ const WorkoutSetDetailsMenu = ({
       </button>
       <button
         className="text-left px-3 py-2 rounded hover:bg-gray-100"
-        onClick={() => {
-          setLocalExercises((prev) => {
-            return prev.map((ex) => {
-              if (ex.id !== exercise.id) return ex;
-              const updatedSets = [
-                // Increment index if greater than set.index for existing sets
-                ...ex.workout_sets.map((s) =>
-                  s.index > set.index ? { ...s, index: s.index + 1 } : s
-                ),
-                // Insert new set below
-                {
-                  id: Date.now(),
-                  exercise_id: exercise.id,
-                  index: set.index + 1,
-                  reps: set.reps || 0,
-                  weight: set.weight || 0,
-                  previous_weight: set.previous_weight || 0,
-                  previous_reps: set.previous_reps || 0,
-                  completed: false,
-                },
-              ];
-
-              return { ...ex, workout_sets: updatedSets };
-            });
-          });
-          closeMenu();
-        }}
+        onClick={handleAddSetBelow}
       >
         <span className="flex items-center gap-2">
           <svg
@@ -199,21 +240,7 @@ const WorkoutSetDetailsMenu = ({
       </button>
       <button
         className="text-left px-3 py-2 rounded hover:bg-gray-100 text-red-600 bg-red-50"
-        onClick={() => {
-          setLocalExercises((prev) => {
-            return prev.map((ex) => {
-              if (ex.id !== exercise.id) return ex;
-              // Remove the current set
-              const filteredSets = ex.workout_sets
-                .filter((s) => s.id !== set.id)
-                .map((s) =>
-                  s.index > set.index ? { ...s, index: s.index - 1 } : s
-                );
-              return { ...ex, workout_sets: filteredSets };
-            });
-          });
-          closeMenu();
-        }}
+        onClick={handleDeleteSet}
       >
         <span className="flex items-center gap-2">
           <svg

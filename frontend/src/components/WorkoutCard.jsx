@@ -54,6 +54,9 @@ const WorkoutCard = ({
         <div className="mt-4 overflow-x-auto">
           <WorkoutExerciseTable
             key={workout.id}
+            planID={planID}
+            cycleID={cycleID}
+            workoutID={workout.id}
             exercises={workout.workout_exercises}
             onToggle={(exId, setId, reps, weight, checked) =>
               onToggleExercise(workout.id, exId, setId, reps, weight, checked)

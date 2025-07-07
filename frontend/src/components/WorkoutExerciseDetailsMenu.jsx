@@ -1,34 +1,116 @@
+import api from "../api";
+
 const WorkoutExerciseDetailsMenu = ({
+  planID,
+  cycleID,
+  workoutID,
   exercise,
   setLocalExercises,
   closeMenu,
 }) => {
+  const handleMoveUp = () => {
+    setLocalExercises((prev) => {
+      const higherIndexExercise = prev.find(
+        (ex) => ex.index === exercise.index - 1
+      );
+      if (!higherIndexExercise) return prev; // No higher index to swap with
+      return prev.map((ex) =>
+        ex.id === exercise.id
+          ? {
+              ...ex,
+              index: ex.index - 1,
+            }
+          : ex.id === higherIndexExercise.id
+          ? {
+              ...higherIndexExercise,
+              index: higherIndexExercise.index + 1,
+            }
+          : ex
+      );
+    });
+    closeMenu();
+  };
+
+  const handleMoveDown = () => {
+    setLocalExercises((prev) => {
+      const lowerIndexExercise = prev.find(
+        (ex) => ex.index === exercise.index + 1
+      );
+      if (!lowerIndexExercise) return prev; // No lower index to swap with
+      return prev.map((ex) =>
+        ex.id === exercise.id
+          ? {
+              ...ex,
+              index: ex.index + 1,
+            }
+          : ex.id === lowerIndexExercise.id
+          ? {
+              ...lowerIndexExercise,
+              index: lowerIndexExercise.index - 1,
+            }
+          : ex
+      );
+    });
+    closeMenu();
+  };
+
+  const handleDuplicateExercise = () => {
+    const newExercise = {
+      ...exercise,
+      id: Date.now(), // Simple ID generation
+      workout_sets: exercise.workout_sets.map((set) => ({
+        ...set,
+        id: Date.now() + Math.random(), // Unique ID for each set
+      })),
+    };
+    setLocalExercises((prev) => [...prev, newExercise]);
+    closeMenu();
+  };
+
+  const handleReplaceExercise = () => {
+    const newExercise = prompt("Enter new exercise name:");
+    const newMuscleGroup = prompt("Enter new muscle group:");
+    if (newExercise) {
+      setLocalExercises((prev) =>
+        prev.map((ex) =>
+          ex.id === exercise.id
+            ? {
+                ...ex,
+                individual_exercise: {
+                  ...ex.individual_exercise,
+                  name: newExercise,
+                  muscle_group: newMuscleGroup,
+                },
+              }
+            : ex
+        )
+      );
+    }
+    closeMenu();
+  };
+
+  const handleDeleteExercise = () => {
+    if (confirm("Are you sure you want to delete this exercise?")) {
+      setLocalExercises((prev) => prev.filter((ex) => ex.id !== exercise.id));
+
+      api
+        .delete(
+          `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exercise.id}`
+        )
+        .catch((error) => {
+          console.error("Error deleting exercise:", error);
+        });
+      closeMenu();
+    }
+  };
+
+  if (!exercise) return null;
+
   return (
     <div className="flex flex-col space-y-1">
       <button
         className="text-left px-3 py-2 rounded hover:bg-gray-100"
-        onClick={() => {
-          setLocalExercises((prev) => {
-            const higherIndexExercise = prev.find(
-              (ex) => ex.index === exercise.index - 1
-            );
-            if (!higherIndexExercise) return prev; // No higher index to swap with
-            return prev.map((ex) =>
-              ex.id === exercise.id
-                ? {
-                    ...ex,
-                    index: ex.index - 1,
-                  }
-                : ex.id === higherIndexExercise.id
-                ? {
-                    ...higherIndexExercise,
-                    index: higherIndexExercise.index + 1,
-                  }
-                : ex
-            );
-          });
-          closeMenu();
-        }}
+        onClick={handleMoveUp}
       >
         <span className="flex items-center gap-2">
           <svg
@@ -50,28 +132,7 @@ const WorkoutExerciseDetailsMenu = ({
       </button>
       <button
         className="text-left px-3 py-2 rounded hover:bg-gray-100"
-        onClick={() => {
-          setLocalExercises((prev) => {
-            const lowerIndexExercise = prev.find(
-              (ex) => ex.index === exercise.index + 1
-            );
-            if (!lowerIndexExercise) return prev; // No lower index to swap with
-            return prev.map((ex) =>
-              ex.id === exercise.id
-                ? {
-                    ...ex,
-                    index: ex.index + 1,
-                  }
-                : ex.id === lowerIndexExercise.id
-                ? {
-                    ...lowerIndexExercise,
-                    index: lowerIndexExercise.index - 1,
-                  }
-                : ex
-            );
-          });
-          closeMenu();
-        }}
+        onClick={handleMoveDown}
       >
         <span className="flex items-center gap-2">
           <svg
@@ -93,18 +154,7 @@ const WorkoutExerciseDetailsMenu = ({
       </button>
       <button
         className="text-left px-3 py-2 rounded hover:bg-gray-100"
-        onClick={() => {
-          const newExercise = {
-            ...exercise,
-            id: Date.now(), // Simple ID generation
-            workout_sets: exercise.workout_sets.map((set) => ({
-              ...set,
-              id: Date.now() + Math.random(), // Unique ID for each set
-            })),
-          };
-          setLocalExercises((prev) => [...prev, newExercise]);
-          closeMenu();
-        }}
+        onClick={handleDuplicateExercise}
       >
         <span className="flex items-center gap-2">
           <svg
@@ -126,27 +176,7 @@ const WorkoutExerciseDetailsMenu = ({
       </button>
       <button
         className="text-left px-3 py-2 rounded hover:bg-gray-100"
-        onClick={() => {
-          const newExercise = prompt("Enter new exercise name:");
-          const newMuscleGroup = prompt("Enter new muscle group:");
-          if (newExercise) {
-            setLocalExercises((prev) =>
-              prev.map((ex) =>
-                ex.id === exercise.id
-                  ? {
-                      ...ex,
-                      individual_exercise: {
-                        ...ex.individual_exercise,
-                        name: newExercise,
-                        muscle_group: newMuscleGroup,
-                      },
-                    }
-                  : ex
-              )
-            );
-          }
-          closeMenu();
-        }}
+        onClick={handleReplaceExercise}
       >
         <span className="flex items-center gap-2">
           <svg
@@ -168,13 +198,7 @@ const WorkoutExerciseDetailsMenu = ({
       </button>
       <button
         className="text-left px-3 py-2 rounded hover:bg-gray-100 text-red-600 bg-red-50"
-        onClick={() => {
-          confirm("Are you sure you want to delete this exercise?") &&
-            setLocalExercises((prev) =>
-              prev.filter((ex) => ex.id !== exercise.id)
-            );
-          closeMenu();
-        }}
+        onClick={handleDeleteExercise}
       >
         <span className="flex items-center gap-2">
           <svg

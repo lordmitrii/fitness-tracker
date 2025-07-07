@@ -4,7 +4,7 @@ import DropdownMenu from "./DropdownMenu";
 import WorkoutExerciseDetailsMenu from "./WorkoutExerciseDetailsMenu";
 import WorkoutSetDetailsMenu from "./WorkoutSetDetailsMenu";
 
-const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
+const WorkoutExerciseTable = ({ planID, cycleID, workoutID, exercises, onToggle, isCurrentCycle }) => {
   const [localExercises, setLocalExercises] = useState(exercises || []);
 
   useEffect(() => {
@@ -51,6 +51,9 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
                 isLeft={false}
                 menu={({ close }) => (
                   <WorkoutExerciseDetailsMenu
+                    planID={planID}
+                    cycleID={cycleID}
+                    workoutID={workoutID}
                     exercise={ex}
                     setLocalExercises={setLocalExercises}
                     closeMenu={close}
@@ -81,6 +84,9 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
                         isLeft={true}
                         menu={({ close }) => (
                           <WorkoutSetDetailsMenu
+                            planID={planID}
+                            cycleID={cycleID}
+                            workoutID={workoutID}
                             set={set}
                             exercise={ex}
                             setLocalExercises={setLocalExercises}
@@ -103,15 +109,14 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
                               item.id === ex.id
                                 ? {
                                     ...item,
-                                    workout_sets: item.workout_sets.map(
-                                      (s) =>
-                                        s.index === set.index
-                                          ? {
-                                              ...s,
-                                              reps: value,
-                                              completed: false,
-                                            }
-                                          : s
+                                    workout_sets: item.workout_sets.map((s) =>
+                                      s.index === set.index
+                                        ? {
+                                            ...s,
+                                            reps: value,
+                                            completed: false,
+                                          }
+                                        : s
                                     ),
                                   }
                                 : item
@@ -138,15 +143,14 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
                               item.id === ex.id
                                 ? {
                                     ...item,
-                                    workout_sets: item.workout_sets.map(
-                                      (s) =>
-                                        s.index === set.index
-                                          ? {
-                                              ...s,
-                                              weight: value,
-                                              completed: false,
-                                            }
-                                          : s
+                                    workout_sets: item.workout_sets.map((s) =>
+                                      s.index === set.index
+                                        ? {
+                                            ...s,
+                                            weight: value,
+                                            completed: false,
+                                          }
+                                        : s
                                     ),
                                   }
                                 : item
@@ -179,11 +183,10 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
                               item.id === ex.id
                                 ? {
                                     ...item,
-                                    workout_sets: item.workout_sets.map(
-                                      (s) =>
-                                        s.index === set.index
-                                          ? { ...s, completed: checked }
-                                          : s
+                                    workout_sets: item.workout_sets.map((s) =>
+                                      s.index === set.index
+                                        ? { ...s, completed: checked }
+                                        : s
                                     ),
                                   }
                                 : item
