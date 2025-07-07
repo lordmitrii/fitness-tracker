@@ -10,126 +10,181 @@ const WorkoutSetDetailsMenu = ({
   closeMenu,
 }) => {
   const handleMoveUp = () => {
-    setLocalExercises((prev) => {
-      // Find the set just above
-      const upperSet = (exercise.workout_sets || []).find(
-        (s) => s.index === set.index - 1
-      );
-      if (!upperSet) return prev; // Already at the top
-      return prev.map((ex) => {
-        if (ex.id !== exercise.id) return ex;
-        return {
-          ...ex,
-          workout_sets: ex.workout_sets.map((s) =>
-            s.id === set.id
-              ? { ...s, index: s.index - 1 }
-              : s.id === upperSet.id
-              ? { ...s, index: s.index + 1 }
-              : s
-          ),
-        };
+    if (set.index === 1) {
+      console.error("Already at the top");
+      closeMenu();
+      return; // Already at the top
+    }
+
+    api
+      .post(
+        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exercise.id}/workout-sets/${set.id}/move`,
+        { direction: "up" }
+      )
+      .then(() => {
+        setLocalExercises((prev) => {
+          // Find the set just above
+          const upperSet = (exercise.workout_sets || []).find(
+            (s) => s.index === set.index - 1
+          );
+          if (!upperSet) return prev; // Already at the top
+          return prev.map((ex) => {
+            if (ex.id !== exercise.id) return ex;
+            return {
+              ...ex,
+              workout_sets: ex.workout_sets.map((s) =>
+                s.id === set.id
+                  ? { ...s, index: s.index - 1 }
+                  : s.id === upperSet.id
+                  ? { ...s, index: s.index + 1 }
+                  : s
+              ),
+            };
+          });
+        });
+      })
+      .catch((error) => {
+        console.error("Error moving set up:", error);
       });
-    });
     closeMenu();
   };
 
   const handleMoveDown = () => {
-    setLocalExercises((prev) => {
-      // Find the set just below
-      const lowerSet = (exercise.workout_sets || []).find(
-        (s) => s.index === set.index + 1
-      );
-      if (!lowerSet) return prev; // Already at the bottom
-      return prev.map((ex) => {
-        if (ex.id !== exercise.id) return ex;
-        return {
-          ...ex,
-          workout_sets: ex.workout_sets.map((s) =>
-            s.id === set.id
-              ? { ...s, index: s.index + 1 }
-              : s.id === lowerSet.id
-              ? { ...s, index: s.index - 1 }
-              : s
-          ),
-        };
+    const maxIndex = Math.max(
+      ...(exercise.workout_sets || []).map((s) => s.index)
+    );
+    if (set.index === maxIndex) {
+      console.error("Already at the bottom");
+      closeMenu();
+      return; // Already at the bottom
+    }
+
+    api
+      .post(
+        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exercise.id}/workout-sets/${set.id}/move`,
+        { direction: "down" }
+      )
+      .then(() => {
+        setLocalExercises((prev) => {
+          // Find the set just below
+          const lowerSet = (exercise.workout_sets || []).find(
+            (s) => s.index === set.index + 1
+          );
+          if (!lowerSet) return prev; // Already at the bottom
+          return prev.map((ex) => {
+            if (ex.id !== exercise.id) return ex;
+            return {
+              ...ex,
+              workout_sets: ex.workout_sets.map((s) =>
+                s.id === set.id
+                  ? { ...s, index: s.index + 1 }
+                  : s.id === lowerSet.id
+                  ? { ...s, index: s.index - 1 }
+                  : s
+              ),
+            };
+          });
+        });
+      })
+      .catch((error) => {
+        console.error("Error moving set down:", error);
       });
-    });
     closeMenu();
   };
 
   const handleAddSetAbove = () => {
-    setLocalExercises((prev) => {
-      return prev.map((ex) => {
-        if (ex.id !== exercise.id) return ex;
-        const updatedSets = [
-          {
-            id: Date.now(), // Temporary ID
-            exercise_id: exercise.id,
-            index: set.index,
-            reps: set.reps || 0,
-            weight: set.weight || 0,
-            previous_weight: set.previous_weight || 0,
-            previous_reps: set.previous_reps || 0,
-            completed: false,
-          },
-          // Increment indexes of other sets
-          ...ex.workout_sets.map((s) =>
-            s.index >= set.index ? { ...s, index: s.index + 1 } : s
-          ),
-        ];
+    api
+      .post(
+        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exercise.id}/workout-sets`,
+        {
+          workout_exercise_id: exercise.id,
+          index: set.index,
+          reps: set.reps,
+          weight: set.weight,
+          previous_weight: set.previous_weight, // TODO: maybe remove this?
+          previous_reps: set.previous_reps,
+        }
+      )
+      .then((response) => {
+        const newSet = response.data;
+        setLocalExercises((prev) => {
+          console.log(prev);
+          return prev.map((ex) => {
+            if (ex.id !== exercise.id) return ex;
+            const updatedSets = [
+              newSet,
+              // Increment indexes of other sets
+              ...ex.workout_sets.map((s) =>
+                s.index >= set.index ? { ...s, index: s.index + 1 } : s
+              ),
+            ];
 
-        return { ...ex, workout_sets: updatedSets };
+            return { ...ex, workout_sets: updatedSets };
+          });
+        });
+      })
+      .catch((error) => {
+        console.error("Error adding set:", error);
       });
-    });
     closeMenu();
   };
 
   const handleAddSetBelow = () => {
-    setLocalExercises((prev) => {
-      return prev.map((ex) => {
-        if (ex.id !== exercise.id) return ex;
-        const updatedSets = [
-          // Increment index if greater than set.index for existing sets
-          ...ex.workout_sets.map((s) =>
-            s.index > set.index ? { ...s, index: s.index + 1 } : s
-          ),
-          // Insert new set below
-          {
-            id: Date.now(),
-            exercise_id: exercise.id,
-            index: set.index + 1,
-            reps: set.reps || 0,
-            weight: set.weight || 0,
-            previous_weight: set.previous_weight || 0,
-            previous_reps: set.previous_reps || 0,
-            completed: false,
-          },
-        ];
+    api
+      .post(
+        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exercise.id}/workout-sets`,
+        {
+          workout_exercise_id: exercise.id,
+          index: set.index + 1,
+          reps: set.reps,
+          weight: set.weight,
+          previous_weight: set.previous_weight,
+          previous_reps: set.previous_reps,
+        }
+      )
+      .then((response) => {
+        const newSet = response.data;
+        setLocalExercises((prev) => {
+          return prev.map((ex) => {
+            if (ex.id !== exercise.id) return ex;
+            const updatedSets = [
+              // Increment index if greater than set.index for existing sets
+              ...ex.workout_sets.map((s) =>
+                s.index > set.index ? { ...s, index: s.index + 1 } : s
+              ),
+              // Insert new set below
+              newSet,
+            ];
 
-        return { ...ex, workout_sets: updatedSets };
+            return { ...ex, workout_sets: updatedSets };
+          });
+        });
+      })
+      .catch((error) => {
+        console.error("Error adding set:", error);
       });
-    });
     closeMenu();
   };
 
   const handleDeleteSet = () => {
     if (confirm("Are you sure you want to delete this set?")) {
-      setLocalExercises((prev) => {
-        return prev.map((ex) => {
-          if (ex.id !== exercise.id) return ex;
-          // Remove the current set
-          const filteredSets = ex.workout_sets
-            .filter((s) => s.id !== set.id)
-            .map((s) =>
-              s.index > set.index ? { ...s, index: s.index - 1 } : s
-            );
-          return { ...ex, workout_sets: filteredSets };
-        });
-      });
-
       api
         .delete(
           `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exercise.id}/workout-sets/${set.id}`
+        )
+        .then(() =>
+          setLocalExercises((prev) => {
+            return prev.map((ex) => {
+              if (ex.id !== exercise.id) return ex;
+              // Remove the current set
+              const filteredSets = ex.workout_sets
+                .filter((s) => s.id !== set.id)
+                .map((s) =>
+                  s.index > set.index ? { ...s, index: s.index - 1 } : s
+                );
+              return { ...ex, workout_sets: filteredSets };
+            });
+          })
         )
         .catch((error) => {
           console.error("Error deleting set:", error);
@@ -202,12 +257,12 @@ const WorkoutSetDetailsMenu = ({
             strokeLinecap="round"
             strokeLinejoin="round"
           >
-            {/* Top arrow */}
-            <path d="M12 5V2" />
-            <path d="M9 5l3-3 3 3" />
+            {/* Plus sign */}
+            <path d="M12 2v6" />
+            <path d="M9 5h6" />
             {/* Table rows */}
-            <rect width="13" height="4" x="5.5" y="8" rx="1" />
-            <rect width="13" height="4" x="5.5" y="14" rx="1" />
+            <rect width="13" height="4" x="5.5" y="10" rx="1" />
+            <rect width="13" height="4" x="5.5" y="16" rx="1" />
           </svg>
           Add Set Above
         </span>
@@ -229,11 +284,11 @@ const WorkoutSetDetailsMenu = ({
             strokeLinejoin="round"
           >
             {/* Table rows */}
-            <rect width="13" height="4" x="5.5" y="6" rx="1" />
-            <rect width="13" height="4" x="5.5" y="12" rx="1" />
-            {/* Downward arrow */}
-            <path d="M12 19v3" />
-            <path d="M15 19l-3 3-3-3" />
+            <rect width="13" height="4" x="5.5" y="5" rx="1" />
+            <rect width="13" height="4" x="5.5" y="11" rx="1" />
+            {/* Plus sign */}
+            <path d="M12 17v6" />
+            <path d="M9 20h6" />
           </svg>
           Add Set Below
         </span>

@@ -34,6 +34,7 @@ type (
 		UpdateWorkoutExercise(ctx context.Context, e *workout.WorkoutExercise) error
 		CompleteWorkoutExercise(ctx context.Context, e *workout.WorkoutExercise) error
 		DeleteWorkoutExercise(ctx context.Context, id uint) error
+		MoveWorkoutExercise(ctx context.Context, workoutID, exerciseID uint, direction string) error
 
 		CreateWorkoutSet(ctx context.Context, ws *workout.WorkoutSet) error
 		GetWorkoutSetByID(ctx context.Context, id uint) (*workout.WorkoutSet, error)
@@ -42,6 +43,7 @@ type (
 		CompleteWorkoutSet(ctx context.Context, ws *workout.WorkoutSet) error
 		DeleteWorkoutSet(ctx context.Context, id uint) error
 		GetIncompleteSetsCount(ctx context.Context, workoutExerciseID uint) (int64, error)
+		MoveWorkoutSet(ctx context.Context, exerciseID, setID uint, direction string) error
 
 		GetIndividualExercisesByUserID(ctx context.Context, userID uint) ([]*workout.IndividualExercise, error)
 		GetOrCreateIndividualExercise(ctx context.Context, individualExercise *workout.IndividualExercise) (*workout.IndividualExercise, error)

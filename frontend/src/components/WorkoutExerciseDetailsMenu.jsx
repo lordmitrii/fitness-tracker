@@ -5,56 +5,90 @@ const WorkoutExerciseDetailsMenu = ({
   cycleID,
   workoutID,
   exercise,
+  localExercises,
   setLocalExercises,
   closeMenu,
 }) => {
   const handleMoveUp = () => {
-    setLocalExercises((prev) => {
-      const higherIndexExercise = prev.find(
-        (ex) => ex.index === exercise.index - 1
-      );
-      if (!higherIndexExercise) return prev; // No higher index to swap with
-      return prev.map((ex) =>
-        ex.id === exercise.id
-          ? {
-              ...ex,
-              index: ex.index - 1,
-            }
-          : ex.id === higherIndexExercise.id
-          ? {
-              ...higherIndexExercise,
-              index: higherIndexExercise.index + 1,
-            }
-          : ex
-      );
-    });
+    if (exercise.index === 1) {
+      console.error("Already at the top");
+      closeMenu();
+      return;
+    } // Already at the top
+
+    api
+      .post(
+        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exercise.id}/move`,
+        { direction: "up" }
+      )
+      .then(() => {
+        setLocalExercises((prev) => {
+          const higherIndexExercise = prev.find(
+            (ex) => ex.index === exercise.index - 1
+          );
+          if (!higherIndexExercise) return prev;
+          return prev.map((ex) =>
+            ex.id === exercise.id
+              ? {
+                  ...ex,
+                  index: ex.index - 1,
+                }
+              : ex.id === higherIndexExercise.id
+              ? {
+                  ...higherIndexExercise,
+                  index: higherIndexExercise.index + 1,
+                }
+              : ex
+          );
+        });
+      })
+      .catch((error) => {
+        console.error("Error moving exercise up:", error);
+      });
     closeMenu();
   };
 
   const handleMoveDown = () => {
-    setLocalExercises((prev) => {
-      const lowerIndexExercise = prev.find(
-        (ex) => ex.index === exercise.index + 1
-      );
-      if (!lowerIndexExercise) return prev; // No lower index to swap with
-      return prev.map((ex) =>
-        ex.id === exercise.id
-          ? {
-              ...ex,
-              index: ex.index + 1,
-            }
-          : ex.id === lowerIndexExercise.id
-          ? {
-              ...lowerIndexExercise,
-              index: lowerIndexExercise.index - 1,
-            }
-          : ex
-      );
-    });
+    const maxIndex = Math.max(...localExercises.map(e => e.index));
+    if (exercise.index === maxIndex) {
+      console.error("Already at the bottom");
+      closeMenu();
+      return;
+    }
+    api
+      .post(
+        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exercise.id}/move`,
+        { direction: "down" }
+      )
+      .then(() => {
+        setLocalExercises((prev) => {
+          const lowerIndexExercise = prev.find(
+            (ex) => ex.index === exercise.index + 1
+          );
+          if (!lowerIndexExercise) return prev; // No lower index to swap with
+          return prev.map((ex) =>
+            ex.id === exercise.id
+              ? {
+                  ...ex,
+                  index: ex.index + 1,
+                }
+              : ex.id === lowerIndexExercise.id
+              ? {
+                  ...lowerIndexExercise,
+                  index: lowerIndexExercise.index - 1,
+                }
+              : ex
+          );
+        });
+      })
+      .catch((error) => {
+        console.error("Error moving exercise down:", error);
+      });
     closeMenu();
   };
 
   const handleDuplicateExercise = () => {
+    // TODO: Implement duplication logic
     const newExercise = {
       ...exercise,
       id: Date.now(), // Simple ID generation
@@ -68,6 +102,7 @@ const WorkoutExerciseDetailsMenu = ({
   };
 
   const handleReplaceExercise = () => {
+    // TODO: Implement replacement logic
     const newExercise = prompt("Enter new exercise name:");
     const newMuscleGroup = prompt("Enter new muscle group:");
     if (newExercise) {
@@ -91,11 +126,14 @@ const WorkoutExerciseDetailsMenu = ({
 
   const handleDeleteExercise = () => {
     if (confirm("Are you sure you want to delete this exercise?")) {
-      setLocalExercises((prev) => prev.filter((ex) => ex.id !== exercise.id));
-
       api
         .delete(
           `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exercise.id}`
+        )
+        .then(() =>
+          setLocalExercises((prev) =>
+            prev.filter((ex) => ex.id !== exercise.id)
+          )
         )
         .catch((error) => {
           console.error("Error deleting exercise:", error);

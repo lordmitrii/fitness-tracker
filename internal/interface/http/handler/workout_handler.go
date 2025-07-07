@@ -58,6 +58,7 @@ func NewWorkoutHandler(r *gin.RouterGroup, svc usecase.WorkoutService) {
 		wp.PATCH("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID", h.UpdateWorkoutExercise)
 		wp.DELETE("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID", h.DeleteWorkoutExercise)
 		wp.PATCH("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/update-complete", h.CompleteWorkoutExercise)
+		wp.POST("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/move", h.MoveWorkoutExercise)
 
 		wp.POST("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/workout-sets", h.AddWorkoutSetToWorkoutExercise)
 		wp.GET("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/workout-sets", h.GetWorkoutSetsByWorkoutExerciseID)
@@ -66,6 +67,7 @@ func NewWorkoutHandler(r *gin.RouterGroup, svc usecase.WorkoutService) {
 		wp.PATCH(":id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/workout-sets/:setID", h.UpdateWorkoutSet)
 		wp.DELETE("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/workout-sets/:setID", h.DeleteWorkoutSet)
 		wp.PATCH(":id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/workout-sets/:setID/update-complete", h.CompleteWorkoutSet)
+		wp.POST(":id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/workout-sets/:setID/move", h.MoveWorkoutSet)
 	}
 
 }
@@ -358,6 +360,26 @@ func (h *WorkoutHandler) CompleteWorkoutExercise(c *gin.Context) {
 	c.JSON(http.StatusOK, req)
 }
 
+func (h *WorkoutHandler) MoveWorkoutExercise(c *gin.Context) {
+	workoutID, _ := strconv.ParseUint(c.Param("workoutID"), 10, 64)
+	exerciseID, _ := strconv.ParseUint(c.Param("exerciseID"), 10, 64)
+
+	var req struct {
+		Direction string `json:"direction"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.svc.MoveWorkoutExercise(c.Request.Context(), uint(workoutID), uint(exerciseID), req.Direction); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Exercise moved successfully"})
+}
+
 func (h *WorkoutHandler) DeleteWorkoutExercise(c *gin.Context) {
 	id, _ := strconv.ParseUint(c.Param("exerciseID"), 10, 64)
 	if err := h.svc.DeleteWorkoutExercise(c.Request.Context(), uint(id)); err != nil {
@@ -448,6 +470,26 @@ func (h *WorkoutHandler) CompleteWorkoutSet(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, req)
+}
+
+func (h *WorkoutHandler) MoveWorkoutSet(c *gin.Context) {
+	workoutExerciseID, _ := strconv.ParseUint(c.Param("exerciseID"), 10, 64)
+	setID, _ := strconv.ParseUint(c.Param("setID"), 10, 64)
+
+	var req struct {
+		Direction string `json:"direction"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.svc.MoveWorkoutSet(c.Request.Context(), uint(workoutExerciseID), uint(setID), req.Direction); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Set moved successfully"})
 }
 
 func (h *WorkoutHandler) GetIndividualExercises(c *gin.Context) {

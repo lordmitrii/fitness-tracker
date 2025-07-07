@@ -107,19 +107,19 @@ func (s *workoutServiceImpl) GetWorkoutCycleByID(ctx context.Context, id uint) (
 		// Copy exercises from the previous workout
 		for _, we := range w.WorkoutExercises {
 			newExercise := &workout.WorkoutExercise{
-				WorkoutID: newWorkout.ID,
+				WorkoutID:            newWorkout.ID,
 				IndividualExerciseID: we.IndividualExerciseID,
-				Index:     we.Index,
-				Completed: false,
+				Index:                we.Index,
+				Completed:            false,
 			}
 			// Copy sets from the previous workout exercise
 			for _, ws := range we.WorkoutSets {
 				newSet := &workout.WorkoutSet{
-					WorkoutExerciseID:    newExercise.ID,
-					Index:                ws.Index,
-					PreviousWeight:       ws.Weight,
-					PreviousReps:         ws.Reps,
-					Completed:            false,
+					WorkoutExerciseID: newExercise.ID,
+					Index:             ws.Index,
+					PreviousWeight:    ws.Weight,
+					PreviousReps:      ws.Reps,
+					Completed:         false,
 				}
 				newExercise.WorkoutSets = append(newExercise.WorkoutSets, newSet)
 			}
@@ -283,7 +283,7 @@ func (s *workoutServiceImpl) UpdateWorkout(ctx context.Context, w *workout.Worko
 	return s.workoutRepo.Update(ctx, w)
 }
 func (s *workoutServiceImpl) DeleteWorkout(ctx context.Context, id uint) error {
-	workout , err := s.workoutRepo.GetByID(ctx, id)
+	workout, err := s.workoutRepo.GetByID(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -295,10 +295,10 @@ func (s *workoutServiceImpl) DeleteWorkout(ctx context.Context, id uint) error {
 		return err
 	}
 
-	if err := s.workoutRepo.DecrementIndexesAfterWorkout(ctx,  workoutCycleID, deletedIndex); err != nil {
-        return err
-    }
-    return nil
+	if err := s.workoutRepo.DecrementIndexesAfterWorkout(ctx, workoutCycleID, deletedIndex); err != nil {
+		return err
+	}
+	return nil
 }
 func (s *workoutServiceImpl) CreateWorkoutExercise(ctx context.Context, e *workout.WorkoutExercise, qt int64) error {
 	maxIndex, err := s.workoutExerciseRepo.GetMaxIndexByWorkoutID(ctx, e.WorkoutID)
@@ -306,7 +306,9 @@ func (s *workoutServiceImpl) CreateWorkoutExercise(ctx context.Context, e *worko
 		return err
 	}
 
-	e.Index = maxIndex + 1
+	if e.Index <= 0 {
+		e.Index = maxIndex + 1
+	}
 
 	if qt <= 0 {
 		return fmt.Errorf("sets quantity must be greater than 0")
@@ -330,7 +332,6 @@ func (s *workoutServiceImpl) CreateWorkoutExercise(ctx context.Context, e *worko
 	if err := s.workoutRepo.Complete(ctx, w); err != nil {
 		return err
 	}
-
 
 	return s.workoutExerciseRepo.Create(ctx, e)
 }
@@ -388,6 +389,37 @@ func (s *workoutServiceImpl) CompleteWorkoutExercise(ctx context.Context, e *wor
 	return nil
 }
 
+func (s *workoutServiceImpl) MoveWorkoutExercise(ctx context.Context, workoutID, exerciseID uint, direction string) error {
+	workoutExercise, err := s.workoutExerciseRepo.GetByID(ctx, exerciseID)
+	if err != nil {
+		return err
+	}
+
+	if workoutExercise.WorkoutID != workoutID {
+		return fmt.Errorf("workout exercise %d does not belong to workout %d", exerciseID, workoutID)
+	}
+
+	if direction != "up" && direction != "down" {
+		return fmt.Errorf("invalid direction: %s", direction)
+	}
+
+	var neighborIndex int
+	if direction == "up" {
+		neighborIndex = workoutExercise.Index - 1
+	} else {
+		neighborIndex = workoutExercise.Index + 1
+	}
+	if neighborIndex < 0 {
+		return fmt.Errorf("cannot move exercise further %s", direction)
+	}
+
+	if err := s.workoutExerciseRepo.SwapWorkoutExercisesByIndex(ctx, workoutID, workoutExercise.Index, neighborIndex); err != nil {
+		return fmt.Errorf("failed to swap workout exercises: %w", err)
+	}
+
+	return nil
+}
+
 func (s *workoutServiceImpl) DeleteWorkoutExercise(ctx context.Context, id uint) error {
 	workoutExercise, err := s.workoutExerciseRepo.GetByID(ctx, id)
 	if err != nil {
@@ -413,7 +445,14 @@ func (s *workoutServiceImpl) CreateWorkoutSet(ctx context.Context, ws *workout.W
 	if err != nil {
 		return err
 	}
-	ws.Index = maxIndex + 1
+
+	if ws.Index <= 0 {
+		ws.Index = maxIndex + 1
+	} else {
+		if err := s.workoutSetRepo.IncrementIndexesAfter(ctx, ws.WorkoutExerciseID, ws.Index); err != nil {
+			return err
+		}
+	}
 
 	we, err := s.workoutExerciseRepo.GetByID(ctx, ws.WorkoutExerciseID)
 	if err != nil {
@@ -422,6 +461,16 @@ func (s *workoutServiceImpl) CreateWorkoutSet(ctx context.Context, ws *workout.W
 
 	we.Completed = false
 	if err := s.workoutExerciseRepo.Complete(ctx, we); err != nil {
+		return err
+	}
+
+	w, err := s.workoutRepo.GetByID(ctx, we.WorkoutID)
+	if err != nil {
+		return err
+	}
+
+	w.Completed = false
+	if err := s.workoutRepo.Complete(ctx, w); err != nil {
 		return err
 	}
 
@@ -479,6 +528,37 @@ func (s *workoutServiceImpl) CompleteWorkoutSet(ctx context.Context, ws *workout
 	return nil
 }
 
+func (s *workoutServiceImpl) MoveWorkoutSet(ctx context.Context, exerciseID, setID uint, direction string) error {
+	workoutSet, err := s.workoutSetRepo.GetByID(ctx, setID)
+	if err != nil {
+		return err
+	}
+
+	if workoutSet.WorkoutExerciseID != exerciseID {
+		return fmt.Errorf("workout set %d does not belong to workout exercise %d", setID, exerciseID)
+	}
+
+	if direction != "up" && direction != "down" {
+		return fmt.Errorf("invalid direction: %s", direction)
+	}
+
+	var neighborIndex int
+	if direction == "up" {
+		neighborIndex = workoutSet.Index - 1
+	} else {
+		neighborIndex = workoutSet.Index + 1
+	}
+	if neighborIndex < 0 {
+		return fmt.Errorf("cannot move set further %s", direction)
+	}
+
+	if err := s.workoutSetRepo.SwapWorkoutSetsByIndex(ctx, workoutSet.WorkoutExerciseID, workoutSet.Index, neighborIndex); err != nil {
+		return fmt.Errorf("failed to swap workout sets: %w", err)
+	}
+
+	return nil
+}
+
 func (s *workoutServiceImpl) DeleteWorkoutSet(ctx context.Context, id uint) error {
 	workoutSet, err := s.workoutSetRepo.GetByID(ctx, id)
 	if err != nil {
@@ -502,7 +582,6 @@ func (s *workoutServiceImpl) DeleteWorkoutSet(ctx context.Context, id uint) erro
 func (s *workoutServiceImpl) GetIncompleteSetsCount(ctx context.Context, workoutExerciseID uint) (int64, error) {
 	return s.workoutSetRepo.GetIncompleteSetsCount(ctx, workoutExerciseID)
 }
-
 
 func (s *workoutServiceImpl) GetIndividualExercisesByUserID(ctx context.Context, userID uint) ([]*workout.IndividualExercise, error) {
 	return s.individualExerciseRepo.GetByUserID(ctx, userID)
@@ -610,7 +689,7 @@ func (s *workoutServiceImpl) GetIndividualExerciseStats(ctx context.Context, use
 		ie.CurrentWeight = bestWeight
 		ie.CurrentReps = bestReps
 	}
-	// Find best weight and reps for each individual exercise in the 
+	// Find best weight and reps for each individual exercise in the
 	return individualExercise, nil
 
 }

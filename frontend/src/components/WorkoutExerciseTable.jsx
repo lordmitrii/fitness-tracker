@@ -55,6 +55,7 @@ const WorkoutExerciseTable = ({ planID, cycleID, workoutID, exercises, onToggle,
                     cycleID={cycleID}
                     workoutID={workoutID}
                     exercise={ex}
+                    localExercises={localExercises}
                     setLocalExercises={setLocalExercises}
                     closeMenu={close}
                   />

@@ -49,6 +49,7 @@ type WorkoutExerciseRepository interface {
 	GetLast5ByIndividualExerciseID(ctx context.Context, individualExerciseIDs uint) ([]*WorkoutExercise, error)
 	GetMaxIndexByWorkoutID(ctx context.Context, workoutID uint) (int, error)
 	DecrementIndexesAfter(ctx context.Context, workoutID uint, deletedIndex int) error
+	SwapWorkoutExercisesByIndex(ctx context.Context, workoutID uint, index1, index2 int) error
 }
 
 type WorkoutSetRepository interface {
@@ -61,6 +62,8 @@ type WorkoutSetRepository interface {
 	GetIncompleteSetsCount(ctx context.Context, workoutExerciseID uint) (int64, error)
 	GetMaxIndexByWorkoutExerciseID(ctx context.Context, workoutExerciseID uint) (int, error)
 	DecrementIndexesAfter(ctx context.Context, workoutExerciseID uint, deletedIndex int) error
+	IncrementIndexesAfter(ctx context.Context, workoutExerciseID uint, index int) error
+	SwapWorkoutSetsByIndex(ctx context.Context, workoutExerciseID uint, index1, index2 int) error
 }
 
 type ExerciseRepository interface {

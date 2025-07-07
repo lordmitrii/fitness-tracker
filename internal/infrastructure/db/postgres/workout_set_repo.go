@@ -92,3 +92,35 @@ func (r *WorkoutSetRepo) DecrementIndexesAfter(ctx context.Context, workoutExerc
 		Update("index", gorm.Expr("index - 1")).
 		Error
 }
+
+func (r *WorkoutSetRepo) IncrementIndexesAfter(ctx context.Context, workoutExerciseID uint, index int) error {
+	return r.db.WithContext(ctx).
+		Model(&workout.WorkoutSet{}).
+		Where("workout_exercise_id = ? AND index >= ?", workoutExerciseID, index).
+		Update("index", gorm.Expr("index + 1")).
+		Error
+}
+
+func (r *WorkoutSetRepo) SwapWorkoutSetsByIndex(ctx context.Context, workoutExerciseID uint, index1, index2 int) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var set1, set2 workout.WorkoutSet
+
+		if err := tx.Where("workout_exercise_id = ? AND index = ?", workoutExerciseID, index1).First(&set1).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("workout_exercise_id = ? AND index = ?", workoutExerciseID, index2).First(&set2).Error; err != nil {
+			return err
+		}
+
+		set1.Index, set2.Index = set2.Index, set1.Index
+
+		if err := tx.Save(&set1).Error; err != nil {
+			return err
+		}
+		if err := tx.Save(&set2).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
