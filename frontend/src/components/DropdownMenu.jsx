@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 
-const DropdownMenu = ({ menu }) => {
+const DROPDOWN_WIDTH = 240;
+
+const DropdownMenu = ({ isLeft, menu }) => {
   const [open, setOpen] = useState(false);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
   const buttonRef = useRef(null);
@@ -31,7 +33,9 @@ const DropdownMenu = ({ menu }) => {
       const rect = buttonRef.current.getBoundingClientRect();
       setDropdownPos({
         top: rect.top + window.scrollY,
-        left: rect.right - 240 + window.scrollX,
+        left: isLeft
+          ? rect.left + window.scrollX
+          : rect.right - DROPDOWN_WIDTH + window.scrollX,
       });
     }
   }, [open]);
@@ -42,7 +46,9 @@ const DropdownMenu = ({ menu }) => {
         const rect = buttonRef.current.getBoundingClientRect();
         setDropdownPos({
           top: rect.top + window.scrollY,
-          left: rect.right - 240 + window.scrollX,
+          left: isLeft
+            ? rect.left + window.scrollX
+            : rect.right - DROPDOWN_WIDTH + window.scrollX,
         });
       }
     }
@@ -85,7 +91,7 @@ const DropdownMenu = ({ menu }) => {
             }}
             tabIndex={-1}
           >
-            <div className="flex justify-end">
+            <div className={`flex ${isLeft ? "justify-start" : "justify-end"}`}>
               <button
                 className="text-gray-400 hover:text-gray-700 transition"
                 onClick={() => setOpen(false)}

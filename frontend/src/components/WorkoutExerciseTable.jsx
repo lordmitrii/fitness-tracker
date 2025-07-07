@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { getExerciseProgressBadge } from "../utils/exerciseUtils";
 import DropdownMenu from "./DropdownMenu";
 import WorkoutExerciseDetailsMenu from "./WorkoutExerciseDetailsMenu";
+import WorkoutSetDetailsMenu from "./WorkoutSetDetailsMenu";
 
 const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
   const [localExercises, setLocalExercises] = useState(exercises || []);
@@ -47,6 +48,7 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
                 </span>
               </div>
               <DropdownMenu
+                isLeft={false}
                 menu={({ close }) => (
                   <WorkoutExerciseDetailsMenu
                     exercise={ex}
@@ -59,7 +61,8 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
 
             {/* Sets table */}
             <div className="overflow-x-auto">
-              <div className="min-w-full grid grid-cols-4 sm:grid-cols-5 gap-4 text-gray-600 font-semibold border-b pb-2">
+              <div className="min-w-full grid grid-cols-[36px_1fr_1fr_1fr_1fr] sm:grid-cols-[36px_1fr_1fr_1fr_1fr_1fr] gap-4 text-gray-600 font-semibold border-b pb-2">
+                <div className=""></div>
                 <div className="hidden sm:block">Set</div>
                 <div className="">Reps</div>
                 <div className="">Weight (kg)</div>
@@ -69,13 +72,24 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
               <div className="flex flex-col divide-y">
                 {(ex.workout_sets || [])
                   .sort((a, b) => a.index - b.index)
-                  .map((set, setIdx) => (
+                  .map((set) => (
                     <div
                       key={set.id}
-                      className="min-w-full grid grid-cols-4 sm:grid-cols-5 gap-4 items-center py-2"
+                      className="min-w-full grid grid-cols-[36px_1fr_1fr_1fr_1fr] sm:grid-cols-[36px_1fr_1fr_1fr_1fr_1fr] gap-4 items-center py-2"
                     >
+                      <DropdownMenu
+                        isLeft={true}
+                        menu={({ close }) => (
+                          <WorkoutSetDetailsMenu
+                            set={set}
+                            exercise={ex}
+                            setLocalExercises={setLocalExercises}
+                            closeMenu={close}
+                          />
+                        )}
+                      />
                       <div className="hidden sm:block font-medium text-gray-700">
-                        {setIdx + 1}
+                        {set.index}
                       </div>
                       <input
                         type="number"
@@ -90,8 +104,8 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
                                 ? {
                                     ...item,
                                     workout_sets: item.workout_sets.map(
-                                      (s, sIdx) =>
-                                        sIdx === setIdx
+                                      (s) =>
+                                        s.index === set.index
                                           ? {
                                               ...s,
                                               reps: value,
@@ -125,8 +139,8 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
                                 ? {
                                     ...item,
                                     workout_sets: item.workout_sets.map(
-                                      (s, sIdx) =>
-                                        sIdx === setIdx
+                                      (s) =>
+                                        s.index === set.index
                                           ? {
                                               ...s,
                                               weight: value,
@@ -166,8 +180,8 @@ const WorkoutExerciseTable = ({ exercises, onToggle, isCurrentCycle }) => {
                                 ? {
                                     ...item,
                                     workout_sets: item.workout_sets.map(
-                                      (s, sIdx) =>
-                                        sIdx === setIdx
+                                      (s) =>
+                                        s.index === set.index
                                           ? { ...s, completed: checked }
                                           : s
                                     ),
