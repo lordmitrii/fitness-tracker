@@ -1,15 +1,57 @@
-import { useState, useEffect } from "react";
 import { getExerciseProgressBadge } from "../utils/exerciseUtils";
 import DropdownMenu from "./DropdownMenu";
+import api from "../api";
 import WorkoutExerciseDetailsMenu from "./WorkoutExerciseDetailsMenu";
 import WorkoutSetDetailsMenu from "./WorkoutSetDetailsMenu";
 
-const WorkoutExerciseTable = ({ planID, cycleID, workoutID, exercises, onToggle, isCurrentCycle }) => {
-  const [localExercises, setLocalExercises] = useState(exercises || []);
+const WorkoutExerciseTable = ({
+  planID,
+  cycleID,
+  workoutID,
+  exercises,
+  isCurrentCycle,
+  onUpdateExercises,
+}) => {
+  const handleToggleExercise = (exId, setId, reps, weight, checked) => {
+    onUpdateExercises((prev) =>
+      prev.map((item) => {
+        if (item.id !== exId) return item;
 
-  useEffect(() => {
-    setLocalExercises(exercises);
-  }, [exercises]);
+        const newSets = item.workout_sets.map((s) =>
+          s.id === setId ? { ...s, completed: checked, reps, weight } : s
+        );
+
+        const exerciseCompleted = newSets.every((s) => s.completed);
+
+        return {
+          ...item,
+          workout_sets: newSets,
+          completed: exerciseCompleted,
+        };
+      })
+    );
+
+    api
+      .patch(
+        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exId}/workout-sets/${setId}/update-complete`,
+        { completed: checked }
+      )
+      .catch((error) => {
+        setError(error);
+      });
+
+    // If the set is not completed, we don't need to update sets, reps, and weight
+    if (!checked) return;
+
+    api
+      .patch(
+        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exId}/workout-sets/${setId}`,
+        { reps, weight }
+      )
+      .catch((error) => {
+        setError(error);
+      });
+  };
 
   const checkInputFields = (set) => {
     if (
@@ -31,7 +73,7 @@ const WorkoutExerciseTable = ({ planID, cycleID, workoutID, exercises, onToggle,
 
   return (
     <div className="flex flex-col gap-6 bg-gray-50 sm:p-4 rounded-lg shadow-md">
-      {localExercises
+      {exercises
         .slice()
         .sort((a, b) => a.index - b.index)
         .map((ex) => (
@@ -55,8 +97,8 @@ const WorkoutExerciseTable = ({ planID, cycleID, workoutID, exercises, onToggle,
                     cycleID={cycleID}
                     workoutID={workoutID}
                     exercise={ex}
-                    localExercises={localExercises}
-                    setLocalExercises={setLocalExercises}
+                    exercises={exercises}
+                    updateExercises={onUpdateExercises}
                     closeMenu={close}
                   />
                 )}
@@ -90,7 +132,7 @@ const WorkoutExerciseTable = ({ planID, cycleID, workoutID, exercises, onToggle,
                             workoutID={workoutID}
                             set={set}
                             exercise={ex}
-                            setLocalExercises={setLocalExercises}
+                            updateExercises={onUpdateExercises}
                             closeMenu={close}
                           />
                         )}
@@ -105,7 +147,7 @@ const WorkoutExerciseTable = ({ planID, cycleID, workoutID, exercises, onToggle,
                         min={1}
                         onChange={(e) => {
                           const value = Number(e.target.value);
-                          setLocalExercises((prev) =>
+                          onUpdateExercises((prev) =>
                             prev.map((item) =>
                               item.id === ex.id
                                 ? {
@@ -139,7 +181,7 @@ const WorkoutExerciseTable = ({ planID, cycleID, workoutID, exercises, onToggle,
                         inputMode="decimal"
                         onChange={(e) => {
                           const value = Number(e.target.value);
-                          setLocalExercises((prev) =>
+                          onUpdateExercises((prev) =>
                             prev.map((item) =>
                               item.id === ex.id
                                 ? {
@@ -179,21 +221,7 @@ const WorkoutExerciseTable = ({ planID, cycleID, workoutID, exercises, onToggle,
                             );
                             return;
                           }
-                          setLocalExercises((prev) =>
-                            prev.map((item) =>
-                              item.id === ex.id
-                                ? {
-                                    ...item,
-                                    workout_sets: item.workout_sets.map((s) =>
-                                      s.index === set.index
-                                        ? { ...s, completed: checked }
-                                        : s
-                                    ),
-                                  }
-                                : item
-                            )
-                          );
-                          onToggle(
+                          handleToggleExercise(
                             ex.id,
                             set.id,
                             set.reps,

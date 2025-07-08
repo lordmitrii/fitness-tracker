@@ -49,6 +49,7 @@ type WorkoutExerciseRepository interface {
 	GetLast5ByIndividualExerciseID(ctx context.Context, individualExerciseIDs uint) ([]*WorkoutExercise, error)
 	GetMaxIndexByWorkoutID(ctx context.Context, workoutID uint) (int, error)
 	DecrementIndexesAfter(ctx context.Context, workoutID uint, deletedIndex int) error
+	IncrementIndexesAfter(ctx context.Context, workoutID uint, index int) error
 	SwapWorkoutExercisesByIndex(ctx context.Context, workoutID uint, index1, index2 int) error
 }
 

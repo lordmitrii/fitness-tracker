@@ -308,6 +308,10 @@ func (s *workoutServiceImpl) CreateWorkoutExercise(ctx context.Context, e *worko
 
 	if e.Index <= 0 {
 		e.Index = maxIndex + 1
+	} else {
+		if err := s.workoutExerciseRepo.IncrementIndexesAfter(ctx, e.WorkoutID, e.Index); err != nil {
+			return err
+		}
 	}
 
 	if qt <= 0 {

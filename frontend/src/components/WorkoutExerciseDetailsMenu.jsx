@@ -5,8 +5,8 @@ const WorkoutExerciseDetailsMenu = ({
   cycleID,
   workoutID,
   exercise,
-  localExercises,
-  setLocalExercises,
+  exercises,
+  updateExercises,
   closeMenu,
 }) => {
   const handleMoveUp = () => {
@@ -22,7 +22,7 @@ const WorkoutExerciseDetailsMenu = ({
         { direction: "up" }
       )
       .then(() => {
-        setLocalExercises((prev) => {
+        updateExercises((prev) => {
           const higherIndexExercise = prev.find(
             (ex) => ex.index === exercise.index - 1
           );
@@ -49,7 +49,7 @@ const WorkoutExerciseDetailsMenu = ({
   };
 
   const handleMoveDown = () => {
-    const maxIndex = Math.max(...localExercises.map(e => e.index));
+    const maxIndex = Math.max(...exercises.map((e) => e.index));
     if (exercise.index === maxIndex) {
       console.error("Already at the bottom");
       closeMenu();
@@ -61,7 +61,7 @@ const WorkoutExerciseDetailsMenu = ({
         { direction: "down" }
       )
       .then(() => {
-        setLocalExercises((prev) => {
+        updateExercises((prev) => {
           const lowerIndexExercise = prev.find(
             (ex) => ex.index === exercise.index + 1
           );
@@ -95,9 +95,11 @@ const WorkoutExerciseDetailsMenu = ({
       workout_sets: exercise.workout_sets.map((set) => ({
         ...set,
         id: Date.now() + Math.random(), // Unique ID for each set
+        completed: false, // Reset completed status
       })),
+      completed: false,
     };
-    setLocalExercises((prev) => [...prev, newExercise]);
+    updateExercises((prev) => [...prev, newExercise]);
     closeMenu();
   };
 
@@ -106,19 +108,26 @@ const WorkoutExerciseDetailsMenu = ({
     const newExercise = prompt("Enter new exercise name:");
     const newMuscleGroup = prompt("Enter new muscle group:");
     if (newExercise) {
-      setLocalExercises((prev) =>
-        prev.map((ex) =>
-          ex.id === exercise.id
-            ? {
-                ...ex,
-                individual_exercise: {
-                  ...ex.individual_exercise,
-                  name: newExercise,
-                  muscle_group: newMuscleGroup,
-                },
-              }
-            : ex
-        )
+      updateExercises((prev) =>
+        prev.map((ex) => {
+          if (ex.id !== exercise.id) return ex;
+
+          const updatedExercise = {
+            ...ex,
+            individual_exercise: {
+              ...ex.individual_exercise,
+              name: newExercise,
+              muscle_group: newMuscleGroup,
+            },
+            workout_sets: ex.workout_sets.map((set) => ({
+              ...set,
+              completed: false,
+            })),
+            completed: false,
+          };
+
+          return updatedExercise;
+        })
       );
     }
     closeMenu();
@@ -131,9 +140,7 @@ const WorkoutExerciseDetailsMenu = ({
           `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exercise.id}`
         )
         .then(() =>
-          setLocalExercises((prev) =>
-            prev.filter((ex) => ex.id !== exercise.id)
-          )
+          updateExercises((prev) => prev.filter((ex) => ex.id !== exercise.id))
         )
         .catch((error) => {
           console.error("Error deleting exercise:", error);

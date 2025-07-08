@@ -5,11 +5,11 @@ const WorkoutCard = ({
   planID,
   cycleID,
   workout,
-  onToggleExercise,
   setModalOpen,
   setSelectedWorkout,
   onDelete,
   isCurrentCycle,
+  onUpdateExercises,
 }) => {
   const navigate = useNavigate();
 
@@ -58,10 +58,10 @@ const WorkoutCard = ({
             cycleID={cycleID}
             workoutID={workout.id}
             exercises={workout.workout_exercises}
-            onToggle={(exId, setId, reps, weight, checked) =>
-              onToggleExercise(workout.id, exId, setId, reps, weight, checked)
-            }
             isCurrentCycle={isCurrentCycle}
+            onUpdateExercises={(newExercises) =>
+              onUpdateExercises(workout.id, newExercises)
+            }
           />
         </div>
       )}

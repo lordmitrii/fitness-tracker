@@ -41,8 +41,15 @@ const WorkoutPlanSingle = () => {
   }, [planID, cycleID]);
 
   useEffect(() => {
-    const allCompleted =
-      workouts.length > 0 && workouts.every((w) => w.completed);
+    const allCompleted = workouts.every(
+      (workout) =>
+        workout.workout_exercises.length > 0 &&
+        workout.workout_exercises.every(
+          (exercise) =>
+            exercise.workout_sets.length > 0 &&
+            exercise.workout_sets.every((set) => set.completed)
+        )
+    );
     setAllWorkoutsCompleted(allCompleted);
   }, [workouts]);
 
@@ -116,22 +123,6 @@ const WorkoutPlanSingle = () => {
       return;
     }
 
-    setCycleCompleted(true);
-
-    // Optionally, mark all workouts as completed
-    // if (nextCompleted) {
-    //   setWorkouts((prev) =>
-    //     prev.map((w) => ({
-    //       ...w,
-    //       completed: true,
-    //       workout_exercises: w.workout_exercises.map((ex) => ({
-    //         ...ex,
-    //         completed: true,
-    //       })),
-    //     }))
-    //   );
-    // }
-
     api
       .patch(
         `/workout-plans/${planID}/workout-cycles/${cycleID}/update-complete`,
@@ -139,10 +130,36 @@ const WorkoutPlanSingle = () => {
       )
       .then((res) => {
         setNextCycleID(res.data.next_cycle_id);
+        setCycleCompleted(true);
       })
       .catch((error) => {
         setError(error);
       });
+  };
+
+  const handleUpdateExercises = (workoutId, newExercises) => {
+    setWorkouts((prevWorkouts) =>
+      prevWorkouts.map((w) => {
+        if (w.id !== workoutId) return w;
+
+        const updatedExercises =
+          typeof newExercises === "function"
+            ? newExercises(w.workout_exercises)
+            : newExercises;
+
+        const workoutCompleted =
+          updatedExercises.length > 0 &&
+          updatedExercises.every(
+            (ex) => ex.workout_sets.length > 0 && ex.completed
+          );
+
+        return {
+          ...w,
+          workout_exercises: updatedExercises,
+          completed: workoutCompleted,
+        };
+      })
+    );
   };
 
   const handleSaveExercise = (newExercise) => {
@@ -345,11 +362,11 @@ const WorkoutPlanSingle = () => {
                         planID={planID}
                         cycleID={cycleID}
                         workout={workout}
-                        onToggleExercise={handleToggleExercise}
                         setModalOpen={setAddWorkoutModal}
                         setSelectedWorkout={setSelectedWorkout}
                         onDelete={handleDeleteWorkout}
                         isCurrentCycle={!nextCycleID}
+                        onUpdateExercises={handleUpdateExercises}
                       />
                     </div>
                   ))}

@@ -6,7 +6,7 @@ const WorkoutSetDetailsMenu = ({
   workoutID,
   set,
   exercise,
-  setLocalExercises,
+  updateExercises,
   closeMenu,
 }) => {
   const handleMoveUp = () => {
@@ -22,7 +22,7 @@ const WorkoutSetDetailsMenu = ({
         { direction: "up" }
       )
       .then(() => {
-        setLocalExercises((prev) => {
+        updateExercises((prev) => {
           // Find the set just above
           const upperSet = (exercise.workout_sets || []).find(
             (s) => s.index === set.index - 1
@@ -65,7 +65,7 @@ const WorkoutSetDetailsMenu = ({
         { direction: "down" }
       )
       .then(() => {
-        setLocalExercises((prev) => {
+        updateExercises((prev) => {
           // Find the set just below
           const lowerSet = (exercise.workout_sets || []).find(
             (s) => s.index === set.index + 1
@@ -107,8 +107,7 @@ const WorkoutSetDetailsMenu = ({
       )
       .then((response) => {
         const newSet = response.data;
-        setLocalExercises((prev) => {
-          console.log(prev);
+        updateExercises((prev) => {
           return prev.map((ex) => {
             if (ex.id !== exercise.id) return ex;
             const updatedSets = [
@@ -119,7 +118,7 @@ const WorkoutSetDetailsMenu = ({
               ),
             ];
 
-            return { ...ex, workout_sets: updatedSets };
+            return { ...ex, workout_sets: updatedSets, completed: false };
           });
         });
       })
@@ -144,7 +143,7 @@ const WorkoutSetDetailsMenu = ({
       )
       .then((response) => {
         const newSet = response.data;
-        setLocalExercises((prev) => {
+        updateExercises((prev) => {
           return prev.map((ex) => {
             if (ex.id !== exercise.id) return ex;
             const updatedSets = [
@@ -156,7 +155,7 @@ const WorkoutSetDetailsMenu = ({
               newSet,
             ];
 
-            return { ...ex, workout_sets: updatedSets };
+            return { ...ex, workout_sets: updatedSets, completed: false };
           });
         });
       })
@@ -173,7 +172,7 @@ const WorkoutSetDetailsMenu = ({
           `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exercise.id}/workout-sets/${set.id}`
         )
         .then(() =>
-          setLocalExercises((prev) => {
+          updateExercises((prev) => {
             return prev.map((ex) => {
               if (ex.id !== exercise.id) return ex;
               // Remove the current set

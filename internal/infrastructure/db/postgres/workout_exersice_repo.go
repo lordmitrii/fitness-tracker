@@ -112,6 +112,14 @@ func (r *WorkoutExerciseRepo) DecrementIndexesAfter(ctx context.Context, workout
 		Error
 }
 
+func (r *WorkoutExerciseRepo) IncrementIndexesAfter(ctx context.Context, workoutID uint, index int) error {
+	return r.db.WithContext(ctx).
+		Model(&workout.WorkoutExercise{}).
+		Where("workout_id = ? AND index >= ?", workoutID, index).
+		Update("index", gorm.Expr("index + 1")).
+		Error
+}
+
 func (r *WorkoutExerciseRepo) SwapWorkoutExercisesByIndex(ctx context.Context, workoutID uint, index1, index2 int) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		var ex1, ex2 workout.WorkoutExercise
