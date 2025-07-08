@@ -441,6 +441,18 @@ func (s *workoutServiceImpl) DeleteWorkoutExercise(ctx context.Context, id uint)
 		return err
 	}
 
+	workout, err := s.workoutRepo.GetByID(ctx, workoutID)
+	if err != nil {
+		return err
+	}
+
+	if len(workout.WorkoutExercises) == 0 {
+		workout.Completed = false
+		if err := s.workoutRepo.Complete(ctx, workout); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -578,6 +590,17 @@ func (s *workoutServiceImpl) DeleteWorkoutSet(ctx context.Context, id uint) erro
 
 	if err := s.workoutSetRepo.DecrementIndexesAfter(ctx, workoutExerciseID, deletedIndex); err != nil {
 		return err
+	}
+
+	we, err := s.workoutExerciseRepo.GetByID(ctx, workoutExerciseID)
+	if err != nil {
+		return err
+	}
+	if len(we.WorkoutSets) == 0 {
+		we.Completed = false
+		if err := s.workoutExerciseRepo.Complete(ctx, we); err != nil {
+			return err
+		}
 	}
 
 	return nil

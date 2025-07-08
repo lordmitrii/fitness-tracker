@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 
 const DROPDOWN_WIDTH = 240;
 
-const DropdownMenu = ({ isLeft, menu }) => {
+const DropdownMenu = ({ dotsHidden = false, isLeft = false, menu }) => {
   const [open, setOpen] = useState(false);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
   const buttonRef = useRef(null);
@@ -60,7 +60,9 @@ const DropdownMenu = ({ isLeft, menu }) => {
     <>
       <button
         ref={buttonRef}
-        className="p-2 rounded-full transition cursor-pointer text-gray-600 hover:text-gray-900"
+        className={`p-2 rounded-full transition cursor-pointer text-gray-600 hover:text-gray-900 ${
+          dotsHidden ? "invisible" : ""
+        }`}
         onClick={() => setOpen((o) => !o)}
       >
         {/* Three dots icon */}

@@ -154,8 +154,11 @@ const WorkoutExerciseDetailsMenu = ({
   return (
     <div className="flex flex-col space-y-1">
       <button
-        className="text-left px-3 py-2 rounded hover:bg-gray-100"
+        className={`text-left px-3 py-2 rounded hover:bg-gray-100 ${
+          exercise.index === 1 ? "opacity-50 cursor-not-allowed" : ""
+        }`}
         onClick={handleMoveUp}
+        disabled={exercise.index === 1}
       >
         <span className="flex items-center gap-2">
           <svg
@@ -176,8 +179,17 @@ const WorkoutExerciseDetailsMenu = ({
         </span>
       </button>
       <button
-        className="text-left px-3 py-2 rounded hover:bg-gray-100"
+        className={`text-left px-3 py-2 rounded hover:bg-gray-100 ${
+          exercises.length === 1 ||
+          exercise.index === Math.max(...exercises.map((e) => e.index))
+            ? "opacity-50 cursor-not-allowed"
+            : ""
+        }`}
         onClick={handleMoveDown}
+        disabled={
+          exercises.length === 1 ||
+          exercise.index === Math.max(...exercises.map((e) => e.index))
+        }
       >
         <span className="flex items-center gap-2">
           <svg

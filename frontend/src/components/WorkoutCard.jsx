@@ -9,7 +9,7 @@ const WorkoutCard = ({
   setSelectedWorkout,
   onDelete,
   isCurrentCycle,
-  onUpdateExercises,
+  onUpdateWorkouts,
 }) => {
   const navigate = useNavigate();
 
@@ -31,7 +31,7 @@ const WorkoutCard = ({
             )}
           </div>
         </div>
-        <div className="mt-2 sm:mt-0">
+        <div className={`mt-2 sm:mt-0 gap-2 ${isCurrentCycle ? "flex" : "hidden"}`}>
           <button
             className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors shadow mr-2"
             onClick={() =>
@@ -60,7 +60,7 @@ const WorkoutCard = ({
             exercises={workout.workout_exercises}
             isCurrentCycle={isCurrentCycle}
             onUpdateExercises={(newExercises) =>
-              onUpdateExercises(workout.id, newExercises)
+              onUpdateWorkouts(workout.id, newExercises)
             }
           />
         </div>

@@ -197,8 +197,11 @@ const WorkoutSetDetailsMenu = ({
   return (
     <div className="flex flex-col space-y-1">
       <button
-        className="text-left px-3 py-2 rounded hover:bg-gray-100"
+        className={`text-left px-3 py-2 rounded hover:bg-gray-100 ${
+          set.index === 1 ? "opacity-50 cursor-not-allowed" : ""
+        }`}
         onClick={handleMoveUp}
+        disabled={set.index === 1}
       >
         <span className="flex items-center gap-2">
           <svg
@@ -219,8 +222,19 @@ const WorkoutSetDetailsMenu = ({
         </span>
       </button>
       <button
-        className="text-left px-3 py-2 rounded hover:bg-gray-100"
+        className={`text-left px-3 py-2 rounded hover:bg-gray-100 ${
+          exercise.workout_sets.length === 1 ||
+          set.index ===
+            Math.max(...(exercise.workout_sets || []).map((s) => s.index))
+            ? "opacity-50 cursor-not-allowed"
+            : ""
+        }`}
         onClick={handleMoveDown}
+        disabled={
+          exercise.workout_sets.length === 1 ||
+          set.index ===
+            Math.max(...(exercise.workout_sets || []).map((s) => s.index))
+        }
       >
         <span className="flex items-center gap-2">
           <svg
@@ -293,8 +307,18 @@ const WorkoutSetDetailsMenu = ({
         </span>
       </button>
       <button
-        className="text-left px-3 py-2 rounded hover:bg-gray-100 text-red-600 bg-red-50"
+        className={`text-left px-3 py-2 rounded hover:bg-gray-100 text-red-600 bg-red-50 ${
+          exercise.workout_sets.length === 1
+            ? "opacity-50 cursor-not-allowed"
+            : ""
+        }`}
         onClick={handleDeleteSet}
+        disabled={exercise.workout_sets.length === 1}
+        title={
+          exercise.workout_sets.length === 1
+            ? "Cannot delete the last set of an exercise"
+            : "Delete this set"
+        }
       >
         <span className="flex items-center gap-2">
           <svg

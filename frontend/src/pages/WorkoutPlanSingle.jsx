@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import api from "../api";
 import AddWorkoutExerciseModal from "../components/AddWorkoutExerciseModal";
 import WorkoutCard from "../components/WorkoutCard";
@@ -17,6 +17,8 @@ const WorkoutPlanSingle = () => {
 
   const [allWorkoutsCompleted, setAllWorkoutsCompleted] = useState(false);
   const [cycleCompleted, setCycleCompleted] = useState(false);
+
+  const workoutRefs = useRef([]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -41,6 +43,19 @@ const WorkoutPlanSingle = () => {
   }, [planID, cycleID]);
 
   useEffect(() => {
+    if (workouts.length > 0) {
+      const firstIncompleteWorkout = workouts.find((workout) => !workout.completed);
+      if (firstIncompleteWorkout) {
+        const index = workouts.indexOf(firstIncompleteWorkout);
+        const ref = workoutRefs.current[index];
+        if (ref) {
+          ref.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+    }
+  }, [workouts]);
+
+  useEffect(() => {
     const allCompleted = workouts.every(
       (workout) =>
         workout.workout_exercises.length > 0 &&
@@ -52,66 +67,6 @@ const WorkoutPlanSingle = () => {
     );
     setAllWorkoutsCompleted(allCompleted);
   }, [workouts]);
-
-  const handleToggleExercise = (
-    workoutId,
-    exId,
-    setId,
-    reps,
-    weight,
-    checked
-  ) => {
-    setWorkouts((prev) =>
-      prev.map((w) => {
-        if (w.id !== workoutId) return w;
-
-        const newExercises = w.workout_exercises.map((ex) => {
-          if (ex.id !== exId) return ex;
-          const newSets = ex.workout_sets.map((s) =>
-            s.id === setId ? { ...s, completed: checked, reps, weight } : s
-          );
-          const exerciseCompleted =
-            newSets.length > 0 && newSets.every((s) => s.completed);
-          return { ...ex, workout_sets: newSets, completed: exerciseCompleted };
-        });
-
-        const workoutCompleted =
-          newExercises.length > 0 &&
-          newExercises.every(
-            (ex) =>
-              ex.workout_sets.length > 0 &&
-              ex.workout_sets.every((s) => s.completed)
-          );
-
-        return {
-          ...w,
-          workout_exercises: newExercises,
-          completed: workoutCompleted,
-        };
-      })
-    );
-
-    api
-      .patch(
-        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutId}/workout-exercises/${exId}/workout-sets/${setId}/update-complete`,
-        { completed: checked }
-      )
-      .catch((error) => {
-        setError(error);
-      });
-
-    // If the set is not completed, we don't need to update sets, reps, and weight
-    if (!checked) return;
-
-    api
-      .patch(
-        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutId}/workout-exercises/${exId}/workout-sets/${setId}`,
-        { reps, weight }
-      )
-      .catch((error) => {
-        setError(error);
-      });
-  };
 
   const handleCycleComplete = () => {
     if (
@@ -137,7 +92,7 @@ const WorkoutPlanSingle = () => {
       });
   };
 
-  const handleUpdateExercises = (workoutId, newExercises) => {
+  const handleUpdateWorkouts = (workoutId, newExercises) => {
     setWorkouts((prevWorkouts) =>
       prevWorkouts.map((w) => {
         if (w.id !== workoutId) return w;
@@ -162,7 +117,7 @@ const WorkoutPlanSingle = () => {
     );
   };
 
-  const handleSaveExercise = (newExercise) => {
+  const handleSaveNewExercise = (newExercise) => {
     api
       .post(`individual-exercises`, {
         exercise_id: newExercise.exercise.id,
@@ -352,6 +307,7 @@ const WorkoutPlanSingle = () => {
                   .map((workout, idx) => (
                     <div
                       key={workout.id}
+                      ref={(el) => (workoutRefs.current[idx] = el)}
                       className={`pb-6 sm:pb-0 ${
                         idx !== workouts.length - 1
                           ? "sm:border-none border-b-3 border-gray-600"
@@ -366,7 +322,7 @@ const WorkoutPlanSingle = () => {
                         setSelectedWorkout={setSelectedWorkout}
                         onDelete={handleDeleteWorkout}
                         isCurrentCycle={!nextCycleID}
-                        onUpdateExercises={handleUpdateExercises}
+                        onUpdateWorkouts={handleUpdateWorkouts}
                       />
                     </div>
                   ))}
@@ -409,7 +365,7 @@ const WorkoutPlanSingle = () => {
           open={AddWorkoutModal}
           workout={selectedWorkout}
           onClose={() => setAddWorkoutModal(false)}
-          onSave={handleSaveExercise}
+          onSave={handleSaveNewExercise}
         />
       </div>
     </div>
