@@ -2,13 +2,15 @@ import { useState, useEffect } from "react";
 import api from "../api";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import LoadingState from "../states/LoadingState";
+import ErrorState from "../states/ErrorState";
 
 const WorkoutForm = ({ initialData = {}, onSubmit, submitLabel }) => {
   const [formData, setFormData] = useState({
     name: "",
     ...initialData,
   });
-  const [errors, setErrors] = useState({});
+  const [formErrors, setFormErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,7 +29,7 @@ const WorkoutForm = ({ initialData = {}, onSubmit, submitLabel }) => {
     e.preventDefault();
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
+      setFormErrors(validationErrors);
       return;
     }
 
@@ -59,10 +61,11 @@ const WorkoutForm = ({ initialData = {}, onSubmit, submitLabel }) => {
               placeholder="Enter workout name"
               value={formData.name}
               onChange={handleChange}
+              required
               className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
-            {errors.name && (
-              <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+            {formErrors.name && (
+              <p className="text-red-500 text-sm mt-1">{formErrors.name}</p>
             )}
           </div>
 
@@ -79,6 +82,12 @@ const WorkoutForm = ({ initialData = {}, onSubmit, submitLabel }) => {
 export const CreateWorkoutForm = () => {
   const { planID, cycleID } = useParams();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    setLoading(false);
+  }, []);
 
   const handleCreate = (payload) => {
     api
@@ -91,8 +100,18 @@ export const CreateWorkoutForm = () => {
       })
       .catch((error) => {
         console.error("Error creating workout:", error);
+        setError(error);
       });
   };
+
+  if (loading) return <LoadingState />;
+  if (error)
+    return (
+      <ErrorState
+        message={error?.message}
+        onRetry={() => window.location.reload()}
+      />
+    );
 
   return <WorkoutForm onSubmit={handleCreate} submitLabel="Create Workout" />;
 };
@@ -102,8 +121,11 @@ export const UpdateWorkoutForm = () => {
   const { planID, cycleID, workoutID } = useParams();
   const navigate = useNavigate();
   const [initialData, setInitialData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    setLoading(true);
     api
       .get(
         `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}`
@@ -114,7 +136,13 @@ export const UpdateWorkoutForm = () => {
           name: data.name || "",
         });
       })
-      .catch((error) => console.error("Error fetching workout:", error));
+      .catch((error) => {
+        console.error("Error fetching workout:", error);
+        setError(error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   const handleUpdate = (payload) => {
@@ -128,16 +156,18 @@ export const UpdateWorkoutForm = () => {
       })
       .catch((error) => {
         console.error("Error updating workout:", error);
+        setError(error);
       });
   };
 
-  if (!initialData) {
+  if (loading) return <LoadingState message="Loading workout..." />;
+  if (error)
     return (
-      <div className="flex items-center justify-center h-screen">
-        Loading...
-      </div>
+      <ErrorState
+        message={error?.message}
+        onRetry={() => window.location.reload()}
+      />
     );
-  }
 
   return (
     <WorkoutForm

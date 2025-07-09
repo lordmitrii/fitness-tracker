@@ -104,7 +104,7 @@ const AddWorkoutExerciseModal = ({
 
   const handleSaveNewExercise = (newExercise) => {
     api
-      .post(`individual-exercise1s`, {
+      .post(`individual-exercises`, {
         exercise_id: newExercise.exercise.id,
         name: newExercise.exercise.name,
         muscle_group_id: newExercise.exercise.muscle_group_id,

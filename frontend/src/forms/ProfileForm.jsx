@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import api from "../api";
 import { useNavigate } from "react-router-dom";
+import LoadingState from "../states/LoadingState";
+import ErrorState from "../states/ErrorState";
 
 const ProfileForm = ({ initialData = {}, onSubmit, submitLabel }) => {
   const [formData, setFormData] = useState({
@@ -10,7 +12,7 @@ const ProfileForm = ({ initialData = {}, onSubmit, submitLabel }) => {
     sex: "",
     ...initialData,
   });
-  const [errors, setErrors] = useState({});
+  const [formErrors, setFormErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -36,7 +38,7 @@ const ProfileForm = ({ initialData = {}, onSubmit, submitLabel }) => {
     e.preventDefault();
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
+      setFormErrors(validationErrors);
       return;
     }
 
@@ -73,8 +75,8 @@ const ProfileForm = ({ initialData = {}, onSubmit, submitLabel }) => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
-            {errors.age && (
-              <p className="text-red-500 text-sm mt-1">{errors.age}</p>
+            {formErrors.age && (
+              <p className="text-red-500 text-sm mt-1">{formErrors.age}</p>
             )}
           </div>
 
@@ -94,8 +96,10 @@ const ProfileForm = ({ initialData = {}, onSubmit, submitLabel }) => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
-            {errors.weight_kg && (
-              <p className="text-red-500 text-sm mt-1">{errors.weight_kg}</p>
+            {formErrors.weight_kg && (
+              <p className="text-red-500 text-sm mt-1">
+                {formErrors.weight_kg}
+              </p>
             )}
           </div>
 
@@ -115,8 +119,10 @@ const ProfileForm = ({ initialData = {}, onSubmit, submitLabel }) => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
-            {errors.height_cm && (
-              <p className="text-red-500 text-sm mt-1">{errors.height_cm}</p>
+            {formErrors.height_cm && (
+              <p className="text-red-500 text-sm mt-1">
+                {formErrors.height_cm}
+              </p>
             )}
           </div>
 
@@ -139,8 +145,8 @@ const ProfileForm = ({ initialData = {}, onSubmit, submitLabel }) => {
                 </label>
               ))}
             </div>
-            {errors.sex && (
-              <p className="text-red-500 text-sm mt-1">{errors.sex}</p>
+            {formErrors.sex && (
+              <p className="text-red-500 text-sm mt-1">{formErrors.sex}</p>
             )}
           </div>
 
@@ -156,6 +162,13 @@ const ProfileForm = ({ initialData = {}, onSubmit, submitLabel }) => {
 // Create profile page
 export const CreateProfileForm = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    setLoading(false);
+  }, []);
+
   const handleCreate = (payload) => {
     api
       .post("/users/profile", payload)
@@ -164,8 +177,18 @@ export const CreateProfileForm = () => {
       })
       .catch((error) => {
         console.error("Error creating profile:", error);
+        setError(error);
       });
   };
+
+  if (loading) return <LoadingState />;
+  if (error)
+    return (
+      <ErrorState
+        message={error?.message}
+        onRetry={() => window.location.reload()}
+      />
+    );
 
   return <ProfileForm onSubmit={handleCreate} submitLabel="Create Profile" />;
 };
@@ -174,8 +197,11 @@ export const CreateProfileForm = () => {
 export const UpdateProfileForm = () => {
   const navigate = useNavigate();
   const [initialData, setInitialData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    setLoading(true);
     api
       .get("/users/profile")
       .then((response) => {
@@ -187,7 +213,13 @@ export const UpdateProfileForm = () => {
           sex: data.sex || "",
         });
       })
-      .catch((error) => console.error("Error fetching profile:", error));
+      .catch((error) => {
+        console.error("Error fetching profile:", error);
+        setError(error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   const handleUpdate = (payload) => {
@@ -198,16 +230,18 @@ export const UpdateProfileForm = () => {
       })
       .catch((error) => {
         console.error("Error updating profile:", error);
+        setError(error);
       });
   };
 
-  if (!initialData) {
+  if (loading) return <LoadingState message="Loading your profile..." />;
+  if (error)
     return (
-      <div className="flex items-center justify-center h-screen">
-        Loading...
-      </div>
+      <ErrorState
+        message={error?.message}
+        onRetry={() => window.location.reload()}
+      />
     );
-  }
 
   return (
     <ProfileForm

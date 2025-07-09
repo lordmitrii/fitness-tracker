@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import api from "../api";
-import { useNavigate } from "react-router-dom";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import LoadingState from "../states/LoadingState";
+import ErrorState from "../states/ErrorState";
 
 const WorkoutPlanForm = ({ initialData = {}, onSubmit, label, submitText }) => {
   const [formData, setFormData] = useState({
@@ -78,6 +79,12 @@ const WorkoutPlanForm = ({ initialData = {}, onSubmit, label, submitText }) => {
 // Create workout plan page
 export const CreateWorkoutPlanForm = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    setLoading(false);
+  }, []);
 
   const handleCreate = (payload) => {
     api
@@ -87,8 +94,18 @@ export const CreateWorkoutPlanForm = () => {
       })
       .catch((error) => {
         console.error("Error creating workout plan:", error);
+        setError(error);
       });
   };
+
+  if (loading) return <LoadingState />;
+  if (error)
+    return (
+      <ErrorState
+        message={error?.message}
+        onRetry={() => window.location.reload()}
+      />
+    );
 
   return (
     <WorkoutPlanForm
@@ -104,8 +121,11 @@ export const UpdateWorkoutPlanForm = () => {
   const { planID } = useParams();
   const navigate = useNavigate();
   const [initialData, setInitialData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    setLoading(true);
     api
       .get(`/workout-plans/${planID}`)
       .then((response) => {
@@ -114,7 +134,13 @@ export const UpdateWorkoutPlanForm = () => {
           name: data.name || "",
         });
       })
-      .catch((error) => console.error("Error fetching workout plan:", error));
+      .catch((error) => {
+        console.error("Error fetching workout plan:", error);
+        setError(error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   const handleUpdate = (payload) => {
@@ -125,16 +151,18 @@ export const UpdateWorkoutPlanForm = () => {
       })
       .catch((error) => {
         console.error("Error updating workout plan:", error);
+        setError(error);
       });
   };
 
-  if (!initialData) {
+  if (loading) return <LoadingState message="Loading workout plan..." />;
+  if (error)
     return (
-      <div className="flex items-center justify-center h-screen">
-        Loading...
-      </div>
+      <ErrorState
+        message={error?.message}
+        onRetry={() => window.location.reload()}
+      />
     );
-  }
 
   return (
     <WorkoutPlanForm

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api";
+import LoadingState from "../states/LoadingState";
+import ErrorState from "../states/ErrorState";
 
 const WorkoutPlans = () => {
   const [workoutPlans, setWorkoutPlans] = useState([]);
@@ -23,8 +25,14 @@ const WorkoutPlans = () => {
       });
   }, []);
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error.message}</p>;
+  if (loading) return <LoadingState message="Loading your stats..." />;
+  if (error)
+    return (
+      <ErrorState
+        message={error?.message}
+        onRetry={() => window.location.reload()}
+      />
+    );
 
   return (
     <div className="min-h-screen bg-gray-50 px-4">

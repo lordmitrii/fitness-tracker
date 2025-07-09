@@ -4,6 +4,8 @@ import api from "../api";
 import WorkoutCard from "../components/WorkoutCard";
 import DropdownMenu from "../components/DropdownMenu";
 import WorkoutCycleDetailsMenu from "../components/WorkoutCycleDetailsMenu";
+import LoadingState from "../states/LoadingState";
+import ErrorState from "../states/ErrorState";
 
 const WorkoutPlanSingle = () => {
   const navigate = useNavigate();
@@ -127,8 +129,14 @@ const WorkoutPlanSingle = () => {
     );
   };
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error.message}</p>;
+  if (loading) return <LoadingState message="Loading your stats..." />;
+  if (error)
+    return (
+      <ErrorState
+        message={error?.message}
+        onRetry={() => window.location.reload()}
+      />
+    );
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api";
+import LoadingState from "../states/LoadingState";
+import ErrorState from "../states/ErrorState";
 
 const ExerciseStats = () => {
   const [stats, setStats] = useState(null);
@@ -21,8 +23,14 @@ const ExerciseStats = () => {
       });
   }, []);
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error.message}</p>;
+  if (loading) return <LoadingState message="Loading your stats..." />;
+  if (error)
+    return (
+      <ErrorState
+        message={error?.message}
+        onRetry={() => window.location.reload()}
+      />
+    );
 
   return (
     <div className="min-h-screen bg-gray-50 px-4">
