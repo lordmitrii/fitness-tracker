@@ -155,9 +155,9 @@ const WorkoutExerciseDetailsMenu = ({
   if (!exercise) return null;
 
   return (
-    <div className="flex flex-col space-y-1">
+    <div className="flex flex-col space-y-2 mt-2">
       <button
-        className={`text-left px-3 py-2 rounded hover:bg-gray-100 ${
+        className={`btn btn-secondary-light text-left ${
           exercise.index === 1 ? "opacity-50 cursor-not-allowed" : ""
         }`}
         onClick={handleMoveUp}
@@ -170,7 +170,7 @@ const WorkoutExerciseDetailsMenu = ({
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"
-            className="size-6"
+            className="size-6 text-gray-500"
           >
             <path
               strokeLinecap="round"
@@ -182,7 +182,7 @@ const WorkoutExerciseDetailsMenu = ({
         </span>
       </button>
       <button
-        className={`text-left px-3 py-2 rounded hover:bg-gray-100 ${
+        className={`btn btn-secondary-light text-left ${
           exercises.length === 1 ||
           exercise.index === Math.max(...exercises.map((e) => e.index))
             ? "opacity-50 cursor-not-allowed"
@@ -201,7 +201,7 @@ const WorkoutExerciseDetailsMenu = ({
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"
-            className="size-6"
+            className="size-6 text-gray-500"
           >
             <path
               strokeLinecap="round"
@@ -213,7 +213,7 @@ const WorkoutExerciseDetailsMenu = ({
         </span>
       </button>
       <button
-        className="text-left px-3 py-2 rounded hover:bg-gray-100"
+        className="btn btn-secondary-light text-left"
         onClick={handleDuplicateExercise}
       >
         <span className="flex items-center gap-2">
@@ -223,7 +223,7 @@ const WorkoutExerciseDetailsMenu = ({
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"
-            className="size-6"
+            className="size-6 text-gray-500"
           >
             <path
               strokeLinecap="round"
@@ -235,7 +235,7 @@ const WorkoutExerciseDetailsMenu = ({
         </span>
       </button>
       <button
-        className="text-left px-3 py-2 rounded hover:bg-gray-100"
+        className="btn btn-secondary-light text-left"
         onClick={handleReplaceExercise}
       >
         <span className="flex items-center gap-2">
@@ -245,7 +245,7 @@ const WorkoutExerciseDetailsMenu = ({
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"
-            className="size-6"
+            className="size-6 text-gray-500"
           >
             <path
               strokeLinecap="round"
@@ -257,7 +257,7 @@ const WorkoutExerciseDetailsMenu = ({
         </span>
       </button>
       <button
-        className="text-left px-3 py-2 rounded hover:bg-gray-100 text-red-600 bg-red-50"
+        className="btn btn-danger-light text-left"
         onClick={handleDeleteExercise}
       >
         <span className="flex items-center gap-2">
@@ -267,7 +267,7 @@ const WorkoutExerciseDetailsMenu = ({
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"
-            className="size-6"
+            className="size-6 text-pink-400"
           >
             <path
               strokeLinecap="round"

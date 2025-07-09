@@ -117,7 +117,7 @@ const DropdownMenu = ({
           >
             <div className={`flex ${isLeft ? "justify-start" : "justify-end"}`}>
               <button
-                className="text-gray-400 hover:text-gray-700 transition"
+                className="text-gray-600 hover:text-gray-900 transition"
                 onClick={() => setOpen(false)}
                 aria-label="Close"
               >

@@ -68,7 +68,7 @@ const WorkoutForm = ({ initialData = {}, onSubmit, submitLabel,  }) => {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition-colors font-semibold"
+            className="btn btn-primary w-full"
           >
             {submitLabel}
           </button>

@@ -162,7 +162,7 @@ const WorkoutPlanSingle = () => {
                 <div className="w-1/2">
                   {workoutCycle.previous_cycle_id && (
                     <button
-                      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-auto"
+                      className="btn btn-primary w-auto"
                       onClick={() =>
                         navigate(
                           `/workout-plans/${planID}/workout-cycles/${workoutCycle.previous_cycle_id}`
@@ -192,7 +192,7 @@ const WorkoutPlanSingle = () => {
                 <div className="w-1/2 text-right">
                   {(workoutCycle.next_cycle_id || nextCycleID) && (
                     <button
-                      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-auto sm:ml-auto"
+                      className="btn btn-primary-inverted w-auto"
                       onClick={() =>
                         navigate(
                           `/workout-plans/${planID}/workout-cycles/${
@@ -248,11 +248,11 @@ const WorkoutPlanSingle = () => {
               <p className="text-gray-500">No workouts in this cycle yet.</p>
             )}
 
-            <div className="flex justify-center sm:justify-start items-center gap-4 mt-0 sm:mt-6 pt-6 sm:pt-0 bg-white">
+            <div className="flex justify-center sm:justify-start items-center gap-4 mt-0 sm:mt-6 pt-10 pb-7 sm:py-0 bg-white">
               {!nextCycleID && (
                 <>
                   <button
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition"
+                    className="btn btn-primary"
                     onClick={() =>
                       navigate(
                         `/workout-plans/${planID}/workout-cycles/${cycleID}/create-workout`
@@ -263,11 +263,11 @@ const WorkoutPlanSingle = () => {
                   </button>
                   {!cycleCompleted && (
                     <button
-                      className={`${
+                      className={`btn ${
                         allWorkoutsCompleted
-                          ? "bg-green-600 hover:bg-green-700"
-                          : "bg-gray-400 cursor-not-allowed"
-                      } text-white font-semibold py-2 px-6 rounded-lg shadow transition`}
+                          ? "btn-success"
+                          : "btn-secondary"
+                      }`}
                       onClick={handleCycleComplete}
                     >
                       Complete Cycle

@@ -36,9 +36,9 @@ const WorkoutCycleDetailsMenu = ({
   if (!workoutCycle) return null;
 
   return (
-    <div className="flex flex-col space-y-1">
+    <div className="flex flex-col space-y-2 mt-2">
       <button
-        className={`text-left px-3 py-2 rounded hover:bg-gray-100 text-red-600 bg-red-50 ${
+        className={`btn btn-danger-light text-left  ${
           !workoutCycle.previous_cycle_id ? "opacity-50 cursor-not-allowed" : ""
         }`}
         onClick={handleDeleteCycle}
@@ -56,7 +56,7 @@ const WorkoutCycleDetailsMenu = ({
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"
-            className="size-6"
+            className="size-6 text-pink-400"
           >
             <path
               strokeLinecap="round"

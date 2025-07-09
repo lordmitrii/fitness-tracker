@@ -35,7 +35,7 @@ const WorkoutPlans = () => {
           </h1>
           {workoutPlans.length > 0 && (
             <button
-              className="hidden sm:inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition"
+              className="btn btn-primary hidden sm:inline-block"
               onClick={() => navigate("/create-workout-plan")}
             >
               + Create
@@ -93,7 +93,7 @@ const WorkoutPlans = () => {
                   </div>
                   <div className="flex gap-2 mt-2 sm:mt-0">
                     <button
-                      className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors shadow mr-2"
+                      className="btn btn-warning"
                       onClick={() =>
                         navigate(`/update-workout-plan/${workoutPlan.id}`)
                       }
@@ -101,7 +101,7 @@ const WorkoutPlans = () => {
                       Update
                     </button>
                     <button
-                      className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors shadow"
+                      className="btn btn-danger"
                       onClick={() => {
                         if (
                           !window.confirm(
@@ -139,7 +139,7 @@ const WorkoutPlans = () => {
               No workout plans found. Create your first plan!
             </p>
             <button
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition"
+              className="btn btn-primary"
               onClick={() => navigate("/create-workout-plan")}
             >
               + Create Workout Plan
@@ -150,7 +150,7 @@ const WorkoutPlans = () => {
         {/* Floating create button for mobile */}
         {workoutPlans.length > 0 && (
           <button
-            className="fixed bottom-5 right-5 z-20 sm:hidden bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition"
+            className="btn btn-primary border inset-shadow-xs fixed bottom-5 right-5 z-20 sm:hidden"
             onClick={() => navigate("/create-workout-plan")}
             aria-label="Create workout plan"
           >

@@ -136,7 +136,7 @@ const AddWorkoutExerciseModal = ({
   return (
     <>
       <button
-        className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-full sm:w-auto"
+        className="btn btn-primary flex items-center justify-center w-full sm:w-auto"
         onClick={() => setOpen((o) => !o)}
       >
         <span>+ Add Exercise</span>
@@ -216,14 +216,14 @@ const AddWorkoutExerciseModal = ({
               <div className="flex gap-2 justify-between mt-3">
                 <button
                   type="button"
-                  className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
+                  className="btn btn-secondary"
                   onClick={close}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white"
+                  className="btn btn-primary"
                 >
                   Add Exercise
                 </button>

@@ -43,21 +43,17 @@ const Profile = () => {
               <div className="font-semibold">Age:</div>
               <div>{profile.age}</div>
 
-              <div className="font-semibold">
-                Weight:
-              </div>
+              <div className="font-semibold">Weight:</div>
               <div>{profile.weight_kg} kg</div>
 
-              <div className="font-semibold">
-                Height:
-              </div>
+              <div className="font-semibold">Height:</div>
               <div>{profile.height_cm} cm</div>
 
               <div className="font-semibold">Sex:</div>
               <div className="capitalize">{profile.sex}</div>
             </div>
             <button
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-full"
+              className="btn btn-primary w-full"
               onClick={() => navigate("/update-profile")}
             >
               Update
@@ -69,7 +65,7 @@ const Profile = () => {
               No profile found. Get started:
             </p>
             <button
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-full"
+              className="btn btn-primary w-full"
               onClick={() => navigate("/create-profile")}
             >
               Create Profile

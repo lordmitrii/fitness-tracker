@@ -195,9 +195,9 @@ const WorkoutSetDetailsMenu = ({
   if (!set || !exercise) return null;
 
   return (
-    <div className="flex flex-col space-y-1">
+    <div className="flex flex-col space-y-2 mt-2">
       <button
-        className={`text-left px-3 py-2 rounded hover:bg-gray-100 ${
+        className={`btn btn-secondary-light text-left ${
           set.index === 1 ? "opacity-50 cursor-not-allowed" : ""
         }`}
         onClick={handleMoveUp}
@@ -210,7 +210,7 @@ const WorkoutSetDetailsMenu = ({
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"
-            className="size-6"
+            className="size-6 text-gray-500"
           >
             <path
               strokeLinecap="round"
@@ -222,7 +222,7 @@ const WorkoutSetDetailsMenu = ({
         </span>
       </button>
       <button
-        className={`text-left px-3 py-2 rounded hover:bg-gray-100 ${
+        className={`btn btn-secondary-light text-left ${
           exercise.workout_sets.length === 1 ||
           set.index ===
             Math.max(...(exercise.workout_sets || []).map((s) => s.index))
@@ -243,7 +243,7 @@ const WorkoutSetDetailsMenu = ({
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"
-            className="size-6"
+            className="size-6 text-gray-500"
           >
             <path
               strokeLinecap="round"
@@ -255,7 +255,7 @@ const WorkoutSetDetailsMenu = ({
         </span>
       </button>
       <button
-        className="text-left px-3 py-2 rounded hover:bg-gray-100"
+        className="btn btn-secondary-light text-left"
         onClick={handleAddSetAbove}
       >
         <span className="flex items-center gap-2">
@@ -269,6 +269,7 @@ const WorkoutSetDetailsMenu = ({
             strokeWidth={1.5}
             strokeLinecap="round"
             strokeLinejoin="round"
+            className="size-6 text-gray-500"
           >
             {/* Plus sign */}
             <path d="M12 2v6" />
@@ -281,7 +282,7 @@ const WorkoutSetDetailsMenu = ({
         </span>
       </button>
       <button
-        className="text-left px-3 py-2 rounded hover:bg-gray-100"
+        className="btn btn-secondary-light text-left"
         onClick={handleAddSetBelow}
       >
         <span className="flex items-center gap-2">
@@ -295,6 +296,7 @@ const WorkoutSetDetailsMenu = ({
             strokeWidth={1.5}
             strokeLinecap="round"
             strokeLinejoin="round"
+            className="size-6 text-gray-500"
           >
             {/* Table rows */}
             <rect width="13" height="4" x="5.5" y="5" rx="1" />
@@ -307,7 +309,7 @@ const WorkoutSetDetailsMenu = ({
         </span>
       </button>
       <button
-        className={`text-left px-3 py-2 rounded hover:bg-gray-100 text-red-600 bg-red-50 ${
+        className={`btn btn-danger-light text-left ${
           exercise.workout_sets.length === 1
             ? "opacity-50 cursor-not-allowed"
             : ""
@@ -327,7 +329,7 @@ const WorkoutSetDetailsMenu = ({
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"
-            className="size-6"
+            className="size-6 text-pink-400"
           >
             <path
               strokeLinecap="round"
