@@ -90,8 +90,8 @@ const WorkoutExerciseTable = ({
                 </span>
               </div>
               <DropdownMenu
+                dotsHorizontal={true}
                 dotsHidden={!isCurrentCycle}
-                isLeft={false}
                 menu={({ close }) => (
                   <WorkoutExerciseDetailsMenu
                     planID={planID}
@@ -125,7 +125,7 @@ const WorkoutExerciseTable = ({
                       className="min-w-full grid grid-cols-[36px_1fr_1fr_1fr_1fr] sm:grid-cols-[36px_1fr_1fr_1fr_1fr_1fr] gap-4 items-center py-2"
                     >
                       <DropdownMenu
-                      dotsHidden={!isCurrentCycle}
+                        dotsHidden={!isCurrentCycle}
                         isLeft={true}
                         menu={({ close }) => (
                           <WorkoutSetDetailsMenu

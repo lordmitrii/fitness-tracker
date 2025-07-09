@@ -1,8 +1,9 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, use } from "react";
 import api from "../api";
-import AddWorkoutExerciseModal from "../components/AddWorkoutExerciseModal";
 import WorkoutCard from "../components/WorkoutCard";
+import DropdownMenu from "../components/DropdownMenu";
+import WorkoutCycleDetailsMenu from "../components/WorkoutCycleDetailsMenu";
 
 const WorkoutPlanSingle = () => {
   const navigate = useNavigate();
@@ -11,9 +12,6 @@ const WorkoutPlanSingle = () => {
   const [workouts, setWorkouts] = useState([]);
 
   const [nextCycleID, setNextCycleID] = useState(null);
-
-  const [AddWorkoutModal, setAddWorkoutModal] = useState(false);
-  const [selectedWorkout, setSelectedWorkout] = useState(null);
 
   const [allWorkoutsCompleted, setAllWorkoutsCompleted] = useState(false);
   const [cycleCompleted, setCycleCompleted] = useState(false);
@@ -44,7 +42,9 @@ const WorkoutPlanSingle = () => {
 
   useEffect(() => {
     if (workouts.length > 0) {
-      const firstIncompleteWorkout = workouts.find((workout) => !workout.completed);
+      const firstIncompleteWorkout = workouts.find(
+        (workout) => !workout.completed
+      );
       if (firstIncompleteWorkout) {
         const index = workouts.indexOf(firstIncompleteWorkout);
         const ref = workoutRefs.current[index];
@@ -117,190 +117,110 @@ const WorkoutPlanSingle = () => {
     );
   };
 
-  const handleSaveNewExercise = (newExercise) => {
-    api
-      .post(`individual-exercises`, {
-        exercise_id: newExercise.exercise.id,
-        name: newExercise.exercise.name,
-        muscle_group: newExercise.exercise.muscle_group,
-      })
-      .then((res1) => {
-        delete newExercise.exercise; // Remove the exercise object to match the API structure
-        const individualExercise = res1.data;
-        api
-          .post(
-            `workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${selectedWorkout.id}/workout-exercises`,
-            {
-              individual_exercise_id: individualExercise.id,
-              sets_qt: newExercise.sets,
-            }
-          )
-          .then((res2) => {
-            const exerciseToAdd = {
-              ...res2.data,
-              individual_exercise: individualExercise,
-            };
-            setWorkouts((prevWorkouts) =>
-              prevWorkouts.map((w) =>
-                w.id === selectedWorkout.id
-                  ? {
-                      ...w,
-                      workout_exercises: [
-                        ...w.workout_exercises,
-                        exerciseToAdd,
-                      ],
-                      completed: false,
-                    }
-                  : w
-              )
-            );
-            setAddWorkoutModal(false);
-            setSelectedWorkout(null);
-          })
-          .catch((error) => {
-            setError(error);
-          });
-      })
-      .catch((error) => {
-        setError(error);
-        return;
-      });
-  };
-
-  const handleDelete = () => {
-    if (
-      !window.confirm(
-        `Are you sure you want to delete cycle "${workoutCycle.name}"? This action cannot be undone.`
-      )
-    ) {
-      return;
-    }
-    api
-      .delete(`/workout-plans/${planID}/workout-cycles/${cycleID}`)
-      .then(() => {
-        navigate(
-          `/workout-plans/${planID}/workout-cycles/${workoutCycle.previous_cycle_id}`
-        );
-        setNextCycleID(null);
-      })
-      .catch((error) => {
-        setError(error);
-      });
-  };
-
   const handleDeleteWorkout = (workoutId) => {
-    const workout = workouts.find((w) => w.id === workoutId);
-    if (
-      !window.confirm(
-        `Are you sure you want to delete workout "${workout.name}"? This action cannot be undone.`
-      )
-    ) {
-      return;
-    }
-    api
-      .delete(
-        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workout.id}`
-      )
-      .then(() => {
-        setWorkouts(workouts.filter((w) => w.id !== workout.id));
-      })
-      .catch((error) => {
-        alert("Error deleting workout: " + error.message);
-        console.error("Error deleting workout:", error);
-      });
+    setWorkouts((prevWorkouts) =>
+      prevWorkouts.filter((w) => w.id !== workoutId)
+    );
   };
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4">
-      <div className="mx-auto p-2 sm:p-8 mt-8">
+    <div className="min-h-screen bg-gray-200 sm:bg-gray-50">
+      <div className="mx-auto sm:p-8 mt-2">
         {workoutCycle && (
           <>
             {/* <h1 className="text-3xl font-bold mb-2">{workoutPlan.name}</h1> */}
-            <h1 className="text-3xl sm:text-4xl font-bold mb-2">
-              Workout Plan View
-            </h1>
-            <h2 className="text-lg text-gray-700 mb-6">
-              Cycle: <span className="font-semibold">{workoutCycle.name}</span>
-            </h2>
-            <div className="flex flex-row gap-4 mb-8">
-              <div className="w-1/3">
-                {workoutCycle.previous_cycle_id && (
-                  <button
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-auto"
-                    onClick={() =>
-                      navigate(
-                        `/workout-plans/${planID}/workout-cycles/${workoutCycle.previous_cycle_id}`
-                      )
-                    }
-                  >
-                    <span className="flex items-center justify-between">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="size-6"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M15.75 19.5 8.25 12l7.5-7.5"
-                        />
-                      </svg>
-                      <div className="hidden sm:block">View Next Cycle</div>
-                    </span>
-                  </button>
-                )}
+            <div className="bg-white p-6 sm:p-0 shadow-md sm:shadow-none">
+              <div className="flex justify-between items-center mb-2">
+                <h1 className="text-3xl sm:text-4xl font-bold">
+                  Workout Plan View
+                </h1>
+                <DropdownMenu
+                  dotsHorizontal={true}
+                  menu={({ close }) => (
+                    <WorkoutCycleDetailsMenu
+                      closeMenu={close}
+                      planID={planID}
+                      cycleID={cycleID}
+                      workoutCycle={workoutCycle}
+                      setNextCycleID={setNextCycleID}
+                    />
+                  )}
+                />
               </div>
-              <div className="w-1/3 text-center">
-                {workoutCycle.previous_cycle_id && (
-                  <button
-                    className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-full sm:w-auto"
-                    onClick={handleDelete}
-                  >
-                    Delete Cycle
-                  </button>
-                )}
-              </div>
-              <div className="w-1/3 text-right">
-                {(workoutCycle.next_cycle_id || nextCycleID) && (
-                  <button
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-auto sm:ml-auto"
-                    onClick={() =>
-                      navigate(
-                        `/workout-plans/${planID}/workout-cycles/${
-                          workoutCycle.next_cycle_id || nextCycleID
-                        }`
-                      )
-                    }
-                  >
-                    <span className="flex items-center justify-between">
-                      <div className="hidden sm:block">View Next Cycle</div>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="size-6"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="m8.25 4.5 7.5 7.5-7.5 7.5"
-                        />
-                      </svg>
-                    </span>
-                  </button>
-                )}
+              <h2 className="text-lg text-gray-700 mb-6">
+                Cycle:{" "}
+                <span className="font-semibold">{workoutCycle.name}</span>
+              </h2>
+              <div className="flex flex-row gap-4 mb-8">
+                <div className="w-1/2">
+                  {workoutCycle.previous_cycle_id && (
+                    <button
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-auto"
+                      onClick={() =>
+                        navigate(
+                          `/workout-plans/${planID}/workout-cycles/${workoutCycle.previous_cycle_id}`
+                        )
+                      }
+                    >
+                      <span className="flex items-center justify-between">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
+                          className="size-6"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M15.75 19.5 8.25 12l7.5-7.5"
+                          />
+                        </svg>
+                        <div className="hidden sm:block">View Next Cycle</div>
+                      </span>
+                    </button>
+                  )}
+                </div>
+                <div className="w-1/2 text-right">
+                  {(workoutCycle.next_cycle_id || nextCycleID) && (
+                    <button
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-auto sm:ml-auto"
+                      onClick={() =>
+                        navigate(
+                          `/workout-plans/${planID}/workout-cycles/${
+                            workoutCycle.next_cycle_id || nextCycleID
+                          }`
+                        )
+                      }
+                    >
+                      <span className="flex items-center justify-between">
+                        <div className="hidden sm:block">View Next Cycle</div>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
+                          className="size-6"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                          />
+                        </svg>
+                      </span>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
             {workouts && workouts.length > 0 ? (
-              <div className="space-y-8">
+              <div className="space-y-6 py-6 sm:py-0">
                 {workouts
                   .slice()
                   .sort((a, b) => a.index - b.index)
@@ -308,19 +228,12 @@ const WorkoutPlanSingle = () => {
                     <div
                       key={workout.id}
                       ref={(el) => (workoutRefs.current[idx] = el)}
-                      className={`pb-6 sm:pb-0 ${
-                        idx !== workouts.length - 1
-                          ? "sm:border-none border-b-3 border-gray-600"
-                          : ""
-                      }`}
                     >
                       <WorkoutCard
                         planID={planID}
                         cycleID={cycleID}
                         workout={workout}
-                        setModalOpen={setAddWorkoutModal}
-                        setSelectedWorkout={setSelectedWorkout}
-                        onDelete={handleDeleteWorkout}
+                        onDeleteWorkout={handleDeleteWorkout}
                         isCurrentCycle={!nextCycleID}
                         onUpdateWorkouts={handleUpdateWorkouts}
                       />
@@ -331,7 +244,7 @@ const WorkoutPlanSingle = () => {
               <p className="text-gray-500">No workouts in this cycle yet.</p>
             )}
 
-            <div className="flex items-center gap-4 mt-10">
+            <div className="flex justify-center sm:justify-start items-center gap-4 mt-0 sm:mt-6 pt-6 sm:pt-0 bg-white">
               {!nextCycleID && (
                 <>
                   <button
@@ -361,12 +274,6 @@ const WorkoutPlanSingle = () => {
             </div>
           </>
         )}
-        <AddWorkoutExerciseModal
-          open={AddWorkoutModal}
-          workout={selectedWorkout}
-          onClose={() => setAddWorkoutModal(false)}
-          onSave={handleSaveNewExercise}
-        />
       </div>
     </div>
   );

@@ -1,5 +1,7 @@
-import { Link, useNavigate } from "react-router-dom";
 import WorkoutExerciseTable from "./WorkoutExerciseTable";
+import DropdownMenu from "./DropdownMenu";
+import WorkoutDetailsMenu from "./WorkoutDetailsMenu";
+import AddWorkoutExerciseModal from "./AddWorkoutExerciseModal";
 
 const WorkoutCard = ({
   planID,
@@ -7,47 +9,41 @@ const WorkoutCard = ({
   workout,
   setModalOpen,
   setSelectedWorkout,
-  onDelete,
+  onDeleteWorkout,
   isCurrentCycle,
   onUpdateWorkouts,
 }) => {
-  const navigate = useNavigate();
-
   return (
-    <div className="rounded-2xl sm:shadow-md bg-white sm:border sm:border-gray-200 sm:p-6 sm:hover:shadow-lg transition flex flex-col gap-3">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <div>
-          <span className="text-2xl font-semibold text-blue-800">
+    <div className="sm:rounded-2xl shadow-lg bg-white sm:border sm:border-gray-200 p-6 sm:hover:shadow-lg transition flex flex-col gap-3">
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-semibold text-blue-800">
             {workout.name}
-          </span>
-          <div className="text-gray-400 text-sm mt-1">
-            Last updated: {new Date(workout.updated_at).toLocaleDateString()}
-            <br />
-            Completed:{" "}
-            {workout.completed ? (
-              <span className="text-green-600 font-semibold">Yes</span>
-            ) : (
-              <span className="text-red-600 font-semibold">No</span>
+          </h1>
+          <DropdownMenu
+            dotsHorizontal={true}
+            dotsHidden={!isCurrentCycle}
+            menu={({ close }) => (
+              <WorkoutDetailsMenu
+                closeMenu={close}
+                planID={planID}
+                cycleID={cycleID}
+                workout={workout}
+                updateWorkouts={onUpdateWorkouts}
+                onDeleteWorkout={onDeleteWorkout}
+              />
             )}
-          </div>
+          />
         </div>
-        <div className={`mt-2 sm:mt-0 gap-2 ${isCurrentCycle ? "flex" : "hidden"}`}>
-          <button
-            className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors shadow mr-2"
-            onClick={() =>
-              navigate(
-                `/workout-plans/${planID}/workout-cycles/${cycleID}/update-workout/${workout.id}`
-              )
-            }
-          >
-            Update
-          </button>
-          <button
-            className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors shadow"
-            onClick={() => onDelete(workout.id)}
-          >
-            Delete
-          </button>
+        <div className="text-gray-400 text-sm mt-1">
+          Last updated: {new Date(workout.updated_at).toLocaleDateString()}
+          <br />
+          Completed:{" "}
+          {workout.completed ? (
+            <span className="text-green-600 font-semibold">Yes</span>
+          ) : (
+            <span className="text-red-600 font-semibold">No</span>
+          )}
         </div>
       </div>
       {workout.workout_exercises && workout.workout_exercises.length > 0 && (
@@ -67,15 +63,12 @@ const WorkoutCard = ({
       )}
       <div className="flex justify-center mt-4">
         {isCurrentCycle && (
-          <button
-            className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-full sm:w-auto"
-            onClick={() => {
-              setSelectedWorkout(workout);
-              setModalOpen(true);
-            }}
-          >
-            <span>+ Add Exercise</span>
-          </button>
+          <AddWorkoutExerciseModal
+            workout={workout}
+            planID={planID}
+            cycleID={cycleID}
+            onUpdateWorkouts={onUpdateWorkouts}
+          />
         )}
       </div>
     </div>

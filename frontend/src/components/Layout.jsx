@@ -121,7 +121,7 @@ const Layout = ({ children }) => {
         </div>
       </header>
 
-      <main className="flex-grow container mx-auto sm:py-6">{children}</main>
+      <main className="flex-grow container mx-auto py-6 sm:py-0">{children}</main>
 
       <footer className="bg-white border-t py-4">
         <div className="container mx-auto px-4 text-center text-gray-500 text-sm">

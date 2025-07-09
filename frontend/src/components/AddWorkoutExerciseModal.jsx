@@ -1,7 +1,15 @@
 import { useState, useEffect } from "react";
 import api from "../api";
 
-const AddWorkoutExerciseModal = ({ open, onClose, onSave, workout }) => {
+const AddWorkoutExerciseModal = ({
+  workout,
+  planID,
+  cycleID,
+  onUpdateWorkouts,
+}) => {
+  const [open, setOpen] = useState(false);
+  const close = () => setOpen(false);
+
   const [exercisesArray, setExercisesArray] = useState([]);
   const [exercisesFetched, setExercisesFetched] = useState(false);
 
@@ -49,8 +57,6 @@ const AddWorkoutExerciseModal = ({ open, onClose, onSave, workout }) => {
     }
   }, [open, workout, makingCustomExercise]);
 
-  if (!open || !workout) return null;
-
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -58,7 +64,7 @@ const AddWorkoutExerciseModal = ({ open, onClose, onSave, workout }) => {
     if (exerciseID) [source, id] = String(exerciseID).split("-");
 
     if (makingCustomExercise) {
-      onSave({
+      handleSaveNewExercise({
         exercise: { name, muscle_group: muscleGroup },
         sets,
       });
@@ -75,100 +81,149 @@ const AddWorkoutExerciseModal = ({ open, onClose, onSave, workout }) => {
     }
 
     if (source === "pool") {
-      onSave({ exercise: { id: exObj.id }, sets, });
+      handleSaveNewExercise({ exercise: { id: exObj.id }, sets });
     }
     // If picked from custom, send name and muscle group only
     else {
-      onSave({
+      handleSaveNewExercise({
         exercise: { name: exObj.name, muscle_group: exObj.muscle_group },
         sets,
       });
     }
   };
 
+  const handleSaveNewExercise = (newExercise) => {
+    api
+      .post(`individual-exercises`, {
+        exercise_id: newExercise.exercise.id,
+        name: newExercise.exercise.name,
+        muscle_group: newExercise.exercise.muscle_group,
+      })
+      .then((res1) => {
+        delete newExercise.exercise; // Remove the exercise object to match the API structure
+        const individualExercise = res1.data;
+        api
+          .post(
+            `workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workout.id}/workout-exercises`,
+            {
+              individual_exercise_id: individualExercise.id,
+              sets_qt: newExercise.sets,
+            }
+          )
+          .then((res2) => {
+            const exerciseToAdd = {
+              ...res2.data,
+              individual_exercise: individualExercise,
+            };
+            onUpdateWorkouts(workout.id, (prevExercises) => [
+              ...prevExercises,
+              exerciseToAdd,
+            ]);
+            close();
+          })
+          .catch((error) => {
+            console.error("Error adding exercise to workout:", error);
+          });
+      })
+      .catch((error) => {
+        console.error("Error saving new exercise:", error);
+        return;
+      });
+  };
+
   return (
-    <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex justify-center items-center z-50">
-      <div className="bg-white rounded-2xl shadow-xl p-8 min-w-[340px]">
-        <h3 className="text-xl font-bold mb-4">
-          Add Exercise to {workout.name}
-        </h3>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          {!makingCustomExercise ? (
-            <select
-              className="border rounded p-2"
-              value={exerciseID}
-              onChange={(e) => setExerciseID(e.target.value)}
-              required
-            >
-              <option value="" disabled>
-                Select Exercise
-              </option>
-              {exercisesArray.map((ex) => (
-                <option
-                  key={`${ex.source}-${ex.id}`}
-                  value={`${ex.source}-${ex.id}`}
+    <>
+      <button
+        className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition w-full sm:w-auto"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <span>+ Add Exercise</span>
+      </button>
+      {open && (
+        <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex justify-center items-center z-50">
+          <div className="bg-white rounded-2xl shadow-lg p-8 min-w-sm sm:min-w-lg">
+            <h3 className="text-xl font-bold mb-4">
+              Add Exercise to {workout.name}
+            </h3>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+              {!makingCustomExercise ? (
+                <select
+                  className="border rounded p-2"
+                  value={exerciseID}
+                  onChange={(e) => setExerciseID(e.target.value)}
+                  required
                 >
-                  {ex.name}
-                  {ex.source === "custom" ? " (custom)" : ""}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <div className="flex flex-col gap-2">
+                  <option value="" disabled>
+                    Select Exercise
+                  </option>
+                  {exercisesArray.map((ex) => (
+                    <option
+                      key={`${ex.source}-${ex.id}`}
+                      value={`${ex.source}-${ex.id}`}
+                    >
+                      {ex.name}
+                      {ex.source === "custom" ? " (custom)" : ""}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <input
+                    className="border rounded p-2"
+                    type="text"
+                    placeholder="Exercise Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                  <input
+                    className="border rounded p-2"
+                    type="text"
+                    placeholder="Muscle Group"
+                    value={muscleGroup}
+                    onChange={(e) => setMuscleGroup(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
               <input
                 className="border rounded p-2"
-                type="text"
-                placeholder="Exercise Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                type="number"
+                placeholder="Sets"
+                value={sets}
+                onChange={(e) => setSets(Number(e.target.value))}
+                min={1}
                 required
               />
-              <input
-                className="border rounded p-2"
-                type="text"
-                placeholder="Muscle Group"
-                value={muscleGroup}
-                onChange={(e) => setMuscleGroup(e.target.value)}
-                required
-              />
-            </div>
-          )}
-          <input
-            className="border rounded p-2"
-            type="number"
-            placeholder="Sets"
-            value={sets}
-            onChange={(e) => setSets(Number(e.target.value))}
-            min={1}
-            required
-          />
-          <button
-            type="button"
-            className="text-blue-600 hover:underline mb-2"
-            onClick={() => setMakingCustomExercise(!makingCustomExercise)}
-          >
-            {!makingCustomExercise
-              ? "Create custom exercise"
-              : "Select from exercise pool"}
-          </button>
-          <div className="flex gap-2 justify-between mt-3">
-            <button
-              type="button"
-              className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
-              onClick={onClose}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              Add Exercise
-            </button>
+              <button
+                type="button"
+                className="text-blue-600 hover:underline mb-2"
+                onClick={() => setMakingCustomExercise(!makingCustomExercise)}
+              >
+                {!makingCustomExercise
+                  ? "Create custom exercise"
+                  : "Select from exercise pool"}
+              </button>
+              <div className="flex gap-2 justify-between mt-3">
+                <button
+                  type="button"
+                  className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
+                  onClick={close}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Add Exercise
+                </button>
+              </div>
+            </form>
           </div>
-        </form>
-      </div>
-    </div>
+        </div>
+      )}
+    </>
   );
 };
 
