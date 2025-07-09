@@ -17,12 +17,14 @@ const WorkoutPlanSingle = () => {
   const [cycleCompleted, setCycleCompleted] = useState(false);
 
   const workoutRefs = useRef([]);
+  const hasScrolled = useRef(false);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     setLoading(true);
+    hasScrolled.current = false;
     api
       .get(`/workout-plans/${planID}/workout-cycles/${cycleID}`)
       .then((res) => {
@@ -41,7 +43,7 @@ const WorkoutPlanSingle = () => {
   }, [planID, cycleID]);
 
   useEffect(() => {
-    if (workouts.length > 0) {
+    if (!hasScrolled.current && workouts.length > 0) {
       const firstIncompleteWorkout = workouts.find(
         (workout) => !workout.completed
       );
@@ -50,6 +52,9 @@ const WorkoutPlanSingle = () => {
         const ref = workoutRefs.current[index];
         if (ref) {
           ref.scrollIntoView({ behavior: "smooth", block: "start" });
+          hasScrolled.current = true;
+        } else {
+          hasScrolled.current = false;
         }
       }
     }
