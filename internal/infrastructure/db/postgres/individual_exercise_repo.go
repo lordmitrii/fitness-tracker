@@ -22,7 +22,7 @@ func (r *IndividualExerciseRepo) Create(ctx context.Context, pe *workout.Individ
 
 func (r *IndividualExerciseRepo) GetByID(ctx context.Context, id uint) (*workout.IndividualExercise, error) {
 	var pe workout.IndividualExercise
-	if err := r.db.WithContext(ctx).First(&pe, id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("MuscleGroup").First(&pe, id).Error; err != nil {
 		return nil, err
 	}
 	return &pe, nil
@@ -30,7 +30,7 @@ func (r *IndividualExerciseRepo) GetByID(ctx context.Context, id uint) (*workout
 
 func (r *IndividualExerciseRepo) GetByUserID(ctx context.Context, userID uint) ([]*workout.IndividualExercise, error) {
 	var exercises []*workout.IndividualExercise
-	if err := r.db.WithContext(ctx).Where("user_id = ?", userID).Find(&exercises).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("MuscleGroup").Where("user_id = ?", userID).Find(&exercises).Error; err != nil {
 		return nil, err
 	}
 	return exercises, nil
@@ -38,15 +38,15 @@ func (r *IndividualExerciseRepo) GetByUserID(ctx context.Context, userID uint) (
 
 func (r *IndividualExerciseRepo) GetByUserAndExerciseID(ctx context.Context, userID, exerciseID uint) (*workout.IndividualExercise, error) {
 	var pe workout.IndividualExercise
-	if err := r.db.WithContext(ctx).Where("user_id = ? AND exercise_id = ?", userID, exerciseID).First(&pe).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("MuscleGroup").Where("user_id = ? AND exercise_id = ?", userID, exerciseID).First(&pe).Error; err != nil {
 		return nil, custom_err.ErrIndividualExerciseNotFound
 	}
 	return &pe, nil
 }
 
-func (r *IndividualExerciseRepo) GetByNameMuscleGroupAndUser(ctx context.Context, name, muscleGroup string, userID uint) (*workout.IndividualExercise, error) {
+func (r *IndividualExerciseRepo) GetByNameMuscleGroupAndUser(ctx context.Context, name string, muscleGroupID *uint, userID uint) (*workout.IndividualExercise, error) {
 	var pe workout.IndividualExercise
-	if err := r.db.WithContext(ctx).Where("name = ? AND muscle_group = ? AND user_id = ?", name, muscleGroup, userID).First(&pe).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("MuscleGroup").Where("name = ? AND muscle_group_id = ? AND user_id = ?", name, muscleGroupID, userID).First(&pe).Error; err != nil {
 		return nil, custom_err.ErrIndividualExerciseNotFound
 	}
 	return &pe, nil

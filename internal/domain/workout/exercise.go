@@ -7,8 +7,11 @@ import (
 
 type Exercise struct {
 	ID              uint    `gorm:"primaryKey" json:"id"`
-	Name      		string  `json:"name" gorm:"uniqueIndex:idx_name_muscle_group;not null"`
-	MuscleGroup     string  `json:"muscle_group" gorm:"uniqueIndex:idx_name_muscle_group;not null"`
+	Name      		string  `json:"name" gorm:"uniqueIndex;not null"`
+
+	MuscleGroupID *uint        `json:"muscle_group_id"`
+	MuscleGroup   *MuscleGroup `json:"muscle_group" gorm:"foreignKey:MuscleGroupID;constraint:OnDelete:SET NULL,OnUpdate:CASCADE;"`
+
 	Slug			string  `json:"slug" gorm:"uniqueIndex;not null"`
 }
 

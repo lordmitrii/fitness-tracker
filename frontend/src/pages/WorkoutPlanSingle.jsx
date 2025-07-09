@@ -24,7 +24,6 @@ const WorkoutPlanSingle = () => {
 
   useEffect(() => {
     setLoading(true);
-    hasScrolled.current = false;
     api
       .get(`/workout-plans/${planID}/workout-cycles/${cycleID}`)
       .then((res) => {
@@ -70,7 +69,7 @@ const WorkoutPlanSingle = () => {
             exercise.workout_sets.every((set) => set.completed)
         )
     );
-    setAllWorkoutsCompleted(allCompleted);
+    setAllWorkoutsCompleted(allCompleted && workouts.length > 0);
   }, [workouts]);
 
   const handleCycleComplete = () => {

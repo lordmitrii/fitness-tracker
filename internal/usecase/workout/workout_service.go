@@ -630,7 +630,7 @@ func (s *workoutServiceImpl) GetIndividualExercisesByUserID(ctx context.Context,
 //   "user_id": 1,                            "user_id": 1,
 //   "exercise_id": 2,                        "exercise_id": 0,  (not provided)
 //   "name": "",                              "name": "Bench Press",
-//   "muscle_group": "",                      "muscle_group": "Chest",
+//   "muscle_group_id": "",                      "muscle_group": "Chest",
 // }                                          }
 
 func (s *workoutServiceImpl) GetOrCreateIndividualExercise(ctx context.Context, individualExercise *workout.IndividualExercise) (*workout.IndividualExercise, error) {
@@ -653,7 +653,7 @@ func (s *workoutServiceImpl) GetOrCreateIndividualExercise(ctx context.Context, 
 
 		// Set the name and muscle group from the exercise
 		individualExercise.Name = exercise.Name
-		individualExercise.MuscleGroup = exercise.MuscleGroup
+		individualExercise.MuscleGroupID = exercise.MuscleGroupID
 		if err := s.individualExerciseRepo.Create(ctx, individualExercise); err != nil {
 			return nil, err
 		}
@@ -661,7 +661,7 @@ func (s *workoutServiceImpl) GetOrCreateIndividualExercise(ctx context.Context, 
 	}
 
 	// Case 2 & 4: exerciseID is not provided (0)
-	existingIndividualExercise, err := s.individualExerciseRepo.GetByNameMuscleGroupAndUser(ctx, individualExercise.Name, individualExercise.MuscleGroup, individualExercise.UserID)
+	existingIndividualExercise, err := s.individualExerciseRepo.GetByNameMuscleGroupAndUser(ctx, individualExercise.Name, individualExercise.MuscleGroupID, individualExercise.UserID)
 	if err == nil {
 		// Case 2: Found existing individual exercise
 		return existingIndividualExercise, nil
@@ -670,7 +670,7 @@ func (s *workoutServiceImpl) GetOrCreateIndividualExercise(ctx context.Context, 
 		return nil, err
 	}
 
-	if individualExercise.Name == "" || individualExercise.MuscleGroup == "" {
+	if individualExercise.Name == "" || individualExercise.MuscleGroupID == nil {
 		return nil, fmt.Errorf("name and muscle group must be provided for creating a new individual exercise if exerciseID is not provided")
 	}
 

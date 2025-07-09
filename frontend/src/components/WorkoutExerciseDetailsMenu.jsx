@@ -117,7 +117,10 @@ const WorkoutExerciseDetailsMenu = ({
             individual_exercise: {
               ...ex.individual_exercise,
               name: newExercise,
-              muscle_group: newMuscleGroup,
+              muscle_group: {
+                id: Date.now(), // Simple ID generation for new muscle group
+                name: newMuscleGroup,
+              },
             },
             workout_sets: ex.workout_sets.map((set) => ({
               ...set,

@@ -11,13 +11,14 @@ const AddWorkoutExerciseModal = ({
   const close = () => setOpen(false);
 
   const [exercisesArray, setExercisesArray] = useState([]);
+  const [musclGroupsArray, setMuscleGroupsArray] = useState([]);
   const [exercisesFetched, setExercisesFetched] = useState(false);
 
   const [makingCustomExercise, setMakingCustomExercise] = useState(false);
 
   const [exerciseID, setExerciseID] = useState("");
   const [name, setName] = useState("");
-  const [muscleGroup, setMuscleGroup] = useState("");
+  const [muscleGroupID, setMuscleGroupID] = useState("");
   const [sets, setSets] = useState("");
 
   // Fetch exercises when the modal opens
@@ -25,8 +26,8 @@ const AddWorkoutExerciseModal = ({
     if (exercisesFetched) return;
 
     let isMounted = true;
-    Promise.all([api.get("exercises/"), api.get("individual-exercises")])
-      .then(([res1, res2]) => {
+    Promise.all([api.get("exercises/"), api.get("individual-exercises"), api.get("muscle-groups/")])
+      .then(([res1, res2, res3]) => {
         if (isMounted) {
           const merged = [
             ...res1.data.map((ex) => ({ ...ex, source: "pool" })),
@@ -34,6 +35,7 @@ const AddWorkoutExerciseModal = ({
               .filter((ex) => !ex.exercise_id)
               .map((ex) => ({ ...ex, source: "custom" })),
           ];
+          setMuscleGroupsArray(res3.data);
           setExercisesArray(merged);
           setExercisesFetched(true);
         }
@@ -52,7 +54,7 @@ const AddWorkoutExerciseModal = ({
     if (open) {
       setExerciseID("");
       setName("");
-      setMuscleGroup("");
+      setMuscleGroupID("");
       setSets("");
     }
   }, [open, workout, makingCustomExercise]);
@@ -65,7 +67,7 @@ const AddWorkoutExerciseModal = ({
 
     if (makingCustomExercise) {
       handleSaveNewExercise({
-        exercise: { name, muscle_group: muscleGroup },
+        exercise: { name, muscle_group_id: muscleGroupID },
         sets,
       });
       return;
@@ -86,7 +88,7 @@ const AddWorkoutExerciseModal = ({
     // If picked from custom, send name and muscle group only
     else {
       handleSaveNewExercise({
-        exercise: { name: exObj.name, muscle_group: exObj.muscle_group },
+        exercise: { name: exObj.name, muscle_group_id: exObj.muscle_group_id },
         sets,
       });
     }
@@ -97,7 +99,7 @@ const AddWorkoutExerciseModal = ({
       .post(`individual-exercises`, {
         exercise_id: newExercise.exercise.id,
         name: newExercise.exercise.name,
-        muscle_group: newExercise.exercise.muscle_group,
+        muscle_group_id: newExercise.exercise.muscle_group_id,
       })
       .then((res1) => {
         delete newExercise.exercise; // Remove the exercise object to match the API structure
@@ -176,14 +178,21 @@ const AddWorkoutExerciseModal = ({
                     onChange={(e) => setName(e.target.value)}
                     required
                   />
-                  <input
+                  <select
                     className="border rounded p-2"
-                    type="text"
-                    placeholder="Muscle Group"
-                    value={muscleGroup}
-                    onChange={(e) => setMuscleGroup(e.target.value)}
+                    value={muscleGroupID}
+                    onChange={(e) => setMuscleGroupID(Number(e.target.value))}
                     required
-                  />
+                  >
+                    <option value="" disabled>
+                      Select Muscle Group
+                    </option>
+                    {musclGroupsArray.map((group) => (
+                      <option key={group.id} value={group.id}>
+                        {group.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               )}
               <input

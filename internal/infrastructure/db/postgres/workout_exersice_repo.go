@@ -20,7 +20,7 @@ func (r *WorkoutExerciseRepo) Create(ctx context.Context, e *workout.WorkoutExer
 }
 func (r *WorkoutExerciseRepo) GetByID(ctx context.Context, id uint) (*workout.WorkoutExercise, error) {
 	var e workout.WorkoutExercise
-	if err := r.db.WithContext(ctx).Preload("WorkoutSets").Preload("IndividualExercise").First(&e, id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("WorkoutSets").Preload("IndividualExercise").Preload("IndividualExercise.MuscleGroup").First(&e, id).Error; err != nil {
 		return nil, err
 	}
 	return &e, nil
@@ -28,7 +28,7 @@ func (r *WorkoutExerciseRepo) GetByID(ctx context.Context, id uint) (*workout.Wo
 
 func (r *WorkoutExerciseRepo) GetByWorkoutID(ctx context.Context, workoutID uint) ([]*workout.WorkoutExercise, error) {
 	var exercises []*workout.WorkoutExercise
-	if err := r.db.WithContext(ctx).Preload("IndividualExercise").Preload("WorkoutSets").Where("workout_id = ?", workoutID).Find(&exercises).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("IndividualExercise").Preload("IndividualExercise.MuscleGroup").Preload("WorkoutSets").Where("workout_id = ?", workoutID).Find(&exercises).Error; err != nil {
 		return nil, err
 	}
 	return exercises, nil
@@ -75,6 +75,7 @@ func (r *WorkoutExerciseRepo) GetRelatedIndividualExercise(ctx context.Context, 
 	var we workout.WorkoutExercise
 	if err := r.db.WithContext(ctx).
 		Preload("IndividualExercise").
+		Preload("IndividualExercise.MuscleGroup").
 		First(&we, id).Error; err != nil {
 		return nil, err
 	}

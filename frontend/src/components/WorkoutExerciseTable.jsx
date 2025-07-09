@@ -86,7 +86,8 @@ const WorkoutExerciseTable = ({
               <div className="font-bold text-lg text-blue-700">
                 {ex.index}. {ex.individual_exercise.name}
                 <span className="ml-2 text-gray-600 text-base font-normal">
-                  ({ex.individual_exercise.muscle_group})
+                  {ex.individual_exercise.muscle_group &&
+                    `(${ex.individual_exercise.muscle_group.name})`}
                 </span>
               </div>
               <DropdownMenu

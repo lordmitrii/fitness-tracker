@@ -53,10 +53,16 @@ type (
 	ExerciseService interface {
 		CreateExercise(ctx context.Context, e *workout.Exercise) error
 		GetExerciseByID(ctx context.Context, id uint) (*workout.Exercise, error)
-		GetExercisesByMuscleGroup(ctx context.Context, muscleGroup string) ([]*workout.Exercise, error)
+		GetExercisesByMuscleGroupID(ctx context.Context, muscleGroupID *uint) ([]*workout.Exercise, error)
 		GetAllExercises(ctx context.Context) ([]*workout.Exercise, error)
 		UpdateExercise(ctx context.Context, e *workout.Exercise) error
 		DeleteExercise(ctx context.Context, id uint) error
+
+		CreateMuscleGroup(ctx context.Context, mg *workout.MuscleGroup) error
+		GetMuscleGroupByID(ctx context.Context, id uint) (*workout.MuscleGroup, error)
+		GetAllMuscleGroups(ctx context.Context) ([]*workout.MuscleGroup, error)
+		UpdateMuscleGroup(ctx context.Context, mg *workout.MuscleGroup) error
+		DeleteMuscleGroup(ctx context.Context, id uint) error
 	}
 
 	UserService interface {

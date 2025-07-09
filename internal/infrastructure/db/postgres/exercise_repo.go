@@ -21,15 +21,15 @@ func (r *ExerciseRepo) Create(ctx context.Context, e *workout.Exercise) error {
 
 func (r *ExerciseRepo) GetByID(ctx context.Context, id uint) (*workout.Exercise, error) {
 	var e workout.Exercise
-	if err := r.db.WithContext(ctx).First(&e, id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("MuscleGroup").First(&e, id).Error; err != nil {
 		return nil, err
 	}
 	return &e, nil
 }
 
-func (r *ExerciseRepo) GetByMuscleGroup(ctx context.Context, muscleGroup string) ([]*workout.Exercise, error) {
+func (r *ExerciseRepo) GetByMuscleGroupID(ctx context.Context, muscleGroupID *uint) ([]*workout.Exercise, error) {
 	var exercises []*workout.Exercise
-	if err := r.db.WithContext(ctx).Where("muscle_group = ?", muscleGroup).Find(&exercises).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("MuscleGroup").Where("muscle_group_id = ?", muscleGroupID).Find(&exercises).Error; err != nil {
 		return nil, err
 	}
 	return exercises, nil
@@ -37,7 +37,7 @@ func (r *ExerciseRepo) GetByMuscleGroup(ctx context.Context, muscleGroup string)
 
 func (r *ExerciseRepo) GetAll(ctx context.Context) ([]*workout.Exercise, error) {
 	var exercises []*workout.Exercise
-	if err := r.db.WithContext(ctx).Find(&exercises).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("MuscleGroup").Find(&exercises).Error; err != nil {
 		return nil, err
 	}
 	return exercises, nil

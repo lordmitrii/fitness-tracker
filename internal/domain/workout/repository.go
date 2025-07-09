@@ -1,6 +1,8 @@
 package workout
 
-import "context"
+import (
+	"context"
+)
 
 type WorkoutPlanRepository interface {
 	Create(ctx context.Context, wp *WorkoutPlan) error
@@ -70,7 +72,7 @@ type WorkoutSetRepository interface {
 type ExerciseRepository interface {
 	Create(ctx context.Context, e *Exercise) error
 	GetByID(ctx context.Context, id uint) (*Exercise, error)
-	GetByMuscleGroup(ctx context.Context, muscleGroup string) ([]*Exercise, error)
+	GetByMuscleGroupID(ctx context.Context, muscleGroupID *uint) ([]*Exercise, error)
 	GetAll(ctx context.Context) ([]*Exercise, error)
 	Update(ctx context.Context, e *Exercise) error
 	Delete(ctx context.Context, id uint) error
@@ -81,7 +83,16 @@ type IndividualExerciseRepository interface {
 	GetByID(ctx context.Context, id uint) (*IndividualExercise, error)
 	GetByUserID(ctx context.Context, workoutPlanID uint) ([]*IndividualExercise, error)
 	GetByUserAndExerciseID(ctx context.Context, planID, exerciseID uint) (*IndividualExercise, error)
-	GetByNameMuscleGroupAndUser(ctx context.Context, name, muscleGroup string, userID uint) (*IndividualExercise, error)
+	GetByNameMuscleGroupAndUser(ctx context.Context, name string, muscleGroupID *uint, userID uint) (*IndividualExercise, error)
 	Update(ctx context.Context, pe *IndividualExercise) error
+	Delete(ctx context.Context, id uint) error
+}
+
+type MuscleGroupRepository interface {
+	Create(ctx context.Context, mg *MuscleGroup) error
+	GetByID(ctx context.Context, id uint) (*MuscleGroup, error)
+	GetByName(ctx context.Context, name string) (*MuscleGroup, error)
+	GetAll(ctx context.Context) ([]*MuscleGroup, error)
+	Update(ctx context.Context, mg *MuscleGroup) error
 	Delete(ctx context.Context, id uint) error
 }

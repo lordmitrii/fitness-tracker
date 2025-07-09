@@ -42,7 +42,7 @@ const ExerciseStats = () => {
                     {exercise.name}
                   </div>
                   <div className="text-sm text-gray-500 capitalize mb-2">
-                    {exercise.muscle_group}
+                    {exercise.muscle_group && `${exercise.muscle_group.name}`}
                   </div>
                 </div>
                 <div>
