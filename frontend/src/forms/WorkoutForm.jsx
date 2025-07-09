@@ -3,7 +3,7 @@ import api from "../api";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 
-const WorkoutForm = ({ initialData = {}, onSubmit, submitLabel,  }) => {
+const WorkoutForm = ({ initialData = {}, onSubmit, submitLabel }) => {
   const [formData, setFormData] = useState({
     name: "",
     ...initialData,
@@ -66,10 +66,7 @@ const WorkoutForm = ({ initialData = {}, onSubmit, submitLabel,  }) => {
             )}
           </div>
 
-          <button
-            type="submit"
-            className="btn btn-primary w-full"
-          >
+          <button type="submit" className="btn btn-primary w-full">
             {submitLabel}
           </button>
         </form>
@@ -85,7 +82,10 @@ export const CreateWorkoutForm = () => {
 
   const handleCreate = (payload) => {
     api
-      .post(`/workout-plans/${planID}/workout-cycles/${cycleID}/workouts`, payload)
+      .post(
+        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts`,
+        payload
+      )
       .then(() => {
         navigate(`/workout-plans/${planID}/workout-cycles/${cycleID}`);
       })
@@ -105,7 +105,9 @@ export const UpdateWorkoutForm = () => {
 
   useEffect(() => {
     api
-      .get(`/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}`)
+      .get(
+        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}`
+      )
       .then((response) => {
         const data = response.data;
         setInitialData({
@@ -117,7 +119,10 @@ export const UpdateWorkoutForm = () => {
 
   const handleUpdate = (payload) => {
     api
-      .patch(`/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}`, payload)
+      .patch(
+        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}`,
+        payload
+      )
       .then(() => {
         navigate(`/workout-plans/${planID}/workout-cycles/${cycleID}`);
       })

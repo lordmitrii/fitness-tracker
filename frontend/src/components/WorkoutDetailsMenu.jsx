@@ -1,13 +1,14 @@
 import api from "../api";
 import { useNavigate } from "react-router-dom";
 
-const WorkoutCycleDetailsMenu = ({
+const WorkoutDetailsMenu = ({
   closeMenu,
   planID,
   cycleID,
   workout,
   updateWorkouts,
   onDeleteWorkout,
+  onError,
 }) => {
   const navigate = useNavigate();
   const handleUpdateWorkout = () => {
@@ -34,8 +35,8 @@ const WorkoutCycleDetailsMenu = ({
         onDeleteWorkout(workout.id);
       })
       .catch((error) => {
-        alert("Error deleting workout: " + error.message);
         console.error("Error deleting workout:", error);
+        onError(error);
       });
     closeMenu();
   };
@@ -93,4 +94,4 @@ const WorkoutCycleDetailsMenu = ({
   );
 };
 
-export default WorkoutCycleDetailsMenu;
+export default WorkoutDetailsMenu;

@@ -6,6 +6,7 @@ const AddWorkoutExerciseModal = ({
   planID,
   cycleID,
   onUpdateWorkouts,
+  onError,
 }) => {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
@@ -26,7 +27,11 @@ const AddWorkoutExerciseModal = ({
     if (exercisesFetched) return;
 
     let isMounted = true;
-    Promise.all([api.get("exercises/"), api.get("individual-exercises"), api.get("muscle-groups/")])
+    Promise.all([
+      api.get("exercises/"),
+      api.get("individual-exercises"),
+      api.get("muscle-groups/"),
+    ])
       .then(([res1, res2, res3]) => {
         if (isMounted) {
           const merged = [
@@ -42,6 +47,9 @@ const AddWorkoutExerciseModal = ({
       })
       .catch((err) => {
         console.error("Error fetching exercises:", err);
+        if (isMounted) {
+          onError(err);
+        }
       });
 
     return () => {
@@ -96,7 +104,7 @@ const AddWorkoutExerciseModal = ({
 
   const handleSaveNewExercise = (newExercise) => {
     api
-      .post(`individual-exercises`, {
+      .post(`individual-exercise1s`, {
         exercise_id: newExercise.exercise.id,
         name: newExercise.exercise.name,
         muscle_group_id: newExercise.exercise.muscle_group_id,
@@ -125,10 +133,12 @@ const AddWorkoutExerciseModal = ({
           })
           .catch((error) => {
             console.error("Error adding exercise to workout:", error);
+            onError(error);
           });
       })
       .catch((error) => {
         console.error("Error saving new exercise:", error);
+        onError(error);
         return;
       });
   };
@@ -221,10 +231,7 @@ const AddWorkoutExerciseModal = ({
                 >
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                >
+                <button type="submit" className="btn btn-primary">
                   Add Exercise
                 </button>
               </div>

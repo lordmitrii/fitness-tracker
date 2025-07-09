@@ -7,6 +7,7 @@ const WorkoutCycleDetailsMenu = ({
   cycleID,
   workoutCycle,
   setNextCycleID,
+  onError,
 }) => {
   const navigate = useNavigate();
   const handleDeleteCycle = () => {
@@ -27,6 +28,7 @@ const WorkoutCycleDetailsMenu = ({
       })
       .catch((error) => {
         console.error("Error deleting cycle:", error);
+        onError(error);
       })
       .finally(() => {
         closeMenu();

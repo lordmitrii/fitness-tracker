@@ -33,7 +33,6 @@ const WorkoutPlanForm = ({ initialData = {}, onSubmit, label, submitText }) => {
 
     const payload = {
       name: formData.name.trim(),
-      
     };
 
     onSubmit(payload);
@@ -67,10 +66,7 @@ const WorkoutPlanForm = ({ initialData = {}, onSubmit, label, submitText }) => {
             )}
           </div>
 
-          <button
-            type="submit"
-            className="btn btn-primary w-full"
-          >
+          <button type="submit" className="btn btn-primary w-full">
             {submitText}
           </button>
         </form>
@@ -103,7 +99,7 @@ export const CreateWorkoutPlanForm = () => {
   );
 };
 
-// Update workout plan page 
+// Update workout plan page
 export const UpdateWorkoutPlanForm = () => {
   const { planID } = useParams();
   const navigate = useNavigate();

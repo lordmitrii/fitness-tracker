@@ -11,6 +11,7 @@ const WorkoutExerciseTable = ({
   exercises,
   isCurrentCycle,
   onUpdateExercises,
+  onError,
 }) => {
   const handleToggleExercise = (exId, setId, reps, weight, checked) => {
     onUpdateExercises((prev) =>
@@ -37,7 +38,7 @@ const WorkoutExerciseTable = ({
         { completed: checked }
       )
       .catch((error) => {
-        setError(error);
+        onError(error);
       });
 
     // If the set is not completed, we don't need to update sets, reps, and weight
@@ -49,7 +50,7 @@ const WorkoutExerciseTable = ({
         { reps, weight }
       )
       .catch((error) => {
-        setError(error);
+        onError(error);
       });
   };
 
@@ -102,6 +103,7 @@ const WorkoutExerciseTable = ({
                     exercises={exercises}
                     updateExercises={onUpdateExercises}
                     closeMenu={close}
+                    onError={onError}
                   />
                 )}
               />
@@ -137,6 +139,7 @@ const WorkoutExerciseTable = ({
                             exercise={ex}
                             updateExercises={onUpdateExercises}
                             closeMenu={close}
+                            onError={onError}
                           />
                         )}
                       />

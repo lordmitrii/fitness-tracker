@@ -8,6 +8,7 @@ const WorkoutExerciseDetailsMenu = ({
   exercises,
   updateExercises,
   closeMenu,
+  onError,
 }) => {
   const handleMoveUp = () => {
     if (exercise.index === 1) {
@@ -44,6 +45,7 @@ const WorkoutExerciseDetailsMenu = ({
       })
       .catch((error) => {
         console.error("Error moving exercise up:", error);
+        onError(error);
       });
     closeMenu();
   };
@@ -83,6 +85,7 @@ const WorkoutExerciseDetailsMenu = ({
       })
       .catch((error) => {
         console.error("Error moving exercise down:", error);
+        onError(error);
       });
     closeMenu();
   };
@@ -147,6 +150,7 @@ const WorkoutExerciseDetailsMenu = ({
         )
         .catch((error) => {
           console.error("Error deleting exercise:", error);
+          onError(error);
         });
       closeMenu();
     }

@@ -144,10 +144,7 @@ const ProfileForm = ({ initialData = {}, onSubmit, submitLabel }) => {
             )}
           </div>
 
-          <button
-            type="submit"
-            className="btn btn-primary w-full"
-          >
+          <button type="submit" className="btn btn-primary w-full">
             {submitLabel}
           </button>
         </form>
@@ -220,4 +217,3 @@ export const UpdateProfileForm = () => {
     />
   );
 };
-

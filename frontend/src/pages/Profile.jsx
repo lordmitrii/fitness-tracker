@@ -41,16 +41,16 @@ const Profile = () => {
           <>
             <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-gray-700 mb-8">
               <div className="font-semibold">Age:</div>
-              <div>{profile.age}</div>
+              <div className="text-right">{profile.age}</div>
 
               <div className="font-semibold">Weight:</div>
-              <div>{profile.weight_kg} kg</div>
+              <div className="text-right">{profile.weight_kg} kg</div>
 
               <div className="font-semibold">Height:</div>
-              <div>{profile.height_cm} cm</div>
+              <div className="text-right">{profile.height_cm} cm</div>
 
               <div className="font-semibold">Sex:</div>
-              <div className="capitalize">{profile.sex}</div>
+              <div className="text-right capitalize">{profile.sex}</div>
             </div>
             <button
               className="btn btn-primary w-full"

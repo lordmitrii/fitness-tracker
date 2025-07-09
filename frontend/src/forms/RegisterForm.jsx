@@ -84,10 +84,7 @@ const RegisterForm = () => {
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
           />
         </div>
-        <button
-          type="submit"
-          className="btn btn-primary w-full"
-        >
+        <button type="submit" className="btn btn-primary w-full">
           Register
         </button>
         <div className="text-center text-sm text-gray-600 mt-2">

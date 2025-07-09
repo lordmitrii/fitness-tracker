@@ -131,14 +131,14 @@ const WorkoutPlanSingle = () => {
   if (error) return <p>Error: {error.message}</p>;
 
   return (
-    <div className="min-h-screen bg-gray-200 sm:bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <div className="mx-auto sm:p-8 mt-2">
         {workoutCycle && (
           <>
             {/* <h1 className="text-3xl font-bold mb-2">{workoutPlan.name}</h1> */}
             <div className="bg-white p-6 sm:p-0 shadow-md sm:shadow-none">
               <div className="flex justify-between items-center mb-2">
-                <h1 className="text-3xl sm:text-4xl font-bold">
+                <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">
                   Workout Plan View
                 </h1>
                 <DropdownMenu
@@ -150,11 +150,12 @@ const WorkoutPlanSingle = () => {
                       cycleID={cycleID}
                       workoutCycle={workoutCycle}
                       setNextCycleID={setNextCycleID}
+                      onError={setError}
                     />
                   )}
                 />
               </div>
-              <h2 className="text-lg text-gray-700 mb-6">
+              <h2 className="text-lg text-gray-600 mb-6">
                 Cycle:{" "}
                 <span className="font-semibold">{workoutCycle.name}</span>
               </h2>
@@ -223,59 +224,62 @@ const WorkoutPlanSingle = () => {
                 </div>
               </div>
             </div>
-            {workouts && workouts.length > 0 ? (
-              <div className="space-y-6 py-6 sm:py-0">
-                {workouts
-                  .slice()
-                  .sort((a, b) => a.index - b.index)
-                  .map((workout, idx) => (
-                    <div
-                      key={workout.id}
-                      ref={(el) => (workoutRefs.current[idx] = el)}
-                    >
-                      <WorkoutCard
-                        planID={planID}
-                        cycleID={cycleID}
-                        workout={workout}
-                        onDeleteWorkout={handleDeleteWorkout}
-                        isCurrentCycle={!nextCycleID}
-                        onUpdateWorkouts={handleUpdateWorkouts}
-                      />
-                    </div>
-                  ))}
-              </div>
-            ) : (
-              <p className="text-gray-500">No workouts in this cycle yet.</p>
-            )}
-
-            <div className="flex justify-center sm:justify-start items-center gap-4 mt-0 sm:mt-6 pt-10 pb-7 sm:py-0 bg-white">
-              {!nextCycleID && (
-                <>
-                  <button
-                    className="btn btn-primary"
-                    onClick={() =>
-                      navigate(
-                        `/workout-plans/${planID}/workout-cycles/${cycleID}/create-workout`
-                      )
-                    }
-                  >
-                    + Create Workout
-                  </button>
-                  {!cycleCompleted && (
-                    <button
-                      className={`btn ${
-                        allWorkoutsCompleted
-                          ? "btn-success"
-                          : "btn-secondary"
-                      }`}
-                      onClick={handleCycleComplete}
-                    >
-                      Complete Cycle
-                    </button>
-                  )}
-                </>
+            <div className="bg-gray-200 sm:bg-gray-50">
+              {workouts && workouts.length > 0 ? (
+                <div className="space-y-6 py-6 sm:py-0">
+                  {workouts
+                    .slice()
+                    .sort((a, b) => a.index - b.index)
+                    .map((workout, idx) => (
+                      <div
+                        key={workout.id}
+                        ref={(el) => (workoutRefs.current[idx] = el)}
+                      >
+                        <WorkoutCard
+                          planID={planID}
+                          cycleID={cycleID}
+                          workout={workout}
+                          onDeleteWorkout={handleDeleteWorkout}
+                          isCurrentCycle={!nextCycleID}
+                          onUpdateWorkouts={handleUpdateWorkouts}
+                          onError={setError}
+                        />
+                      </div>
+                    ))}
+                </div>
+              ) : (
+                <div className="text-center py-6">
+                  <p className="text-gray-600">
+                    No workouts found for this cycle.
+                  </p>
+                </div>
               )}
             </div>
+
+            {!nextCycleID && (
+              <div className="flex justify-center sm:justify-start items-center gap-4 mt-0 sm:mt-6 py-6 sm:py-0 bg-white">
+                <button
+                  className="btn btn-primary"
+                  onClick={() =>
+                    navigate(
+                      `/workout-plans/${planID}/workout-cycles/${cycleID}/create-workout`
+                    )
+                  }
+                >
+                  + Create Workout
+                </button>
+                {!cycleCompleted && !!workouts.length && (
+                  <button
+                    className={`btn ${
+                      allWorkoutsCompleted ? "btn-success" : "btn-secondary"
+                    }`}
+                    onClick={handleCycleComplete}
+                  >
+                    Complete Cycle
+                  </button>
+                )}
+              </div>
+            )}
           </>
         )}
       </div>

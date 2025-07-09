@@ -7,11 +7,10 @@ const WorkoutCard = ({
   planID,
   cycleID,
   workout,
-  setModalOpen,
-  setSelectedWorkout,
   onDeleteWorkout,
   isCurrentCycle,
   onUpdateWorkouts,
+  onError,
 }) => {
   return (
     <div className="sm:rounded-2xl shadow-lg bg-white sm:border sm:border-gray-200 p-6 sm:hover:shadow-lg transition flex flex-col gap-3">
@@ -31,6 +30,7 @@ const WorkoutCard = ({
                 workout={workout}
                 updateWorkouts={onUpdateWorkouts}
                 onDeleteWorkout={onDeleteWorkout}
+                onError={onError}
               />
             )}
           />
@@ -58,6 +58,7 @@ const WorkoutCard = ({
             onUpdateExercises={(newExercises) =>
               onUpdateWorkouts(workout.id, newExercises)
             }
+            onError={onError}
           />
         </div>
       )}
@@ -68,6 +69,7 @@ const WorkoutCard = ({
             planID={planID}
             cycleID={cycleID}
             onUpdateWorkouts={onUpdateWorkouts}
+            onError={onError}
           />
         )}
       </div>

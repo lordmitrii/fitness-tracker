@@ -70,10 +70,7 @@ const LoginForm = () => {
             placeholder="Enter your password"
           />
         </div>
-        <button
-          className="btn btn-primary w-full"
-          type="submit"
-        >
+        <button className="btn btn-primary w-full" type="submit">
           Login
         </button>
         <div className="text-center text-sm text-gray-600 mt-2">

@@ -8,6 +8,7 @@ const WorkoutSetDetailsMenu = ({
   exercise,
   updateExercises,
   closeMenu,
+  onError,
 }) => {
   const handleMoveUp = () => {
     if (set.index === 1) {
@@ -45,6 +46,7 @@ const WorkoutSetDetailsMenu = ({
       })
       .catch((error) => {
         console.error("Error moving set up:", error);
+        onError(error);
       });
     closeMenu();
   };
@@ -88,6 +90,7 @@ const WorkoutSetDetailsMenu = ({
       })
       .catch((error) => {
         console.error("Error moving set down:", error);
+        onError(error);
       });
     closeMenu();
   };
@@ -124,6 +127,7 @@ const WorkoutSetDetailsMenu = ({
       })
       .catch((error) => {
         console.error("Error adding set:", error);
+        onError(error);
       });
     closeMenu();
   };
@@ -161,6 +165,7 @@ const WorkoutSetDetailsMenu = ({
       })
       .catch((error) => {
         console.error("Error adding set:", error);
+        onError(error);
       });
     closeMenu();
   };
@@ -187,6 +192,7 @@ const WorkoutSetDetailsMenu = ({
         )
         .catch((error) => {
           console.error("Error deleting set:", error);
+          onError(error);
         });
       closeMenu();
     }
