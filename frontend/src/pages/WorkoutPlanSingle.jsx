@@ -62,16 +62,9 @@ const WorkoutPlanSingle = () => {
   }, [workouts]);
 
   useEffect(() => {
-    const allCompleted = workouts.every(
-      (workout) =>
-        workout.workout_exercises.length > 0 &&
-        workout.workout_exercises.every(
-          (exercise) =>
-            exercise.workout_sets.length > 0 &&
-            exercise.workout_sets.every((set) => set.completed)
-        )
-    );
-    setAllWorkoutsCompleted(allCompleted && workouts.length > 0);
+    const allCompleted =
+      workouts.length > 0 && workouts.every((workout) => workout.completed);
+    setAllWorkoutsCompleted(allCompleted);
   }, [workouts]);
 
   const handleCycleComplete = () => {

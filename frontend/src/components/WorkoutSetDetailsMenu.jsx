@@ -186,7 +186,10 @@ const WorkoutSetDetailsMenu = ({
                 .map((s) =>
                   s.index > set.index ? { ...s, index: s.index - 1 } : s
                 );
-              return { ...ex, workout_sets: filteredSets };
+              
+              const allOtherSetsCompleted = filteredSets.every((s) => s.completed);
+
+              return { ...ex, workout_sets: filteredSets, completed: allOtherSetsCompleted };
             });
           })
         )

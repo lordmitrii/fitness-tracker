@@ -446,11 +446,20 @@ func (s *workoutServiceImpl) DeleteWorkoutExercise(ctx context.Context, id uint)
 		return err
 	}
 
+	var completed bool
 	if len(workout.WorkoutExercises) == 0 {
-		workout.Completed = false
-		if err := s.workoutRepo.Complete(ctx, workout); err != nil {
+		completed = false
+	} else {
+		incompletedExercisesCount, err := s.workoutExerciseRepo.GetIncompleteExercisesCount(ctx, workoutID)
+		if err != nil {
 			return err
 		}
+		completed = incompletedExercisesCount == 0
+	}
+
+	workout.Completed = completed
+	if err := s.workoutRepo.Complete(ctx, workout); err != nil {
+		return err
 	}
 
 	return nil
@@ -596,11 +605,41 @@ func (s *workoutServiceImpl) DeleteWorkoutSet(ctx context.Context, id uint) erro
 	if err != nil {
 		return err
 	}
+
+	var completed bool
 	if len(we.WorkoutSets) == 0 {
-		we.Completed = false
-		if err := s.workoutExerciseRepo.Complete(ctx, we); err != nil {
+		completed = false
+	} else {
+		incompletedSetsCount, err := s.workoutSetRepo.GetIncompleteSetsCount(ctx, workoutExerciseID)
+		if err != nil {
 			return err
 		}
+		completed = incompletedSetsCount == 0
+	}
+	we.Completed = completed
+	if err := s.workoutExerciseRepo.Complete(ctx, we); err != nil {
+		return err
+	}
+
+	w, err := s.workoutRepo.GetByID(ctx, we.WorkoutID)
+	if err != nil {
+		return err
+	}
+
+	var workoutCompleted bool
+	if len(w.WorkoutExercises) == 0 {
+		workoutCompleted = false
+	} else {
+		incompletedExercisesCount, err := s.workoutExerciseRepo.GetIncompleteExercisesCount(ctx,
+			w.ID)
+		if err != nil {
+			return err
+		}
+		workoutCompleted = incompletedExercisesCount == 0
+	}
+	w.Completed = workoutCompleted
+	if err := s.workoutRepo.Complete(ctx, w); err != nil {
+		return err
 	}
 
 	return nil
