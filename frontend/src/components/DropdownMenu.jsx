@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 
-const DROPDOWN_WIDTH = 240;
+const DROPDOWN_WIDTH = 250;
 
 const DropdownMenu = ({
   dotsHorizontal = false,
@@ -108,8 +108,9 @@ const DropdownMenu = ({
         createPortal(
           <div
             ref={menuRef}
-            className={`absolute z-50 bg-white rounded-xl shadow-lg border border-gray-200 p-4 transition-all duration-200 w-60`}
+            className={`absolute z-50 bg-white rounded-xl shadow-lg border border-gray-200 p-4 transition-all duration-200`}
             style={{
+              width: DROPDOWN_WIDTH,
               top: dropdownPos.top,
               left: dropdownPos.left,
             }}

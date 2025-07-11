@@ -53,6 +53,7 @@ const WorkoutCard = ({
             planID={planID}
             cycleID={cycleID}
             workoutID={workout.id}
+            workoutName={workout.name}
             exercises={workout.workout_exercises}
             isCurrentCycle={isCurrentCycle}
             onUpdateExercises={(newExercises) =>
@@ -65,10 +66,17 @@ const WorkoutCard = ({
       <div className="flex justify-center mt-4">
         {isCurrentCycle && (
           <AddWorkoutExerciseModal
-            workout={workout}
+            trigger={
+              <button className="btn btn-primary flex items-center gap-2">
+                <span>+ Add Exercise</span>
+              </button>
+            }
+            workoutID={workout.id}
+            workoutName={workout.name}
             planID={planID}
             cycleID={cycleID}
-            onUpdateWorkouts={onUpdateWorkouts}
+            onUpdateExercises={(newExercises) => 
+              onUpdateWorkouts(workout.id, newExercises)}
             onError={onError}
           />
         )}

@@ -1,19 +1,32 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import api from "../api";
+import { cloneElement } from "react";
+import Spinner from "./Spinner";
 
 const AddWorkoutExerciseModal = ({
-  workout,
+  open: openProp,
+  onOpenChange,
+  trigger,
+  workoutID,
+  workoutName,
   planID,
   cycleID,
-  onUpdateWorkouts,
+  onUpdateExercises,
   onError,
 }) => {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  const isControlled = openProp !== undefined && onOpenChange;
+  const open = isControlled ? openProp : internalOpen;
+  const setOpen = isControlled ? onOpenChange : setInternalOpen;
   const close = () => setOpen(false);
 
+  const modalRef = useRef(null);
   const [exercisesArray, setExercisesArray] = useState([]);
-  const [musclGroupsArray, setMuscleGroupsArray] = useState([]);
+  const [muscleGroupsArray, setMuscleGroupsArray] = useState([]);
   const [exercisesFetched, setExercisesFetched] = useState(false);
+
+  const [loading, setLoading] = useState(false);
 
   const [makingCustomExercise, setMakingCustomExercise] = useState(false);
 
@@ -24,38 +37,46 @@ const AddWorkoutExerciseModal = ({
 
   // Fetch exercises when the modal opens
   useEffect(() => {
-    if (exercisesFetched) return;
+    if (!open || exercisesFetched) return;
 
-    let isMounted = true;
+    setLoading(true);
+    const ac = new AbortController();
+
     Promise.all([
-      api.get("exercises/"),
-      api.get("individual-exercises"),
-      api.get("muscle-groups/"),
+      api.get("exercises/", { signal: ac.signal }),
+      api.get("individual-exercises", { signal: ac.signal }),
+      api.get("muscle-groups/", { signal: ac.signal }),
     ])
       .then(([res1, res2, res3]) => {
-        if (isMounted) {
-          const merged = [
-            ...res1.data.map((ex) => ({ ...ex, source: "pool" })),
-            ...res2.data
-              .filter((ex) => !ex.exercise_id)
-              .map((ex) => ({ ...ex, source: "custom" })),
-          ];
-          setMuscleGroupsArray(res3.data);
-          setExercisesArray(merged);
-          setExercisesFetched(true);
-        }
+        const merged = [
+          ...res1.data.map((ex) => ({ ...ex, source: "pool" })),
+          ...res2.data
+            .filter((ex) => !ex.exercise_id)
+            .map((ex) => ({ ...ex, source: "custom" })),
+        ];
+        setMuscleGroupsArray(res3.data);
+        setExercisesArray(merged);
+        setExercisesFetched(true);
       })
       .catch((err) => {
-        console.error("Error fetching exercises:", err);
-        if (isMounted) {
-          onError(err);
-        }
+        if (!ac.signal.aborted) onError(err);
+      })
+      .finally(() => {
+        if (!ac.signal.aborted) setLoading(false);
       });
 
-    return () => {
-      isMounted = false;
-    };
-  }, [exercisesFetched]);
+    return () => ac.abort();
+  }, [open]);
+
+  useEffect(() => {
+    function handleClick(e) {
+      if (open && modalRef.current && !modalRef.current.contains(e.target)) {
+        close();
+      }
+    }
+    document.addEventListener("pointerdown", handleClick);
+    return () => document.removeEventListener("pointerdown", handleClick);
+  }, [open]);
 
   useEffect(() => {
     // Reset form fields when modal opens
@@ -64,8 +85,9 @@ const AddWorkoutExerciseModal = ({
       setName("");
       setMuscleGroupID("");
       setSets("");
+      setMakingCustomExercise(false);
     }
-  }, [open, workout, makingCustomExercise]);
+  }, [open, workoutID, makingCustomExercise]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -74,10 +96,7 @@ const AddWorkoutExerciseModal = ({
     if (exerciseID) [source, id] = String(exerciseID).split("-");
 
     if (makingCustomExercise) {
-      handleSaveNewExercise({
-        exercise: { name, muscle_group_id: muscleGroupID },
-        sets,
-      });
+      handleSaveNewExercise({ name, muscle_group_id: muscleGroupID }, sets);
       return;
     }
 
@@ -91,71 +110,62 @@ const AddWorkoutExerciseModal = ({
     }
 
     if (source === "pool") {
-      handleSaveNewExercise({ exercise: { id: exObj.id }, sets });
+      handleSaveNewExercise({ id: exObj.id }, sets);
     }
     // If picked from custom, send name and muscle group only
     else {
-      handleSaveNewExercise({
-        exercise: { name: exObj.name, muscle_group_id: exObj.muscle_group_id },
-        sets,
-      });
+      handleSaveNewExercise(
+        { name: exObj.name, muscle_group_id: exObj.muscle_group_id },
+        sets
+      );
     }
   };
 
-  const handleSaveNewExercise = (newExercise) => {
-    api
-      .post(`individual-exercises`, {
-        exercise_id: newExercise.exercise.id,
-        name: newExercise.exercise.name,
-        muscle_group_id: newExercise.exercise.muscle_group_id,
-      })
-      .then((res1) => {
-        delete newExercise.exercise; // Remove the exercise object to match the API structure
-        const individualExercise = res1.data;
-        api
-          .post(
-            `workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workout.id}/workout-exercises`,
-            {
-              individual_exercise_id: individualExercise.id,
-              sets_qt: newExercise.sets,
-            }
-          )
-          .then((res2) => {
-            const exerciseToAdd = {
-              ...res2.data,
-              individual_exercise: individualExercise,
-            };
-            onUpdateWorkouts(workout.id, (prevExercises) => [
-              ...prevExercises,
-              exerciseToAdd,
-            ]);
-            close();
-          })
-          .catch((error) => {
-            console.error("Error adding exercise to workout:", error);
-            onError(error);
-          });
-      })
-      .catch((error) => {
-        console.error("Error saving new exercise:", error);
-        onError(error);
-        return;
-      });
+  const handleSaveNewExercise = async (newExercise, sets) => {
+    try {
+      const { data: individualExercise } = await api.post(
+        "individual-exercises",
+        {
+          exercise_id: newExercise.id,
+          name: newExercise.name,
+          muscle_group_id: newExercise.muscle_group_id,
+        }
+      );
+
+      const { data: workoutExercise } = await api.post(
+        `workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises`,
+        { individual_exercise_id: individualExercise.id, sets_qt: sets }
+      );
+
+      onUpdateExercises((prev) => [
+        ...prev,
+        { ...workoutExercise, individual_exercise: individualExercise },
+      ]);
+
+      close();
+    } catch (error) {
+      console.error("Error saving new exercise:", error);
+      onError(error);
+    }
   };
 
   return (
     <>
-      <button
-        className="btn btn-primary flex items-center justify-center w-full sm:w-auto"
-        onClick={() => setOpen((o) => !o)}
-      >
-        <span>+ Add Exercise</span>
-      </button>
+      {trigger ? cloneElement(trigger, { onClick: () => setOpen(true) }) : null}
       {open && (
         <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex justify-center items-center z-50">
-          <div className="bg-white rounded-2xl shadow-lg p-8 min-w-sm sm:min-w-lg">
+          <div
+            ref={modalRef}
+            className="relative bg-white rounded-2xl shadow-lg p-8 min-w-sm sm:min-w-lg"
+          >
+            {loading && (
+              <div className="absolute inset-0 bg-white/60 flex flex-col items-center justify-center z-10 rounded-2xl">
+                <Spinner />
+              </div>
+            )}
+
             <h3 className="text-xl font-bold mb-4">
-              Add Exercise to {workout.name}
+              Add Exercise to {workoutName}
             </h3>
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
               {!makingCustomExercise ? (
@@ -197,7 +207,7 @@ const AddWorkoutExerciseModal = ({
                     <option value="" disabled>
                       Select Muscle Group
                     </option>
-                    {musclGroupsArray.map((group) => (
+                    {muscleGroupsArray.map((group) => (
                       <option key={group.id} value={group.id}>
                         {group.name}
                       </option>
@@ -231,8 +241,12 @@ const AddWorkoutExerciseModal = ({
                 >
                   Cancel
                 </button>
-                <button type="submit" className="btn btn-primary">
-                  Add Exercise
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={loading}
+                >
+                  {loading ? "Loading..." : "Add Exercise"}
                 </button>
               </div>
             </form>

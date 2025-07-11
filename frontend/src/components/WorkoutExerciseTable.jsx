@@ -8,6 +8,7 @@ const WorkoutExerciseTable = ({
   planID,
   cycleID,
   workoutID,
+  workoutName,
   exercises,
   isCurrentCycle,
   onUpdateExercises,
@@ -99,6 +100,7 @@ const WorkoutExerciseTable = ({
                     planID={planID}
                     cycleID={cycleID}
                     workoutID={workoutID}
+                    workoutName={workoutName}
                     exercise={ex}
                     exercises={exercises}
                     updateExercises={onUpdateExercises}

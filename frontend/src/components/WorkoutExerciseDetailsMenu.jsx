@@ -1,9 +1,11 @@
 import api from "../api";
+import AddWorkoutExerciseModal from "./AddWorkoutExerciseModal";
 
 const WorkoutExerciseDetailsMenu = ({
   planID,
   cycleID,
   workoutID,
+  workoutName,
   exercise,
   exercises,
   updateExercises,
@@ -90,8 +92,8 @@ const WorkoutExerciseDetailsMenu = ({
     closeMenu();
   };
 
+  // UNIMPLEMENTED: this thing is not working yet and may not be needed in the future
   const handleDuplicateExercise = () => {
-    // TODO: Implement duplication logic
     const newExercise = {
       ...exercise,
       id: Date.now(), // Simple ID generation
@@ -216,7 +218,7 @@ const WorkoutExerciseDetailsMenu = ({
           Move Down
         </span>
       </button>
-      <button
+      {/* <button
         className="btn btn-secondary-light text-left"
         onClick={handleDuplicateExercise}
       >
@@ -237,8 +239,40 @@ const WorkoutExerciseDetailsMenu = ({
           </svg>
           Duplicate Exercise
         </span>
-      </button>
-      <button
+      </button> */}
+      <AddWorkoutExerciseModal
+        trigger={
+          <button
+            className="btn btn-secondary-light text-left"
+            onClick={handleReplaceExercise}
+          >
+            <span className="flex items-center gap-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="size-6 text-gray-500"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 0 0-3.7-3.7 48.678 48.678 0 0 0-7.324 0 4.006 4.006 0 0 0-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 0 0 3.7 3.7 48.656 48.656 0 0 0 7.324 0 4.006 4.006 0 0 0 3.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3-3 3"
+                />
+              </svg>
+              Replace Exercise
+            </span>
+          </button>
+        }
+        workoutID={workoutID}
+        workoutName={workoutName}
+        planID={planID}
+        cycleID={cycleID}
+        onUpdateExercises={updateExercises} 
+        onError={onError}
+      />
+      {/* <button
         className="btn btn-secondary-light text-left"
         onClick={handleReplaceExercise}
       >
@@ -259,7 +293,7 @@ const WorkoutExerciseDetailsMenu = ({
           </svg>
           Replace Exercise
         </span>
-      </button>
+      </button> */}
       <button
         className="btn btn-danger-light text-left"
         onClick={handleDeleteExercise}
