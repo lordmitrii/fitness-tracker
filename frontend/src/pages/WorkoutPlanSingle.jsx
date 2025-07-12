@@ -145,7 +145,7 @@ const WorkoutPlanSingle = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="fixed top-16 left-0 w-full bg-white/75 backdrop-blur-md">
+      <div className="fixed top-16 left-0 w-full bg-white/75 backdrop-blur-md shadow-md">
         <ProgressBar completed={completedSets} total={totalSets} />
       </div>
       <div className="mx-auto sm:p-8 mt-2">
