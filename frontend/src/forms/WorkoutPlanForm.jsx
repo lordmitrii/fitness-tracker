@@ -88,7 +88,7 @@ export const CreateWorkoutPlanForm = () => {
 
   const handleCreate = (payload) => {
     api
-      .post("/workout-plans", payload)
+      .post("/workout-plans", { ...payload, active: true })
       .then(() => {
         navigate("/workout-plans");
       })

@@ -5,6 +5,7 @@ import LoadingState from "../states/LoadingState";
 import ErrorState from "../states/ErrorState";
 
 const WorkoutPlans = () => {
+  const [editing, setEditing] = useState(false);
   const [workoutPlans, setWorkoutPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,6 +26,24 @@ const WorkoutPlans = () => {
       });
   }, []);
 
+  const handleActivatePlan = (planID) => {
+    api
+      .patch(`/workout-plans/${planID}/set-active`, { active: true })
+      .then(() => {
+        setWorkoutPlans((prevPlans) =>
+          prevPlans.map((plan) =>
+            plan.id === planID
+              ? { ...plan, active: true }
+              : { ...plan, active: false }
+          )
+        );
+      })
+      .catch((error) => {
+        console.error("Error activating workout plan:", error);
+        setError(error);
+      });
+  };
+
   if (loading) return <LoadingState message="Loading your stats..." />;
   if (error)
     return (
@@ -42,19 +61,33 @@ const WorkoutPlans = () => {
             Workout Plans
           </h1>
           {workoutPlans.length > 0 && (
-            <button
-              className="btn btn-primary hidden sm:inline-block"
-              onClick={() => navigate("/create-workout-plan")}
-            >
-              + Create
-            </button>
+            <div className="flex items-center gap-4">
+              <button
+                className={`btn ${
+                  editing ? "btn-success" : "btn-primary-light"
+                } transition duration-600`}
+                onClick={() => setEditing((prev) => !prev)}
+              >
+                {editing ? "Done" : "Edit"}
+              </button>
+              <button
+                className="btn btn-primary hidden sm:inline-block"
+                onClick={() => navigate("/create-workout-plan")}
+              >
+                + Create
+              </button>
+            </div>
           )}
         </div>
 
         {workoutPlans.length > 0 ? (
           <ul className="space-y-6">
             {workoutPlans
-              .sort((a, b) => (b.active ? 1 : 0) - (a.active ? 1 : 0))
+              .slice()
+              .sort((a, b) => {
+                if (a.active !== b.active) return b.active - a.active;
+                return new Date(b.updated_at) - new Date(a.updated_at);
+              })
               .map((workoutPlan) => (
                 <li
                   key={workoutPlan.id}
@@ -95,48 +128,63 @@ const WorkoutPlans = () => {
                     </div>
 
                     <div className="text-sm text-gray-500 mt-1">
-                      Created:{" "}
-                      {new Date(workoutPlan.created_at).toLocaleDateString()}
+                      Last updated:{" "}
+                      {new Date(workoutPlan.updated_at).toLocaleDateString()}
                     </div>
                   </div>
                   <div className="flex gap-2 mt-2 sm:mt-0">
-                    <button
-                      className="btn btn-warning"
-                      onClick={() =>
-                        navigate(`/update-workout-plan/${workoutPlan.id}`)
-                      }
-                    >
-                      Update
-                    </button>
-                    <button
-                      className="btn btn-danger"
-                      onClick={() => {
-                        if (
-                          !window.confirm(
-                            `Are you sure you want to delete workout plan "${workoutPlan.name}"? This action cannot be undone.`
-                          )
-                        ) {
-                          return;
-                        }
-                        api
-                          .delete(`/workout-plans/${workoutPlan.id}`)
-                          .then(() => {
-                            setWorkoutPlans(
-                              workoutPlans.filter(
-                                (wp) => wp.id !== workoutPlan.id
+                    {editing && (
+                      <>
+                        <button
+                          className={`btn ${
+                            workoutPlan.active
+                              ? "btn-secondary opacity-50 cursor-not-allowed"
+                              : "btn-success"
+                          }`}
+                          disabled={workoutPlan.active}
+                          onClick={() => handleActivatePlan(workoutPlan.id)}
+                        >
+                          Activate
+                        </button>
+                        <button
+                          className="btn btn-warning"
+                          onClick={() =>
+                            navigate(`/update-workout-plan/${workoutPlan.id}`)
+                          }
+                        >
+                          Update
+                        </button>
+                        <button
+                          className="btn btn-danger"
+                          onClick={() => {
+                            if (
+                              !window.confirm(
+                                `Are you sure you want to delete workout plan "${workoutPlan.name}"? This action cannot be undone.`
                               )
-                            );
-                          })
-                          .catch((error) => {
-                            console.error(
-                              "Error deleting workout plan:",
-                              error
-                            );
-                          });
-                      }}
-                    >
-                      Delete
-                    </button>
+                            ) {
+                              return;
+                            }
+                            api
+                              .delete(`/workout-plans/${workoutPlan.id}`)
+                              .then(() => {
+                                setWorkoutPlans(
+                                  workoutPlans.filter(
+                                    (wp) => wp.id !== workoutPlan.id
+                                  )
+                                );
+                              })
+                              .catch((error) => {
+                                console.error(
+                                  "Error deleting workout plan:",
+                                  error
+                                );
+                              });
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
                   </div>
                 </li>
               ))}

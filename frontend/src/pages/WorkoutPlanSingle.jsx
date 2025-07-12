@@ -11,6 +11,7 @@ import ProgressBar from "../components/ProgressBar";
 const WorkoutPlanSingle = () => {
   const navigate = useNavigate();
   const { planID, cycleID } = useParams();
+  const [workoutPlanActive, setWorkoutPlanActive] = useState(false);
   const [workoutCycle, setWorkoutCycle] = useState(null);
   const [workouts, setWorkouts] = useState([]);
 
@@ -27,13 +28,17 @@ const WorkoutPlanSingle = () => {
 
   useEffect(() => {
     setLoading(true);
-    api
-      .get(`/workout-plans/${planID}/workout-cycles/${cycleID}`)
-      .then((res) => {
-        setWorkoutCycle(res.data);
-        setWorkouts(res.data.workouts);
-        setCycleCompleted(res.data.completed);
-        setNextCycleID(res.data.next_cycle_id);
+    Promise.all([
+      api.get(`workout-plans/${planID}`),
+      api.get(`/workout-plans/${planID}/workout-cycles/${cycleID}`),
+    ])
+      .then(([res1, res2]) => {
+        setWorkoutPlanActive(res1.data.active);
+
+        setWorkoutCycle(res2.data);
+        setWorkouts(res2.data.workouts);
+        setCycleCompleted(res2.data.completed);
+        setNextCycleID(res2.data.next_cycle_id);
       })
       .catch((error) => {
         console.error("Error fetching workout cycle:", error);
@@ -140,7 +145,7 @@ const WorkoutPlanSingle = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="fixed top-16 left-0 w-full">
+      <div className="fixed top-16 left-0 w-full bg-white/75 backdrop-blur-md">
         <ProgressBar completed={completedSets} total={totalSets} />
       </div>
       <div className="mx-auto sm:p-8 mt-2">
@@ -154,6 +159,7 @@ const WorkoutPlanSingle = () => {
                 </h1>
                 <DropdownMenu
                   dotsHorizontal={true}
+                  dotsHidden={!workoutPlanActive}
                   menu={({ close }) => (
                     <WorkoutCycleDetailsMenu
                       closeMenu={close}
@@ -251,7 +257,7 @@ const WorkoutPlanSingle = () => {
                           cycleID={cycleID}
                           workout={workout}
                           onDeleteWorkout={handleDeleteWorkout}
-                          isCurrentCycle={!nextCycleID}
+                          isCurrentCycle={!nextCycleID && workoutPlanActive}
                           onUpdateWorkouts={handleUpdateWorkouts}
                           onError={setError}
                         />
@@ -267,7 +273,7 @@ const WorkoutPlanSingle = () => {
               )}
             </div>
 
-            {!nextCycleID && (
+            {!nextCycleID && workoutPlanActive && (
               <div className="flex justify-center sm:justify-start items-center gap-4 mt-0 sm:mt-6 py-6 sm:py-0 bg-white">
                 <button
                   className="btn btn-primary"

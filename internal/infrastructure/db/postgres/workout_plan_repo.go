@@ -21,7 +21,7 @@ func (r *WorkoutPlanRepo) Create(ctx context.Context, wp *workout.WorkoutPlan) e
 
 func (r *WorkoutPlanRepo) GetByID(ctx context.Context, id uint) (*workout.WorkoutPlan, error) {
 	var wp workout.WorkoutPlan
-	if err := r.db.WithContext(ctx).Preload("WorkoutCycles", func(db *gorm.DB) *gorm.DB { return db.Order("week_number ASC").Order("id ASC") }).First(&wp, id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Order("updated_at DESC").First(&wp, id).Error; err != nil {
 		return nil, err
 	}
 	return &wp, nil
@@ -55,4 +55,8 @@ func (r *WorkoutPlanRepo) Delete(ctx context.Context, id uint) error {
 		return custom_err.ErrNotFound
 	}
 	return nil
+}
+
+func (r *WorkoutPlanRepo) SetActive(ctx context.Context, wp *workout.WorkoutPlan) error {
+	return r.db.WithContext(ctx).Model(&workout.WorkoutPlan{}).Where("id = ?", wp.ID).Select("active").Updates(wp).Error
 }

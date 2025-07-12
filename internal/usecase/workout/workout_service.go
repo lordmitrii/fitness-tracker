@@ -31,6 +31,23 @@ func NewWorkoutService(workoutPlanRepo workout.WorkoutPlanRepository, workoutCyc
 }
 
 func (s *workoutServiceImpl) CreateWorkoutPlan(ctx context.Context, wp *workout.WorkoutPlan) error {
+	if wp.Active {
+		// If the workout plan is active, we need to set other plans to inactive
+		plans, err := s.workoutPlanRepo.GetByUserID(ctx, wp.UserID)
+		if err != nil {
+			return err
+		}
+
+		for _, plan := range plans {
+			if plan.Active {
+				plan.Active = false
+				if err := s.workoutPlanRepo.SetActive(ctx, plan); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
 	// Create the workout plan with the initial cycle
 	if err := s.workoutPlanRepo.Create(ctx, wp); err != nil {
 		return err
@@ -69,6 +86,25 @@ func (s *workoutServiceImpl) UpdateWorkoutPlan(ctx context.Context, wp *workout.
 
 func (s *workoutServiceImpl) DeleteWorkoutPlan(ctx context.Context, id uint) error {
 	return s.workoutPlanRepo.Delete(ctx, id)
+}
+
+func (s *workoutServiceImpl) SetActiveWorkoutPlan(ctx context.Context, wp *workout.WorkoutPlan) error {
+	if wp.Active {
+		// If the workout plan is active, we need to set other plans to inactive
+		plans, err := s.workoutPlanRepo.GetByUserID(ctx, wp.UserID)
+		if err != nil {
+			return err
+		}
+		for _, plan := range plans {
+			if plan.Active && plan.ID != wp.ID {
+				plan.Active = false
+				if err := s.workoutPlanRepo.SetActive(ctx, plan); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return s.workoutPlanRepo.SetActive(ctx, wp)
 }
 
 func (s *workoutServiceImpl) CreateWorkoutCycle(ctx context.Context, wc *workout.WorkoutCycle) error {

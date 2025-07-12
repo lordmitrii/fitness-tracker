@@ -35,6 +35,7 @@ func NewWorkoutHandler(r *gin.RouterGroup, svc usecase.WorkoutService) {
 		wp.GET("/:id", h.GetWorkoutPlan)
 		wp.PATCH("/:id", h.UpdateWorkoutPlan)
 		wp.DELETE("/:id", h.DeleteWorkoutPlan)
+		wp.PATCH("/:id/set-active", h.SetActiveWorkoutPlan)
 
 		wp.POST("/:id/workout-cycles", h.AddWorkoutCycleToWorkoutPlan)
 		wp.GET("/:id/workout-cycles", h.GetWorkoutCyclesByWorkoutPlanID)
@@ -133,6 +134,23 @@ func (h *WorkoutHandler) DeleteWorkoutPlan(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusNoContent, nil)
+}
+
+func (h *WorkoutHandler) SetActiveWorkoutPlan(c *gin.Context) {
+	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	userID, _ := c.Get("userID")
+	var req workout.WorkoutPlan
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	req.ID = uint(id)
+	req.UserID = userID.(uint)
+	if err := h.svc.SetActiveWorkoutPlan(c.Request.Context(), &req); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Workout plan set as active"})
 }
 
 func (h *WorkoutHandler) AddWorkoutCycleToWorkoutPlan(c *gin.Context) {
@@ -398,7 +416,7 @@ func (h *WorkoutHandler) ReplaceWorkoutExercise(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	
+
 	c.JSON(http.StatusOK, we)
 }
 
