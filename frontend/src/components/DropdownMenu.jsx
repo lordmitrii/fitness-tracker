@@ -28,8 +28,8 @@ const DropdownMenu = ({
         setOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+    document.addEventListener("pointerdown", handleClick);
+    return () => document.removeEventListener("pointerdown", handleClick);
   }, [open]);
 
   // Calculate dropdown position when opening

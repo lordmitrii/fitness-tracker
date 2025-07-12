@@ -424,6 +424,58 @@ func (s *workoutServiceImpl) MoveWorkoutExercise(ctx context.Context, workoutID,
 	return nil
 }
 
+func (s *workoutServiceImpl) ReplaceWorkoutExercise(ctx context.Context, workoutID, exerciseID, individualExerciseID uint, sets int64) (*workout.WorkoutExercise, error) {
+	if sets <= 0 {
+		return nil, fmt.Errorf("sets quantity must be greater than 0")
+	}
+
+	workoutExercise, err := s.workoutExerciseRepo.GetByID(ctx, exerciseID)
+	if err != nil {
+		return nil, err
+	}
+
+	if workoutExercise.WorkoutID != workoutID {
+		return nil, fmt.Errorf("workout exercise %d does not belong to workout %d", exerciseID, workoutID)
+	}
+
+	if err := s.workoutExerciseRepo.Delete(ctx, exerciseID); err != nil {
+		return nil, err
+	}
+
+	newExercise := &workout.WorkoutExercise{
+		WorkoutID:            workoutID,
+		IndividualExerciseID: individualExerciseID,
+		Index:                workoutExercise.Index,
+		Completed:            false,
+		WorkoutSets:          make([]*workout.WorkoutSet, 0, sets),
+	}
+
+	for i := int64(0); i < sets; i++ {
+		set := &workout.WorkoutSet{
+			WorkoutExerciseID: newExercise.ID,
+			Index:             int(i) + 1,
+			Completed:         false,
+		}
+		newExercise.WorkoutSets = append(newExercise.WorkoutSets, set)
+	}
+
+	if err := s.workoutExerciseRepo.Create(ctx, newExercise); err != nil {
+		return nil, err
+	}
+
+	w, err := s.workoutRepo.GetByID(ctx, workoutExercise.WorkoutID)
+	if err != nil {
+		return nil, err
+	}
+
+	w.Completed = false
+	if err := s.workoutRepo.Complete(ctx, w); err != nil {
+		return nil, err
+	}
+
+	return newExercise, nil
+}
+
 func (s *workoutServiceImpl) DeleteWorkoutExercise(ctx context.Context, id uint) error {
 	workoutExercise, err := s.workoutExerciseRepo.GetByID(ctx, id)
 	if err != nil {

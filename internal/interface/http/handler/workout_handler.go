@@ -59,6 +59,7 @@ func NewWorkoutHandler(r *gin.RouterGroup, svc usecase.WorkoutService) {
 		wp.DELETE("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID", h.DeleteWorkoutExercise)
 		wp.PATCH("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/update-complete", h.CompleteWorkoutExercise)
 		wp.POST("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/move", h.MoveWorkoutExercise)
+		wp.POST("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/replace", h.ReplaceWorkoutExercise)
 
 		wp.POST("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/workout-sets", h.AddWorkoutSetToWorkoutExercise)
 		wp.GET("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/workout-sets", h.GetWorkoutSetsByWorkoutExerciseID)
@@ -199,7 +200,6 @@ func (h *WorkoutHandler) CompleteWorkoutCycle(c *gin.Context) {
 	workoutPlanID, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 	cycleID, _ := strconv.ParseUint(c.Param("cycleID"), 10, 64)
 
-
 	var req workout.WorkoutCycle
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -208,7 +208,7 @@ func (h *WorkoutHandler) CompleteWorkoutCycle(c *gin.Context) {
 	req.WorkoutPlanID = uint(workoutPlanID)
 	req.ID = uint(cycleID)
 
-	nextCycleID, err := h.svc.CompleteWorkoutCycle(c.Request.Context(), &req) 
+	nextCycleID, err := h.svc.CompleteWorkoutCycle(c.Request.Context(), &req)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -284,7 +284,7 @@ func (h *WorkoutHandler) AddWorkoutExerciseToWorkout(c *gin.Context) {
 
 	var req struct {
 		workout.WorkoutExercise
-		Qt int64 `json:"sets_qt"`
+		SetsQt int64 `json:"sets_qt"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -292,7 +292,7 @@ func (h *WorkoutHandler) AddWorkoutExerciseToWorkout(c *gin.Context) {
 	}
 	req.WorkoutID = uint(id)
 
-	err := h.svc.CreateWorkoutExercise(c.Request.Context(), &req.WorkoutExercise, req.Qt)
+	err := h.svc.CreateWorkoutExercise(c.Request.Context(), &req.WorkoutExercise, req.SetsQt)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -348,7 +348,7 @@ func (h *WorkoutHandler) CompleteWorkoutExercise(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	
+
 	req.ID = uint(id)
 	req.WorkoutID = uint(workoutID)
 
@@ -378,6 +378,28 @@ func (h *WorkoutHandler) MoveWorkoutExercise(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Exercise moved successfully"})
+}
+
+func (h *WorkoutHandler) ReplaceWorkoutExercise(c *gin.Context) {
+	workoutID, _ := strconv.ParseUint(c.Param("workoutID"), 10, 64)
+	exerciseID, _ := strconv.ParseUint(c.Param("exerciseID"), 10, 64)
+
+	var req struct {
+		IndividualExerciseID uint  `json:"individual_exercise_id"`
+		SetsQt               int64 `json:"sets_qt"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	we, err := h.svc.ReplaceWorkoutExercise(c.Request.Context(), uint(workoutID), uint(exerciseID), req.IndividualExerciseID, req.SetsQt)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	
+	c.JSON(http.StatusOK, we)
 }
 
 func (h *WorkoutHandler) DeleteWorkoutExercise(c *gin.Context) {
@@ -510,7 +532,7 @@ func (h *WorkoutHandler) GetOrCreateIndividualExercise(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	
+
 	req.UserID = userID.(uint)
 	individualExercise, err := h.svc.GetOrCreateIndividualExercise(c.Request.Context(), &req)
 	if err != nil {

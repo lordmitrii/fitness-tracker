@@ -11,8 +11,10 @@ const AddWorkoutExerciseModal = ({
   workoutName,
   planID,
   cycleID,
+  exercise,
   onUpdateExercises,
   onError,
+  buttonText = "Add",
 }) => {
   const [internalOpen, setInternalOpen] = useState(false);
 
@@ -132,15 +134,38 @@ const AddWorkoutExerciseModal = ({
         }
       );
 
-      const { data: workoutExercise } = await api.post(
-        `workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises`,
-        { individual_exercise_id: individualExercise.id, sets_qt: sets }
-      );
+      const { data: workoutExercise } = exercise
+        ? await api.post(
+            `workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exercise.id}/replace`,
+            {
+              individual_exercise_id: individualExercise.id,
+              sets_qt: sets,
+            }
+          )
+        : await api.post(
+            `workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises`,
+            {
+              individual_exercise_id: individualExercise.id,
+              sets_qt: sets,
+            }
+          );
 
-      onUpdateExercises((prev) => [
-        ...prev,
-        { ...workoutExercise, individual_exercise: individualExercise },
-      ]);
+      console.log(workoutExercise);
+      onUpdateExercises((prev) =>
+        exercise
+          ? prev.map((ex) =>
+              ex.id === exercise.id
+                ? {
+                    ...workoutExercise,
+                    individual_exercise: individualExercise,
+                  }
+                : ex
+            )
+          : [
+              ...prev,
+              { ...workoutExercise, individual_exercise: individualExercise },
+            ]
+      );
 
       close();
     } catch (error) {
@@ -165,7 +190,7 @@ const AddWorkoutExerciseModal = ({
             )}
 
             <h3 className="text-xl font-bold mb-4">
-              Add Exercise to {workoutName}
+              {buttonText} Exercise {!exercise && `to ${workoutName}`}
             </h3>
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
               {!makingCustomExercise ? (
@@ -246,7 +271,7 @@ const AddWorkoutExerciseModal = ({
                   className="btn btn-primary"
                   disabled={loading}
                 >
-                  {loading ? "Loading..." : "Add Exercise"}
+                  {loading ? "Loading..." : buttonText}
                 </button>
               </div>
             </form>

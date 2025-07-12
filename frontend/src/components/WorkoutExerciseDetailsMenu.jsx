@@ -269,8 +269,10 @@ const WorkoutExerciseDetailsMenu = ({
         workoutName={workoutName}
         planID={planID}
         cycleID={cycleID}
+        exercise={exercise}
         onUpdateExercises={updateExercises} 
         onError={onError}
+        buttonText="Replace"
       />
       {/* <button
         className="btn btn-secondary-light text-left"
