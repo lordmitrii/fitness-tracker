@@ -3,9 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../api";
 import LoadingState from "../states/LoadingState";
 import ErrorState from "../states/ErrorState";
+import DropdownMenu from "../components/DropdownMenu";
+import WorkoutPlanDetailsMenu from "../components/WorkoutPlanDetailsMenu";
 
 const WorkoutPlans = () => {
-  const [editing, setEditing] = useState(false);
   const [workoutPlans, setWorkoutPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -61,22 +62,12 @@ const WorkoutPlans = () => {
             Workout Plans
           </h1>
           {workoutPlans.length > 0 && (
-            <div className="flex items-center gap-4">
-              <button
-                className={`btn ${
-                  editing ? "btn-success" : "btn-primary-light"
-                } transition duration-600`}
-                onClick={() => setEditing((prev) => !prev)}
-              >
-                {editing ? "Done" : "Edit"}
-              </button>
               <button
                 className="btn btn-primary hidden sm:inline-block"
                 onClick={() => navigate("/create-workout-plan")}
               >
                 + Create
               </button>
-            </div>
           )}
         </div>
 
@@ -91,10 +82,11 @@ const WorkoutPlans = () => {
               .map((workoutPlan) => (
                 <li
                   key={workoutPlan.id}
-                  className="bg-white rounded-2xl shadow-md p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 transition hover:shadow-lg border border-gray-200"
+                  className="bg-white rounded-2xl shadow-md p-6 flex flex-col justify-between gap-4 transition hover:shadow-lg border border-gray-200"
                 >
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-center gap-2">
                       <Link
                         className="text-xl font-semibold text-blue-700 hover:underline"
                         to={`/workout-plans/${workoutPlan.id}/workout-cycles/${workoutPlan.current_cycle_id}`}
@@ -125,66 +117,23 @@ const WorkoutPlans = () => {
                           Active
                         </span>
                       )}
+                      </div>
+                      <DropdownMenu
+                        menu={({ close }) => (
+                          <WorkoutPlanDetailsMenu
+                            closeMenu={close}
+                            plan={workoutPlan}
+                            onError={setError}
+                            setWorkoutPlans={setWorkoutPlans}
+                          />
+                        )}
+                      />
                     </div>
 
                     <div className="text-sm text-gray-500 mt-1">
                       Last updated:{" "}
                       {new Date(workoutPlan.updated_at).toLocaleDateString()}
                     </div>
-                  </div>
-                  <div className="flex gap-2 mt-2 sm:mt-0">
-                    {editing && (
-                      <>
-                        <button
-                          className={`btn ${
-                            workoutPlan.active
-                              ? "btn-secondary opacity-50 cursor-not-allowed"
-                              : "btn-success"
-                          }`}
-                          disabled={workoutPlan.active}
-                          onClick={() => handleActivatePlan(workoutPlan.id)}
-                        >
-                          Activate
-                        </button>
-                        <button
-                          className="btn btn-warning"
-                          onClick={() =>
-                            navigate(`/update-workout-plan/${workoutPlan.id}`)
-                          }
-                        >
-                          Update
-                        </button>
-                        <button
-                          className="btn btn-danger"
-                          onClick={() => {
-                            if (
-                              !window.confirm(
-                                `Are you sure you want to delete workout plan "${workoutPlan.name}"? This action cannot be undone.`
-                              )
-                            ) {
-                              return;
-                            }
-                            api
-                              .delete(`/workout-plans/${workoutPlan.id}`)
-                              .then(() => {
-                                setWorkoutPlans(
-                                  workoutPlans.filter(
-                                    (wp) => wp.id !== workoutPlan.id
-                                  )
-                                );
-                              })
-                              .catch((error) => {
-                                console.error(
-                                  "Error deleting workout plan:",
-                                  error
-                                );
-                              });
-                          }}
-                        >
-                          Delete
-                        </button>
-                      </>
-                    )}
                   </div>
                 </li>
               ))}

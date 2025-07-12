@@ -49,6 +49,11 @@ body {
   @apply font-semibold bg-gradient-to-r from-green-500 to-green-600 text-white;
 }
 
+.btn-success-light {
+  @apply font-semibold bg-gradient-to-r from-green-400 to-green-500 text-transparent bg-clip-text;
+  @apply border-2 border-green-400/70 backdrop-blur bg-white;
+}
+
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
   10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
