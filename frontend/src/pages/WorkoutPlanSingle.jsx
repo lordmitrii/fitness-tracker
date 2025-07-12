@@ -1,11 +1,12 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect, useRef, use } from "react";
+import { useState, useEffect, useRef } from "react";
 import api from "../api";
 import WorkoutCard from "../components/WorkoutCard";
 import DropdownMenu from "../components/DropdownMenu";
 import WorkoutCycleDetailsMenu from "../components/WorkoutCycleDetailsMenu";
 import LoadingState from "../states/LoadingState";
 import ErrorState from "../states/ErrorState";
+import ProgressBar from "../components/ProgressBar";
 
 const WorkoutPlanSingle = () => {
   const navigate = useNavigate();
@@ -66,6 +67,12 @@ const WorkoutPlanSingle = () => {
       workouts.length > 0 && workouts.every((workout) => workout.completed);
     setAllWorkoutsCompleted(allCompleted);
   }, [workouts]);
+
+  const allSets = workouts.flatMap((workout) =>
+    (workout.workout_exercises || []).flatMap((ex) => ex.workout_sets || [])
+  );
+  const totalSets = allSets.length;
+  const completedSets = allSets.filter((set) => set.completed).length;
 
   const handleCycleComplete = () => {
     if (
@@ -133,6 +140,9 @@ const WorkoutPlanSingle = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <div className="fixed top-16 left-0 w-full">
+        <ProgressBar completed={completedSets} total={totalSets} />
+      </div>
       <div className="mx-auto sm:p-8 mt-2">
         {workoutCycle && (
           <>
