@@ -5,10 +5,8 @@ const QuestionMarkTooltip = ({ text }) => {
   const modalRef = useRef(null);
 
   useEffect(() => {
-    console.log("Tooltip opened:", open);
     function handleClick(e) {
       if (open && modalRef.current && !modalRef.current.contains(e.target)) {
-        console.log("Clicked outside, closing tooltip");
         setOpen(false);
       }
     }
@@ -38,10 +36,7 @@ const QuestionMarkTooltip = ({ text }) => {
             <div className="flex justify-end">
               <button
                 type="button"
-                onClick={() => {
-                  setOpen(false);
-                  console.log("Closing tooltip");
-                }}
+                onClick={() => setOpen(false)}
                 className="text-gray-600 hover:text-gray-900 transition"
               >
                 <svg

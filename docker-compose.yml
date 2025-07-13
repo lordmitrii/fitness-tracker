@@ -15,8 +15,8 @@ services:
       - CHOKIDAR_USEPOLLING=true
   backend:
     build: 
-      context: .
-      dockerfile: deployment/Dockerfile
+      context: ./backend
+      dockerfile: Dockerfile
     restart: unless-stopped
     environment:
       DATABASE_URL: postgres://username:password@db:5432/fitness_tracker?sslmode=disable
@@ -26,7 +26,7 @@ services:
     depends_on:
       - db
     volumes:
-      - .:/app
+      - ./backend:/app
    
   db:
     image: postgres:16
