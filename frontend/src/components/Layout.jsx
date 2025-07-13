@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -16,6 +16,18 @@ const Layout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const headerRef = useRef(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    function handleClick(event) {
+      if (headerRef.current && !headerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("pointerdown", handleClick);
+    return () => document.removeEventListener("pointerdown", handleClick);
+  }, [isOpen]);
 
   const handleLogout = () => {
     logout();
@@ -27,7 +39,10 @@ const Layout = ({ children }) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <header className="backdrop-blur-xl bg-white/80 shadow-md sticky top-0 z-80">
+      <header
+        ref={headerRef}
+        className="backdrop-blur-xl bg-white shadow-md sticky top-0 z-80"
+      >
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
           <Link
             to="/"
@@ -64,7 +79,7 @@ const Layout = ({ children }) => {
           {/* Navigation */}
           <nav
             className={`
-              fixed sm:static top-16 left-0 w-full sm:w-auto sm:bg-transparent bg-white/95 sm:backdrop-blur-0 backdrop-blur-lg z-70
+              fixed sm:static top-16 left-0 w-full sm:w-auto sm:bg-transparent bg-white backdrop-blur-0 z-70
               shadow-lg sm:shadow-none
               flex-col sm:flex-row flex sm:flex sm:items-center
               gap-2 sm:gap-5

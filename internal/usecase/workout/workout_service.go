@@ -309,6 +309,35 @@ func (s *workoutServiceImpl) CreateWorkout(ctx context.Context, w *workout.Worko
 	return s.workoutRepo.Create(ctx, w)
 }
 
+func (s *workoutServiceImpl) CreateMultipleWorkouts(ctx context.Context, cycleID uint, workouts []*workout.Workout) error {
+	for _, w := range workouts {
+		// create workoutExercises first
+
+		w.ID = 0 // Will be set after the workout is created
+		w.WorkoutCycleID = cycleID
+
+		for i, we := range w.WorkoutExercises {
+			we.Index = i + 1
+			we.WorkoutID = 0            // reset ID to 0
+			we.IndividualExercise = nil // reset as well
+
+			for j := int64(0); j < we.SetsQt; j++ {
+				set := &workout.WorkoutSet{
+					WorkoutExerciseID: we.ID,
+					Index:             int(j) + 1,
+					Completed:         false,
+				}
+				we.WorkoutSets = append(we.WorkoutSets, set)
+			}
+		}
+
+		if err := s.workoutRepo.Create(ctx, w); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (s *workoutServiceImpl) GetWorkoutByID(ctx context.Context, id uint) (*workout.Workout, error) {
 	return s.workoutRepo.GetByID(ctx, id)
 }

@@ -47,6 +47,7 @@ func NewWorkoutHandler(r *gin.RouterGroup, svc usecase.WorkoutService) {
 
 		wp.POST("/:id/workout-cycles/:cycleID/workouts", h.AddWorkoutToWorkoutCycle)
 		wp.GET("/:id/workout-cycles/:cycleID/workouts", h.GetWorkoutsByWorkoutCycleID)
+		wp.POST("/:id/workout-cycles/:cycleID/workouts/create-multiple", h.CreateMultipleWorkouts)
 
 		wp.GET("/:id/workout-cycles/:cycleID/workouts/:workoutID", h.GetWorkoutByID)
 		wp.PATCH("/:id/workout-cycles/:cycleID/workouts/:workoutID", h.UpdateWorkout)
@@ -261,6 +262,20 @@ func (h *WorkoutHandler) GetWorkoutsByWorkoutCycleID(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, workouts)
+}
+
+func (h *WorkoutHandler) CreateMultipleWorkouts(c *gin.Context) {
+	cycleID, _ := strconv.ParseUint(c.Param("cycleID"), 10, 64)
+	var req []*workout.Workout
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := h.svc.CreateMultipleWorkouts(c.Request.Context(), uint(cycleID), req); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"message": "Workouts created successfully"})
 }
 
 func (h *WorkoutHandler) GetWorkoutByID(c *gin.Context) {

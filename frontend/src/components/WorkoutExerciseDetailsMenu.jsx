@@ -108,39 +108,6 @@ const WorkoutExerciseDetailsMenu = ({
     closeMenu();
   };
 
-  const handleReplaceExercise = () => {
-    // TODO: Implement replacement logic
-    const newExercise = prompt("Enter new exercise name:");
-    const newMuscleGroup = prompt("Enter new muscle group:");
-    if (newExercise) {
-      updateExercises((prev) =>
-        prev.map((ex) => {
-          if (ex.id !== exercise.id) return ex;
-
-          const updatedExercise = {
-            ...ex,
-            individual_exercise: {
-              ...ex.individual_exercise,
-              name: newExercise,
-              muscle_group: {
-                id: Date.now(), // Simple ID generation for new muscle group
-                name: newMuscleGroup,
-              },
-            },
-            workout_sets: ex.workout_sets.map((set) => ({
-              ...set,
-              completed: false,
-            })),
-            completed: false,
-          };
-
-          return updatedExercise;
-        })
-      );
-    }
-    closeMenu();
-  };
-
   const handleDeleteExercise = () => {
     if (confirm("Are you sure you want to delete this exercise?")) {
       api
@@ -242,10 +209,7 @@ const WorkoutExerciseDetailsMenu = ({
       </button> */}
       <AddWorkoutExerciseModal
         trigger={
-          <button
-            className="btn btn-secondary-light text-left"
-            onClick={handleReplaceExercise}
-          >
+          <button className="btn btn-secondary-light text-left">
             <span className="flex items-center gap-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -270,7 +234,7 @@ const WorkoutExerciseDetailsMenu = ({
         planID={planID}
         cycleID={cycleID}
         exercise={exercise}
-        onUpdateExercises={updateExercises} 
+        onUpdateExercises={updateExercises}
         onError={onError}
         buttonText="Replace"
       />

@@ -24,6 +24,7 @@ type (
 		CompleteWorkoutCycle(ctx context.Context, wc *workout.WorkoutCycle) (uint, error)
 
 		CreateWorkout(ctx context.Context, w *workout.Workout) error
+		CreateMultipleWorkouts(ctx context.Context, cycleID uint, workouts []*workout.Workout) error
 		GetWorkoutByID(ctx context.Context, id uint) (*workout.Workout, error)
 		GetWorkoutsByWorkoutCycleID(ctx context.Context, workoutPlanID uint) ([]*workout.Workout, error)
 		UpdateWorkout(ctx context.Context, w *workout.Workout) error

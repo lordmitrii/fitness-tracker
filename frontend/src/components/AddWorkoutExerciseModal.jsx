@@ -15,6 +15,7 @@ const AddWorkoutExerciseModal = ({
   onUpdateExercises,
   onError,
   buttonText = "Add",
+  dummyMode = false,
 }) => {
   const [internalOpen, setInternalOpen] = useState(false);
 
@@ -134,23 +135,30 @@ const AddWorkoutExerciseModal = ({
         }
       );
 
-      const { data: workoutExercise } = exercise
-        ? await api.post(
-            `workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exercise.id}/replace`,
-            {
+      const { data: workoutExercise } = !dummyMode
+        ? exercise
+          ? await api.post(
+              `workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exercise.id}/replace`,
+              {
+                individual_exercise_id: individualExercise.id,
+                sets_qt: sets,
+              }
+            )
+          : await api.post(
+              `workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises`,
+              {
+                individual_exercise_id: individualExercise.id,
+                sets_qt: sets,
+              }
+            )
+        : {
+            data: {
               individual_exercise_id: individualExercise.id,
               sets_qt: sets,
-            }
-          )
-        : await api.post(
-            `workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises`,
-            {
-              individual_exercise_id: individualExercise.id,
-              sets_qt: sets,
-            }
-          );
+              workoutID: workoutID,
+            },
+          };
 
-      console.log(workoutExercise);
       onUpdateExercises((prev) =>
         exercise
           ? prev.map((ex) =>
@@ -178,7 +186,7 @@ const AddWorkoutExerciseModal = ({
     <>
       {trigger ? cloneElement(trigger, { onClick: () => setOpen(true) }) : null}
       {open && (
-        <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex justify-center items-center z-50">
+        <div className="fixed inset-0 bg-black/10 backdrop-blur-sm flex justify-center items-center z-50">
           <div
             ref={modalRef}
             className="relative bg-white rounded-2xl shadow-lg p-8 min-w-sm sm:min-w-lg"
