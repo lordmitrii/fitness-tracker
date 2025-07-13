@@ -102,6 +102,15 @@ const AddWorkoutPlanForm = () => {
     return errors;
   };
 
+  const handleStepperClick = (nextStep) => {
+    const errors = validateStep1();
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+    setStep(nextStep);
+  };
+
   if (loading) return <LoadingState />;
   if (error)
     return (
@@ -115,7 +124,11 @@ const AddWorkoutPlanForm = () => {
     return (
       <div className="min-h-screen items-center bg-gray-50 px-4">
         <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8 mt-8 flex flex-col">
-          <Stepper step={step} total={daysPerCycle + 2} onStepClick={setStep} />
+          <Stepper
+            step={step}
+            total={daysPerCycle + 2}
+            onStepClick={handleStepperClick}
+          />
           <div className="text-center mb-6 text-gray-600 font-medium">
             Step {step} of {daysPerCycle + 2}
           </div>
@@ -166,12 +179,12 @@ const AddWorkoutPlanForm = () => {
               )}
             </div>
             <div>
-              <label className="block text-lg font-medium text-gray-700 mb-1">
+              <div className="block text-lg font-medium text-gray-700 mb-1">
                 <span className="flex items-center gap-2">
                   Days Per Cycle
                   <QuestionMarkTooltip text="You can think of a cycle as a week." />
                 </span>
-              </label>
+              </div>
               <DaysPerCycleSelector
                 value={daysPerCycle}
                 onChange={setDaysPerCycle}
@@ -189,7 +202,11 @@ const AddWorkoutPlanForm = () => {
     return (
       <div className="min-h-screen items-center bg-gray-50 px-4 mt-8">
         <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8 flex flex-col">
-          <Stepper step={step} total={daysPerCycle + 2} onStepClick={setStep} />
+          <Stepper
+            step={step}
+            total={daysPerCycle + 2}
+            onStepClick={handleStepperClick}
+          />
           <div className="text-center mb-6 text-gray-600 font-medium">
             Step {step} of {daysPerCycle + 2}
           </div>
@@ -240,7 +257,11 @@ const AddWorkoutPlanForm = () => {
     return (
       <div className="min-h-screen items-center bg-gray-50 px-4">
         <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8 mt-8 flex flex-col">
-          <Stepper step={step} total={daysPerCycle + 2} onStepClick={setStep} />
+          <Stepper
+            step={step}
+            total={daysPerCycle + 2}
+            onStepClick={handleStepperClick}
+          />
           <div className="text-center mb-6 text-gray-600 font-medium">
             Step {step} of {daysPerCycle + 2}
           </div>

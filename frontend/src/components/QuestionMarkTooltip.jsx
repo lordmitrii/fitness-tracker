@@ -1,13 +1,14 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const QuestionMarkTooltip = ({ text }) => {
   const [open, setOpen] = useState(false);
   const modalRef = useRef(null);
 
   useEffect(() => {
-    if (!open) return;
-    function handleClick(event) {
-      if (modalRef.current && !modalRef.current.contains(event.target)) {
+    console.log("Tooltip opened:", open);
+    function handleClick(e) {
+      if (open && modalRef.current && !modalRef.current.contains(e.target)) {
+        console.log("Clicked outside, closing tooltip");
         setOpen(false);
       }
     }
@@ -36,9 +37,12 @@ const QuestionMarkTooltip = ({ text }) => {
           >
             <div className="flex justify-end">
               <button
-                onClick={() => setOpen(false)}
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  console.log("Closing tooltip");
+                }}
                 className="text-gray-600 hover:text-gray-900 transition"
-                aria-label="Close"
               >
                 <svg
                   className="h-5 w-5"

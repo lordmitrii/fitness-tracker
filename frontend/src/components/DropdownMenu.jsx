@@ -15,7 +15,6 @@ const DropdownMenu = ({
   const menuRef = useRef(null);
   const close = () => setOpen(false);
 
-  // Close menu when clicking outside
   useEffect(() => {
     function handleClick(e) {
       if (
@@ -32,7 +31,6 @@ const DropdownMenu = ({
     return () => document.removeEventListener("pointerdown", handleClick);
   }, [open]);
 
-  // Calculate dropdown position when opening
   useEffect(() => {
     if (open && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
