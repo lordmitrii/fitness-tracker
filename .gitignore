@@ -2,6 +2,7 @@ data/
 /bin/
 /build/
 /dist/
+dev-dist/
 *.exe
 *.dll
 *.so
