@@ -28,8 +28,6 @@ vendor/
 **/.cache/
 **/.golangci.yml
 
-docs/
-
 coverage.out
 
 
