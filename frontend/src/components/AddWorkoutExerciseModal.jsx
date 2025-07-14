@@ -82,15 +82,17 @@ const AddWorkoutExerciseModal = ({
   }, [open]);
 
   useEffect(() => {
-    // Reset form fields when modal opens
     if (open) {
       setExerciseID("");
       setName("");
       setMuscleGroupID("");
       setSets("");
-      setMakingCustomExercise(false);
     }
   }, [open, workoutID, makingCustomExercise]);
+
+  useEffect(() => {
+    if (!open) setMakingCustomExercise(false);
+  }, [open]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -201,6 +203,23 @@ const AddWorkoutExerciseModal = ({
               {buttonText} Exercise {!exercise && `to ${workoutName}`}
             </h3>
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+              <select
+                className="border rounded p-2"
+                value={muscleGroupID}
+                onChange={(e) => setMuscleGroupID(Number(e.target.value))}
+                required={makingCustomExercise}
+              >
+                <option value="">
+                  {makingCustomExercise
+                    ? "Select Muscle Group"
+                    : "All Muscle Groups"}
+                </option>
+                {muscleGroupsArray.map((group) => (
+                  <option key={group.id} value={group.id}>
+                    {group.name}
+                  </option>
+                ))}
+              </select>
               {!makingCustomExercise ? (
                 <select
                   className="border rounded p-2"
@@ -211,42 +230,29 @@ const AddWorkoutExerciseModal = ({
                   <option value="" disabled>
                     Select Exercise
                   </option>
-                  {exercisesArray.map((ex) => (
-                    <option
-                      key={`${ex.source}-${ex.id}`}
-                      value={`${ex.source}-${ex.id}`}
-                    >
-                      {ex.name}
-                      {ex.source === "custom" ? " (custom)" : ""}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <div className="flex flex-col gap-2">
-                  <input
-                    className="border rounded p-2"
-                    type="text"
-                    placeholder="Exercise Name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                  />
-                  <select
-                    className="border rounded p-2"
-                    value={muscleGroupID}
-                    onChange={(e) => setMuscleGroupID(Number(e.target.value))}
-                    required
-                  >
-                    <option value="" disabled>
-                      Select Muscle Group
-                    </option>
-                    {muscleGroupsArray.map((group) => (
-                      <option key={group.id} value={group.id}>
-                        {group.name}
+                  {exercisesArray
+                    .filter((ex) =>
+                      muscleGroupID ? ex.muscle_group_id === muscleGroupID : ex
+                    )
+                    .map((ex) => (
+                      <option
+                        key={`${ex.source}-${ex.id}`}
+                        value={`${ex.source}-${ex.id}`}
+                      >
+                        {ex.name}
+                        {ex.source === "custom" ? " (custom)" : ""}
                       </option>
                     ))}
-                  </select>
-                </div>
+                </select>
+              ) : (
+                <input
+                  className="border rounded p-2"
+                  type="text"
+                  placeholder="Exercise Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
               )}
               <input
                 className="border rounded p-2"
