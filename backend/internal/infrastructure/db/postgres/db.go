@@ -2,9 +2,9 @@ package postgres
 
 import (
 	"fmt"
-
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
+	"os"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -13,8 +13,16 @@ import (
 
 // initializes a GORM DB connection using the given DS
 func NewPostgresDB(dsn string) (*gorm.DB, error) {
+	var logLevel logger.LogLevel
+
+	if os.Getenv("DEVELOPMENT_MODE") == "true" {
+		logLevel = logger.Info
+	} else {
+		logLevel = logger.Warn
+	}
+
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		Logger: logger.Default.LogMode(logLevel),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to postgres: %w", err)
