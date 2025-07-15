@@ -161,6 +161,12 @@ const AddWorkoutExerciseModal = ({
             },
           };
 
+      if (makingCustomExercise) {
+        individualExercise.muscle_group = muscleGroupsArray.find(
+          (group) => group.id === individualExercise.muscle_group_id
+        );
+      }
+
       onUpdateExercises((prev) =>
         exercise
           ? prev.map((ex) =>
@@ -260,6 +266,7 @@ const AddWorkoutExerciseModal = ({
                 className="border rounded p-2"
                 type="number"
                 placeholder="Sets"
+                inputMode="numeric"
                 value={sets}
                 onChange={(e) => setSets(Number(e.target.value))}
                 min={1}

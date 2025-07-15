@@ -147,7 +147,7 @@ const WorkoutPlanSingle = () => {
     );
 
   return (
-    <div className="mx-auto sm:p-8 mt-8">
+    <div className="mx-auto sm:p-8">
       {createPortal(
         <div className="bg-white/75 backdrop-blur-md shadow-md h-full w-full">
           <ProgressBar completed={completedSets} total={totalSets} />
@@ -156,7 +156,7 @@ const WorkoutPlanSingle = () => {
       )}
       {workoutCycle && (
         <>
-          <div className="bg-white p-6 sm:p-0 shadow-md sm:shadow-none">
+          <div className="bg-white p-6 pt-14 sm:p-0 shadow-md sm:shadow-none">
             <div className="flex justify-between items-center mb-2">
               <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">
                 Plan: {workoutPlanName}

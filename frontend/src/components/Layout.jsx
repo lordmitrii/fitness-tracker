@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import GitHubIcon from "../icons/GitHubIcon";
 import GlobalLoadingState from "../states/GlobalLoadingState";
+import NetworkStatusBanner from "./NetworkStatusBanner";
 
 const navLinks = [
   { to: "/", label: "Home", auth: null },
@@ -167,6 +168,8 @@ const Layout = ({ children }) => {
       <main id="main-container" className="flex-grow min-h-[90dvh]">
         {children}
       </main>
+
+      <NetworkStatusBanner />
 
       <footer className="bg-gradient-to-r from-blue-500 to-blue-700 text-white shadow-inner py-6 mt-6">
         <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">

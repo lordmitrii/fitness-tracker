@@ -56,7 +56,7 @@ const ExerciseStats = () => {
                 <div className="text-gray-600 text-sm mb-1">Current Best</div>
                 {exercise.current_reps && exercise.current_weight ? (
                   <div className="inline-block rounded-lg bg-blue-100 text-blue-800 px-4 py-2 text-base font-semibold">
-                    {exercise.current_reps} reps × {exercise.current_weight} kg
+                    {exercise.current_weight} kg x {exercise.current_reps} reps
                   </div>
                 ) : (
                   <div className="text-gray-400 italic">N/A</div>

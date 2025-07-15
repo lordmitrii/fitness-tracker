@@ -14,7 +14,7 @@ const WorkoutExerciseTable = ({
   onUpdateExercises,
   onError,
 }) => {
-  const handleToggleExercise = (exId, setId, reps, weight, checked) => {
+  const handleToggleExercise = async (exId, setId, reps, weight, checked) => {
     onUpdateExercises((prev) =>
       prev.map((item) => {
         if (item.id !== exId) return item;
@@ -33,26 +33,23 @@ const WorkoutExerciseTable = ({
       })
     );
 
-    api
-      .patch(
+    try {
+      await api.patch(
         `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exId}/workout-sets/${setId}/update-complete`,
         { completed: checked }
-      )
-      .catch((error) => {
-        onError(error);
-      });
+      );
 
-    // If the set is not completed, we don't need to update sets, reps, and weight
-    if (!checked) return;
+      // If the set is not completed, we don't need to update sets, reps, and weight
+      if (!checked) return;
 
-    api
-      .patch(
+      await api.patch(
         `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exId}/workout-sets/${setId}`,
         { reps, weight }
-      )
-      .catch((error) => {
-        onError(error);
-      });
+      );
+    } catch (error) {
+      console.error("Error toggling exercise completion:", error);
+      onError(error);
+    }
   };
 
   const checkInputFields = (set) => {
@@ -113,11 +110,11 @@ const WorkoutExerciseTable = ({
 
             {/* Sets table */}
             <div className="overflow-x-auto">
-              <div className="min-w-full grid grid-cols-[36px_1fr_1fr_36px_1fr] sm:grid-cols-[36px_1fr_1fr_1fr_1fr_1fr] gap-4 text-gray-600 font-semibold border-b pb-2">
+              <div className="min-w-full grid grid-cols-[28px_1fr_1fr_28px_1fr] sm:grid-cols-[36px_1fr_1fr_1fr_1fr_1fr] gap-4 text-gray-600 font-semibold border-b pb-2">
                 <div className=""></div>
                 <div className="hidden sm:block">Set</div>
-                <div className="">Reps</div>
                 <div className="">Weight (kg)</div>
+                <div className="">Reps</div>
                 <div className="invisible sm:visible text-center">Badge</div>
                 <div className="text-center">Done</div>
               </div>
@@ -128,7 +125,7 @@ const WorkoutExerciseTable = ({
                   .map((set) => (
                     <div
                       key={set.id}
-                      className="min-w-full grid grid-cols-[36px_1fr_1fr_36px_1fr] sm:grid-cols-[36px_1fr_1fr_1fr_1fr_1fr] gap-4 items-center py-2"
+                      className="min-w-full grid grid-cols-[28px_1fr_1fr_28px_1fr] sm:grid-cols-[36px_1fr_1fr_1fr_1fr_1fr] gap-4 items-center py-2"
                     >
                       <DropdownMenu
                         dotsHidden={!isCurrentCycle}
@@ -149,39 +146,6 @@ const WorkoutExerciseTable = ({
                       <div className="hidden sm:block font-medium text-gray-700">
                         {set.index}
                       </div>
-                      <input
-                        type="number"
-                        placeholder={set.previous_reps}
-                        value={set.reps || ""}
-                        min={1}
-                        onChange={(e) => {
-                          const value = Number(e.target.value);
-                          onUpdateExercises((prev) =>
-                            prev.map((item) =>
-                              item.id === ex.id
-                                ? {
-                                    ...item,
-                                    workout_sets: item.workout_sets.map((s) =>
-                                      s.index === set.index
-                                        ? {
-                                            ...s,
-                                            reps: value,
-                                            completed: false,
-                                          }
-                                        : s
-                                    ),
-                                  }
-                                : item
-                            )
-                          );
-                        }}
-                        className={`w-full border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:italic ${
-                          set.completed || !isCurrentCycle
-                            ? "opacity-50 cursor-not-allowed"
-                            : ""
-                        }`}
-                        disabled={!isCurrentCycle}
-                      />
                       <input
                         type="number"
                         placeholder={set.previous_weight}
@@ -216,33 +180,67 @@ const WorkoutExerciseTable = ({
                         }`}
                         disabled={!isCurrentCycle}
                       />
+                      <input
+                        type="number"
+                        placeholder={set.previous_reps}
+                        value={set.reps || ""}
+                        min={1}
+                        inputMode="numeric"
+                        onChange={(e) => {
+                          const value = Number(e.target.value);
+                          onUpdateExercises((prev) =>
+                            prev.map((item) =>
+                              item.id === ex.id
+                                ? {
+                                    ...item,
+                                    workout_sets: item.workout_sets.map((s) =>
+                                      s.index === set.index
+                                        ? {
+                                            ...s,
+                                            reps: value,
+                                            completed: false,
+                                          }
+                                        : s
+                                    ),
+                                  }
+                                : item
+                            )
+                          );
+                        }}
+                        className={`w-full border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:italic ${
+                          set.completed || !isCurrentCycle
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }`}
+                        disabled={!isCurrentCycle}
+                      />
                       <span className="text-gray-500 text-sm w-5 justify-self-center">
                         {getExerciseProgressBadge(set)}
                       </span>
                       <div className="flex justify-center">
-                      <input
-                        type="checkbox"
-                        checked={!!set.completed}
-                        onChange={(e) => {
-                          const checked = e.target.checked;
-                          if (checked && !checkInputFields(set)) {
-                            alert(
-                              "Please ensure all fields are valid before marking as done."
+                        <input
+                          type="checkbox"
+                          checked={!!set.completed}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            if (checked && !checkInputFields(set)) {
+                              alert(
+                                "Please ensure all fields are valid before marking as done."
+                              );
+                              return;
+                            }
+                            handleToggleExercise(
+                              ex.id,
+                              set.id,
+                              set.reps,
+                              set.weight,
+                              checked
                             );
-                            return;
-                          }
-                          handleToggleExercise(
-                            ex.id,
-                            set.id,
-                            set.reps,
-                            set.weight,
-                            checked
-                          );
-                        }}
-                        className="form-checkbox accent-blue-600 h-5 w-5"
-                        title="Set completed"
-                        disabled={!isCurrentCycle}
-                      />
+                          }}
+                          className="form-checkbox accent-blue-600 h-5 w-5"
+                          title="Set completed"
+                          disabled={!isCurrentCycle}
+                        />
                       </div>
                     </div>
                   ))}

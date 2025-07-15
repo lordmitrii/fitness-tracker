@@ -2,12 +2,12 @@ import SpinnerIcon from "../icons/SpinnerIcon";
 
 const GlobalLoadingState = () => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
-      <SpinnerIcon />
-      <p className="text-lg font-semibold text-blue-700 tracking-wide">
-        Loading...
+    <div className="flex flex-col items-center justify-center min-h-screen gap-10">
+      <p className="text-4xl font-extrabold text-center bg-gradient-to-l from-blue-600 via-sky-600 to-blue-500 bg-clip-text text-transparent">
+        Welcome to the FTracker!
       </p>
       <span className="sr-only">Loading, please wait</span>
+      <SpinnerIcon />
     </div>
   );
 };
