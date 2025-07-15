@@ -144,7 +144,14 @@ const Layout = ({ children }) => {
         </div>
       </header>
 
-      <main className="flex-grow container mx-auto">{children}</main>
+      <div
+        id="progress-bar-portal"
+        className="sticky top-16 w-full h-2 sm:h-3 z-10"
+      />
+
+      <main id="main-container" className="flex-grow container mx-auto">
+        {children}
+      </main>
 
       <footer className="bg-gradient-to-r from-blue-500 to-blue-700 text-white shadow-inner py-6">
         <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">

@@ -81,7 +81,7 @@ const WorkoutExerciseTable = ({
         .map((ex) => (
           <div
             key={ex.id}
-            className="rounded-2xl sm:shadow bg-white sm:p-4 flex flex-col gap-4 sm:border sm:border-gray-100"
+            className="sm:rounded-2xl shadow-md bg-white sm:p-4 flex flex-col gap-4 sm:border sm:border-gray-100"
           >
             {/* Exercise header */}
             <div className="flex flex-row items-start sm:items-center justify-between gap-1">
@@ -117,7 +117,7 @@ const WorkoutExerciseTable = ({
                 <div className=""></div>
                 <div className="hidden sm:block">Set</div>
                 <div className="">Reps</div>
-                <div className="">Weight (kg)</div>
+                <div className="whitespace-nowrap">Weight (kg)</div>
                 <div className="invisible sm:visible text-center">Badge</div>
                 <div className="">Done</div>
               </div>

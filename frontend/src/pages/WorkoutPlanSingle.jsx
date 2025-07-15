@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import api from "../api";
 import WorkoutCard from "../components/WorkoutCard";
 import DropdownMenu from "../components/DropdownMenu";
@@ -145,9 +146,12 @@ const WorkoutPlanSingle = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="fixed top-16 left-0 w-full bg-white/75 backdrop-blur-md shadow-md">
-        <ProgressBar completed={completedSets} total={totalSets} />
-      </div>
+      {createPortal(
+        <div className="bg-white/75 backdrop-blur-md shadow-md h-full w-full">
+          <ProgressBar completed={completedSets} total={totalSets} />
+        </div>,
+        document.getElementById("progress-bar-portal")
+      )}
       <div className="mx-auto sm:p-8 mt-2">
         {workoutCycle && (
           <>

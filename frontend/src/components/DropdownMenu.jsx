@@ -31,8 +31,20 @@ const DropdownMenu = ({
     return () => document.removeEventListener("pointerdown", handleClick);
   }, [open]);
 
-  useEffect(() => {
-    if (open && buttonRef.current) {
+  // useEffect(() => {
+  //   if (open && buttonRef.current) {
+  //     const rect = buttonRef.current.getBoundingClientRect();
+  //     setDropdownPos({
+  //       top: rect.top + window.scrollY,
+  //       left: isLeft
+  //         ? rect.left + window.scrollX
+  //         : rect.right - DROPDOWN_WIDTH + window.scrollX,
+  //     });
+  //   }
+  // }, [open]);
+
+  const handleOpen = () => {
+    if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       setDropdownPos({
         top: rect.top + window.scrollY,
@@ -40,8 +52,9 @@ const DropdownMenu = ({
           ? rect.left + window.scrollX
           : rect.right - DROPDOWN_WIDTH + window.scrollX,
       });
+      setOpen(true);
     }
-  }, [open]);
+  };
 
   useLayoutEffect(() => {
     function handleResize() {
@@ -66,7 +79,7 @@ const DropdownMenu = ({
         className={`p-2 rounded-full transition cursor-pointer text-gray-600 hover:text-gray-900 ${
           dotsHidden ? "invisible" : ""
         }`}
-        onClick={() => setOpen((o) => !o)}
+        onClick={handleOpen}
       >
         {/* Three dots icon */}
         {!dotsHorizontal ? (
@@ -102,7 +115,7 @@ const DropdownMenu = ({
         )}
       </button>
 
-      {open &&
+      {open && dropdownPos &&
         createPortal(
           <div
             ref={menuRef}

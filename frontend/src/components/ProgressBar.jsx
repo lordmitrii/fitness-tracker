@@ -3,7 +3,7 @@ const ProgressBar = ({ completed, total }) => {
 
   return (
     <div
-      className="bg-blue-500 h-2 sm:h-3 transition-all duration-900"
+      className="bg-blue-500 transition-all duration-900 h-full w-full"
       style={{ width: `${percent}%` }}
     />
   );
