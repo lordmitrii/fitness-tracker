@@ -40,7 +40,7 @@ const manifest = {
   lang: "en",
   name: "Fitness Tracker",
   short_name: "FTracker",
-  start_url: "/",
+  start_url: "/workout-plans?showCurrent=true",
 };
 
 // https://vite.dev/config/

@@ -41,39 +41,37 @@ const WorkoutForm = ({ initialData = {}, onSubmit, submitLabel }) => {
   };
 
   return (
-    <div className="min-h-screen items-center bg-gray-50 px-4">
-      <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8 mt-8 flex flex-col gap-6">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-center text-gray-800">
-          {submitLabel}
-        </h1>
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label
-              htmlFor="name"
-              className="block text-lg font-medium text-gray-700 mb-1"
-            >
-              Workout Name
-            </label>
-            <input
-              type="text"
-              name="name"
-              id="name"
-              placeholder="Enter workout name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-            {formErrors.name && (
-              <p className="text-red-500 text-sm mt-1">{formErrors.name}</p>
-            )}
-          </div>
+    <div className="card flex flex-col gap-6">
+      <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-center text-gray-800">
+        {submitLabel}
+      </h1>
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div>
+          <label
+            htmlFor="name"
+            className="block text-lg font-medium text-gray-700 mb-1"
+          >
+            Workout Name
+          </label>
+          <input
+            type="text"
+            name="name"
+            id="name"
+            placeholder="Enter workout name"
+            value={formData.name}
+            onChange={handleChange}
+            required
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+          {formErrors.name && (
+            <p className="text-red-500 text-sm mt-1">{formErrors.name}</p>
+          )}
+        </div>
 
-          <button type="submit" className="btn btn-primary w-full">
-            {submitLabel}
-          </button>
-        </form>
-      </div>
+        <button type="submit" className="btn btn-primary w-full">
+          {submitLabel}
+        </button>
+      </form>
     </div>
   );
 };

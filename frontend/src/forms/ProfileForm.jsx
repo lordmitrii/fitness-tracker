@@ -53,108 +53,102 @@ const ProfileForm = ({ initialData = {}, onSubmit, submitLabel }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4">
-      <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8 mt-8 flex flex-col gap-6">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-center text-gray-800">
+    <div className="card flex flex-col gap-6">
+      <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-center text-gray-800">
+        {submitLabel}
+      </h1>
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div>
+          <label
+            htmlFor="age"
+            className="block text-lg font-medium text-gray-700 mb-1"
+          >
+            Age
+          </label>
+          <input
+            type="number"
+            name="age"
+            id="age"
+            placeholder="Your age"
+            value={formData.age}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+          {formErrors.age && (
+            <p className="text-red-500 text-sm mt-1">{formErrors.age}</p>
+          )}
+        </div>
+
+        <div>
+          <label
+            htmlFor="weight_kg"
+            className="block text-lg font-medium text-gray-700 mb-1"
+          >
+            Weight (kg)
+          </label>
+          <input
+            type="number"
+            name="weight_kg"
+            id="weight_kg"
+            placeholder="Weight in kg"
+            value={formData.weight_kg}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+          {formErrors.weight_kg && (
+            <p className="text-red-500 text-sm mt-1">{formErrors.weight_kg}</p>
+          )}
+        </div>
+
+        <div>
+          <label
+            htmlFor="height_cm"
+            className="block text-lg font-medium text-gray-700 mb-1"
+          >
+            Height (cm)
+          </label>
+          <input
+            type="number"
+            name="height_cm"
+            id="height_cm"
+            placeholder="Height in cm"
+            value={formData.height_cm}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+          {formErrors.height_cm && (
+            <p className="text-red-500 text-sm mt-1">{formErrors.height_cm}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-lg font-medium text-gray-700 mb-1">
+            Sex
+          </label>
+          <div className="flex items-center space-x-4">
+            {["Male", "Female"].map((s) => (
+              <label key={s} className="inline-flex items-center">
+                <input
+                  type="radio"
+                  name="sex"
+                  value={s}
+                  checked={formData.sex === s}
+                  onChange={handleChange}
+                  className="form-radio text-blue-600 accent-blue-600"
+                />
+                <span className="ml-2">{s}</span>
+              </label>
+            ))}
+          </div>
+          {formErrors.sex && (
+            <p className="text-red-500 text-sm mt-1">{formErrors.sex}</p>
+          )}
+        </div>
+
+        <button type="submit" className="btn btn-primary w-full">
           {submitLabel}
-        </h1>
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label
-              htmlFor="age"
-              className="block text-lg font-medium text-gray-700 mb-1"
-            >
-              Age
-            </label>
-            <input
-              type="number"
-              name="age"
-              id="age"
-              placeholder="Your age"
-              value={formData.age}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-            {formErrors.age && (
-              <p className="text-red-500 text-sm mt-1">{formErrors.age}</p>
-            )}
-          </div>
-
-          <div>
-            <label
-              htmlFor="weight_kg"
-              className="block text-lg font-medium text-gray-700 mb-1"
-            >
-              Weight (kg)
-            </label>
-            <input
-              type="number"
-              name="weight_kg"
-              id="weight_kg"
-              placeholder="Weight in kg"
-              value={formData.weight_kg}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-            {formErrors.weight_kg && (
-              <p className="text-red-500 text-sm mt-1">
-                {formErrors.weight_kg}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label
-              htmlFor="height_cm"
-              className="block text-lg font-medium text-gray-700 mb-1"
-            >
-              Height (cm)
-            </label>
-            <input
-              type="number"
-              name="height_cm"
-              id="height_cm"
-              placeholder="Height in cm"
-              value={formData.height_cm}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-            {formErrors.height_cm && (
-              <p className="text-red-500 text-sm mt-1">
-                {formErrors.height_cm}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-lg font-medium text-gray-700 mb-1">
-              Sex
-            </label>
-            <div className="flex items-center space-x-4">
-              {["Male", "Female"].map((s) => (
-                <label key={s} className="inline-flex items-center">
-                  <input
-                    type="radio"
-                    name="sex"
-                    value={s}
-                    checked={formData.sex === s}
-                    onChange={handleChange}
-                    className="form-radio text-blue-600 accent-blue-600"
-                  />
-                  <span className="ml-2">{s}</span>
-                </label>
-              ))}
-            </div>
-            {formErrors.sex && (
-              <p className="text-red-500 text-sm mt-1">{formErrors.sex}</p>
-            )}
-          </div>
-
-          <button type="submit" className="btn btn-primary w-full">
-            {submitLabel}
-          </button>
-        </form>
-      </div>
+        </button>
+      </form>
     </div>
   );
 };

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import GitHubIcon from "../icons/GitHubIcon";
+import GlobalLoadingState from "../states/GlobalLoadingState";
 
 const navLinks = [
   { to: "/", label: "Home", auth: null },
@@ -18,6 +19,15 @@ const Layout = ({ children }) => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const headerRef = useRef(null);
+  const [appLoading, setAppLoading] = useState(true);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setAppLoading(false);
+    }, 1500); // 1.5 seconds delay to simulate loading
+
+    return () => clearTimeout(timeout);
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -37,6 +47,10 @@ const Layout = ({ children }) => {
 
   const isActive = (to) =>
     to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
+
+  if (appLoading) {
+    return <GlobalLoadingState />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -150,11 +164,11 @@ const Layout = ({ children }) => {
         className="sticky top-16 w-full h-2 sm:h-3 z-10"
       />
 
-      <main id="main-container" className="flex-grow container mx-auto">
+      <main id="main-container" className="flex-grow min-h-[90dvh]">
         {children}
       </main>
 
-      <footer className="bg-gradient-to-r from-blue-500 to-blue-700 text-white shadow-inner py-6">
+      <footer className="bg-gradient-to-r from-blue-500 to-blue-700 text-white shadow-inner py-6 mt-6">
         <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-center sm:text-left text-sm font-medium tracking-wide">
             &copy; {new Date().getFullYear()} Fitness Tracker &mdash; All Rights
