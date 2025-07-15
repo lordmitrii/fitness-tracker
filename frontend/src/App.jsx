@@ -15,6 +15,7 @@ import WorkoutPlans from "./pages/WorkoutPlans";
 import WorkoutPlanSingle from "./pages/WorkoutPlanSingle";
 import ExerciseStats from "./pages/ExerciseStats";
 import PrivateRoute from "./components/PrivateRoute";
+import InstallationGuide from "./pages/InstallationGuide";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Layout>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/installation-guide" element={<InstallationGuide />} />
             <Route path="/login" element={<LoginForm />} />
             <Route path="/register" element={<RegisterForm />} />
 

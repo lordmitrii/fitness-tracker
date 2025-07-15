@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import api from "../api";
 import { cloneElement } from "react";
-import Spinner from "./Spinner";
+import SpinnerIcon from "../icons/SpinnerIcon";
 
 const AddWorkoutExerciseModal = ({
   open: openProp,
@@ -195,7 +195,9 @@ const AddWorkoutExerciseModal = ({
           >
             {loading && (
               <div className="absolute inset-0 bg-white/60 flex flex-col items-center justify-center z-10 rounded-2xl">
-                <Spinner />
+                <span className="inline-flex items-center justify-center bg-blue-50 rounded-full p-4">
+                  <SpinnerIcon />
+                </span>
               </div>
             )}
 

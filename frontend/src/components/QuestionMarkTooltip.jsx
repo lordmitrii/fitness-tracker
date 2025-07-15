@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import CloseIcon from "../icons/CloseIcon";
 
 const QuestionMarkTooltip = ({ text }) => {
   const [open, setOpen] = useState(false);
@@ -39,19 +40,7 @@ const QuestionMarkTooltip = ({ text }) => {
                 onClick={() => setOpen(false)}
                 className="text-gray-600 hover:text-gray-900 transition"
               >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
+                <CloseIcon />
               </button>
             </div>
             <div className="mt-2">{text}</div>

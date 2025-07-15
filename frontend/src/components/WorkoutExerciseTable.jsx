@@ -113,13 +113,13 @@ const WorkoutExerciseTable = ({
 
             {/* Sets table */}
             <div className="overflow-x-auto">
-              <div className="min-w-full grid grid-cols-[36px_1fr_1fr_1fr_1fr] sm:grid-cols-[36px_1fr_1fr_1fr_1fr_1fr] gap-4 text-gray-600 font-semibold border-b pb-2">
+              <div className="min-w-full grid grid-cols-[36px_1fr_1fr_36px_1fr] sm:grid-cols-[36px_1fr_1fr_1fr_1fr_1fr] gap-4 text-gray-600 font-semibold border-b pb-2">
                 <div className=""></div>
                 <div className="hidden sm:block">Set</div>
                 <div className="">Reps</div>
-                <div className="whitespace-nowrap">Weight (kg)</div>
+                <div className="">Weight (kg)</div>
                 <div className="invisible sm:visible text-center">Badge</div>
-                <div className="">Done</div>
+                <div className="text-center">Done</div>
               </div>
               <div className="flex flex-col divide-y">
                 {(ex.workout_sets || [])
@@ -128,7 +128,7 @@ const WorkoutExerciseTable = ({
                   .map((set) => (
                     <div
                       key={set.id}
-                      className="min-w-full grid grid-cols-[36px_1fr_1fr_1fr_1fr] sm:grid-cols-[36px_1fr_1fr_1fr_1fr_1fr] gap-4 items-center py-2"
+                      className="min-w-full grid grid-cols-[36px_1fr_1fr_36px_1fr] sm:grid-cols-[36px_1fr_1fr_1fr_1fr_1fr] gap-4 items-center py-2"
                     >
                       <DropdownMenu
                         dotsHidden={!isCurrentCycle}
@@ -219,6 +219,7 @@ const WorkoutExerciseTable = ({
                       <span className="text-gray-500 text-sm w-5 justify-self-center">
                         {getExerciseProgressBadge(set)}
                       </span>
+                      <div className="flex justify-center">
                       <input
                         type="checkbox"
                         checked={!!set.completed}
@@ -242,6 +243,7 @@ const WorkoutExerciseTable = ({
                         title="Set completed"
                         disabled={!isCurrentCycle}
                       />
+                      </div>
                     </div>
                   ))}
               </div>

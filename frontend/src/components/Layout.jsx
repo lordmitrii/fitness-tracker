@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import GitHubIcon from "../icons/GitHubIcon";
 
 const navLinks = [
   { to: "/", label: "Home", auth: null },
@@ -167,11 +168,8 @@ const Layout = ({ children }) => {
               className="hover:text-blue-300 transition"
               aria-label="GitHub"
             >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2C6.477 2 2 6.484 2 12.021c0 4.425 2.865 8.184 6.839 9.504.5.092.682-.217.682-.482 0-.237-.009-.866-.014-1.699-2.782.605-3.369-1.34-3.369-1.34-.454-1.153-1.109-1.461-1.109-1.461-.907-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.528 2.341 1.087 2.91.832.092-.646.35-1.087.636-1.338-2.222-.254-4.555-1.112-4.555-4.951 0-1.093.39-1.988 1.029-2.687-.104-.254-.446-1.274.098-2.656 0 0 .84-.27 2.75 1.025A9.54 9.54 0 0 1 12 6.844c.85.004 1.705.115 2.504.338 1.909-1.296 2.748-1.025 2.748-1.025.546 1.382.204 2.402.1 2.656.64.699 1.028 1.594 1.028 2.687 0 3.849-2.336 4.695-4.566 4.945.359.308.679.92.679 1.854 0 1.338-.013 2.419-.013 2.749 0 .267.18.578.688.48C19.138 20.2 22 16.442 22 12.021 22 6.484 17.522 2 12 2z" />
-              </svg>
+              <GitHubIcon />
             </a>
-            {/* Add more icons/links as you like */}
             <a
               href="mailto:dmitrii.lor@glasgow.ac.uk"
               className="hover:text-blue-300 transition text-base"

@@ -1,10 +1,12 @@
-import Spinner from "../components/Spinner";
+import SpinnerIcon from "../icons/SpinnerIcon";
 
 const LoadingState = ({ message = "Loading…", subtitle }) => (
   <div className="flex min-h-screen items-center justify-center bg-gray-50 px-2">
     <div className="bg-white rounded-2xl shadow-2xl p-8 flex flex-col items-center max-w-md w-full">
       <div className="mb-5">
-        <Spinner />
+        <span className="inline-flex items-center justify-center bg-blue-50 rounded-full p-4">
+          <SpinnerIcon />
+        </span>
       </div>
       <h2 className="text-2xl font-bold text-blue-700 mb-2 text-center">
         {message}

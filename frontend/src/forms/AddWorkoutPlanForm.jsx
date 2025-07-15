@@ -7,6 +7,8 @@ import AddWorkoutExerciseModal from "../components/AddWorkoutExerciseModal";
 import Stepper from "../components/Stepper";
 import LoadingState from "../states/LoadingState";
 import ErrorState from "../states/ErrorState";
+import EditIcon from "../icons/EditIcon";
+import ListIcon from "../icons/ListIcon";
 
 const ExerciseChip = ({ ex }) => (
   <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-blue-800 text-sm font-medium border border-blue-200 mr-2 mb-2">
@@ -289,19 +291,7 @@ const AddWorkoutPlanForm = () => {
                     onClick={() => setStep(idx + 2)}
                     aria-label={`Edit ${wk.name}`}
                   >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15.232 5.232l3.536 3.536M9 13l3 3L20.485 7.515a2.121 2.121 0 10-3-3L9 13zm0 0L5 17v3h3l4-4"
-                      />
-                    </svg>
+                    <EditIcon />
                   </button>
                 </h3>
                 {wk.workout_exercises.length > 0 ? (
@@ -367,19 +357,7 @@ const WorkoutDayExercises = ({
           </div>
         ) : (
           <div className="text-gray-400 flex flex-col items-center py-6">
-            <svg
-              className="w-10 h-10 mb-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M9 17v-6a2 2 0 014 0v6m4 0a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v10z"
-              />
-            </svg>
+            <ListIcon />
             <span>No exercises added yet</span>
           </div>
         )}

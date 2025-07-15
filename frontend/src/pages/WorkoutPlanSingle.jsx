@@ -8,6 +8,7 @@ import WorkoutCycleDetailsMenu from "../components/WorkoutCycleDetailsMenu";
 import LoadingState from "../states/LoadingState";
 import ErrorState from "../states/ErrorState";
 import ProgressBar from "../components/ProgressBar";
+import { ArrowLeftIcon, ArrowRightIcon } from "../icons/ArrowIcon";
 
 const WorkoutPlanSingle = () => {
   const navigate = useNavigate();
@@ -192,21 +193,10 @@ const WorkoutPlanSingle = () => {
                       }
                     >
                       <span className="flex items-center justify-between">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="currentColor"
-                          className="size-6"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M15.75 19.5 8.25 12l7.5-7.5"
-                          />
-                        </svg>
-                        <div className="hidden sm:block">View Next Cycle</div>
+                        <ArrowLeftIcon />
+                        <div className="hidden sm:block">
+                          View Previous Cycle
+                        </div>
                       </span>
                     </button>
                   )}
@@ -225,20 +215,7 @@ const WorkoutPlanSingle = () => {
                     >
                       <span className="flex items-center justify-between">
                         <div className="hidden sm:block">View Next Cycle</div>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="currentColor"
-                          className="size-6"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="m8.25 4.5 7.5 7.5-7.5 7.5"
-                          />
-                        </svg>
+                        <ArrowRightIcon />
                       </span>
                     </button>
                   )}
