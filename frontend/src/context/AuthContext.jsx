@@ -5,10 +5,12 @@ import api, {
   setAccessToken,
   clearAccessToken,
 } from "../api";
+import { useTranslation } from "react-i18next";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+  const { t } = useTranslation();
   const [isAuth, setIsAuth] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -41,9 +43,12 @@ export const AuthProvider = ({ children }) => {
       }
       return data;
     } catch (error) {
-      if (!error.respone)
-        return { message: "Network error. Please, check server status" };
-      return { message: error.response.data?.message || "Login failed" };
+      if (!error.response) return { message: t("errors.network_error") };
+
+      console.error("Login error:", error);
+      return {
+        message: t("errors.login_error"),
+      };
     }
   };
 
@@ -52,10 +57,11 @@ export const AuthProvider = ({ children }) => {
       const response = await registerRequest(email, password);
       return response;
     } catch (error) {
-      if (!error.response)
-        return { message: "Network error. Please, check server status" };
+      if (!error.response) return { message: t("errors.network_error") };
+
+      console.error("Registration error:", error);
       return {
-        message: error.response.data?.message || "Registration failed",
+        message: t("errors.registration_error"),
       };
     }
   };
@@ -66,7 +72,7 @@ export const AuthProvider = ({ children }) => {
     try {
       api.post("/users/logout");
     } catch (error) {
-      console.error("Logout failed", error);
+      console.error("Logout error:", error);
     }
     // Optionally, send a logout endpoint to clear cookie on backend
   };

@@ -3,6 +3,7 @@ import DropdownMenu from "./DropdownMenu";
 import api from "../api";
 import WorkoutExerciseDetailsMenu from "./WorkoutExerciseDetailsMenu";
 import WorkoutSetDetailsMenu from "./WorkoutSetDetailsMenu";
+import { useTranslation } from "react-i18next";
 
 const WorkoutExerciseTable = ({
   planID,
@@ -14,6 +15,8 @@ const WorkoutExerciseTable = ({
   onUpdateExercises,
   onError,
 }) => {
+  const { t } = useTranslation();
+
   const handleToggleExercise = async (exId, setId, reps, weight, checked) => {
     onUpdateExercises((prev) =>
       prev.map((item) => {
@@ -112,11 +115,20 @@ const WorkoutExerciseTable = ({
             <div className="overflow-x-auto">
               <div className="min-w-full grid grid-cols-[28px_1fr_1fr_28px_1fr] sm:grid-cols-[36px_1fr_1fr_1fr_1fr_1fr] gap-4 text-gray-600 font-semibold border-b pb-2">
                 <div className=""></div>
-                <div className="hidden sm:block">Set</div>
-                <div className="">Weight (kg)</div>
-                <div className="">Reps</div>
-                <div className="invisible sm:visible text-center">Badge</div>
-                <div className="text-center">Done</div>
+                <div className="hidden sm:block">
+                  {t("workout_plan_single.set_label")}
+                </div>
+                <div className="">
+                  {t("workout_plan_single.weight_label")} (
+                  {t("measurements.weight")})
+                </div>
+                <div className="">{t("workout_plan_single.reps_label")}</div>
+                <div className="invisible sm:visible text-center">
+                  {t("workout_plan_single.badge_label")}
+                </div>
+                <div className="text-center">
+                  {t("workout_plan_single.done_label")}
+                </div>
               </div>
               <div className="flex flex-col divide-y">
                 {(ex.workout_sets || [])
@@ -225,7 +237,7 @@ const WorkoutExerciseTable = ({
                             const checked = e.target.checked;
                             if (checked && !checkInputFields(set)) {
                               alert(
-                                "Please ensure all fields are valid before marking as done."
+                                t("workout_plan_single.please_check_fields")
                               );
                               return;
                             }
@@ -238,7 +250,7 @@ const WorkoutExerciseTable = ({
                             );
                           }}
                           className="form-checkbox accent-blue-600 h-5 w-5"
-                          title="Set completed"
+                          title={t("workout_plan_single.set_completed")}
                           disabled={!isCurrentCycle}
                         />
                       </div>

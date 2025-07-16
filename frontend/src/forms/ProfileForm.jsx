@@ -3,8 +3,10 @@ import api from "../api";
 import { useNavigate } from "react-router-dom";
 import LoadingState from "../states/LoadingState";
 import ErrorState from "../states/ErrorState";
+import { useTranslation } from "react-i18next";
 
-const ProfileForm = ({ initialData = {}, onSubmit, submitLabel }) => {
+const ProfileForm = ({ initialData = {}, onSubmit, label, submitLabel }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     age: "",
     weight_kg: "",
@@ -21,16 +23,18 @@ const ProfileForm = ({ initialData = {}, onSubmit, submitLabel }) => {
 
   const validate = () => {
     const newErrors = {};
-    if (!formData.age) newErrors.age = "Age is required.";
+    if (!formData.age) newErrors.age = t("profile_form.age_required");
     else if (isNaN(parseInt(formData.age, 10)))
-      newErrors.age = "Age must be a number.";
-    if (!formData.weight_kg) newErrors.weight_kg = "Weight is required.";
+      newErrors.age = t("profile_form.age_must_be_number");
+    if (!formData.weight_kg)
+      newErrors.weight_kg = t("profile_form.weight_required");
     else if (isNaN(parseFloat(formData.weight_kg)))
-      newErrors.weight_kg = "Weight must be a number.";
-    if (!formData.height_cm) newErrors.height_cm = "Height is required.";
+      newErrors.weight_kg = t("profile_form.weight_must_be_number");
+    if (!formData.height_cm)
+      newErrors.height_cm = t("profile_form.height_required");
     else if (isNaN(parseFloat(formData.height_cm)))
-      newErrors.height_cm = "Height must be a number.";
-    if (!formData.sex) newErrors.sex = "Please select a sex.";
+      newErrors.height_cm = t("profile_form.height_must_be_number");
+    if (!formData.sex) newErrors.sex = t("profile_form.sex_required");
     return newErrors;
   };
 
@@ -55,7 +59,7 @@ const ProfileForm = ({ initialData = {}, onSubmit, submitLabel }) => {
   return (
     <div className="card flex flex-col gap-6">
       <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-center text-gray-800">
-        {submitLabel}
+        {label}
       </h1>
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
@@ -63,13 +67,13 @@ const ProfileForm = ({ initialData = {}, onSubmit, submitLabel }) => {
             htmlFor="age"
             className="block text-lg font-medium text-gray-700 mb-1"
           >
-            Age
+            {t("profile_form.age_label")}
           </label>
           <input
             type="number"
             name="age"
             id="age"
-            placeholder="Your age"
+            placeholder={t("profile_form.age_placeholder")}
             value={formData.age}
             onChange={handleChange}
             className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -84,13 +88,17 @@ const ProfileForm = ({ initialData = {}, onSubmit, submitLabel }) => {
             htmlFor="weight_kg"
             className="block text-lg font-medium text-gray-700 mb-1"
           >
-            Weight (kg)
+            {t("profile_form.weight_label")} ({t("measurements.weight")})
           </label>
           <input
             type="number"
             name="weight_kg"
             id="weight_kg"
-            placeholder="Weight in kg"
+            placeholder={
+              t("profile_form.weight_placeholder") +
+              " " +
+              t("measurements.weight")
+            }
             value={formData.weight_kg}
             onChange={handleChange}
             className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -105,13 +113,17 @@ const ProfileForm = ({ initialData = {}, onSubmit, submitLabel }) => {
             htmlFor="height_cm"
             className="block text-lg font-medium text-gray-700 mb-1"
           >
-            Height (cm)
+            {t("profile_form.height_label")} ({t("measurements.height")})
           </label>
           <input
             type="number"
             name="height_cm"
             id="height_cm"
-            placeholder="Height in cm"
+            placeholder={
+              t("profile_form.height_placeholder") +
+              " " +
+              t("measurements.height")
+            }
             value={formData.height_cm}
             onChange={handleChange}
             className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -123,22 +135,24 @@ const ProfileForm = ({ initialData = {}, onSubmit, submitLabel }) => {
 
         <div>
           <label className="block text-lg font-medium text-gray-700 mb-1">
-            Sex
+            {t("profile_form.sex_label")}
           </label>
           <div className="flex items-center space-x-4">
-            {["Male", "Female"].map((s) => (
-              <label key={s} className="inline-flex items-center">
-                <input
-                  type="radio"
-                  name="sex"
-                  value={s}
-                  checked={formData.sex === s}
-                  onChange={handleChange}
-                  className="form-radio text-blue-600 accent-blue-600"
-                />
-                <span className="ml-2">{s}</span>
-              </label>
-            ))}
+            {[t("profile_form.sex_male"), t("profile_form.sex_female")].map(
+              (s) => (
+                <label key={s} className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="sex"
+                    value={s}
+                    checked={formData.sex === s}
+                    onChange={handleChange}
+                    className="form-radio text-blue-600 accent-blue-600"
+                  />
+                  <span className="ml-2">{s}</span>
+                </label>
+              )
+            )}
           </div>
           {formErrors.sex && (
             <p className="text-red-500 text-sm mt-1">{formErrors.sex}</p>
@@ -158,6 +172,7 @@ export const CreateProfileForm = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     setLoading(false);
@@ -184,7 +199,13 @@ export const CreateProfileForm = () => {
       />
     );
 
-  return <ProfileForm onSubmit={handleCreate} submitLabel="Create Profile" />;
+  return (
+    <ProfileForm
+      onSubmit={handleCreate}
+      label={t("profile_form.create_profile")}
+      submitLabel={t("general.create")}
+    />
+  );
 };
 
 // Update profile page
@@ -193,6 +214,7 @@ export const UpdateProfileForm = () => {
   const [initialData, setInitialData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     setLoading(true);
@@ -228,7 +250,8 @@ export const UpdateProfileForm = () => {
       });
   };
 
-  if (loading) return <LoadingState message="Loading your profile..." />;
+  if (loading)
+    return <LoadingState message={t("profile_form.loading_profile")} />;
   if (error)
     return (
       <ErrorState
@@ -241,7 +264,8 @@ export const UpdateProfileForm = () => {
     <ProfileForm
       initialData={initialData}
       onSubmit={handleUpdate}
-      submitLabel="Update Profile"
+      label={t("profile_form.update_profile")}
+      submitLabel={t("general.update")}
     />
   );
 };

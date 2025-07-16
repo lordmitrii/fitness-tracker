@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 const MAX_STANDARD_DAYS = 7;
 const MAX_CUSTOM_DAYS = 14;
 
 const DaysPerCycleSelector = ({ value, onChange }) => {
+  const { t } = useTranslation();
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customValue, setCustomValue] = useState(
     value > MAX_STANDARD_DAYS ? value : MAX_STANDARD_DAYS + 1
@@ -62,7 +64,7 @@ const DaysPerCycleSelector = ({ value, onChange }) => {
           }`}
           onClick={handleMoreClick}
         >
-          More
+          {t("days_per_cycle_selector.more")}
         </button>
       </div>
       {showCustomInput && (
@@ -83,7 +85,7 @@ const DaysPerCycleSelector = ({ value, onChange }) => {
               onChange(MAX_STANDARD_DAYS);
             }}
           >
-            Cancel
+            {t("general.cancel")}
           </button>
         </div>
       )}

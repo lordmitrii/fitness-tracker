@@ -6,6 +6,7 @@ import ErrorState from "../states/ErrorState";
 import DropdownMenu from "../components/DropdownMenu";
 import WorkoutPlanDetailsMenu from "../components/WorkoutPlanDetailsMenu";
 import FireIcon from "../icons/FireIcon";
+import { useTranslation } from "react-i18next";
 
 const WorkoutPlans = () => {
   const [searchParams] = useSearchParams();
@@ -13,6 +14,7 @@ const WorkoutPlans = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     setLoading(true);
@@ -58,7 +60,8 @@ const WorkoutPlans = () => {
       });
   };
 
-  if (loading) return <LoadingState message="Loading your plans..." />;
+  if (loading)
+    return <LoadingState message={t("workout_plans.loading_plans")} />;
   if (error)
     return (
       <ErrorState
@@ -71,14 +74,14 @@ const WorkoutPlans = () => {
     <div className="card">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">
-          Workout Plans
+          {t("workout_plans.workout_plans")}
         </h1>
         {workoutPlans.length > 0 && (
           <button
             className="btn btn-primary hidden sm:inline-block"
             onClick={() => navigate("/create-workout-plan")}
           >
-            + Create
+            + {t("general.create")}
           </button>
         )}
       </div>
@@ -108,7 +111,7 @@ const WorkoutPlans = () => {
                       {workoutPlan.active && (
                         <span className="flex items-center border border-green-500 text-green-600 bg-green-100 px-2 py-1 rounded-xl text-xs font-semibold ml-2 gap-2">
                           <FireIcon />
-                          Active
+                          {t("general.active")}
                         </span>
                       )}
                     </div>
@@ -125,7 +128,7 @@ const WorkoutPlans = () => {
                   </div>
 
                   <div className="text-sm text-gray-500 mt-1">
-                    Last updated:{" "}
+                    {t("general.last_updated")}{" "}
                     {new Date(workoutPlan.updated_at).toLocaleDateString()}
                   </div>
                 </div>
@@ -135,13 +138,13 @@ const WorkoutPlans = () => {
       ) : (
         <div className="bg-white rounded-2xl shadow p-8 flex flex-col items-center mt-8">
           <p className="text-gray-700 mb-6 text-lg">
-            No workout plans found. Create your first plan!
+            {t("workout_plans.no_plans_found")}
           </p>
           <button
             className="btn btn-primary"
             onClick={() => navigate("/create-workout-plan")}
           >
-            + Create Workout Plan
+            + {t("workout_plans.create_new_plan")}
           </button>
         </div>
       )}
@@ -153,7 +156,7 @@ const WorkoutPlans = () => {
           onClick={() => navigate("/create-workout-plan")}
           aria-label="Create workout plan"
         >
-          + Create new plan
+          + {t("workout_plans.create_new_plan")}
         </button>
       )}
     </div>

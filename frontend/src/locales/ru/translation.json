@@ -1,0 +1,30 @@
+{
+  "global_loading": {
+    "welcome": "Добро пожаловать в FTracker!",
+    "loading_message": "Загрузка, пожалуйста, подождите"
+  },
+  "home": {
+    "welcome_back": "С возвращением!",
+    "welcome": "Добро пожаловать в Fitness Tracker",
+    "logged_in": "Вы авторизованы!",
+    "please_login_or_register": "Пожалуйста, войдите или зарегистрируйтесь, чтобы начать.",
+    "no_purpose_yet": "Эта страница не имеет смысла (пока что)",
+    "install_app": "Установите приложение",
+    "loading_home_page": "Загрузка домашней страницы..."
+  },
+  "layout": {
+    "home_label": "Главная",
+    "workout_plans_label": "Планы тренировок",
+    "stats_label": "Статистика",
+    "profile_label": "Профиль",
+    "login_label": "Войти",
+    "register_label": "Регистрация",
+    "logout_label": "Выйти",
+    "all_rights_reserved": "Все права защищены",
+    "contact_support": "Связаться с поддержкой"
+  },
+  "network_banner": {
+    "you_are_offline": "Вы оффлайн.",
+    "you_are_online": "Вы онлайн!"
+  }
+}

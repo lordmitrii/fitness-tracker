@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import api from "../api";
 import LoadingState from "../states/LoadingState";
 import ErrorState from "../states/ErrorState";
+import { useTranslation } from "react-i18next";
 
 const ExerciseStats = () => {
   const [stats, setStats] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     setLoading(true);
@@ -23,7 +25,8 @@ const ExerciseStats = () => {
       });
   }, []);
 
-  if (loading) return <LoadingState message="Loading your stats..." />;
+  if (loading)
+    return <LoadingState message={t("exercise_stats.loading_stats")} />;
   if (error)
     return (
       <ErrorState
@@ -35,7 +38,7 @@ const ExerciseStats = () => {
   return (
     <div className="card">
       <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-8 text-center">
-        Your Exercise Stats
+        {t("exercise_stats.your_stats")}
       </h1>
       {stats && stats.length > 0 ? (
         <div className="flex flex-col gap-6">
@@ -53,13 +56,16 @@ const ExerciseStats = () => {
                 </div>
               </div>
               <div>
-                <div className="text-gray-600 text-sm mb-1">Current Best</div>
+                <div className="text-gray-600 text-sm mb-1">
+                  {t("exercise_stats.current_best")}
+                </div>
                 {exercise.current_reps && exercise.current_weight ? (
                   <div className="inline-block rounded-lg bg-blue-100 text-blue-800 px-4 py-2 text-base font-semibold">
-                    {exercise.current_weight} kg x {exercise.current_reps} reps
+                    {exercise.current_weight} {t("measurements.weight")} x{" "}
+                    {exercise.current_reps} {t("measurements.reps")}
                   </div>
                 ) : (
-                  <div className="text-gray-400 italic">N/A</div>
+                  <div className="text-gray-400 italic">{t("general.n_a")}</div>
                 )}
               </div>
             </div>
@@ -67,9 +73,9 @@ const ExerciseStats = () => {
         </div>
       ) : (
         <div className="text-gray-600 text-center py-8">
-          No exercise stats available yet.
+          {t("exercise_stats.no_stats")}
           <br />
-          Start logging workouts to see your progress!
+          {t("exercise_stats.start_logging")}
         </div>
       )}
     </div>

@@ -4,15 +4,8 @@ import { useAuth } from "../context/AuthContext";
 import GitHubIcon from "../icons/GitHubIcon";
 import GlobalLoadingState from "../states/GlobalLoadingState";
 import NetworkStatusBanner from "./NetworkStatusBanner";
-
-const navLinks = [
-  { to: "/", label: "Home", auth: null },
-  { to: "/workout-plans", label: "Workouts", auth: true },
-  { to: "/exercise-stats", label: "Stats", auth: true },
-  { to: "/profile", label: "Profile", auth: true },
-  { to: "/login", label: "Login", auth: false },
-  { to: "/register", label: "Register", auth: false },
-];
+import LanguageSwitcher from "./LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 
 const Layout = ({ children }) => {
   const { isAuth, logout } = useAuth();
@@ -20,11 +13,33 @@ const Layout = ({ children }) => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const headerRef = useRef(null);
-  const [appLoading, setAppLoading] = useState(true);
+  const { t } = useTranslation();
+  const [appLoading, setAppLoading] = useState(() => {
+    if (sessionStorage.getItem("hasLoaded") === "1") {
+      return false;
+    }
+    return true;
+  });
+
+  const navLinks = [
+    { to: "/", label: t("general.home"), auth: null },
+    {
+      to: "/workout-plans",
+      label: t("general.workout_plans"),
+      auth: true,
+    },
+    { to: "/exercise-stats", label: t("general.stats"), auth: true },
+    { to: "/profile", label: t("general.profile"), auth: true },
+    { to: "/login", label: t("general.login"), auth: false },
+    { to: "/register", label: t("general.register"), auth: false },
+  ];
 
   useEffect(() => {
+    if (!appLoading) return;
+
     const timeout = setTimeout(() => {
       setAppLoading(false);
+      sessionStorage.setItem("hasLoaded", "1");
     }, 1500); // 1.5 seconds delay to simulate loading
 
     return () => clearTimeout(timeout);
@@ -67,6 +82,7 @@ const Layout = ({ children }) => {
             Fitness Tracker
           </Link>
 
+          {/* <LanguageSwitcher /> */}
           {/* Hamburger */}
           <button
             className="sm:hidden flex items-center justify-center p-2 rounded-lg hover:bg-gray-100 transition group"
@@ -108,7 +124,7 @@ const Layout = ({ children }) => {
             {navLinks
               .filter((l) => l.auth === null || l.auth === isAuth)
               .map(({ to, label }) =>
-                label === "Register" ? (
+                label === t("general.register") ? (
                   <Link
                     key={to}
                     to={to}
@@ -117,7 +133,7 @@ const Layout = ({ children }) => {
                   >
                     {label}
                   </Link>
-                ) : label === "Login" ? (
+                ) : label === t("general.login") ? (
                   <Link
                     key={to}
                     to={to}
@@ -153,7 +169,7 @@ const Layout = ({ children }) => {
                 }}
                 className="btn btn-danger"
               >
-                Logout
+                {t("general.logout")}
               </button>
             )}
           </nav>
@@ -174,8 +190,8 @@ const Layout = ({ children }) => {
       <footer className="bg-gradient-to-r from-blue-500 to-blue-700 text-white shadow-inner py-6 mt-6">
         <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-center sm:text-left text-sm font-medium tracking-wide">
-            &copy; {new Date().getFullYear()} Fitness Tracker &mdash; All Rights
-            Reserved
+            &copy; {new Date().getFullYear()} Fitness Tracker &mdash;{" "}
+            {t("layout.all_rights_reserved")}
           </div>
           <div className="flex items-center space-x-4 text-lg">
             <a
@@ -192,7 +208,7 @@ const Layout = ({ children }) => {
               className="hover:text-blue-300 transition text-base"
               aria-label="Contact Support"
             >
-              Contact
+              {t("general.contact_support")}
             </a>
           </div>
         </div>

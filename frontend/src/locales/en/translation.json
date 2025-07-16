@@ -1,0 +1,245 @@
+{
+  "general": {
+    "back_home": "Back to Home",
+    "back": "Back",
+    "create": "Create",
+    "update": "Update",
+    "replace": "Replace",
+    "edit": "Edit",
+    "add": "Add",
+    "delete": "Delete",
+    "continue": "Continue",
+    "cancel": "Cancel",
+    "create_profile": "Create Profile",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "home": "Home",
+    "workout_plans": "Workout Plans",
+    "stats": "Stats",
+    "profile": "Profile",
+    "n_a": "N/A",
+    "active": "Active",
+    "contact_support": "Contact Support",
+    "loading": "Loading...",
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "day": "Day",
+    "to": "to",
+    "last_updated": "Last updated:",
+    "completed": "Completed",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "measurements": {
+    "weight": "kg",
+    "height": "cm",
+    "reps": "reps",
+    "set": "set",
+    "sets": "sets"
+  },
+  "errors": {
+    "network_error": "Network error. Please, check server status.",
+    "registration_error": "Registration failed. Please, try again.",
+    "login_error": "Login failed. Please, check your credentials.",
+    "logout_error": "Logout failed. Please, try again."
+  },
+  "global_loading": {
+    "welcome": "Welcome to the FTracker!",
+    "loading_message": "Loading, please wait"
+  },
+  "home": {
+    "welcome_back": "Welcome Back!",
+    "welcome": "Welcome to Fitness Tracker",
+    "logged_in": "You are logged in!",
+    "please_login_or_register": "Please login or register to get started.",
+    "no_purpose_yet": "This page has no purpose (yet)",
+    "install_app": "Install the App",
+    "loading_home_page": "Loading the home page..."
+  },
+  "layout": {
+    "all_rights_reserved": "All Rights Reserved"
+  },
+  "network_banner": {
+    "you_are_offline": "You are offline.",
+    "you_are_online": "You are online!"
+  },
+  "exercise_stats": {
+    "your_stats": "Your Exercise Stats",
+    "current_best": "Current Best",
+    "no_stats": "No stats available yet.",
+    "loading_stats": "Loading your stats...",
+    "start_logging": "Start logging workouts to see your progress!"
+  },
+  "not_found": {
+    "page_not_found": "Page Not Found",
+    "oops_message": "Oops! The page you are looking for doesn't exist or has been moved."
+  },
+  "profile": {
+    "loading_profile": "Loading your profile...",
+    "your_profile": "Your Profile",
+    "age_label": "Age:",
+    "weight_label": "Weight:",
+    "height_label": "Height:",
+    "sex_label": "Sex:",
+    "no_profile_found": "No profile found. Get started:"
+  },
+  "workout_plans": {
+    "loading_plans": "Loading your plans...",
+    "workout_plans": "Workout Plans",
+    "no_plans_found": "No workout plans found. Create your first plan!",
+    "create_new_plan": "Create Workout Plan"
+  },
+  "installation_guide": {
+    "installation_guide": "Installation Guide",
+    "steps_below": "Steps below for iOS and Android.",
+    "ios_steps": {
+      "1": "Tap <0>Share</0> <1/> at the bottom of Safari",
+      "2": "Select <0>Add to Home Screen</0> <1/>",
+      "3": "Tap <0>Add</0> in the top-right corner"
+    },
+    "android_steps": {
+      "1": "Open <0>Chrome</0> (or your browser)",
+      "2": "Tap <0>Menu</0> <1/> at the top-right",
+      "3": "Select <0>Add to Home screen</0> or <1>Install app</1>",
+      "4": "Tap <0>Add</0>"
+    },
+    "success_message": "You'll now see the app on your home screen!",
+    "need_help": "Need help?"
+  },
+  "workout_plan_single": {
+    "loading_workouts": "Loading your workouts...",
+    "plan_label": "Plan:",
+    "cycle_label": "Cycle:",
+    "view_previous_cycle": "View Previous Cycle",
+    "view_next_cycle": "View Next Cycle",
+    "no_workouts_found": "No workouts found for this cycle.",
+    "create_workout": "Create Workout",
+    "complete_cycle": "Complete Cycle",
+    "confirm_complete": "Are you sure you want to complete this cycle? Some workouts are not completed.",
+    "add_exercise": "Add Exercise",
+    "exercise_label": "Exercise",
+    "set_label": "Set",
+    "weight_label": "Weight",
+    "reps_label": "Reps",
+    "badge_label": "Badge",
+    "done_label": "Done",
+    "please_check_fields": "Please ensure all fields are valid before marking as done.",
+    "set_completed": "Set completed"
+  },
+  "error_state": {
+    "oops_message": "Oops! Something went wrong",
+    "try_again": "Try Again",
+    "unknown_error": "Unknown error occured."
+  },
+  "workout_form": {
+    "workout_name_label": "Workout Name",
+    "workout_name_placeholder": "Enter workout name",
+    "workout_name_required": "Workout name is required.",
+    "loading_workout": "Loading workout...",
+    "create_workout": "Create Workout",
+    "update_workout": "Update Workout"
+  },
+  "update_workout_plan_form": {
+    "loading_workout_plan": "Loading workout plan...",
+    "update_workout_plan": "Update Workout Plan",
+    "plan_name_label": "Plan Name",
+    "plan_name_placeholder": "Enter plan name",
+    "plan_name_required": "Workout plan name is required."
+  },
+  "register_form": {
+    "register_title": "Register",
+    "password_min_length": "Password must be at least 8 characters.",
+    "password_placeholder": "Create a password",
+    "already_have_account": "Already have an account?"
+  },
+  "login_form": {
+    "login_title": "Login",
+    "password_placeholder": "Enter your password",
+    "not_registered": "Not registered yet?"
+  },
+  "profile_form": {
+    "create_profile": "Create Profile",
+    "update_profile": "Update Profile",
+    "loading_profile": "Loading your profile...",
+    "age_label": "Age",
+    "age_placeholder": "Your age",
+    "age_required": "Age is required.",
+    "age_must_be_number": "Age must be a number.",
+    "weight_label": "Weight",
+    "weight_placeholder": "Weight in",
+    "weight_required": "Weight is required.",
+    "weight_must_be_number": "Weight must be a number.",
+    "height_label": "Height",
+    "height_placeholder": "Height in",
+    "height_required": "Height is required.",
+    "height_must_be_number": "Height must be a number.",
+    "sex_label": "Sex",
+    "sex_required": "Please select a sex.",
+    "sex_male": "Male",
+    "sex_female": "Female"
+  },
+  "add_workout_plan_form": {
+    "create_workout_plan": "Create Workout Plan",
+    "clear_draft": "Clear Draft",
+    "plan_name_label": "Plan Name",
+    "plan_name_placeholder": "e.g. Upper/Lower Split, Full Body, etc.",
+    "plan_name_required": "Workout plan name is required.",
+    "days_per_cycle_label": "Days Per Cycle",
+    "days_per_cycle_tooltip": "You can think of a cycle as a week.",
+    "step_of": "Step {{step}} of {{total}}",
+    "preview_title": "Preview Your Plan",
+    "days_per_cycle_value": "Days per cycle",
+    "no_exercises": "No exercises",
+    "add_exercises": "Add Exercises",
+    "skip_to_preview": "Skip to Preview",
+    "exercise_list_title": "Exercise list",
+    "no_exercises_yet": "No exercises added yet",
+    "add_exercise_button": "Add Exercise",
+    "go_to_next_day": "Go to Next Day",
+    "skip_to_preview_confirm": "Are you sure you want to skip to preview? Note that you can add exercises later."
+  },
+  "add_workout_exercise_modal": {
+    "exercise_title": "Exercise",
+    "select_muscle_group": "Select Muscle Group",
+    "all_muscle_groups": "All Muscle Groups",
+    "select_exercise": "Select Exercise",
+    "exercise_name_placeholder": "Exercise Name",
+    "create_custom_exercise": "Create custom exercise",
+    "select_from_exercise_pool": "Select from exercise pool",
+    "custom_suffix": "(custom)"
+  },
+  "days_per_cycle_selector": {
+    "more": "More"
+  },
+  "private_route": {
+    "checking_auth": "Checking authentication..."
+  },
+  "menus": {
+    "delete_cycle": "Delete Cycle",
+    "delete_workout": "Delete Workout",
+    "delete_workout_plan": "Delete Plan",
+    "delete_set": "Delete Set",
+    "delete_exercise": "Delete Exercise",
+    "update_exercise": "Update Exercise",
+    "update_workout": "Update Workout",
+    "update_workout_plan": "Update Plan",
+    "replace_exercise": "Replace Exercise",
+    "add_set_below": "Add Set Below",
+    "add_set_above": "Add Set Above",
+    "move_up": "Move Up",
+    "move_down": "Move Down",
+    "plan_already_active": "This plan is already active.",
+    "activate_plan": "Activate Plan",
+    "confirm_delete_cycle": "Are you sure you want to delete cycle {{cycleName}}? This action cannot be undone.",
+    "confirm_delete_workout": "Are you sure you want to delete workout {{workoutName}}? This action cannot be undone.",
+    "confirm_delete_workout_plan": "Are you sure you want to delete workout plan {{planName}}? This action cannot be undone.",
+    "confirm_delete_set": "Are you sure you want to delete this set? This action cannot be undone.",
+    "confirm_delete_exercise": "Are you sure you want to delete this exercise? This action cannot be undone.",
+    "cannot_delete_first_cycle": "Cannot delete the first cycle in a workout plan.",
+    "delete_this_cycle": "Delete this workout cycle",
+    "cannot_delete_only_set": "Cannot delete the only set of an exercise",
+    "delete_this_set": "Delete this set"
+  }
+}

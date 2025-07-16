@@ -4,8 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import LoadingState from "../states/LoadingState";
 import ErrorState from "../states/ErrorState";
+import { useTranslation } from "react-i18next";
 
-const WorkoutForm = ({ initialData = {}, onSubmit, submitLabel }) => {
+const WorkoutForm = ({ initialData = {}, onSubmit, label, submitLabel }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: "",
     ...initialData,
@@ -20,7 +22,7 @@ const WorkoutForm = ({ initialData = {}, onSubmit, submitLabel }) => {
   const validate = () => {
     const newErrors = {};
     if (!formData.name.trim()) {
-      newErrors.name = "Workout name is required.";
+      newErrors.name = t("workout_form.workout_name_required");
     }
     return newErrors;
   };
@@ -43,7 +45,7 @@ const WorkoutForm = ({ initialData = {}, onSubmit, submitLabel }) => {
   return (
     <div className="card flex flex-col gap-6">
       <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-center text-gray-800">
-        {submitLabel}
+        {label}
       </h1>
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
@@ -51,13 +53,13 @@ const WorkoutForm = ({ initialData = {}, onSubmit, submitLabel }) => {
             htmlFor="name"
             className="block text-lg font-medium text-gray-700 mb-1"
           >
-            Workout Name
+            {t("workout_form.workout_name_label")}
           </label>
           <input
             type="text"
             name="name"
             id="name"
-            placeholder="Enter workout name"
+            placeholder={t("workout_form.workout_name_placeholder")}
             value={formData.name}
             onChange={handleChange}
             required
@@ -78,6 +80,7 @@ const WorkoutForm = ({ initialData = {}, onSubmit, submitLabel }) => {
 
 // Create workout page
 export const CreateWorkoutForm = () => {
+  const { t } = useTranslation();
   const { planID, cycleID } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -111,7 +114,13 @@ export const CreateWorkoutForm = () => {
       />
     );
 
-  return <WorkoutForm onSubmit={handleCreate} submitLabel="Create Workout" />;
+  return (
+    <WorkoutForm
+      onSubmit={handleCreate}
+      label={t("workout_form.create_workout")}
+      submitLabel={t("general.create")}
+    />
+  );
 };
 
 // Update workout page
@@ -121,6 +130,7 @@ export const UpdateWorkoutForm = () => {
   const [initialData, setInitialData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     setLoading(true);
@@ -158,7 +168,8 @@ export const UpdateWorkoutForm = () => {
       });
   };
 
-  if (loading) return <LoadingState message="Loading workout..." />;
+  if (loading)
+    return <LoadingState message={t("workout_form.loading_workout")} />;
   if (error)
     return (
       <ErrorState
@@ -171,7 +182,8 @@ export const UpdateWorkoutForm = () => {
     <WorkoutForm
       initialData={initialData}
       onSubmit={handleUpdate}
-      submitLabel="Update Workout"
+      label={t("workout_form.update_workout")}
+      submitLabel={t("general.update")}
     />
   );
 };

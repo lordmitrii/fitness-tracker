@@ -1,0 +1,85 @@
+INSERT INTO public.exercises (name, muscle_group_id, slug)
+VALUES
+-- Chest
+    ('Bench Press', 1, 'bench-press'),
+    ('Incline Bench Press', 1, 'incline-bench-press'),
+    ('Incline Dumbbell Press', 1, 'incline-dumbbell-press'),
+    ('Dumbbell Flyes', 1, 'dumbbell-flyes'),
+    ('Cable Crossovers', 1, 'cable-crossovers'),
+    ('Chest Press Machine', 1, 'chest-press-machine'),
+    ('Pec Deck', 1, 'pec-deck'),
+    ('Push-Ups', 1, 'push-ups'),
+    ('Chest Dips', 1, 'chest-dips'),
+-- Back
+    ('Barbell Rows', 2, 'barbell-rows'),
+    ('Pull-Ups', 2, 'pull-ups'),
+    ('Chin-Ups', 2, 'chin-ups'),
+    ('Lat Pulldowns', 2, 'lat-pulldowns'),
+    ('Pullovers', 2, 'pullovers'),
+    ('Horizontal Cable Rows', 2, 'horizontal-cable-rows'),
+    ('T-Bar Rows', 2, 't-bar-rows'),
+    ('Single Arm Dumbbell Rows', 2, 'single-arm-dumbbell-rows'),
+    ('Single Arm Pulldowns', 2, 'single-arm-pulldowns'),
+-- Shoulders
+    ('Overhead Press', 3, 'overhead-press'),
+    ('Dumbbell Lateral Raises', 3, 'dumbbell-lateral-raises'),
+    ('Front Raises', 3, 'front-raises'),
+    ('Rear Delt Flyes', 3, 'rear-delt-flyes'),
+    ('Arnold Press', 3, 'arnold-press'),
+-- Biceps
+    ('Bicep Curls', 4, 'bicep-curls'),
+    ('Hammer Curls', 4, 'hammer-curls'),
+    ('Preacher Curls', 4, 'preacher-curls'),
+    ('Concentration Curls', 4, 'concentration-curls'),
+    ('Cable Curls', 4, 'cable-curls'),
+    ('Incline Dumbbell Curls', 4, 'incline-dumbbell-curls'),
+    ('Zottman Curls', 4, 'zottman-curls'),
+    ('Bayesian Curls', 4, 'bayesian-curls'),
+    ()
+-- Triceps
+    ('Tricep Pushdowns', 5, 'tricep-pushdowns'),
+    ('Overhead Tricep Extensiosns', 5, 'overhead-tricep-extensions'),
+    ('Skullcrusher', 5, 'skullcrusher'),
+    ('Dips', 5, 'dips'),
+    ('Close-Grip Bench Press', 5, 'close-grip-bench-press'),
+    ('Tricep Kickbacks', 5, 'tricep-kickbacks'),
+    ('Diamond Push-Ups', 5, 'diamond-push-ups'),
+    ('Cable Rope Pushdowns', 5, 'cable-rope-pushdowns'),
+-- Quads
+    ('Squats', 6, 'squats'),
+    ('Leg Press', 6, 'leg-press'),
+    ('Bulgarian Split Squats', 6, 'bulgarian-split-squats'),
+    ('Front Squats', 6, 'front-squats'),
+    ('Leg Press Machine', 6, 'leg-press-machine'),
+    ('Step-Ups', 6, 'step-ups'),
+    ('Leg Extensions', 6, 'leg-extensions'),
+-- Hamstrings
+    ('Deadlift', 7, 'deadlift'),
+    ('Romanian Deadlift', 7, 'romanian-deadlift'),
+    ('Seated Leg Curls', 7, 'seated-leg-curls'),
+    ('Lying Leg Curls', 7, 'lying-leg-curls'),
+    ('Glute-Ham Raises', 7, 'glute-ham-raises'),
+    ('Good Mornings', 7, 'good-mornings'),
+-- Glutes
+    ('Hip Thrusts', 8, 'hip-thrusts'),
+    ('Glute Bridges', 8, 'glute-bridges'),
+    ('Cable Kickbacks', 8, 'cable-kickbacks'),
+    ('Lunges', 8, 'lunges'),
+-- Abs
+    ('Crunches', 9, 'crunches'),
+    ('Hanging Leg Raises', 9, 'hanging-leg-raises'),
+    ('Plank', 9, 'plank'),
+    ('Cable Crunches', 9, 'cable-crunches'),
+    ('Russian Twists', 9, 'russian-twists'),
+    ('Decline Crunches', 9, 'decline-crunches'),
+-- Calves
+    ('Machine Calf Raises', 10, 'calf-raises'),
+    ('Standing Calf Raises', 10, 'standing-calf-raises'),
+    ('Smith Machine Calf Raises', 10, 'smith-machine-calf-raises'),
+-- Forearms
+    ('Wrist Curls', 11, 'wrist-curls'),
+    ('Reverse Curls', 11, 'reverse-curls'),
+-- Traps
+    ('Dumbbell Shrugs', 12, 'dumbbell-shrugs'),
+    ('Upright Rows', 12, 'upright-rows'),
+    ('Face Pulls', 12, 'face-pulls');

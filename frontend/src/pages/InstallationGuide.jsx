@@ -4,15 +4,17 @@ import AndroidIcon from "../icons/AndroidIcon";
 import ShareIcon from "../icons/ShareIcon";
 import AddToHomeScreenAppleIcon from "../icons/AddToHomeScreenAppleIcon";
 import { VerticalDots } from "../icons/DotsIcon";
+import { Trans, useTranslation } from "react-i18next";
 
 const InstallationGuide = () => {
+  const { t } = useTranslation();
   return (
     <div className="card flex flex-col items-center">
       <h1 className="text-3xl sm:text-4xl font-extrabold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent mb-2 text-center">
-        Installation Guide
+        {t("installation_guide.installation_guide")}
       </h1>
       <h2 className="text-lg text-gray-700 mb-10 text-center">
-        Steps below for iOS and Android.
+        {t("installation_guide.steps_below")}
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
         {/* iOS */}
@@ -25,28 +27,40 @@ const InstallationGuide = () => {
             <li className="rounded-xl border border-blue-100 bg-white/70 px-4 py-3 shadow-sm flex items-start gap-2 hover:bg-blue-50/50 transition">
               <span className="font-bold text-blue-500">1</span>
               <span>
-                Tap <span className="font-semibold">Share</span>{" "}
-                <span className="inline-block align-middle">
-                  <ShareIcon />
-                </span>{" "}
-                at the bottom of Safari
+                <Trans
+                  i18nKey="installation_guide.ios_steps.1"
+                  components={[
+                    <span className="font-semibold" />, // <0>
+                    <span className="inline-block align-middle">
+                      <ShareIcon />
+                    </span>, // <1>
+                  ]}
+                />
               </span>
             </li>
             <li className="rounded-xl border border-blue-100 bg-white/70 px-4 py-3 shadow-sm flex items-start gap-2 hover:bg-blue-50/50 transition">
               <span className="font-bold text-blue-500">2</span>
               <span>
-                Select{" "}
-                <span className="font-semibold">Add to Home Screen </span>
-                <span className="inline-block align-middle">
-                  <AddToHomeScreenAppleIcon />
-                </span>
+                <Trans
+                  i18nKey="installation_guide.ios_steps.2"
+                  components={[
+                    <span className="font-semibold" />, // <0>
+                    <span className="inline-block align-middle">
+                      <AddToHomeScreenAppleIcon />
+                    </span>, // <1>
+                  ]}
+                />
               </span>
             </li>
             <li className="rounded-xl border border-blue-100 bg-white/70 px-4 py-3 shadow-sm flex items-start gap-2 hover:bg-blue-50/50 transition">
               <span className="font-bold text-blue-500">3</span>
               <span>
-                Tap <span className="font-semibold">Add</span> in the top-right
-                corner
+                <Trans
+                  i18nKey="installation_guide.ios_steps.3"
+                  components={[
+                    <span className="font-semibold" />, // <0>
+                  ]}
+                />
               </span>
             </li>
           </ul>
@@ -61,50 +75,68 @@ const InstallationGuide = () => {
             <li className="rounded-xl border border-blue-100 bg-white/70 px-4 py-3 shadow-sm flex items-start gap-2 hover:bg-blue-50/50 transition">
               <span className="font-bold text-blue-500">1</span>
               <span>
-                Open <span className="font-semibold">Chrome</span> (or your
-                browser)
+                <Trans
+                  i18nKey="installation_guide.android_steps.1"
+                  components={[
+                    <span className="font-semibold" />, // <0>
+                  ]}
+                />
               </span>
             </li>
             <li className="rounded-xl border border-blue-100 bg-white/70 px-4 py-3 shadow-sm flex items-start gap-2 hover:bg-blue-50/50 transition">
               <span className="font-bold text-blue-500">2</span>
               <span>
-                Tap <span className="font-semibold">Menu</span>{" "}
-                <span className="inline-block align-middle">
-                  <VerticalDots color="text-blue-500" />
-                </span>{" "}
-                at the top-right
+                <Trans
+                  i18nKey="installation_guide.android_steps.2"
+                  components={[
+                    <span className="font-semibold" />, // <0>
+                    <span className="inline-block align-middle">
+                      <VerticalDots color="text-blue-500" />
+                    </span>, // <1>
+                  ]}
+                />
               </span>
             </li>
             <li className="rounded-xl border border-blue-100 bg-white/70 px-4 py-3 shadow-sm flex items-start gap-2 hover:bg-blue-50/50 transition">
               <span className="font-bold text-blue-500">3</span>
               <span>
-                Select <span className="font-semibold">Add to Home screen</span>{" "}
-                or <span className="font-semibold">Install app</span>
+                <Trans
+                  i18nKey="installation_guide.android_steps.3"
+                  components={[
+                    <span className="font-semibold" />, // <0>
+                    <span className="font-semibold" />, // <1>
+                  ]}
+                />
               </span>
             </li>
             <li className="rounded-xl border border-blue-100 bg-white/70 px-4 py-3 shadow-sm flex items-start gap-2 hover:bg-blue-50/50 transition">
               <span className="font-bold text-blue-500">4</span>
               <span>
-                Tap <span className="font-semibold">Add</span>
+                <Trans
+                  i18nKey="installation_guide.android_steps.4"
+                  components={[
+                    <span className="font-semibold" />, // <0>
+                  ]}
+                />
               </span>
             </li>
           </ul>
         </div>
       </div>
       <div className="text-xs text-gray-500 mt-3 text-center mt-8">
-        You'll now see the app on your home screen!
+        {t("installation_guide.success_message")}
       </div>
       <div className="mt-12 flex flex-col items-center gap-2 w-full">
         <Link to="/" className="btn btn-primary">
-          Back to Home
+          {t("general.back_home")}
         </Link>
         <div className="text-gray-400 text-xs mt-3 text-center">
-          Need help?{" "}
+          {t("installation_guide.need_help")}{" "}
           <a
             href="mailto:dmitrii.lor@glasgow.ac.uk"
             className="underline hover:text-blue-500"
           >
-            Contact support
+            {t("general.contact_support")}
           </a>
         </div>
       </div>

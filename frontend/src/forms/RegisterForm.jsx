@@ -1,9 +1,11 @@
 import { useAuth } from "../context/AuthContext";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const RegisterForm = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { register } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -11,7 +13,7 @@ const RegisterForm = () => {
 
   const validatePassword = (password) => {
     if (!password || password.length < 8) {
-      return "Password must be at least 8 characters.";
+      return t("register_form.password_min_length");
     }
     return "";
   };
@@ -37,7 +39,7 @@ const RegisterForm = () => {
   return (
     <form onSubmit={handleSubmit} className="card flex flex-col gap-6">
       <h1 className="text-3xl sm:text-4xl font-bold text-center mb-8 text-gray-800">
-        Register
+        {t("register_form.register_title")}
       </h1>
       {error && (
         <div className="bg-red-100 border border-red-200 text-red-700 text-center rounded py-2 px-3 mb-2 text-sm">
@@ -49,7 +51,7 @@ const RegisterForm = () => {
           className="block text-gray-700 font-semibold mb-1"
           htmlFor="email"
         >
-          Email
+          {t("general.email")}
         </label>
         <input
           id="email"
@@ -67,7 +69,7 @@ const RegisterForm = () => {
           className="block text-gray-700 font-semibold mb-1"
           htmlFor="password"
         >
-          Password
+          {t("general.password")}
         </label>
         <input
           id="password"
@@ -76,20 +78,20 @@ const RegisterForm = () => {
           autoComplete="new-password"
           onChange={(e) => setPassword(e.target.value)}
           required
-          placeholder="Create a password"
+          placeholder={t("register_form.password_placeholder")}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
         />
       </div>
       <button type="submit" className="btn btn-primary w-full">
-        Register
+        {t("general.register")}
       </button>
       <div className="text-center text-sm text-gray-600 mt-2">
-        Already have an account?{" "}
+        {t("register_form.already_have_account")}{" "}
         <Link
           to="/login"
           className="text-blue-600 hover:underline font-semibold"
         >
-          Login
+          {t("general.login")}
         </Link>
       </div>
     </form>

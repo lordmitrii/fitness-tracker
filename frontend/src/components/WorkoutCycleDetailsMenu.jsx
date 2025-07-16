@@ -1,6 +1,7 @@
 import api from "../api";
 import { useNavigate } from "react-router-dom";
 import DeleteIcon from "../icons/DeleteIcon";
+import { useTranslation } from "react-i18next";
 
 const WorkoutCycleDetailsMenu = ({
   closeMenu,
@@ -10,11 +11,14 @@ const WorkoutCycleDetailsMenu = ({
   setNextCycleID,
   onError,
 }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const handleDeleteCycle = () => {
     if (
       !window.confirm(
-        `Are you sure you want to delete cycle "${workoutCycle.name}"? This action cannot be undone.`
+        t("menus.confirm_delete_cycle", {
+          cycleName: workoutCycle.name,
+        })
       )
     ) {
       return;
@@ -48,13 +52,13 @@ const WorkoutCycleDetailsMenu = ({
         disabled={!workoutCycle.previous_cycle_id}
         title={
           !workoutCycle.previous_cycle_id
-            ? "Cannot delete the first cycle in a workout plan."
-            : "Delete this workout cycle"
+            ? t("menus.cannot_delete_first_cycle")
+            : t("menus.delete_this_cycle")
         }
       >
         <span className="flex items-center gap-2">
           <DeleteIcon />
-          Delete Cycle
+          {t("menus.delete_cycle")}
         </span>
       </button>
     </div>

@@ -2,6 +2,7 @@ import WorkoutExerciseTable from "./WorkoutExerciseTable";
 import DropdownMenu from "./DropdownMenu";
 import WorkoutDetailsMenu from "./WorkoutDetailsMenu";
 import AddWorkoutExerciseModal from "./AddWorkoutExerciseModal";
+import { useTranslation } from "react-i18next";
 
 const WorkoutCard = ({
   planID,
@@ -12,6 +13,7 @@ const WorkoutCard = ({
   onUpdateWorkouts,
   onError,
 }) => {
+  const { t } = useTranslation();
   return (
     <div className="sm:rounded-2xl shadow-lg bg-white sm:border sm:border-gray-200 p-6 sm:hover:shadow-lg transition flex flex-col gap-3">
       <div className="flex flex-col gap-2">
@@ -36,13 +38,18 @@ const WorkoutCard = ({
           />
         </div>
         <div className="text-gray-400 text-sm mt-1">
-          Last updated: {new Date(workout.updated_at).toLocaleDateString()}
+          {t("general.last_updated")}{" "}
+          {new Date(workout.updated_at).toLocaleDateString()}
           <br />
-          Completed:{" "}
+          {t("general.completed")}:{" "}
           {workout.completed ? (
-            <span className="text-green-600 font-semibold">Yes</span>
+            <span className="text-green-600 font-semibold">
+              {t("general.yes")}
+            </span>
           ) : (
-            <span className="text-red-600 font-semibold">No</span>
+            <span className="text-red-600 font-semibold">
+              {t("general.no")}
+            </span>
           )}
         </div>
       </div>
@@ -68,15 +75,16 @@ const WorkoutCard = ({
           <AddWorkoutExerciseModal
             trigger={
               <button className="btn btn-primary flex items-center gap-2">
-                <span>+ Add Exercise</span>
+                <span>+ {t("workout_plan_single.add_exercise")}</span>
               </button>
             }
             workoutID={workout.id}
             workoutName={workout.name}
             planID={planID}
             cycleID={cycleID}
-            onUpdateExercises={(newExercises) => 
-              onUpdateWorkouts(workout.id, newExercises)}
+            onUpdateExercises={(newExercises) =>
+              onUpdateWorkouts(workout.id, newExercises)
+            }
             onError={onError}
           />
         )}

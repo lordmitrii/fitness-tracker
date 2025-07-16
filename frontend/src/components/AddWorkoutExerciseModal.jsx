@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import api from "../api";
 import { cloneElement } from "react";
 import SpinnerIcon from "../icons/SpinnerIcon";
+import { useTranslation } from "react-i18next";
 
 const AddWorkoutExerciseModal = ({
   open: openProp,
@@ -14,10 +15,11 @@ const AddWorkoutExerciseModal = ({
   exercise,
   onUpdateExercises,
   onError,
-  buttonText = "Add",
+  buttonText,
   dummyMode = false,
 }) => {
   const [internalOpen, setInternalOpen] = useState(false);
+  const { t } = useTranslation();
 
   const isControlled = openProp !== undefined && onOpenChange;
   const open = isControlled ? openProp : internalOpen;
@@ -208,7 +210,9 @@ const AddWorkoutExerciseModal = ({
             )}
 
             <h3 className="text-xl font-bold mb-4">
-              {buttonText} Exercise {!exercise && `to ${workoutName}`}
+              {!!buttonText ? buttonText : t("general.add")}{" "}
+              {t("add_workout_exercise_modal.exercise_title")}{" "}
+              {!exercise && `${t("general.to")} ${workoutName}`}
             </h3>
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
               <select
@@ -219,8 +223,8 @@ const AddWorkoutExerciseModal = ({
               >
                 <option value="">
                   {makingCustomExercise
-                    ? "Select Muscle Group"
-                    : "All Muscle Groups"}
+                    ? t("add_workout_exercise_modal.select_muscle_group")
+                    : t("add_workout_exercise_modal.all_muscle_groups")}
                 </option>
                 {muscleGroupsArray.map((group) => (
                   <option key={group.id} value={group.id}>
@@ -236,7 +240,7 @@ const AddWorkoutExerciseModal = ({
                   required
                 >
                   <option value="" disabled>
-                    Select Exercise
+                    {t("add_workout_exercise_modal.select_exercise")}
                   </option>
                   {exercisesArray
                     .filter((ex) =>
@@ -248,7 +252,9 @@ const AddWorkoutExerciseModal = ({
                         value={`${ex.source}-${ex.id}`}
                       >
                         {ex.name}
-                        {ex.source === "custom" ? " (custom)" : ""}
+                        {ex.source === "custom"
+                          ? ` ${t("add_workout_exercise_modal.custom_suffix")}`
+                          : ""}
                       </option>
                     ))}
                 </select>
@@ -256,7 +262,9 @@ const AddWorkoutExerciseModal = ({
                 <input
                   className="border rounded p-2"
                   type="text"
-                  placeholder="Exercise Name"
+                  placeholder={t(
+                    "add_workout_exercise_modal.exercise_name_placeholder"
+                  )}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -265,7 +273,10 @@ const AddWorkoutExerciseModal = ({
               <input
                 className="border rounded p-2"
                 type="number"
-                placeholder="Sets"
+                placeholder={
+                  t("measurements.sets")[0].toUpperCase() +
+                  t("measurements.sets").slice(1)
+                }
                 inputMode="numeric"
                 value={sets}
                 onChange={(e) => setSets(Number(e.target.value))}
@@ -278,8 +289,8 @@ const AddWorkoutExerciseModal = ({
                 onClick={() => setMakingCustomExercise(!makingCustomExercise)}
               >
                 {!makingCustomExercise
-                  ? "Create custom exercise"
-                  : "Select from exercise pool"}
+                  ? t("add_workout_exercise_modal.create_custom_exercise")
+                  : t("add_workout_exercise_modal.select_from_exercise_pool")}
               </button>
               <div className="flex gap-2 justify-between mt-3">
                 <button
@@ -287,14 +298,18 @@ const AddWorkoutExerciseModal = ({
                   className="btn btn-secondary"
                   onClick={close}
                 >
-                  Cancel
+                  {t("general.cancel")}
                 </button>
                 <button
                   type="submit"
                   className="btn btn-primary"
                   disabled={loading}
                 >
-                  {loading ? "Loading..." : buttonText}
+                  {loading
+                    ? t("general.loading")
+                    : !!buttonText
+                    ? buttonText
+                    : t("general.add")}
                 </button>
               </div>
             </form>

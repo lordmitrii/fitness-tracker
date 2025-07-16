@@ -16,6 +16,7 @@ import WorkoutPlanSingle from "./pages/WorkoutPlanSingle";
 import ExerciseStats from "./pages/ExerciseStats";
 import PrivateRoute from "./components/PrivateRoute";
 import InstallationGuide from "./pages/InstallationGuide";
+import "./i18n";
 
 function App() {
   return (

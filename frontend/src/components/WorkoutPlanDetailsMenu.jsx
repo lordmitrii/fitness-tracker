@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import FlashIcon from "../icons/FlashIcon";
 import UpdateIcon from "../icons/UpdateIcon";
 import DeleteIcon from "../icons/DeleteIcon";
-
+import { useTranslation } from "react-i18next";
 
 const WorkoutPlanDetailsMenu = ({
   closeMenu,
@@ -11,6 +11,7 @@ const WorkoutPlanDetailsMenu = ({
   onError,
   setWorkoutPlans,
 }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const handleActivatePlan = () => {
@@ -39,7 +40,9 @@ const WorkoutPlanDetailsMenu = ({
   const handleDeletePlan = () => {
     if (
       !window.confirm(
-        `Are you sure you want to delete plan "${plan.name}"? This action cannot be undone.`
+        t("menus.confirm_delete_workout_plan", {
+          planName: plan.name,
+        })
       )
     ) {
       return;
@@ -72,13 +75,13 @@ const WorkoutPlanDetailsMenu = ({
         onClick={handleActivatePlan}
         title={
           plan.active
-            ? "This plan is already active."
-            : "Activate this workout plan"
+            ? t("menus.plan_already_active")
+            : t("menus.activate_plan")
         }
       >
         <span className="flex items-center gap-2">
           <FlashIcon success={plan.active} />
-          Activate Plan
+          {t("menus.activate_plan")}
         </span>
       </button>
       <button
@@ -87,7 +90,7 @@ const WorkoutPlanDetailsMenu = ({
       >
         <span className="flex items-center gap-2">
           <UpdateIcon />
-          Update Workout
+          {t("menus.update_workout_plan")}
         </span>
       </button>
       <button
@@ -97,7 +100,7 @@ const WorkoutPlanDetailsMenu = ({
       >
         <span className="flex items-center gap-2">
           <DeleteIcon />
-          Delete Plan
+          {t("menus.delete_workout_plan")}
         </span>
       </button>
     </div>

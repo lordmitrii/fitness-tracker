@@ -3,6 +3,7 @@ import { MoveDownIcon, MoveUpIcon } from "../icons/MoveIcon";
 import ReplaceIcon from "../icons/ReplaceIcon";
 import DeleteIcon from "../icons/DeleteIcon";
 import AddWorkoutExerciseModal from "./AddWorkoutExerciseModal";
+import { useTranslation } from "react-i18next";
 
 const WorkoutExerciseDetailsMenu = ({
   planID,
@@ -15,6 +16,7 @@ const WorkoutExerciseDetailsMenu = ({
   closeMenu,
   onError,
 }) => {
+  const { t } = useTranslation();
   const handleMoveUp = () => {
     if (exercise.index === 1) {
       console.error("Already at the top");
@@ -112,7 +114,7 @@ const WorkoutExerciseDetailsMenu = ({
   };
 
   const handleDeleteExercise = () => {
-    if (confirm("Are you sure you want to delete this exercise?")) {
+    if (confirm(t("menus.confirm_delete_exercise"))) {
       api
         .delete(
           `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exercise.id}`
@@ -141,7 +143,7 @@ const WorkoutExerciseDetailsMenu = ({
       >
         <span className="flex items-center gap-2">
           <MoveUpIcon />
-          Move Up
+          {t("menus.move_up")}
         </span>
       </button>
       <button
@@ -159,7 +161,7 @@ const WorkoutExerciseDetailsMenu = ({
       >
         <span className="flex items-center gap-2">
           <MoveDownIcon />
-          Move Down
+          {t("menus.move_down")}
         </span>
       </button>
       {/* <button
@@ -189,7 +191,7 @@ const WorkoutExerciseDetailsMenu = ({
           <button className="btn btn-secondary-light text-left">
             <span className="flex items-center gap-2">
               <ReplaceIcon />
-              Replace Exercise
+              {t("menus.replace_exercise")}
             </span>
           </button>
         }
@@ -200,7 +202,7 @@ const WorkoutExerciseDetailsMenu = ({
         exercise={exercise}
         onUpdateExercises={updateExercises}
         onError={onError}
-        buttonText="Replace"
+        buttonText={t("general.replace")}
       />
       {/* <button
         className="btn btn-secondary-light text-left"
@@ -217,7 +219,7 @@ const WorkoutExerciseDetailsMenu = ({
       >
         <span className="flex items-center gap-2">
           <DeleteIcon />
-          Delete Exercise
+          {t("menus.delete_exercise")}
         </span>
       </button>
     </div>

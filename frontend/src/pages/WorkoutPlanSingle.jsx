@@ -9,9 +9,11 @@ import LoadingState from "../states/LoadingState";
 import ErrorState from "../states/ErrorState";
 import ProgressBar from "../components/ProgressBar";
 import { ArrowLeftIcon, ArrowRightIcon } from "../icons/ArrowIcon";
+import { useTranslation } from "react-i18next";
 
 const WorkoutPlanSingle = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { planID, cycleID } = useParams();
   const [workoutPlanName, setWorkoutPlanName] = useState("");
   const [workoutPlanActive, setWorkoutPlanActive] = useState(false);
@@ -85,9 +87,7 @@ const WorkoutPlanSingle = () => {
   const handleCycleComplete = () => {
     if (
       !allWorkoutsCompleted &&
-      !window.confirm(
-        `Are you sure you want to complete this cycle? Some workouts are not completed.`
-      )
+      !window.confirm(t("workout_plan_single.confirm_complete"))
     ) {
       return;
     }
@@ -137,7 +137,8 @@ const WorkoutPlanSingle = () => {
     );
   };
 
-  if (loading) return <LoadingState message="Loading your workouts..." />;
+  if (loading)
+    return <LoadingState message={t("workout_plan_single.loading_workouts")} />;
   if (error)
     return (
       <ErrorState
@@ -159,7 +160,7 @@ const WorkoutPlanSingle = () => {
           <div className="bg-white p-6 pt-14 sm:p-0 shadow-md sm:shadow-none">
             <div className="flex justify-between items-center mb-2">
               <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">
-                Plan: {workoutPlanName}
+                {t("workout_plan_single.plan_label")} {workoutPlanName}
               </h1>
               <DropdownMenu
                 dotsHorizontal={true}
@@ -177,7 +178,8 @@ const WorkoutPlanSingle = () => {
               />
             </div>
             <h2 className="text-lg text-gray-600 mb-6">
-              Cycle: <span className="font-semibold">{workoutCycle.name}</span>
+              {t("workout_plan_single.cycle_label")}{" "}
+              <span className="font-semibold">{workoutCycle.name}</span>
             </h2>
             <div className="flex flex-row gap-4 mb-8">
               <div className="w-1/2">
@@ -192,7 +194,9 @@ const WorkoutPlanSingle = () => {
                   >
                     <span className="flex items-center justify-between">
                       <ArrowLeftIcon />
-                      <div className="hidden sm:block">View Previous Cycle</div>
+                      <div className="hidden sm:block">
+                        {t("workout_plan_single.view_previous_cycle")}
+                      </div>
                     </span>
                   </button>
                 )}
@@ -210,7 +214,9 @@ const WorkoutPlanSingle = () => {
                     }
                   >
                     <span className="flex items-center justify-between">
-                      <div className="hidden sm:block">View Next Cycle</div>
+                      <div className="hidden sm:block">
+                        {t("workout_plan_single.view_next_cycle")}
+                      </div>
                       <ArrowRightIcon />
                     </span>
                   </button>
@@ -244,7 +250,7 @@ const WorkoutPlanSingle = () => {
             ) : (
               <div className="text-center py-6">
                 <p className="text-gray-600">
-                  No workouts found for this cycle.
+                  {t("workout_plan_single.no_workouts_found")}
                 </p>
               </div>
             )}
@@ -260,7 +266,7 @@ const WorkoutPlanSingle = () => {
                   )
                 }
               >
-                + Create Workout
+                + {t("workout_plan_single.create_workout")}
               </button>
               {!cycleCompleted && !!workouts.length && (
                 <button
@@ -269,7 +275,7 @@ const WorkoutPlanSingle = () => {
                   }`}
                   onClick={handleCycleComplete}
                 >
-                  Complete Cycle
+                  {t("workout_plan_single.complete_cycle")}
                 </button>
               )}
             </div>

@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import api from "../api";
 import LoadingState from "../states/LoadingState";
 import ErrorState from "../states/ErrorState";
+import { useTranslation } from "react-i18next";
 
 const Profile = () => {
   const navigate = useNavigate();
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     setLoading(true);
@@ -29,7 +31,7 @@ const Profile = () => {
       });
   }, []);
 
-  if (loading) return <LoadingState message="Loading your stats..." />;
+  if (loading) return <LoadingState message={t("profile.loading_profile")} />;
   if (error)
     return (
       <ErrorState
@@ -41,41 +43,45 @@ const Profile = () => {
   return (
     <div className="card">
       <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-8 text-center">
-        Your Profile
+        {t("profile.your_profile")}
       </h1>
 
       {profile && profile.age ? (
         <>
           <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-gray-700 mb-8">
-            <div className="font-semibold">Age:</div>
+            <div className="font-semibold">{t("profile.age_label")}</div>
             <div className="text-right">{profile.age}</div>
 
-            <div className="font-semibold">Weight:</div>
-            <div className="text-right">{profile.weight_kg} kg</div>
+            <div className="font-semibold">{t("profile.weight_label")}</div>
+            <div className="text-right">
+              {profile.weight_kg} {t("measurements.weight")}
+            </div>
 
-            <div className="font-semibold">Height:</div>
-            <div className="text-right">{profile.height_cm} cm</div>
+            <div className="font-semibold">{t("profile.height_label")}</div>
+            <div className="text-right">
+              {profile.height_cm} {t("measurements.height")}
+            </div>
 
-            <div className="font-semibold">Sex:</div>
+            <div className="font-semibold">{t("profile.sex_label")}</div>
             <div className="text-right capitalize">{profile.sex}</div>
           </div>
           <button
             className="btn btn-primary w-full"
             onClick={() => navigate("/update-profile")}
           >
-            Update
+            {t("general.update")}
           </button>
         </>
       ) : (
         <div className="flex flex-col items-center space-y-4">
           <p className="text-gray-700 text-center">
-            No profile found. Get started:
+            {t("profile.no_profile_found")}
           </p>
           <button
             className="btn btn-primary w-full"
             onClick={() => navigate("/create-profile")}
           >
-            Create Profile
+            {t("general.create_profile")}
           </button>
         </div>
       )}

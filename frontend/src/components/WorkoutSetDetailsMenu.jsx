@@ -2,6 +2,7 @@ import api from "../api";
 import { MoveDownIcon, MoveUpIcon } from "../icons/MoveIcon";
 import { AddRowAboveIcon, AddRowBelowIcon } from "../icons/AddRowIcon";
 import DeleteIcon from "../icons/DeleteIcon";
+import { useTranslation } from "react-i18next";
 
 const WorkoutSetDetailsMenu = ({
   planID,
@@ -13,6 +14,7 @@ const WorkoutSetDetailsMenu = ({
   closeMenu,
   onError,
 }) => {
+  const { t } = useTranslation();
   const handleMoveUp = () => {
     if (set.index === 1) {
       console.error("Already at the top");
@@ -174,7 +176,7 @@ const WorkoutSetDetailsMenu = ({
   };
 
   const handleDeleteSet = () => {
-    if (confirm("Are you sure you want to delete this set?")) {
+    if (confirm(t("menus.confirm_delete_set"))) {
       api
         .delete(
           `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exercise.id}/workout-sets/${set.id}`
@@ -223,7 +225,7 @@ const WorkoutSetDetailsMenu = ({
       >
         <span className="flex items-center gap-2">
           <MoveUpIcon />
-          Move Up
+          {t("menus.move_up")}
         </span>
       </button>
       <button
@@ -243,7 +245,7 @@ const WorkoutSetDetailsMenu = ({
       >
         <span className="flex items-center gap-2">
           <MoveDownIcon />
-          Move Down
+          {t("menus.move_down")}
         </span>
       </button>
       <button
@@ -252,7 +254,7 @@ const WorkoutSetDetailsMenu = ({
       >
         <span className="flex items-center gap-2">
           <AddRowAboveIcon />
-          Add Set Above
+          {t("menus.add_set_above")}
         </span>
       </button>
       <button
@@ -261,7 +263,7 @@ const WorkoutSetDetailsMenu = ({
       >
         <span className="flex items-center gap-2">
           <AddRowBelowIcon />
-          Add Set Below
+          {t("menus.add_set_below")}
         </span>
       </button>
       <button
@@ -274,13 +276,13 @@ const WorkoutSetDetailsMenu = ({
         disabled={exercise.workout_sets.length === 1}
         title={
           exercise.workout_sets.length === 1
-            ? "Cannot delete the last set of an exercise"
-            : "Delete this set"
+            ? t("menus.cannot_delete_only_set")
+            : t("menus.delete_this_set")
         }
       >
         <span className="flex items-center gap-2">
           <DeleteIcon />
-          Delete Set
+          {t("menus.delete_set")}
         </span>
       </button>
     </div>

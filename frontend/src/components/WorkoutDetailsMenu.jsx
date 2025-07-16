@@ -2,6 +2,7 @@ import api from "../api";
 import { useNavigate } from "react-router-dom";
 import UpdateIcon from "../icons/UpdateIcon";
 import DeleteIcon from "../icons/DeleteIcon";
+import { useTranslation } from "react-i18next";
 
 const WorkoutDetailsMenu = ({
   closeMenu,
@@ -12,6 +13,7 @@ const WorkoutDetailsMenu = ({
   onDeleteWorkout,
   onError,
 }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const handleUpdateWorkout = () => {
     navigate(
@@ -23,7 +25,9 @@ const WorkoutDetailsMenu = ({
   const handleDeleteWorkout = () => {
     if (
       !window.confirm(
-        `Are you sure you want to delete workout "${workout.name}"? This action cannot be undone.`
+        t("menus.confirm_delete_workout", {
+          workoutName: workout.name,
+        })
       )
     ) {
       return;
@@ -53,7 +57,7 @@ const WorkoutDetailsMenu = ({
       >
         <span className="flex items-center gap-2">
           <UpdateIcon />
-          Update Workout
+          {t("menus.update_workout")}
         </span>
       </button>
       <button
@@ -63,7 +67,7 @@ const WorkoutDetailsMenu = ({
       >
         <span className="flex items-center gap-2">
           <DeleteIcon />
-          Delete Workout
+          {t("menus.delete_workout")}
         </span>
       </button>
     </div>
