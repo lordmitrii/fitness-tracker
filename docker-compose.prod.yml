@@ -1,6 +1,6 @@
 services:
   backend:
-    container_name: ft-backend-prod 
+    container_name: ft-backend-prod
     image: lordmitrii/ft-backend-prod:latest
     restart: unless-stopped
     env_file:
@@ -15,6 +15,7 @@ services:
     restart: unless-stopped
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro
+      - certbot-www:/var/www/certbot
     ports:
       - "80:80"
       - "443:443"
@@ -26,16 +27,16 @@ services:
     image: postgres:16
     restart: unless-stopped
     env_file:
-    - .env.prod
+      - .env.prod
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL","pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-# TODO: remove this in the future once I make admin panel
+  # TODO: remove this in the future once I make admin panel
   pgadmin:
     container_name: ft-pgadmin-prod
     image: dpage/pgadmin4
@@ -47,6 +48,16 @@ services:
     depends_on:
       - db
 
-volumes:
-  db-data:       
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-www:/var/www/certbot
+      - /var/run/docker.sock:/var/run/docker.sock
+    entrypoint: /bin/sh
+    command: -c "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet --deploy-hook 'docker exec ft-frontend-prod nginx -s reload'; sleep 12h & wait $${!}; done"
 
+volumes:
+  db-data:
+  certbot-etc:
+  certbot-www:
