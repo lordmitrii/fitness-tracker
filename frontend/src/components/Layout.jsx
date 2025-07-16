@@ -82,7 +82,6 @@ const Layout = ({ children }) => {
             Fitness Tracker
           </Link>
 
-          {/* <LanguageSwitcher /> */}
           {/* Hamburger */}
           <button
             className="sm:hidden flex items-center justify-center p-2 rounded-lg hover:bg-gray-100 transition group"
@@ -194,6 +193,7 @@ const Layout = ({ children }) => {
             {t("layout.all_rights_reserved")}
           </div>
           <div className="flex items-center space-x-4 text-lg">
+            <LanguageSwitcher />
             <a
               href="https://github.com/lordmitrii"
               target="_blank"

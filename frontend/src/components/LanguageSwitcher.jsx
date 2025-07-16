@@ -1,23 +1,92 @@
+import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import ChevronIcon from "../icons/ChevronIcon";
+
+const languages = [
+  { code: "en", label: "EN" },
+  { code: "ru", label: "RU" },
+  { code: "zh", label: "中文" },
+];
 
 const LanguageSwitcher = () => {
   const { i18n } = useTranslation();
-  const languages = [
-    { code: "en", label: "EN" },
-    { code: "ru", label: "RU" },
-    { code: "zh", label: "中文" },
-  ];
+  const [open, setOpen] = useState(false);
+  const btnRef = useRef(null);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = (e) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target) &&
+        btnRef.current &&
+        !btnRef.current.contains(e.target)
+      ) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", handleClick);
+    return () => document.removeEventListener("pointerdown", handleClick);
+  }, [open]);
+
+  const currentLang =
+    languages.find((l) => l.code === i18n.language) || languages[0];
+
   return (
-    <div className="flex space-x-2">
-      {languages.map((l) => (
-        <button
-          key={l.code}
-          onClick={() => i18n.changeLanguage(l.code)}
-          className={i18n.language === l.code ? "font-bold" : "font-normal"}
+    <div className="relative">
+      <button
+        ref={btnRef}
+        onClick={() => setOpen((v) => !v)}
+        className="
+          flex items-center justify-between gap-2
+          w-20 px-4 py-2 rounded-lg border border-white/30
+          bg-white/90 text-blue-600 font-semibold
+          shadow-sm hover:border-blue-300
+          transition text-base
+          focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200
+        "
+        type="button"
+      >
+        <span>{currentLang.label}</span>
+        <ChevronIcon direction={open ? "up" : "down"} />
+      </button>
+      {open && (
+        <ul
+          ref={dropdownRef}
+          tabIndex={-1}
+          className="
+            absolute right-0 bottom-full mt-1 w-20 z-50
+            bg-white/95 text-blue-600 border border-blue-200
+            rounded-lg shadow-lg space-y-1 p-1
+          "
+          role="listbox"
         >
-          {l.label}
-        </button>
-      ))}
+          {languages.map((l) => (
+            <li key={l.code}>
+              <button
+                className={`w-full px-2 py-2 text-left text-base rounded-lg transition
+                  ${
+                    i18n.language === l.code
+                      ? "bg-blue-100 text-blue-800 font-bold"
+                      : "hover:bg-blue-50 text-blue-900"
+                  }
+                `}
+                onClick={() => {
+                  i18n.changeLanguage(l.code);
+                  setOpen(false);
+                }}
+                role="option"
+                aria-selected={i18n.language === l.code}
+                tabIndex={0}
+                type="button"
+              >
+                {l.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };

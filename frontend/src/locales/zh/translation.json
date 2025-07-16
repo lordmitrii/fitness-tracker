@@ -1,3 +1,245 @@
 {
-  "welcome_load": "欢迎访问 FTracker!"
+  "general": {
+    "back_home": "返回主页",
+    "back": "返回",
+    "create": "创建",
+    "update": "更新",
+    "replace": "替换",
+    "edit": "编辑",
+    "add": "添加",
+    "delete": "删除",
+    "continue": "继续",
+    "cancel": "取消",
+    "create_profile": "创建资料",
+    "login": "登录",
+    "register": "注册",
+    "logout": "退出登录",
+    "home": "主页",
+    "workout_plans": "锻炼",
+    "stats": "统计",
+    "profile": "个人资料",
+    "n_a": "无",
+    "active": "活跃",
+    "contact_support": "联系客服",
+    "loading": "加载中...",
+    "email": "电子邮件",
+    "password": "密码",
+    "name": "姓名",
+    "day": "天",
+    "to": "至",
+    "last_updated": "最后更新：",
+    "completed": "已完成",
+    "yes": "是",
+    "no": "否"
+  },
+  "measurements": {
+    "weight": "公斤",
+    "height": "厘米",
+    "reps": "次",
+    "set": "组",
+    "sets": "组"
+  },
+  "errors": {
+    "network_error": "网络错误。请检查服务器状态。",
+    "registration_error": "注册失败。请重试。",
+    "login_error": "登录失败。请检查您的信息。",
+    "logout_error": "退出失败。请重试。"
+  },
+  "global_loading": {
+    "welcome": "欢迎来到 FTracker！",
+    "loading_message": "正在加载，请稍候"
+  },
+  "home": {
+    "welcome_back": "欢迎回来！",
+    "welcome": "欢迎使用 Fitness Tracker",
+    "logged_in": "您已登录！",
+    "please_login_or_register": "请登录或注册以开始使用。",
+    "no_purpose_yet": "此页面暂无内容",
+    "install_app": "安装应用",
+    "loading_home_page": "正在加载主页..."
+  },
+  "layout": {
+    "all_rights_reserved": "版权所有"
+  },
+  "network_banner": {
+    "you_are_offline": "您已离线。",
+    "you_are_online": "您已在线！"
+  },
+  "exercise_stats": {
+    "your_stats": "您的锻炼统计",
+    "current_best": "当前最佳成绩",
+    "no_stats": "暂无统计数据。",
+    "loading_stats": "正在加载您的统计数据...",
+    "start_logging": "开始记录锻炼以查看进展！"
+  },
+  "not_found": {
+    "page_not_found": "页面未找到",
+    "oops_message": "抱歉！您访问的页面不存在或已被移动。"
+  },
+  "profile": {
+    "loading_profile": "正在加载您的资料...",
+    "your_profile": "您的资料",
+    "age_label": "年龄：",
+    "weight_label": "体重：",
+    "height_label": "身高：",
+    "sex_label": "性别：",
+    "no_profile_found": "未找到资料。请开始："
+  },
+  "workout_plans": {
+    "loading_plans": "正在加载您的计划...",
+    "workout_plans": "锻炼计划",
+    "no_plans_found": "未找到锻炼计划。请创建第一个计划！",
+    "create_new_plan": "创建锻炼计划"
+  },
+  "installation_guide": {
+    "installation_guide": "安装指南",
+    "steps_below": "iOS 和 Android 的步骤如下。",
+    "ios_steps": {
+      "1": "在 Safari 底部点击 <0>分享</0> <1/>",
+      "2": "选择 <0>添加到主屏幕</0> <1/>",
+      "3": "点击右上角的 <0>添加</0>"
+    },
+    "android_steps": {
+      "1": "打开 <0>Chrome</0>（或您的浏览器）",
+      "2": "点击右上角的 <0>菜单</0> <1/>",
+      "3": "选择 <0>添加到主屏幕</0> 或 <1>安装应用</1>",
+      "4": "点击 <0>添加</0>"
+    },
+    "success_message": "现在您会在主屏幕看到该应用！",
+    "need_help": "需要帮助？"
+  },
+  "workout_plan_single": {
+    "loading_workouts": "正在加载您的锻炼...",
+    "plan_label": "计划：",
+    "cycle_label": "周期：",
+    "view_previous_cycle": "查看上一个周期",
+    "view_next_cycle": "查看下一个周期",
+    "no_workouts_found": "本周期暂无锻炼。",
+    "create_workout": "创建锻炼",
+    "complete_cycle": "完成周期",
+    "confirm_complete": "您确定要完成此周期吗？有些锻炼未完成。",
+    "add_exercise": "添加练习",
+    "exercise_label": "练习",
+    "set_label": "组",
+    "weight_label": "重量",
+    "reps_label": "次数",
+    "badge_label": "徽章",
+    "done_label": "已完成",
+    "please_check_fields": "请确保所有字段都有效后再标记为完成。",
+    "set_completed": "组已完成"
+  },
+  "error_state": {
+    "oops_message": "抱歉！发生了错误",
+    "try_again": "重试",
+    "unknown_error": "发生未知错误。"
+  },
+  "workout_form": {
+    "workout_name_label": "锻炼名称",
+    "workout_name_placeholder": "输入锻炼名称",
+    "workout_name_required": "锻炼名称为必填项。",
+    "loading_workout": "正在加载锻炼...",
+    "create_workout": "创建锻炼",
+    "update_workout": "更新锻炼"
+  },
+  "update_workout_plan_form": {
+    "loading_workout_plan": "正在加载锻炼计划...",
+    "update_workout_plan": "更新锻炼计划",
+    "plan_name_label": "计划名称",
+    "plan_name_placeholder": "输入计划名称",
+    "plan_name_required": "计划名称为必填项。"
+  },
+  "register_form": {
+    "register_title": "注册",
+    "password_min_length": "密码至少需要 8 个字符。",
+    "password_placeholder": "创建密码",
+    "already_have_account": "已有账号？"
+  },
+  "login_form": {
+    "login_title": "登录",
+    "password_placeholder": "请输入密码",
+    "not_registered": "还没有注册？"
+  },
+  "profile_form": {
+    "create_profile": "创建资料",
+    "update_profile": "更新资料",
+    "loading_profile": "正在加载您的资料...",
+    "age_label": "年龄",
+    "age_placeholder": "您的年龄",
+    "age_required": "年龄为必填项。",
+    "age_must_be_number": "年龄必须是数字。",
+    "weight_label": "体重",
+    "weight_placeholder": "体重单位",
+    "weight_required": "体重为必填项。",
+    "weight_must_be_number": "体重必须是数字。",
+    "height_label": "身高",
+    "height_placeholder": "身高单位",
+    "height_required": "身高为必填项。",
+    "height_must_be_number": "身高必须是数字。",
+    "sex_label": "性别",
+    "sex_required": "请选择性别。",
+    "sex_male": "男",
+    "sex_female": "女"
+  },
+  "add_workout_plan_form": {
+    "create_workout_plan": "创建锻炼计划",
+    "clear_draft": "清除草稿",
+    "plan_name_label": "计划名称",
+    "plan_name_placeholder": "例如：上下分、全身等",
+    "plan_name_required": "计划名称为必填项。",
+    "days_per_cycle_label": "每周期天数",
+    "days_per_cycle_tooltip": "您可以将周期视为一周。",
+    "step_of": "第 {{step}} 步，共 {{total}} 步",
+    "preview_title": "预览您的计划",
+    "days_per_cycle_value": "每周期天数",
+    "no_exercises": "暂无练习",
+    "add_exercises": "添加练习",
+    "skip_to_preview": "跳过到预览",
+    "exercise_list_title": "练习列表",
+    "no_exercises_yet": "还未添加练习",
+    "add_exercise_button": "添加练习",
+    "go_to_next_day": "前往下一天",
+    "skip_to_preview_confirm": "您确定要跳到预览吗？您之后可以添加练习。"
+  },
+  "add_workout_exercise_modal": {
+    "exercise_title": "练习",
+    "select_muscle_group": "选择肌肉群",
+    "all_muscle_groups": "所有肌肉群",
+    "select_exercise": "选择练习",
+    "exercise_name_placeholder": "练习名称",
+    "create_custom_exercise": "创建自定义练习",
+    "select_from_exercise_pool": "从练习库选择",
+    "custom_suffix": "（自定义）"
+  },
+  "days_per_cycle_selector": {
+    "more": "更多"
+  },
+  "private_route": {
+    "checking_auth": "正在验证身份..."
+  },
+  "menus": {
+    "delete_cycle": "删除周期",
+    "delete_workout": "删除锻炼",
+    "delete_workout_plan": "删除计划",
+    "delete_set": "删除组",
+    "delete_exercise": "删除练习",
+    "update_exercise": "更新练习",
+    "update_workout": "更新锻炼",
+    "update_workout_plan": "更新计划",
+    "replace_exercise": "替换练习",
+    "add_set_below": "下方添加组",
+    "add_set_above": "上方添加组",
+    "move_up": "上移",
+    "move_down": "下移",
+    "plan_already_active": "该计划已激活。",
+    "activate_plan": "激活计划",
+    "confirm_delete_cycle": "确定删除周期 {{cycleName}}？此操作无法撤销。",
+    "confirm_delete_workout": "确定删除锻炼 {{workoutName}}？此操作无法撤销。",
+    "confirm_delete_workout_plan": "确定删除计划 {{planName}}？此操作无法撤销。",
+    "confirm_delete_set": "确定删除此组？此操作无法撤销。",
+    "confirm_delete_exercise": "确定删除此练习？此操作无法撤销。",
+    "cannot_delete_first_cycle": "不能删除计划中的第一个周期。",
+    "delete_this_cycle": "删除此锻炼周期",
+    "cannot_delete_only_set": "不能删除该练习的唯一组",
+    "delete_this_set": "删除此组"
+  }
 }
