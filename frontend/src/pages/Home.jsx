@@ -27,13 +27,13 @@ const Home = () => {
 
   return (
     <div className="card flex flex-col items-center">
-      <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-8 text-center">
+      <h1 className="text-title mb-8 text-center">
         {isAuth ? t("home.welcome_back") : t("home.welcome")}
       </h1>
-      <p className="text-lg text-gray-700 mb-8 text-center">
+      <p className="text-body mb-8 text-center">
         {isAuth ? t("home.logged_in") : t("home.please_login_or_register")}
       </p>
-      <p className="text-sm text-gray-500 mb-6 text-center">
+      <p className="text-caption mb-6 text-center">
         {t("home.no_purpose_yet")}
       </p>
 

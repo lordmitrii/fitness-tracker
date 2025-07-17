@@ -209,7 +209,7 @@ const AddWorkoutExerciseModal = ({
               </div>
             )}
 
-            <h3 className="text-xl font-bold mb-4">
+            <h3 className="text-xl text-gray-800 font-bold mb-4">
               {!!buttonText ? buttonText : t("general.add")}{" "}
               {t("add_workout_exercise_modal.exercise_title")}{" "}
               {!exercise && `${t("general.to")} ${workoutName}`}

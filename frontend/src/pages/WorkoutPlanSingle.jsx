@@ -157,7 +157,7 @@ const WorkoutPlanSingle = () => {
       )}
       {workoutCycle && (
         <>
-          <div className="bg-white p-6 pt-14 sm:p-0 shadow-md sm:shadow-none">
+          <div className="sm:bg-transparent bg-white p-6 pt-14 sm:p-0 shadow-md sm:shadow-none">
             <div className="flex justify-between items-center mb-2">
               <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">
                 {t("workout_plan_single.plan_label")} {workoutPlanName}
@@ -224,7 +224,7 @@ const WorkoutPlanSingle = () => {
               </div>
             </div>
           </div>
-          <div className="bg-gray-200 sm:bg-gray-50">
+          <div className="bg-gray-200 sm:bg-transparent">
             {workouts && workouts.length > 0 ? (
               <div className="space-y-6 py-6 sm:py-0">
                 {workouts
@@ -257,7 +257,7 @@ const WorkoutPlanSingle = () => {
           </div>
 
           {!nextCycleID && workoutPlanActive && (
-            <div className="flex justify-center sm:justify-start items-center gap-4 mt-0 sm:mt-6 py-6 sm:py-0 bg-white">
+            <div className="flex justify-center sm:justify-start items-center gap-4 mt-0 sm:mt-6 py-6 sm:py-0 bg-white sm:bg-transparent">
               <button
                 className="btn btn-primary"
                 onClick={() =>

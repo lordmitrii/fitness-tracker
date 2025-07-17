@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import ChevronIcon from "../icons/ChevronIcon";
+import LanguageIcon from "../icons/LanguageIcon";
 
 const languages = [
   { code: "en", label: "EN" },
@@ -38,25 +39,28 @@ const LanguageSwitcher = () => {
       <button
         ref={btnRef}
         onClick={() => setOpen((v) => !v)}
-        className="
-          flex items-center justify-between gap-2
-          w-20 px-4 py-2 rounded-lg border border-white/30
-          bg-white/90 text-blue-600 font-semibold
-          shadow-sm hover:border-blue-300
-          transition text-base
-          focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200
-        "
+        className="flex items-center"
+        // className="
+        //   flex items-center justify-between gap-1
+        //   w-20 px-2 py-2 rounded-lg border border-white/30
+        //   bg-white/90 text-blue-600 font-semibold
+        //   shadow-sm hover:border-blue-300
+        //   transition text-base
+        //   focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200
+        // "
         type="button"
       >
-        <span>{currentLang.label}</span>
-        <ChevronIcon direction={open ? "up" : "down"} />
+        <LanguageIcon />
+
+        {/* <span>{currentLang.label}</span> */}
+        {/* <ChevronIcon direction={open ? "up" : "down"} /> */}
       </button>
       {open && (
         <ul
           ref={dropdownRef}
           tabIndex={-1}
           className="
-            absolute right-0 bottom-full mt-1 w-20 z-50
+            absolute left-1/2 -translate-x-1/2 bottom-full mt-1 w-20 z-50
             bg-white/95 text-blue-600 border border-blue-200
             rounded-lg shadow-lg space-y-1 p-1
           "
