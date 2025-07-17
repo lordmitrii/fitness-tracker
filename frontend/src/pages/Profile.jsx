@@ -42,13 +42,13 @@ const Profile = () => {
 
   return (
     <div className="card">
-      <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-8 text-center">
+      <h1 className="text-title mb-8 text-center">
         {t("profile.your_profile")}
       </h1>
 
       {profile && profile.age ? (
         <>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-gray-700 mb-8">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-body mb-8">
             <div className="font-semibold">{t("profile.age_label")}</div>
             <div className="text-right">{profile.age}</div>
 
@@ -74,7 +74,7 @@ const Profile = () => {
         </>
       ) : (
         <div className="flex flex-col items-center space-y-4">
-          <p className="text-gray-700 text-center">
+          <p className="text-body text-center">
             {t("profile.no_profile_found")}
           </p>
           <button

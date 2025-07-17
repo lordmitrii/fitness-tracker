@@ -37,7 +37,7 @@ const ExerciseStats = () => {
 
   return (
     <div className="card">
-      <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-8 text-center">
+      <h1 className="text-title mb-8 text-center">
         {t("exercise_stats.your_stats")}
       </h1>
       {stats && stats.length > 0 ? (
@@ -45,18 +45,18 @@ const ExerciseStats = () => {
           {stats.map((exercise) => (
             <div
               key={exercise.id}
-              className="sm:grid sm:grid-cols-2 bg-gray-50 rounded-xl shadow p-6 items-center justify-between gap-4 hover:shadow-lg transition border border-gray-200 shadow-md"
+              className="sm:grid sm:grid-cols-2 rounded-xl shadow p-6 items-center justify-between gap-4 hover:shadow-lg transition border border-gray-200 shadow-md"
             >
               <div>
                 <div className="text-lg font-semibold text-blue-700">
                   {exercise.name}
                 </div>
-                <div className="text-sm text-gray-500 capitalize mb-2">
+                <div className="text-caption capitalize mb-2">
                   {exercise.muscle_group && `${exercise.muscle_group.name}`}
                 </div>
               </div>
               <div>
-                <div className="text-gray-600 text-sm mb-1">
+                <div className="text-caption font-semibold text-sm mb-1">
                   {t("exercise_stats.current_best")}
                 </div>
                 {exercise.current_reps && exercise.current_weight ? (
@@ -72,7 +72,7 @@ const ExerciseStats = () => {
           ))}
         </div>
       ) : (
-        <div className="text-gray-600 text-center py-8">
+        <div className="text-body text-center py-8">
           {t("exercise_stats.no_stats")}
           <br />
           {t("exercise_stats.start_logging")}

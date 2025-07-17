@@ -13,7 +13,7 @@ const InstallationGuide = () => {
       <h1 className="text-3xl sm:text-4xl font-extrabold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent mb-2 text-center">
         {t("installation_guide.installation_guide")}
       </h1>
-      <h2 className="text-lg text-gray-700 mb-10 text-center">
+      <h2 className="text-body mb-10 text-center">
         {t("installation_guide.steps_below")}
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
@@ -123,14 +123,14 @@ const InstallationGuide = () => {
           </ul>
         </div>
       </div>
-      <div className="text-xs text-gray-500 mt-3 text-center mt-8">
+      <div className="text-body text-center mt-8">
         {t("installation_guide.success_message")}
       </div>
       <div className="mt-12 flex flex-col items-center gap-2 w-full">
         <Link to="/" className="btn btn-primary">
           {t("general.back_home")}
         </Link>
-        <div className="text-gray-400 text-xs mt-3 text-center">
+        <div className="text-caption mt-3 text-center">
           {t("installation_guide.need_help")}{" "}
           <a
             href="mailto:dmitrii.lor@glasgow.ac.uk"

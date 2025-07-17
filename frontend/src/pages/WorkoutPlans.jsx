@@ -109,7 +109,7 @@ const WorkoutPlans = () => {
                         {workoutPlan.name}
                       </Link>
                       {workoutPlan.active && (
-                        <span className="flex items-center border border-green-500 text-green-600 bg-green-100 px-2 py-1 rounded-xl text-xs font-semibold ml-2 gap-2">
+                        <span className="flex items-center border border-green-500 text-green-400 bg-green-100 px-2 py-1 rounded-xl text-xs font-semibold ml-2 gap-2">
                           <FireIcon />
                           {t("general.active")}
                         </span>

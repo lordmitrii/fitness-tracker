@@ -5,6 +5,7 @@ import GitHubIcon from "../icons/GitHubIcon";
 import GlobalLoadingState from "../states/GlobalLoadingState";
 import NetworkStatusBanner from "./NetworkStatusBanner";
 import LanguageSwitcher from "./LanguageSwitcher";
+import ThemeSwitcher from "./ThemeSwitcher";
 import { useTranslation } from "react-i18next";
 
 const Layout = ({ children }) => {
@@ -69,7 +70,7 @@ const Layout = ({ children }) => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-white">
       <header
         ref={headerRef}
         className="backdrop-blur-xl bg-white shadow-md sticky top-0 z-80"
@@ -127,7 +128,7 @@ const Layout = ({ children }) => {
                   <Link
                     key={to}
                     to={to}
-                    className="hidden sm:inline-block font-semibold bg-gradient-to-r from-blue-500 to-indigo-400 text-white px-4 py-2 rounded-lg shadow hover:scale-105 transition"
+                    className="text-center font-semibold bg-gradient-to-r from-blue-500 to-indigo-400 text-white px-4 py-2 rounded-lg shadow hover:scale-105 transition"
                     onClick={() => setIsOpen(false)}
                   >
                     {label}
@@ -193,6 +194,7 @@ const Layout = ({ children }) => {
             {t("layout.all_rights_reserved")}
           </div>
           <div className="flex items-center space-x-4 text-lg">
+            <ThemeSwitcher />
             <LanguageSwitcher />
             <a
               href="https://github.com/lordmitrii"

@@ -9,6 +9,64 @@ html {
   overscroll-behavior: none;
 }
 
+.dark { 
+  --color-black: rgb(255, 255, 255);         
+  --color-white: rgb(75, 83, 101);      
+
+  --color-gray-50:  rgb(100, 109, 129); 
+  --color-gray-100: rgb(56, 61, 73);
+  --color-gray-200: rgb(68, 73, 86);
+  --color-gray-300: rgb(81, 87, 106);
+  --color-gray-400: rgb(95, 102, 121);
+  --color-gray-500: rgb(117, 126, 146);
+  --color-gray-600: rgb(152, 160, 179);
+  --color-gray-700: rgb(187, 192, 206);
+  --color-gray-800: rgb(227, 230, 238);   
+  --color-gray-900: rgb(255, 255, 255);   
+
+  --color-blue-50:  #273c5c;
+  --color-blue-100: #385780;
+  --color-blue-200: #4b6cb3;
+  --color-blue-300: #5a8bf7;
+  --color-blue-400: #68a7ff;
+  --color-blue-500: #7bc3ff;
+  --color-blue-600: #a4daff;
+  --color-blue-700: #c2edff;
+  --color-blue-800: #e1f6ff;
+  --color-blue-900: #f5fcff;
+  --color-sky-600: #309ccf;
+
+  /* Greens */
+  --color-green-50:  #1a3d2b;
+  --color-green-100: #2cb36d;
+  --color-green-200: #24613f;
+  --color-green-300: #2a7b4c;
+  --color-green-400: #2f8e59;
+  --color-green-500: #34a166;
+  --color-green-600: #3bbf7b; 
+  --color-green-700: #44d18f;
+  --color-green-800: #4de3a3;
+  --color-green-900: #56f5b7;
+}
+
+.dark input, .dark select {
+  @apply bg-gray-400 text-gray-800 placeholder-gray-600;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+.text-title {
+  @apply text-gray-800 text-3xl sm:text-4xl font-bold;
+}
+
+.text-body {
+  @apply text-lg text-gray-700;
+}
+
+.text-caption {
+  @apply text-sm text-gray-500;
+}
+
 .card {
   @apply max-w-3xl sm:mx-auto mx-3 bg-white rounded-2xl shadow-lg p-8 mt-6;
 }

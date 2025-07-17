@@ -209,11 +209,11 @@ const AddWorkoutExerciseModal = ({
               </div>
             )}
 
-            <h3 className="text-xl font-bold mb-4">
+            <h1 className="text-body font-semibold mb-4">
               {!!buttonText ? buttonText : t("general.add")}{" "}
               {t("add_workout_exercise_modal.exercise_title")}{" "}
               {!exercise && `${t("general.to")} ${workoutName}`}
-            </h3>
+            </h1>
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
               <select
                 className="border rounded p-2"

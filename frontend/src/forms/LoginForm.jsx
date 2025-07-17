@@ -24,7 +24,7 @@ const LoginForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="card flex flex-col gap-6">
-      <h1 className="text-3xl sm:text-4xl font-bold text-center mb-8 text-gray-800">
+      <h1 className="text-center mb-8 text-title">
         {t("login_form.login_title")}
       </h1>
       {error && (
@@ -34,14 +34,14 @@ const LoginForm = () => {
       )}
       <div>
         <label
-          className="block text-gray-700 font-semibold mb-1"
+          className="block text-body font-semibold mb-1"
           htmlFor="email"
         >
           {t("general.email")}
         </label>
         <input
           id="email"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition text-body"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -52,14 +52,14 @@ const LoginForm = () => {
       </div>
       <div>
         <label
-          className="block text-gray-700 font-semibold mb-1"
+          className="block text-body font-semibold mb-1"
           htmlFor="password"
         >
           {t("general.password")}
         </label>
         <input
           id="password"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition text-body"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -71,7 +71,7 @@ const LoginForm = () => {
       <button className="btn btn-primary w-full" type="submit">
         {t("general.login")}
       </button>
-      <div className="text-center text-sm text-gray-600 mt-2">
+      <div className="text-center text-caption mt-2">
         {t("login_form.not_registered")}{" "}
         <Link
           to="/register"

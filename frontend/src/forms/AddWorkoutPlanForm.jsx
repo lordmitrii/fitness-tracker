@@ -183,7 +183,7 @@ const AddWorkoutPlanForm = () => {
               maxLength={50}
               placeholder={t("add_workout_plan_form.plan_name_placeholder")}
               onChange={(e) => setPlanName(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
             <div className="text-right text-xs text-gray-400 mt-1">
               {planName.length}/50

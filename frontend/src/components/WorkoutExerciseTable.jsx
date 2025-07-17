@@ -74,7 +74,7 @@ const WorkoutExerciseTable = ({
   };
 
   return (
-    <div className="flex flex-col gap-6 sm:bg-gray-50 sm:p-4 rounded-lg shadow-md">
+    <div className="flex flex-col gap-6 sm:p-4 rounded-lg shadow-md">
       {exercises
         .slice()
         .sort((a, b) => a.index - b.index)
