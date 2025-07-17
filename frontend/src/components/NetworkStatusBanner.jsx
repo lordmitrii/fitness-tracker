@@ -7,9 +7,9 @@ const OfflineBanner = () => {
   return (
     <div className="fixed inset-x-0 bottom-5 z-[9999] flex items-center justify-center mx-auto w-95 px-5 py-3 rounded-2xl shadow-lg btn-danger animate-slide-up gap-1">
       <OfflineStatusIcon />
-      <span className="font-semibold text-white">
+      <div className="font-semibold text-white">
         {t("network_banner.you_are_offline")}
-      </span>
+      </div>
     </div>
   );
 };
@@ -19,9 +19,9 @@ const OnlineBanner = () => {
   return (
     <div className="fixed inset-x-0 bottom-5 z-[9999] flex items-center justify-center mx-auto w-95 px-5 py-3 rounded-2xl shadow-lg btn-success animate-slide-down gap-1">
       <OnlineStatusIcon />
-      <span className="font-semibold text-white">
+      <div className="font-semibold text-white">
         {t("network_banner.you_are_online")}
-      </span>
+      </div>
     </div>
   );
 };

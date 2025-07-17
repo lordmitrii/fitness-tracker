@@ -49,14 +49,9 @@ html {
   --color-green-900: #56f5b7;
 }
 
-.dark input, select  {
+.dark input, .dark select {
   @apply bg-gray-400 text-gray-800 placeholder-gray-600;
 }
-
-.dark span {
-  @apply text-gray-800;
-}
-
 
 @custom-variant dark (&:where(.dark, .dark *));
 
