@@ -85,9 +85,9 @@ const WorkoutExerciseTable = ({
           >
             {/* Exercise header */}
             <div className="flex flex-row items-start sm:items-center justify-between gap-1">
-              <div className="font-bold text-lg text-blue-700">
+              <div className="font-medium text-body-blue">
                 {ex.index}. {ex.individual_exercise.name}
-                <span className="ml-2 text-gray-600 text-base font-normal">
+                <span className="ml-2 text-caption font-bold">
                   {ex.individual_exercise.muscle_group &&
                     `(${ex.individual_exercise.muscle_group.name})`}
                 </span>
@@ -155,7 +155,7 @@ const WorkoutExerciseTable = ({
                           />
                         )}
                       />
-                      <div className="hidden sm:block font-medium text-gray-700">
+                      <div className="hidden sm:block font-bold text-gray-600">
                         {set.index}
                       </div>
                       <input
@@ -185,7 +185,7 @@ const WorkoutExerciseTable = ({
                             )
                           );
                         }}
-                        className={`w-full border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:italic ${
+                        className={`input-style placeholder:italic ${
                           set.completed || !isCurrentCycle
                             ? "opacity-50 cursor-not-allowed"
                             : ""
@@ -219,14 +219,14 @@ const WorkoutExerciseTable = ({
                             )
                           );
                         }}
-                        className={`w-full border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:italic ${
+                        className={`input-style placeholder:italic ${
                           set.completed || !isCurrentCycle
                             ? "opacity-50 cursor-not-allowed"
                             : ""
                         }`}
                         disabled={!isCurrentCycle}
                       />
-                      <span className="text-gray-500 text-sm w-5 justify-self-center">
+                      <span className="text-gray-600 w-5 justify-self-center">
                         {getExerciseProgressBadge(set)}
                       </span>
                       <div className="flex justify-center">
@@ -249,7 +249,7 @@ const WorkoutExerciseTable = ({
                               checked
                             );
                           }}
-                          className="form-checkbox accent-blue-600 h-5 w-5"
+                          className="accent-blue-600 h-5 w-5 text-white"
                           title={t("workout_plan_single.set_completed")}
                           disabled={!isCurrentCycle}
                         />

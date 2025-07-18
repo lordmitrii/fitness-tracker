@@ -10,7 +10,7 @@ const NotFound = () => {
       <div className="flex w-16 h-16 text-yellow-400 mb-4 justify-center items-center rounded-full bg-yellow-100">
         <WarningIcon />
       </div>
-      <h1 className="text-title mb-2">404</h1>
+      <h1 className="text-title font-bold mb-2">404</h1>
       <p className="text-body font-semibold mb-2">
         {t("not_found.page_not_found")}
       </p>

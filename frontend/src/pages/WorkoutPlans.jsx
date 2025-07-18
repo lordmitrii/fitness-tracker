@@ -73,7 +73,7 @@ const WorkoutPlans = () => {
   return (
     <div className="card">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">
+        <h1 className="text-title font-bold">
           {t("workout_plans.workout_plans")}
         </h1>
         {workoutPlans.length > 0 && (
@@ -103,13 +103,13 @@ const WorkoutPlans = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center justify-center gap-2">
                       <Link
-                        className="text-xl font-semibold text-blue-700 hover:underline"
+                        className="text-body-blue font-semibold hover:underline"
                         to={`/workout-plans/${workoutPlan.id}/workout-cycles/${workoutPlan.current_cycle_id}`}
                       >
                         {workoutPlan.name}
                       </Link>
                       {workoutPlan.active && (
-                        <span className="flex items-center border border-green-500 text-green-400 bg-green-100 px-2 py-1 rounded-xl text-xs font-semibold ml-2 gap-2">
+                        <span className="flex items-center border border-green-500 text-green-400 bg-green-100 px-2 py-1 rounded-xl text-sm font-semibold ml-2 gap-2">
                           <FireIcon />
                           {t("general.active")}
                         </span>
@@ -127,7 +127,7 @@ const WorkoutPlans = () => {
                     />
                   </div>
 
-                  <div className="text-sm text-gray-500 mt-1">
+                  <div className="text-caption mt-1">
                     {t("general.last_updated")}{" "}
                     {new Date(workoutPlan.updated_at).toLocaleDateString()}
                   </div>
@@ -137,7 +137,7 @@ const WorkoutPlans = () => {
         </ul>
       ) : (
         <div className="bg-white rounded-2xl shadow p-8 flex flex-col items-center mt-8">
-          <p className="text-gray-700 mb-6 text-lg">
+          <p className="text-body mb-6">
             {t("workout_plans.no_plans_found")}
           </p>
           <button
@@ -154,7 +154,6 @@ const WorkoutPlans = () => {
         <button
           className="btn btn-primary border inset-shadow-xs fixed bottom-5 right-5 z-20 sm:hidden"
           onClick={() => navigate("/create-workout-plan")}
-          aria-label="Create workout plan"
         >
           + {t("workout_plans.create_new_plan")}
         </button>

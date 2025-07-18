@@ -11,10 +11,10 @@ const LoadingState = ({ message, subtitle }) => {
           <SpinnerIcon />
         </span>
       </div>
-      <h2 className="text-2xl font-bold text-blue-700 mb-2 text-center">
+      <h1 className="text-title-blue-gradient font-bold mb-2 text-center">
         {!!message ? message : t("general.loading")}
-      </h2>
-      {subtitle && <p className="text-gray-600 mb-1 text-center">{subtitle}</p>}
+      </h1>
+      {subtitle && <p className="text-caption mb-1 text-center">{subtitle}</p>}
     </div>
   );
 };

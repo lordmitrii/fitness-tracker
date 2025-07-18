@@ -1,7 +1,7 @@
 import WorkoutExerciseTable from "./WorkoutExerciseTable";
 import DropdownMenu from "./DropdownMenu";
 import WorkoutDetailsMenu from "./WorkoutDetailsMenu";
-import AddWorkoutExerciseModal from "./AddWorkoutExerciseModal";
+import AddWorkoutExerciseModal from "../forms/AddWorkoutExerciseModal";
 import { useTranslation } from "react-i18next";
 
 const WorkoutCard = ({
@@ -18,7 +18,7 @@ const WorkoutCard = ({
     <div className="sm:rounded-2xl shadow-lg bg-white sm:border sm:border-gray-200 p-6 sm:hover:shadow-lg transition flex flex-col gap-3">
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-blue-800">
+          <h1 className="text-body-blue font-extrabold">
             {workout.name}
           </h1>
           <DropdownMenu
@@ -37,7 +37,7 @@ const WorkoutCard = ({
             )}
           />
         </div>
-        <div className="text-gray-400 text-sm mt-1">
+        <div className="text-caption mt-1">
           {t("general.last_updated")}{" "}
           {new Date(workout.updated_at).toLocaleDateString()}
           <br />

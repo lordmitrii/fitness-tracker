@@ -61,7 +61,7 @@ const LanguageSwitcher = () => {
           tabIndex={-1}
           className="
             absolute left-1/2 -translate-x-1/2 bottom-full mt-1 w-20 z-50
-            bg-white text-blue-600 border border-blue-200
+            bg-white border border-blue-200
             rounded-lg shadow-lg space-y-1 p-1
           "
           role="listbox"
@@ -69,10 +69,10 @@ const LanguageSwitcher = () => {
           {languages.map((l) => (
             <li key={l.code}>
               <button
-                className={`w-full px-2 py-2 text-left text-base rounded-lg transition
+                className={`w-full px-2 py-2 text-left rounded-lg transition
                   ${
                     i18n.language === l.code
-                      ? "bg-blue-100 text-blue-800 font-bold"
+                      ? "bg-blue-100 text-body-blue font-bold"
                       : "hover:bg-blue-50 text-blue-900"
                   }
                 `}
@@ -81,7 +81,6 @@ const LanguageSwitcher = () => {
                   setOpen(false);
                 }}
                 role="option"
-                aria-selected={i18n.language === l.code}
                 tabIndex={0}
                 type="button"
               >

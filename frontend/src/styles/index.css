@@ -7,13 +7,14 @@ html {
   padding: 0;
   font-family: Arial, sans-serif;
   overscroll-behavior: none;
+  background-color: var(--color-white);
 }
 
-.dark { 
-  --color-black: rgb(255, 255, 255);         
-  --color-white: rgb(75, 83, 101);      
+.dark {
+  --color-black: rgb(255, 255, 255);
+  --color-white: rgb(75, 83, 101);
 
-  --color-gray-50:  rgb(100, 109, 129); 
+  --color-gray-50: rgb(100, 109, 129);
   --color-gray-100: rgb(56, 61, 73);
   --color-gray-200: rgb(68, 73, 86);
   --color-gray-300: rgb(81, 87, 106);
@@ -21,10 +22,10 @@ html {
   --color-gray-500: rgb(117, 126, 146);
   --color-gray-600: rgb(152, 160, 179);
   --color-gray-700: rgb(187, 192, 206);
-  --color-gray-800: rgb(227, 230, 238);   
-  --color-gray-900: rgb(255, 255, 255);   
+  --color-gray-800: rgb(227, 230, 238);
+  --color-gray-900: rgb(255, 255, 255);
 
-  --color-blue-50:  #273c5c;
+  --color-blue-50: #273c5c;
   --color-blue-100: #385780;
   --color-blue-200: #4b6cb3;
   --color-blue-300: #5a8bf7;
@@ -37,34 +38,63 @@ html {
   --color-sky-600: #309ccf;
 
   /* Greens */
-  --color-green-50:  #1a3d2b;
+  --color-green-50: #1a3d2b;
   --color-green-100: #2cb36d;
   --color-green-200: #24613f;
   --color-green-300: #2a7b4c;
   --color-green-400: #2f8e59;
   --color-green-500: #34a166;
-  --color-green-600: #3bbf7b; 
+  --color-green-600: #3bbf7b;
   --color-green-700: #44d18f;
   --color-green-800: #4de3a3;
   --color-green-900: #56f5b7;
 }
 
-.dark input, .dark select {
+.dark input,
+.dark select {
   @apply bg-gray-400 text-gray-800 placeholder-gray-600;
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 .text-title {
-  @apply text-gray-800 text-3xl sm:text-4xl font-bold;
+  @apply text-gray-800 text-2xl sm:text-4xl;
+}
+
+.text-title-blue-gradient {
+  @apply text-2xl sm:text-4xl bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent;
+}
+
+.text-title-red-gradient {
+  @apply text-2xl sm:text-4xl bg-gradient-to-r from-pink-400 to-red-400 bg-clip-text text-transparent;
 }
 
 .text-body {
   @apply text-lg text-gray-700;
 }
 
+.text-body-blue {
+  @apply text-lg text-blue-700;
+}
+
 .text-caption {
   @apply text-sm text-gray-500;
+}
+
+.text-caption-blue {
+  @apply text-sm text-blue-500;
+}
+
+.text-caption-red {
+  @apply text-sm text-red-500;
+}
+
+.container-error {
+  @apply bg-red-100 border border-red-200 text-red-700 text-center rounded py-2 px-3 mb-2 text-sm;
+}
+
+.input-style {
+  @apply w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition;
 }
 
 .card {

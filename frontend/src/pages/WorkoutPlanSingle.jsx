@@ -159,7 +159,7 @@ const WorkoutPlanSingle = () => {
         <>
           <div className="sm:bg-transparent bg-white p-6 pt-14 sm:p-0 shadow-md sm:shadow-none">
             <div className="flex justify-between items-center mb-2">
-              <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">
+              <h1 className="text-title font-bold">
                 {t("workout_plan_single.plan_label")} {workoutPlanName}
               </h1>
               <DropdownMenu
@@ -177,7 +177,7 @@ const WorkoutPlanSingle = () => {
                 )}
               />
             </div>
-            <h2 className="text-lg text-gray-600 mb-6">
+            <h2 className="text-body mb-6">
               {t("workout_plan_single.cycle_label")}{" "}
               <span className="font-semibold">{workoutCycle.name}</span>
             </h2>
@@ -249,7 +249,7 @@ const WorkoutPlanSingle = () => {
               </div>
             ) : (
               <div className="text-center py-6">
-                <p className="text-gray-600">
+                <p className="text-body">
                   {t("workout_plan_single.no_workouts_found")}
                 </p>
               </div>

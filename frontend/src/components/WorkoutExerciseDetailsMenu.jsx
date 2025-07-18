@@ -2,7 +2,7 @@ import api from "../api";
 import { MoveDownIcon, MoveUpIcon } from "../icons/MoveIcon";
 import ReplaceIcon from "../icons/ReplaceIcon";
 import DeleteIcon from "../icons/DeleteIcon";
-import AddWorkoutExerciseModal from "./AddWorkoutExerciseModal";
+import AddWorkoutExerciseModal from "../forms/AddWorkoutExerciseModal";
 import { useTranslation } from "react-i18next";
 
 const WorkoutExerciseDetailsMenu = ({

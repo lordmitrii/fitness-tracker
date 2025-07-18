@@ -24,11 +24,11 @@ const LoginForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="card flex flex-col gap-6">
-      <h1 className="text-center mb-8 text-title">
+      <h1 className="text-center mb-8 text-title font-bold">
         {t("login_form.login_title")}
       </h1>
       {error && (
-        <div className="bg-red-100 border border-red-200 text-red-700 text-center rounded py-2 px-3 mb-2 text-sm">
+        <div className="container-error">
           {error}
         </div>
       )}
@@ -41,7 +41,7 @@ const LoginForm = () => {
         </label>
         <input
           id="email"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition text-body"
+          className="input-style"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -59,7 +59,7 @@ const LoginForm = () => {
         </label>
         <input
           id="password"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition text-body"
+          className="input-style"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -75,7 +75,7 @@ const LoginForm = () => {
         {t("login_form.not_registered")}{" "}
         <Link
           to="/register"
-          className="text-blue-600 hover:underline font-semibold"
+          className="text-caption-blue hover:underline font-semibold"
         >
           {t("general.register")}
         </Link>

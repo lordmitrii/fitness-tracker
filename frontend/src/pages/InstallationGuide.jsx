@@ -10,7 +10,7 @@ const InstallationGuide = () => {
   const { t } = useTranslation();
   return (
     <div className="card flex flex-col items-center">
-      <h1 className="text-3xl sm:text-4xl font-extrabold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent mb-2 text-center">
+      <h1 className="text-title-blue-gradient font-bold mb-2 text-center">
         {t("installation_guide.installation_guide")}
       </h1>
       <h2 className="text-body mb-10 text-center">
@@ -21,11 +21,11 @@ const InstallationGuide = () => {
         <div className="flex flex-col items-center w-full">
           <div className="flex items-center gap-2 mb-4">
             <AppleIcon />
-            <span className="font-semibold text-lg text-blue-700">iOS</span>
+            <span className="font-semibold text-body-blue">iOS</span>
           </div>
           <ul className="flex flex-col gap-3 w-full">
             <li className="rounded-xl border border-blue-100 bg-white/70 px-4 py-3 shadow-sm flex items-start gap-2 hover:bg-blue-50/50 transition">
-              <span className="font-bold text-blue-500">1</span>
+              <span className="font-bold text-body-blue">1</span>
               <span>
                 <Trans
                   i18nKey="installation_guide.ios_steps.1"
@@ -39,7 +39,7 @@ const InstallationGuide = () => {
               </span>
             </li>
             <li className="rounded-xl border border-blue-100 bg-white/70 px-4 py-3 shadow-sm flex items-start gap-2 hover:bg-blue-50/50 transition">
-              <span className="font-bold text-blue-500">2</span>
+              <span className="font-bold text-body-blue">2</span>
               <span>
                 <Trans
                   i18nKey="installation_guide.ios_steps.2"
@@ -53,7 +53,7 @@ const InstallationGuide = () => {
               </span>
             </li>
             <li className="rounded-xl border border-blue-100 bg-white/70 px-4 py-3 shadow-sm flex items-start gap-2 hover:bg-blue-50/50 transition">
-              <span className="font-bold text-blue-500">3</span>
+              <span className="font-bold text-body-blue">3</span>
               <span>
                 <Trans
                   i18nKey="installation_guide.ios_steps.3"
@@ -69,11 +69,11 @@ const InstallationGuide = () => {
         <div className="flex flex-col items-center w-full">
           <div className="flex items-center gap-2 mb-4">
             <AndroidIcon />
-            <span className="font-semibold text-lg text-blue-700">Android</span>
+            <span className="font-semibold text-body-blue">Android</span>
           </div>
           <ul className="flex flex-col gap-3 w-full">
             <li className="rounded-xl border border-blue-100 bg-white/70 px-4 py-3 shadow-sm flex items-start gap-2 hover:bg-blue-50/50 transition">
-              <span className="font-bold text-blue-500">1</span>
+              <span className="font-bold text-body-blue">1</span>
               <span>
                 <Trans
                   i18nKey="installation_guide.android_steps.1"
@@ -84,21 +84,21 @@ const InstallationGuide = () => {
               </span>
             </li>
             <li className="rounded-xl border border-blue-100 bg-white/70 px-4 py-3 shadow-sm flex items-start gap-2 hover:bg-blue-50/50 transition">
-              <span className="font-bold text-blue-500">2</span>
+              <span className="font-bold text-body-blue">2</span>
               <span>
                 <Trans
                   i18nKey="installation_guide.android_steps.2"
                   components={[
                     <span className="font-semibold" />, // <0>
                     <span className="inline-block align-middle">
-                      <VerticalDots color="text-blue-500" />
+                      <VerticalDots color="text-body-blue" />
                     </span>, // <1>
                   ]}
                 />
               </span>
             </li>
             <li className="rounded-xl border border-blue-100 bg-white/70 px-4 py-3 shadow-sm flex items-start gap-2 hover:bg-blue-50/50 transition">
-              <span className="font-bold text-blue-500">3</span>
+              <span className="font-bold text-body-blue">3</span>
               <span>
                 <Trans
                   i18nKey="installation_guide.android_steps.3"
@@ -110,7 +110,7 @@ const InstallationGuide = () => {
               </span>
             </li>
             <li className="rounded-xl border border-blue-100 bg-white/70 px-4 py-3 shadow-sm flex items-start gap-2 hover:bg-blue-50/50 transition">
-              <span className="font-bold text-blue-500">4</span>
+              <span className="font-bold text-body-blue">4</span>
               <span>
                 <Trans
                   i18nKey="installation_guide.android_steps.4"

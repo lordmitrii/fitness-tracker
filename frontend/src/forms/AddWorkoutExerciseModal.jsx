@@ -216,7 +216,7 @@ const AddWorkoutExerciseModal = ({
             </h1>
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
               <select
-                className="border rounded p-2"
+                className="input-style"
                 value={muscleGroupID}
                 onChange={(e) => setMuscleGroupID(Number(e.target.value))}
                 required={makingCustomExercise}
@@ -234,7 +234,7 @@ const AddWorkoutExerciseModal = ({
               </select>
               {!makingCustomExercise ? (
                 <select
-                  className="border rounded p-2"
+                  className="input-style"
                   value={exerciseID}
                   onChange={(e) => setExerciseID(e.target.value)}
                   required
@@ -260,7 +260,7 @@ const AddWorkoutExerciseModal = ({
                 </select>
               ) : (
                 <input
-                  className="border rounded p-2"
+                  className="input-style"
                   type="text"
                   placeholder={t(
                     "add_workout_exercise_modal.exercise_name_placeholder"
@@ -271,7 +271,7 @@ const AddWorkoutExerciseModal = ({
                 />
               )}
               <input
-                className="border rounded p-2"
+                className="input-style"
                 type="number"
                 placeholder={
                   t("measurements.sets")[0].toUpperCase() +
@@ -285,7 +285,7 @@ const AddWorkoutExerciseModal = ({
               />
               <button
                 type="button"
-                className="text-blue-600 hover:underline mb-2"
+                className="text-caption-blue hover:underline mb-2"
                 onClick={() => setMakingCustomExercise(!makingCustomExercise)}
               >
                 {!makingCustomExercise

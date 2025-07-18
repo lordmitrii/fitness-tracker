@@ -21,7 +21,6 @@ const QuestionMarkTooltip = ({ text }) => {
         type="button"
         className="flex items-center justify-center w-6 h-6 rounded-lg bg-blue-100 text-blue-700 font-bold shadow-sm hover:bg-blue-200 transition outline-none"
         onClick={() => setOpen(true)}
-        aria-label="Show info"
       >
         ?
       </button>
@@ -38,7 +37,7 @@ const QuestionMarkTooltip = ({ text }) => {
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="text-gray-600 hover:text-gray-900 transition"
+                className="text-gray-700 hover:text-gray-900 transition"
               >
                 <CloseIcon />
               </button>

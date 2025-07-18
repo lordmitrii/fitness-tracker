@@ -21,6 +21,7 @@ const Layout = ({ children }) => {
     }
     return true;
   });
+  
 
   const navLinks = [
     { to: "/", label: t("general.home"), auth: null },
@@ -78,7 +79,7 @@ const Layout = ({ children }) => {
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
           <Link
             to="/"
-            className="text-2xl font-bold tracking-tight bg-gradient-to-r from-sky-600 via-blue-500 to-blue-700 bg-clip-text text-transparent"
+            className="text-title-blue-gradient tracking-tight font-bold via-blue-500"
           >
             Fitness Tracker
           </Link>
@@ -87,7 +88,6 @@ const Layout = ({ children }) => {
           <button
             className="sm:hidden flex items-center justify-center p-2 rounded-lg hover:bg-gray-100 transition group"
             onClick={() => setIsOpen((open) => !open)}
-            aria-label="Open main menu"
           >
             <div className="relative w-6 h-6">
               <span
@@ -140,7 +140,7 @@ const Layout = ({ children }) => {
                     className={`font-semibold px-3 py-2 rounded-lg ${
                       isActive(to)
                         ? "text-blue-700 bg-blue-100"
-                        : "text-gray-700 hover:bg-blue-50"
+                        : "text-gray-700 hover:bg-blue-100"
                     } transition`}
                     onClick={() => setIsOpen(false)}
                   >
@@ -201,14 +201,12 @@ const Layout = ({ children }) => {
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-blue-300 transition"
-              aria-label="GitHub"
             >
               <GitHubIcon />
             </a>
             <a
               href="mailto:dmitrii.lor@glasgow.ac.uk"
               className="hover:text-blue-300 transition text-base"
-              aria-label="Contact Support"
             >
               {t("general.contact_support")}
             </a>
