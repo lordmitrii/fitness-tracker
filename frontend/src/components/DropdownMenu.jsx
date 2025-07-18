@@ -78,7 +78,7 @@ const DropdownMenu = ({
     <>
       <button
         ref={buttonRef}
-        className={`p-2 rounded-full transition cursor-pointer text-gray-600 hover:text-gray-900 ${
+        className={`p-2 rounded-full transition cursor-pointer text-gray-700 hover:text-gray-900 ${
           dotsHidden ? "invisible" : ""
         }`}
         onClick={handleOpen}
@@ -102,9 +102,8 @@ const DropdownMenu = ({
           >
             <div className={`flex ${isLeft ? "justify-start" : "justify-end"}`}>
               <button
-                className="text-gray-600 hover:text-gray-900 transition"
+                className="text-gray-700 hover:text-gray-900 transition"
                 onClick={() => setOpen(false)}
-                aria-label="Close"
               >
                 <CloseIcon />
               </button>

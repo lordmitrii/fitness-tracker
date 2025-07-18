@@ -27,7 +27,7 @@ const Home = () => {
 
   return (
     <div className="card flex flex-col items-center">
-      <h1 className="text-title mb-8 text-center">
+      <h1 className="text-title font-bold mb-8 text-center">
         {isAuth ? t("home.welcome_back") : t("home.welcome")}
       </h1>
       <p className="text-body mb-8 text-center">

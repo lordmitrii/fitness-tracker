@@ -27,8 +27,6 @@ const DaysPerCycleSelector = ({ value, onChange }) => {
 
   const handleInputChange = (e) => {
     let val = Number(e.target.value);
-
-    if (val < 1) val = 1;
     if (val > MAX_CUSTOM_DAYS) val = MAX_CUSTOM_DAYS;
 
     setCustomValue(val);
@@ -42,10 +40,10 @@ const DaysPerCycleSelector = ({ value, onChange }) => {
           <button
             key={i}
             type="button"
-            className={`px-3 sm:px-6 py-2 rounded-xl text-base font-medium transition ${
+            className={`px-3 sm:px-6 py-2 rounded-xl font-medium transition ${
               value === i + 1
                 ? "bg-blue-600 text-white shadow-md scale-105"
-                : "bg-white text-gray-700 hover:bg-blue-100"
+                : "bg-white text-body hover:bg-blue-100"
             }`}
             onClick={() => {
               onChange(i + 1);
@@ -57,10 +55,10 @@ const DaysPerCycleSelector = ({ value, onChange }) => {
         ))}
         <button
           type="button"
-          className={`px-4 py-2 rounded-xl text-base font-medium transition shadow-lg ${
+          className={`px-4 py-2 rounded-xl font-medium transition shadow-lg ${
             value > MAX_STANDARD_DAYS
               ? "bg-blue-600 text-white shadow-md scale-105"
-              : "bg-white text-gray-700 hover:bg-blue-100"
+              : "bg-white text-body hover:bg-blue-100"
           }`}
           onClick={handleMoreClick}
         >
@@ -69,14 +67,17 @@ const DaysPerCycleSelector = ({ value, onChange }) => {
       </div>
       {showCustomInput && (
         <div className="flex items-center gap-2 mt-3 justify-center">
-          <input
-            type="number"
-            min={1}
-            max={MAX_CUSTOM_DAYS}
-            value={customValue}
-            onChange={handleInputChange}
-            className="w-20 px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 text-center"
-          />
+          <div className="w-20">
+            <input
+              type="number"
+              min={1}
+              max={MAX_CUSTOM_DAYS}
+              value={customValue}
+              onChange={handleInputChange}
+              inputMode="numeric"
+              className="input-style text-center"
+            />
+          </div>
           <button
             type="button"
             className="btn btn-secondary"

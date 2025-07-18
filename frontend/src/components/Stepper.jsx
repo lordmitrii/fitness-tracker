@@ -9,7 +9,6 @@ const Stepper = ({ step, total, onStepClick }) => (
           key={i}
           type="button"
           className={"h-6 w-full mx-1"}
-          aria-label={`Go to step ${stepNumber}`}
           onClick={() => onStepClick && onStepClick(stepNumber)}
         >
           <div

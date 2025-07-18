@@ -37,7 +37,7 @@ const ExerciseStats = () => {
 
   return (
     <div className="card">
-      <h1 className="text-title mb-8 text-center">
+      <h1 className="text-title font-bold mb-8 text-center">
         {t("exercise_stats.your_stats")}
       </h1>
       {stats && stats.length > 0 ? (
@@ -48,7 +48,7 @@ const ExerciseStats = () => {
               className="sm:grid sm:grid-cols-2 rounded-xl shadow p-6 items-center justify-between gap-4 hover:shadow-lg transition border border-gray-200 shadow-md"
             >
               <div>
-                <div className="text-lg font-semibold text-blue-700">
+                <div className="text-body-blue font-semibold">
                   {exercise.name}
                 </div>
                 <div className="text-caption capitalize mb-2">
@@ -56,16 +56,16 @@ const ExerciseStats = () => {
                 </div>
               </div>
               <div>
-                <div className="text-caption font-semibold text-sm mb-1">
+                <div className="text-caption font-semibold mb-1">
                   {t("exercise_stats.current_best")}
                 </div>
                 {exercise.current_reps && exercise.current_weight ? (
-                  <div className="inline-block rounded-lg bg-blue-100 text-blue-800 px-4 py-2 text-base font-semibold">
+                  <div className="inline-block rounded-lg bg-blue-100 text-body-blue px-4 py-2 font-semibold">
                     {exercise.current_weight} {t("measurements.weight")} x{" "}
                     {exercise.current_reps} {t("measurements.reps")}
                   </div>
                 ) : (
-                  <div className="text-gray-400 italic">{t("general.n_a")}</div>
+                  <div className="text-caption italic">{t("general.n_a")}</div>
                 )}
               </div>
             </div>

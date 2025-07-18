@@ -42,7 +42,7 @@ const Profile = () => {
 
   return (
     <div className="card">
-      <h1 className="text-title mb-8 text-center">
+      <h1 className="text-title font-bold mb-8 text-center">
         {t("profile.your_profile")}
       </h1>
 

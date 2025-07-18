@@ -58,40 +58,42 @@ const ProfileForm = ({ initialData = {}, onSubmit, label, submitLabel }) => {
 
   return (
     <div className="card flex flex-col gap-6">
-      <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-center text-gray-800">
+      <h1 className="text-title font-bold mb-8 text-center">
         {label}
       </h1>
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
           <label
             htmlFor="age"
-            className="block text-lg font-medium text-gray-700 mb-1"
+            className="block text-body font-medium mb-1"
           >
             {t("profile_form.age_label")}
           </label>
           <input
             type="number"
+            inputMode="numeric"
             name="age"
             id="age"
             placeholder={t("profile_form.age_placeholder")}
             value={formData.age}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="input-style"
           />
           {formErrors.age && (
-            <p className="text-red-500 text-sm mt-1">{formErrors.age}</p>
+            <p className="text-caption-red mt-1">{formErrors.age}</p>
           )}
         </div>
 
         <div>
           <label
             htmlFor="weight_kg"
-            className="block text-lg font-medium text-gray-700 mb-1"
+            className="block text-body font-medium mb-1"
           >
             {t("profile_form.weight_label")} ({t("measurements.weight")})
           </label>
           <input
             type="number"
+            inputMode="decimal"
             name="weight_kg"
             id="weight_kg"
             placeholder={
@@ -101,22 +103,23 @@ const ProfileForm = ({ initialData = {}, onSubmit, label, submitLabel }) => {
             }
             value={formData.weight_kg}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="input-style"
           />
           {formErrors.weight_kg && (
-            <p className="text-red-500 text-sm mt-1">{formErrors.weight_kg}</p>
+            <p className="text-caption-red mt-1">{formErrors.weight_kg}</p>
           )}
         </div>
 
         <div>
           <label
             htmlFor="height_cm"
-            className="block text-lg font-medium text-gray-700 mb-1"
+            className="block text-body font-medium mb-1"
           >
             {t("profile_form.height_label")} ({t("measurements.height")})
           </label>
           <input
             type="number"
+            inputMode="decimal"
             name="height_cm"
             id="height_cm"
             placeholder={
@@ -126,15 +129,15 @@ const ProfileForm = ({ initialData = {}, onSubmit, label, submitLabel }) => {
             }
             value={formData.height_cm}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="input-style"
           />
           {formErrors.height_cm && (
-            <p className="text-red-500 text-sm mt-1">{formErrors.height_cm}</p>
+            <p className="text-caption-red mt-1">{formErrors.height_cm}</p>
           )}
         </div>
 
         <div>
-          <label className="block text-lg font-medium text-gray-700 mb-1">
+          <label className="block text-body font-medium mb-1">
             {t("profile_form.sex_label")}
           </label>
           <div className="flex items-center space-x-4">
@@ -144,18 +147,18 @@ const ProfileForm = ({ initialData = {}, onSubmit, label, submitLabel }) => {
                   <input
                     type="radio"
                     name="sex"
-                    value={s}
+                    value={s} 
                     checked={formData.sex === s}
                     onChange={handleChange}
-                    className="form-radio text-blue-600 accent-blue-600"
+                    className="accent-blue-600"
                   />
-                  <span className="ml-2 text-gray-700">{s}</span>
+                  <span className="ml-2 text-body">{s}</span>
                 </label>
               )
             )}
           </div>
           {formErrors.sex && (
-            <p className="text-red-500 text-sm mt-1">{formErrors.sex}</p>
+            <p className="text-caption-red mt-1">{formErrors.sex}</p>
           )}
         </div>
 

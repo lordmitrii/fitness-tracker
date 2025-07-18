@@ -1,27 +1,35 @@
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import api from "../api";
 import { useNavigate } from "react-router-dom";
 import DaysPerCycleSelector from "../components/DaysPerCycleSelector";
 import QuestionMarkTooltip from "../components/QuestionMarkTooltip";
-import AddWorkoutExerciseModal from "../components/AddWorkoutExerciseModal";
+import AddWorkoutExerciseModal from "../forms/AddWorkoutExerciseModal";
 import Stepper from "../components/Stepper";
 import LoadingState from "../states/LoadingState";
 import ErrorState from "../states/ErrorState";
 import EditIcon from "../icons/EditIcon";
 import ListIcon from "../icons/ListIcon";
 import { useTranslation } from "react-i18next";
+import CloseIcon from "../icons/CloseIcon";
 
-const ExerciseChip = ({ ex }) => {
+const ExerciseChip = ({ ex, onDelete }) => {
   const { t } = useTranslation();
   return (
-    <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-blue-800 text-sm font-medium border border-blue-200 mr-2 mb-2">
-      {ex.individual_exercise?.name || ex}
-      {ex.sets_qt
-        ? ` x ${ex.sets_qt} ${
-            ex.sets_qt > 1 ? t("measurements.sets") : t("measurements.set")
-          }`
-        : ""}
-    </span>
+    <div className="w-35 h-10 inline-flex items-center justify-center px-2 rounded-lg bg-blue-50 text-caption-blue font-medium border border-blue-200 mr-2 mb-2">
+      <span className="flex items-center justify-between gap-2">
+        {ex.individual_exercise?.name || ex}
+        {ex.sets_qt
+          ? ` x ${ex.sets_qt} ${
+              ex.sets_qt > 1 ? t("measurements.sets") : t("measurements.set")
+            }`
+          : ""}
+        {onDelete && (
+          <button className="size-6" onClick={onDelete}>
+            <CloseIcon />
+          </button>
+        )}
+      </span>
+    </div>
   );
 };
 
@@ -38,7 +46,7 @@ const AddWorkoutPlanForm = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedData = localStorage.getItem("workoutPlanDraft");
+    const savedData = sessionStorage.getItem("workoutPlanDraft");
     if (savedData) {
       const { planName, daysPerCycle, workouts, step } = JSON.parse(savedData);
       setPlanName(planName);
@@ -58,7 +66,7 @@ const AddWorkoutPlanForm = () => {
           ...prev,
           ...Array.from({ length: daysPerCycle - prev.length }, (_, i) => ({
             id: prev.length + i + 1,
-            name: `Day ${prev.length + i + 1}`,
+            name: `Workout ${prev.length + i + 1}`,
             workout_exercises: [],
             index: prev.length + i + 1,
           })),
@@ -72,7 +80,7 @@ const AddWorkoutPlanForm = () => {
 
   useEffect(() => {
     if (loading) return;
-    localStorage.setItem(
+    sessionStorage.setItem(
       "workoutPlanDraft",
       JSON.stringify({
         planName,
@@ -84,7 +92,7 @@ const AddWorkoutPlanForm = () => {
   }, [planName, daysPerCycle, workouts, step]);
 
   const handleClearDraft = () => {
-    localStorage.removeItem("workoutPlanDraft");
+    sessionStorage.removeItem("workoutPlanDraft");
     setPlanName("");
     setDaysPerCycle(1);
     setWorkouts([]);
@@ -109,8 +117,12 @@ const AddWorkoutPlanForm = () => {
 
   const validateStep1 = () => {
     const errors = {};
-    if (!planName.trim())
+    if (!planName.trim()) {
       errors.name = t("add_workout_plan_form.plan_name_required");
+    }
+    if (daysPerCycle < 1) {
+      errors.daysPerCycle = t("add_workout_plan_form.plan_days_more_than_one");
+    }
     return errors;
   };
 
@@ -140,14 +152,14 @@ const AddWorkoutPlanForm = () => {
           total={daysPerCycle + 2}
           onStepClick={handleStepperClick}
         />
-        <div className="text-center mb-6 text-gray-600 font-medium">
+        <div className="text-center mb-6 text-caption font-medium">
           {t("add_workout_plan_form.step_of", {
             step,
             total: daysPerCycle + 2,
           })}
         </div>
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-semibold text-gray-800">
+          <h1 className="text-title font-semibold">
             {t("add_workout_plan_form.create_workout_plan")}
           </h1>
           {(workouts.length > 1 || planName) && (
@@ -174,7 +186,7 @@ const AddWorkoutPlanForm = () => {
           className="space-y-5"
         >
           <div>
-            <label className="block text-lg font-medium text-gray-700 mb-1">
+            <label className="block text-body font-medium mb-1">
               {t("add_workout_plan_form.plan_name_label")}
             </label>
             <input
@@ -183,17 +195,17 @@ const AddWorkoutPlanForm = () => {
               maxLength={50}
               placeholder={t("add_workout_plan_form.plan_name_placeholder")}
               onChange={(e) => setPlanName(e.target.value)}
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="input-style"
             />
-            <div className="text-right text-xs text-gray-400 mt-1">
+            <div className="text-right text-caption mt-1">
               {planName.length}/50
             </div>
             {formErrors.name && (
-              <p className="text-red-500 text-sm">{formErrors.name}</p>
+              <p className="text-caption-red mt-1">{formErrors.name}</p>
             )}
           </div>
           <div>
-            <div className="block text-lg font-medium text-gray-700 mb-1">
+            <div className="block text-body font-medium mb-1">
               <span className="flex items-center gap-2">
                 {t("add_workout_plan_form.days_per_cycle_label")}
                 <QuestionMarkTooltip
@@ -205,6 +217,9 @@ const AddWorkoutPlanForm = () => {
               value={daysPerCycle}
               onChange={setDaysPerCycle}
             />
+            {formErrors.daysPerCycle && (
+              <p className="text-caption-red mt-1">{formErrors.daysPerCycle}</p>
+            )}
           </div>
           <button className="btn btn-primary w-full">
             {t("general.continue")}
@@ -223,7 +238,7 @@ const AddWorkoutPlanForm = () => {
           total={daysPerCycle + 2}
           onStepClick={handleStepperClick}
         />
-        <div className="text-center mb-6 text-gray-600 font-medium">
+        <div className="text-center mb-6 text-caption font-medium">
           {t("add_workout_plan_form.step_of", {
             step,
             total: daysPerCycle + 2,
@@ -264,7 +279,7 @@ const AddWorkoutPlanForm = () => {
           workouts
         );
 
-        localStorage.removeItem("workoutPlanDraft");
+        sessionStorage.removeItem("workoutPlanDraft");
         navigate("/workout-plans");
       } catch (error) {
         console.error("Error creating workout plan:", error);
@@ -279,20 +294,20 @@ const AddWorkoutPlanForm = () => {
           total={daysPerCycle + 2}
           onStepClick={handleStepperClick}
         />
-        <div className="text-center mb-6 text-gray-600 font-medium">
+        <div className="text-center mb-6 text-caption font-medium">
           {t("add_workout_plan_form.step_of", {
             step,
             total: daysPerCycle + 2,
           })}
         </div>
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+        <h2 className="text-title font-semibold mb-4">
           {t("add_workout_plan_form.preview_title")}
         </h2>
         <div className="mb-4">
-          <div className="text-md font-semibold text-gray-800 mb-2">
+          <div className="text-body font-semibold mb-2">
             {t("general.name")}: {planName}
           </div>
-          <div className="text-md font-semibold text-gray-800 mb-2">
+          <div className="text-body font-semibold mb-2">
             {t("add_workout_plan_form.days_per_cycle_value")}: {daysPerCycle}
           </div>
         </div>
@@ -302,14 +317,13 @@ const AddWorkoutPlanForm = () => {
               key={wk.index}
               className="bg-blue-50 border-l-4 border-blue-400 rounded-xl p-4 shadow flex flex-col relative"
             >
-              <h3 className="font-bold text-lg text-blue-900 mb-2 flex items-center">
+              <h3 className="font-bold text-body-blue mb-2 flex items-center">
                 <span className="inline-block mr-2">
-                  {t("general.day")} {wk.index}
+                  {t("general.workout")} {wk.index}
                 </span>
                 <button
-                  className="ml-auto text-blue-600 hover:text-blue-800"
+                  className="ml-auto text-blue-500 hover:text-gray-500"
                   onClick={() => setStep(idx + 2)}
-                  aria-label={`Edit ${wk.name}`}
                 >
                   <EditIcon />
                 </button>
@@ -321,7 +335,7 @@ const AddWorkoutPlanForm = () => {
                   ))}
                 </div>
               ) : (
-                <span className="text-gray-400">
+                <span className="text-caption">
                   {t("add_workout_plan_form.no_exercises")}
                 </span>
               )}
@@ -358,7 +372,7 @@ const WorkoutDayExercises = ({
   return (
     <>
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-semibold text-gray-800">
+        <h1 className="text-title font-semibold">
           {workout.name}: {t("add_workout_plan_form.add_exercises")}
         </h1>
         <button
@@ -370,17 +384,23 @@ const WorkoutDayExercises = ({
         </button>
       </div>
       <div className="rounded-2xl shadow-lg bg-white border border-gray-200 p-6 hover:shadow-lg transition flex flex-col gap-3 mb-6">
-        <h1 className="text-2xl font-semibold text-blue-800">
+        <h3 className="text-body-blue font-semibold">
           {t("add_workout_plan_form.exercise_list_title")}
-        </h1>
+        </h3>
         {workout.workout_exercises.length > 0 ? (
           <div className="flex flex-wrap justify-center gap-2 mb-2">
             {workout.workout_exercises.map((ex, idx) => (
-              <ExerciseChip ex={ex} key={idx} />
+              <ExerciseChip
+                key={idx}
+                ex={ex}
+                onDelete={() =>
+                  onUpdate((prev) => prev.filter((_, i) => i !== idx))
+                }
+              />
             ))}
           </div>
         ) : (
-          <div className="text-gray-400 flex flex-col items-center py-6">
+          <div className="text-caption flex flex-col items-center py-6">
             <ListIcon />
             <span>{t("add_workout_plan_form.no_exercises_yet")}</span>
           </div>
