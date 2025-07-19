@@ -21,7 +21,6 @@ const Layout = ({ children }) => {
     }
     return true;
   });
-  
 
   const navLinks = [
     { to: "/", label: t("general.home"), auth: null },
@@ -74,7 +73,7 @@ const Layout = ({ children }) => {
     <div className="min-h-screen flex flex-col bg-white">
       <header
         ref={headerRef}
-        className="backdrop-blur-xl bg-white shadow-md sticky top-0 z-80"
+        className="backdrop-blur-xl bg-white shadow-md sticky top-0 z-80 pt-[env(safe-area-inset-top)]"
       >
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
           <Link
@@ -178,7 +177,7 @@ const Layout = ({ children }) => {
 
       <div
         id="progress-bar-portal"
-        className="sticky top-16 w-full h-2 sm:h-3 z-10"
+        className="sticky top-[calc(env(safe-area-inset-top)+4rem)] w-full h-2 sm:h-3 z-10"
       />
 
       <main id="main-container" className="flex-grow min-h-[90dvh]">

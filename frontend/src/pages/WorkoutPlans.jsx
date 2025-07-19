@@ -137,9 +137,7 @@ const WorkoutPlans = () => {
         </ul>
       ) : (
         <div className="bg-white rounded-2xl shadow p-8 flex flex-col items-center mt-8">
-          <p className="text-body mb-6">
-            {t("workout_plans.no_plans_found")}
-          </p>
+          <p className="text-body mb-6">{t("workout_plans.no_plans_found")}</p>
           <button
             className="btn btn-primary"
             onClick={() => navigate("/create-workout-plan")}
@@ -152,7 +150,7 @@ const WorkoutPlans = () => {
       {/* Floating create button for mobile */}
       {workoutPlans.length > 0 && (
         <button
-          className="btn btn-primary border inset-shadow-xs fixed bottom-5 right-5 z-20 sm:hidden"
+          className="btn btn-primary h-[5dvh] border inset-shadow-xs fixed bottom-10 right-5 z-20 sm:hidden"
           onClick={() => navigate("/create-workout-plan")}
         >
           + {t("workout_plans.create_new_plan")}
