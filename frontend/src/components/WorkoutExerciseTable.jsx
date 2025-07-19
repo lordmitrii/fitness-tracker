@@ -4,6 +4,7 @@ import api from "../api";
 import WorkoutExerciseDetailsMenu from "./WorkoutExerciseDetailsMenu";
 import WorkoutSetDetailsMenu from "./WorkoutSetDetailsMenu";
 import { useTranslation } from "react-i18next";
+import CheckIcon from "../icons/CheckIcon";
 
 const WorkoutExerciseTable = ({
   planID,
@@ -229,7 +230,7 @@ const WorkoutExerciseTable = ({
                       <span className="text-gray-600 w-5 justify-self-center">
                         {getExerciseProgressBadge(set)}
                       </span>
-                      <div className="flex justify-center">
+                      <label className="relative flex justify-center items-center cursor-pointer">
                         <input
                           type="checkbox"
                           checked={!!set.completed}
@@ -249,11 +250,22 @@ const WorkoutExerciseTable = ({
                               checked
                             );
                           }}
-                          className="accent-blue-600 h-5 w-5 text-white"
+                          className="sr-only peer"
                           title={t("workout_plan_single.set_completed")}
                           disabled={!isCurrentCycle}
                         />
-                      </div>
+                        <div
+                          className={`size-6 bg-white dark:bg-gray-500 border border-gray-300 rounded transition duration-150 ease-in-out
+                                      peer-checked:bg-blue-600 peer-checked:border-transparent
+                                      peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-400
+                                      flex items-center justify-center
+                                    `}
+                        />
+
+                        <CheckIcon
+                          className={`absolute size-6 text-white hidden peer-checked:block`}
+                        />
+                      </label>
                     </div>
                   ))}
               </div>
