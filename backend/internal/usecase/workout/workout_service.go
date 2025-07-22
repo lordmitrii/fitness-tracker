@@ -3,9 +3,10 @@ package workout
 import (
 	"context"
 	"fmt"
+	"time"
+
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
-	"time"
 )
 
 type workoutServiceImpl struct {
@@ -628,6 +629,21 @@ func (s *workoutServiceImpl) GetWorkoutSetsByWorkoutExerciseID(ctx context.Conte
 }
 
 func (s *workoutServiceImpl) UpdateWorkoutSet(ctx context.Context, ws *workout.WorkoutSet) error {
+	we, err := s.workoutExerciseRepo.GetByID(ctx, ws.WorkoutExerciseID)
+	if err != nil {
+		return err
+	}
+
+	ie, err := s.individualExerciseRepo.GetByID(ctx, we.IndividualExerciseID)
+	if err != nil {
+		return err
+	}
+
+	ie.LastCompletedWorkoutExerciseID = we.ID
+	if err := s.individualExerciseRepo.Update(ctx, ie); err != nil {
+		return err
+	}
+
 	return s.workoutSetRepo.Update(ctx, ws)
 }
 func (s *workoutServiceImpl) CompleteWorkoutSet(ctx context.Context, ws *workout.WorkoutSet) error {

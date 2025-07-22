@@ -14,7 +14,10 @@ i18n
       ru: { translation: ru },
       zh: { translation: zh },
     },
-    lng: "en",
+    detection: {
+      order: ["localStorage", "navigator", "htmlTag", "path", "subdomain"],
+      caches: ["localStorage"],
+    },
     fallbackLng: "en",
     interpolation: { escapeValue: false },
   });

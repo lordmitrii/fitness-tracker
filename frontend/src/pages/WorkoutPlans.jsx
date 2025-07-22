@@ -150,7 +150,7 @@ const WorkoutPlans = () => {
       {/* Floating create button for mobile */}
       {workoutPlans.length > 0 && (
         <button
-          className="btn btn-primary h-[5dvh] border inset-shadow-xs fixed bottom-10 right-5 z-20 sm:hidden"
+          className="btn btn-primary min-h-[5dvh] border inset-shadow-xs fixed bottom-10 right-5 z-20 sm:hidden"
           onClick={() => navigate("/create-workout-plan")}
         >
           + {t("workout_plans.create_new_plan")}
