@@ -10,24 +10,37 @@ VALUES
     ('Pec Deck', 1, 'pec-deck'),
     ('Push-Ups', 1, 'push-ups'),
     ('Chest Dips', 1, 'chest-dips'),
+    ('Cable Flyes', 1, 'cable-flyes'),
+    ('Incline Cable Flyes', 1, 'incline-cable-flyes'),
+    ('Dumbbell Bench Press', 1, 'dumbbell-bench-press'),
+    ('Smith Machine Bench Press', 1, 'smith-machine-bench-press'),
+    ('Incline Smith Machine Press', 1, 'incline-smith-machine-press'),
 -- Back
     ('Barbell Rows', 2, 'barbell-rows'),
     ('Pull-Ups', 2, 'pull-ups'),
     ('Chin-Ups', 2, 'chin-ups'),
     ('Lat Pulldowns', 2, 'lat-pulldowns'),
     ('Pullovers', 2, 'pullovers'),
-    ('Horizontal Cable Rows', 2, 'horizontal-cable-rows'),
+    ('Narrow Grip Seated Cable Rows', 2, 'narrow-grip-seated-cable-rows'),
     ('T-Bar Rows', 2, 't-bar-rows'),
     ('Single Arm Dumbbell Rows', 2, 'single-arm-dumbbell-rows'),
-    ('Single Arm Pulldowns', 2, 'single-arm-pulldowns'),
+    ('Single Arm Lat Pulldowns', 2, 'single-arm-lat-pulldowns'),
+    ('Machine Horizontal Rows', 2, 'machine-horizontal-rows'),
+    ('Single Arm Cable Rows', 2, 'single-arm-cable-rows'),
+    ('Wide Grip Seated Cable Rows', 2, 'wide-grip-seated-cable-rows'),
+    ('Seated Machine Rows', 2, 'seated-machine-rows'),
 -- Shoulders
     ('Overhead Press', 3, 'overhead-press'),
     ('Dumbbell Lateral Raises', 3, 'dumbbell-lateral-raises'),
     ('Front Raises', 3, 'front-raises'),
     ('Rear Delt Flyes', 3, 'rear-delt-flyes'),
     ('Arnold Press', 3, 'arnold-press'),
+    ('Dumbbell Shoulder Press', 3, 'dumbbell-shoulder-press'),
+    ('Cable Lateral Raises', 3, 'cable-lateral-raises'),
+    ('Face Pulls', 3, 'face-pulls'),
+    ('Upright Rows', 3, 'upright-rows'),
 -- Biceps
-    ('Bicep Curls', 4, 'bicep-curls'),
+    ('Barbell Curls', 4, 'barbell-curls'),
     ('Hammer Curls', 4, 'hammer-curls'),
     ('Preacher Curls', 4, 'preacher-curls'),
     ('Concentration Curls', 4, 'concentration-curls'),
@@ -35,14 +48,17 @@ VALUES
     ('Incline Dumbbell Curls', 4, 'incline-dumbbell-curls'),
     ('Zottman Curls', 4, 'zottman-curls'),
     ('Bayesian Curls', 4, 'bayesian-curls'),
-    ()
+    ('EZ Bar Curls', 4, 'ez-bar-curls'),
+    ('Dumbbell Curls', 4, 'dumbbell-curls'),
+    ('Machine Preacher Curls', 4, 'machine-preacher-curls'),
+
 -- Triceps
-    ('Tricep Pushdowns', 5, 'tricep-pushdowns'),
-    ('Overhead Tricep Extensiosns', 5, 'overhead-tricep-extensions'),
+    ('Pushdowns', 5, 'pushdowns'),
+    ('Overhead Extensions', 5, 'overhead-extensions'),
     ('Skullcrusher', 5, 'skullcrusher'),
     ('Dips', 5, 'dips'),
     ('Close-Grip Bench Press', 5, 'close-grip-bench-press'),
-    ('Tricep Kickbacks', 5, 'tricep-kickbacks'),
+    ('Kickbacks', 5, 'kickbacks'),
     ('Diamond Push-Ups', 5, 'diamond-push-ups'),
     ('Cable Rope Pushdowns', 5, 'cable-rope-pushdowns'),
 -- Quads
@@ -53,6 +69,10 @@ VALUES
     ('Leg Press Machine', 6, 'leg-press-machine'),
     ('Step-Ups', 6, 'step-ups'),
     ('Leg Extensions', 6, 'leg-extensions'),
+    ('Smith Machine Squats', 6, 'smith-machine-squats'),
+    ('Goblet Squats', 6, 'goblet-squats'),
+    ('Hack Squats', 6, 'hack-squats'),
+    ('Sissy Squats', 6, 'sissy-squats'),
 -- Hamstrings
     ('Deadlift', 7, 'deadlift'),
     ('Romanian Deadlift', 7, 'romanian-deadlift'),
@@ -60,11 +80,15 @@ VALUES
     ('Lying Leg Curls', 7, 'lying-leg-curls'),
     ('Glute-Ham Raises', 7, 'glute-ham-raises'),
     ('Good Mornings', 7, 'good-mornings'),
+    ('Kettlebell Swings', 7, 'kettlebell-swings'),
+    ('Nordic Curls', 7, 'nordic-curls'),
+    ('Stiff-Legged Deadlifts', 7, 'stiff-legged-deadlifts'),
 -- Glutes
     ('Hip Thrusts', 8, 'hip-thrusts'),
     ('Glute Bridges', 8, 'glute-bridges'),
     ('Cable Kickbacks', 8, 'cable-kickbacks'),
     ('Lunges', 8, 'lunges'),
+    ('Abductor Machine', 8, 'abductor-machine'),
 -- Abs
     ('Crunches', 9, 'crunches'),
     ('Hanging Leg Raises', 9, 'hanging-leg-raises'),
@@ -81,5 +105,6 @@ VALUES
     ('Reverse Curls', 11, 'reverse-curls'),
 -- Traps
     ('Dumbbell Shrugs', 12, 'dumbbell-shrugs'),
-    ('Upright Rows', 12, 'upright-rows'),
-    ('Face Pulls', 12, 'face-pulls');
+    ('Farmer\`s Walk', 12, 'farmers-walk')
+
+ON CONFLICT DO NOTHING;

@@ -28,7 +28,7 @@ func (r *WorkoutSetRepo) GetByID(ctx context.Context, id uint) (*workout.Workout
 }
 func (r *WorkoutSetRepo) GetByWorkoutExerciseID(ctx context.Context, workoutExerciseID uint) ([]*workout.WorkoutSet, error) {
 	var sets []*workout.WorkoutSet
-	if err := r.db.WithContext(ctx).Where("workout_exercise_id = ?", workoutExerciseID).Find(&sets).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("workout_exercise_id = ?", workoutExerciseID).Order("index").Find(&sets).Error; err != nil {
 		return nil, err
 	}
 	return sets, nil

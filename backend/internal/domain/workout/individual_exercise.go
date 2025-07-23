@@ -15,6 +15,8 @@ type IndividualExercise struct {
 	CurrentWeight float64 `json:"current_weight"  gorm:"-"`
 	CurrentReps   int     `json:"current_reps"    gorm:"-"`
 
+	LastCompletedWorkoutExerciseID uint `json:"last_completed_workout_exercise_id"`
+
 	UserID uint      `json:"user_id"            gorm:"uniqueIndex:idx_name_user_id;not null"`
 	User   user.User `json:"-"                  gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 

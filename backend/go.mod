@@ -3,7 +3,6 @@ module github.com/lordmitrii/golang-web-gin
 go 1.24.3
 
 require (
-	github.com/gin-contrib/cors v1.7.5
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/gosimple/slug v1.15.0

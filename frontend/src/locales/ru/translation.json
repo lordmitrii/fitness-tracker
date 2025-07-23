@@ -27,7 +27,7 @@
     "name": "Имя",
     "day": "День",
     "workout": "Тренировка",
-    "to": "до",
+    "to": "к",
     "last_updated": "Последнее обновление:",
     "completed": "Завершено",
     "yes": "Да",
@@ -213,7 +213,7 @@
     "custom_suffix": "(кастом)"
   },
   "days_per_cycle_selector": {
-    "more": "Больше"
+    "more": "Более"
   },
   "private_route": {
     "checking_auth": "Проверка авторизации..."

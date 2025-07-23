@@ -109,7 +109,7 @@ const WorkoutSetDetailsMenu = ({
           index: set.index,
           reps: set.reps,
           weight: set.weight,
-          previous_weight: set.previous_weight, // TODO: maybe remove this?
+          previous_weight: set.previous_weight,
           previous_reps: set.previous_reps,
         }
       )
