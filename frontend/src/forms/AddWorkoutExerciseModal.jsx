@@ -163,11 +163,9 @@ const AddWorkoutExerciseModal = ({
             },
           };
 
-      if (makingCustomExercise) {
-        individualExercise.muscle_group = muscleGroupsArray.find(
-          (group) => group.id === individualExercise.muscle_group_id
-        );
-      }
+      individualExercise.muscle_group = muscleGroupsArray.find(
+        (group) => group.id === individualExercise.muscle_group_id
+      );
 
       onUpdateExercises((prev) =>
         exercise

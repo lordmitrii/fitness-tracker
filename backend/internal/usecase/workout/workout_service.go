@@ -267,18 +267,18 @@ func (s *workoutServiceImpl) DeleteWorkoutCycle(ctx context.Context, id uint) er
 			}
 		}
 	} else {
-		prevCycleIncompleteWorkoutsCounts, err := s.workoutRepo.GetIncompleteWorkoutsCount(ctx, cycle.PreviousCycleID)
-		if err != nil {
-			return err
-		}
+		// prevCycleIncompleteWorkoutsCounts, err := s.workoutRepo.GetIncompleteWorkoutsCount(ctx, cycle.PreviousCycleID)
+		// if err != nil {
+		// 	return err
+		// }
 
-		// If there is no next cycle and all previous workouts are completed, we just clear the current cycle data and dont change anything
-		if prevCycleIncompleteWorkoutsCounts == 0 {
-			if err := s.workoutCycleRepo.ClearData(ctx, id); err != nil {
-				return err
-			}
-			return nil
-		}
+		// // If there is no next cycle and all previous workouts are completed, we just clear the current cycle data and dont change anything
+		// if prevCycleIncompleteWorkoutsCounts == 0 {
+		// 	if err := s.workoutCycleRepo.ClearData(ctx, id); err != nil {
+		// 		return err
+		// 	}
+		// 	return nil
+		// }
 
 		if err := s.workoutCycleRepo.Complete(ctx, &workout.WorkoutCycle{ID: cycle.PreviousCycleID, Completed: false}); err != nil {
 			return err
@@ -322,11 +322,21 @@ func (s *workoutServiceImpl) CreateMultipleWorkouts(ctx context.Context, cycleID
 			we.WorkoutID = 0            // reset ID to 0
 			we.IndividualExercise = nil // reset as well
 
+			prevSets, err := s.GetPreviousSets(ctx, we.IndividualExerciseID, we.SetsQt)
+			if err != nil {
+				return err
+			}
+
 			for j := int64(0); j < we.SetsQt; j++ {
 				set := &workout.WorkoutSet{
 					WorkoutExerciseID: we.ID,
 					Index:             int(j) + 1,
 					Completed:         false,
+				}
+
+				if prevSets != nil && int(j) < len(prevSets) {
+					set.PreviousWeight = prevSets[j].PreviousWeight
+					set.PreviousReps = prevSets[j].PreviousReps
 				}
 				we.WorkoutSets = append(we.WorkoutSets, set)
 			}
@@ -383,11 +393,21 @@ func (s *workoutServiceImpl) CreateWorkoutExercise(ctx context.Context, e *worko
 	if qt <= 0 {
 		return fmt.Errorf("sets quantity must be greater than 0")
 	}
+
+	prevSets, err := s.GetPreviousSets(ctx, e.IndividualExerciseID, qt)
+	if err != nil {
+		return err
+	}
+
 	for i := int64(0); i < qt; i++ {
 		set := &workout.WorkoutSet{
 			WorkoutExerciseID: e.ID,
 			Index:             int(i) + 1,
 			Completed:         false,
+		}
+		if prevSets != nil && int(i) < len(prevSets) {
+			set.PreviousWeight = prevSets[i].PreviousWeight
+			set.PreviousReps = prevSets[i].PreviousReps
 		}
 		e.WorkoutSets = append(e.WorkoutSets, set)
 	}
@@ -516,12 +536,23 @@ func (s *workoutServiceImpl) ReplaceWorkoutExercise(ctx context.Context, workout
 		WorkoutSets:          make([]*workout.WorkoutSet, 0, sets),
 	}
 
+	prevSets, err := s.GetPreviousSets(ctx, individualExerciseID, sets)
+	if err != nil {
+		return nil, err
+	}
+
 	for i := int64(0); i < sets; i++ {
 		set := &workout.WorkoutSet{
 			WorkoutExerciseID: newExercise.ID,
 			Index:             int(i) + 1,
 			Completed:         false,
 		}
+
+		if prevSets != nil && int(i) < len(prevSets) {
+			set.PreviousWeight = prevSets[i].PreviousWeight
+			set.PreviousReps = prevSets[i].PreviousReps
+		}
+
 		newExercise.WorkoutSets = append(newExercise.WorkoutSets, set)
 	}
 
@@ -891,4 +922,43 @@ func (s *workoutServiceImpl) GetIndividualExerciseStats(ctx context.Context, use
 	// Find best weight and reps for each individual exercise in the
 	return individualExercise, nil
 
+}
+
+func (s *workoutServiceImpl) GetPreviousSets(ctx context.Context, individualExerciseID uint, qt int64) ([]*workout.WorkoutSet, error) {
+	ie, err := s.individualExerciseRepo.GetByID(ctx, individualExerciseID)
+	if err != nil {
+		return nil, err
+	}
+
+	if ie.LastCompletedWorkoutExerciseID == 0 {
+		return nil, nil
+	}
+
+	prevWE, err := s.workoutExerciseRepo.GetByID(ctx, ie.LastCompletedWorkoutExerciseID)
+	if err != nil {
+		return nil, err
+	}
+	previousSets, err := s.workoutSetRepo.GetByWorkoutExerciseID(ctx, prevWE.ID)
+	if err != nil {
+		return nil, err
+	}
+	if len(previousSets) == 0 {
+		return nil, nil
+	}
+
+	var prevSets []*workout.WorkoutSet
+
+	for i := int64(0); i < qt; i++ {
+		pSet := &workout.WorkoutSet{}
+		if i < int64(len(previousSets)) {
+			pSet.PreviousReps = previousSets[i].Reps
+			pSet.PreviousWeight = previousSets[i].Weight
+		} else {
+			lastSet := previousSets[len(previousSets)-1]
+			pSet.PreviousReps = lastSet.Reps
+			pSet.PreviousWeight = lastSet.Weight
+		}
+		prevSets = append(prevSets, pSet)
+	}
+	return prevSets, nil
 }

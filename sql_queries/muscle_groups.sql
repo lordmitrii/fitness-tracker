@@ -1,14 +1,14 @@
-INSERT INTO public.muscle_groups (name)
+INSERT INTO public.muscle_groups (id, name)
 VALUES
-    ('Chest'),
-    ('Back'),
-    ('Shoulders'),
-    ('Biceps'),
-    ('Triceps'),
-    ('Quads'),
-    ('Hamstrings'),
-    ('Glutes'),
-    ('Abs'),
-    ('Calves'),
-    ('Forearms'),
-    ('Traps');
+    (1, 'Chest'),
+    (2, 'Back'),
+    (3, 'Shoulders'),
+    (4, 'Biceps'),
+    (5, 'Triceps'),
+    (6, 'Quads'),
+    (7, 'Hamstrings'),
+    (8, 'Glutes'),
+    (9, 'Abs'),
+    (10, 'Calves'),
+    (11, 'Forearms'),
+    (12, 'Traps');
