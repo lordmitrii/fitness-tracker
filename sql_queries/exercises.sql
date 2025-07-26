@@ -73,6 +73,7 @@ VALUES
     ('Goblet Squats', 6, 'goblet-squats'),
     ('Hack Squats', 6, 'hack-squats'),
     ('Sissy Squats', 6, 'sissy-squats'),
+    ('Adductor Machine', 6, 'adductor-machine'),
 -- Hamstrings
     ('Deadlift', 7, 'deadlift'),
     ('Romanian Deadlift', 7, 'romanian-deadlift'),
@@ -105,6 +106,6 @@ VALUES
     ('Reverse Curls', 11, 'reverse-curls'),
 -- Traps
     ('Dumbbell Shrugs', 12, 'dumbbell-shrugs'),
-    ('Farmer\`s Walk', 12, 'farmers-walk')
+    ('Farmer`s Walk', 12, 'farmers-walk')
 
 ON CONFLICT DO NOTHING;

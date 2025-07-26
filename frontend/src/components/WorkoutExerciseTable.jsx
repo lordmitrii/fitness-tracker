@@ -114,13 +114,17 @@ const WorkoutExerciseTable = ({
 
             {/* Sets table */}
             <div className="overflow-x-auto">
-              <div className="min-w-full grid grid-cols-[28px_1fr_1fr_28px_1fr] sm:grid-cols-[36px_1fr_1fr_1fr_1fr_1fr] gap-4 text-gray-600 font-semibold border-b pb-2">
+              <div className="min-w-full grid grid-cols-[7dvw_1fr_1fr_7dvw_1fr] sm:grid-cols-[36px_1fr_1fr_1fr_1fr_1fr] gap-4 text-gray-600 font-semibold border-b pb-2 sm:text-normal text-sm">
                 <div className=""></div>
                 <div className="hidden sm:block">
                   {t("workout_plan_single.set_label")}
                 </div>
-                <div className="">
+                <div className="hidden sm:block">
                   {t("workout_plan_single.weight_label")} (
+                  {t("measurements.weight")})
+                </div>
+                <div className="sm:hidden">
+                  {t("workout_plan_single.weight_label_short")} (
                   {t("measurements.weight")})
                 </div>
                 <div className="">{t("workout_plan_single.reps_label")}</div>
@@ -138,7 +142,7 @@ const WorkoutExerciseTable = ({
                   .map((set) => (
                     <div
                       key={set.id}
-                      className="min-w-full grid grid-cols-[28px_1fr_1fr_28px_1fr] sm:grid-cols-[36px_1fr_1fr_1fr_1fr_1fr] gap-4 items-center py-2"
+                      className="min-w-full grid grid-cols-[7dvw_1fr_1fr_7dvw_1fr] sm:grid-cols-[36px_1fr_1fr_1fr_1fr_1fr] gap-4 items-center py-2"
                     >
                       <DropdownMenu
                         dotsHidden={!isCurrentCycle}
@@ -188,7 +192,7 @@ const WorkoutExerciseTable = ({
                         }}
                         className={`input-style placeholder:italic ${
                           set.completed || !isCurrentCycle
-                            ? "opacity-50 cursor-not-allowed"
+                            ? "opacity-40 cursor-not-allowed"
                             : ""
                         }`}
                         disabled={!isCurrentCycle}
@@ -222,7 +226,7 @@ const WorkoutExerciseTable = ({
                         }}
                         className={`input-style placeholder:italic ${
                           set.completed || !isCurrentCycle
-                            ? "opacity-50 cursor-not-allowed"
+                            ? "opacity-40 cursor-not-allowed"
                             : ""
                         }`}
                         disabled={!isCurrentCycle}

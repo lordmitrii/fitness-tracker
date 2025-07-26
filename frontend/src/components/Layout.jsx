@@ -186,13 +186,13 @@ const Layout = ({ children }) => {
 
       <NetworkStatusBanner />
 
-      <footer className="bg-gradient-to-r from-blue-500 to-blue-700 text-white shadow-inner mt-[max(calc(1.5rem-env(safe-area-inset-top)), 0)] py-6">
+      <footer className="bg-gradient-to-r from-blue-500 to-blue-700 text-white shadow-inner mt-[max(calc(1.5rem-env(safe-area-inset-top)),1.5rem)] py-6">
         <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-center sm:text-left text-sm font-medium tracking-wide">
             &copy; {new Date().getFullYear()} Fitness Tracker &mdash;{" "}
             {t("layout.all_rights_reserved")}
           </div>
-          <div className="flex items-center space-x-4 text-lg">
+          <div className="flex items-center space-x-4">
             <ThemeSwitcher />
             <LanguageSwitcher />
             <a
@@ -205,7 +205,7 @@ const Layout = ({ children }) => {
             </a>
             <a
               href="mailto:dmitrii.lor@glasgow.ac.uk"
-              className="hover:text-blue-300 transition text-base"
+              className="hover:text-blue-300 transition text-sm sm:text-base"
             >
               {t("general.contact_support")}
             </a>

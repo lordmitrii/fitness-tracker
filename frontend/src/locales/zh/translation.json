@@ -71,7 +71,10 @@
     "current_best": "当前最佳成绩",
     "no_stats": "暂无统计数据。",
     "loading_stats": "正在加载您的统计数据...",
-    "start_logging": "开始记录锻炼以查看进展！"
+    "start_logging": "开始记录锻炼以查看进展！",
+    "muscle_groups_strength": "肌肉群力量",
+    "best_exercise": "最佳锻炼",
+    "estimated_1rm": "估计 1-RM"
   },
   "not_found": {
     "page_not_found": "页面未找到",

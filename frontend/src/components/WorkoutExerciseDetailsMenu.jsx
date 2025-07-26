@@ -120,7 +120,14 @@ const WorkoutExerciseDetailsMenu = ({
           `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exercise.id}`
         )
         .then(() =>
-          updateExercises((prev) => prev.filter((ex) => ex.id !== exercise.id))
+          updateExercises((prev) => {
+            const filteredExercises = prev
+              .filter((ex) => ex.id !== exercise.id)
+              .map((ex) =>
+                ex.index > exercise.index ? { ...ex, index: ex.index - 1 } : ex
+              );
+            return filteredExercises;
+          })
         )
         .catch((error) => {
           console.error("Error deleting exercise:", error);
