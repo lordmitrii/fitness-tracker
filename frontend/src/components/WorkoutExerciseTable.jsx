@@ -119,12 +119,8 @@ const WorkoutExerciseTable = ({
                 <div className="hidden sm:block">
                   {t("workout_plan_single.set_label")}
                 </div>
-                <div className="hidden sm:block">
+                <div className="">
                   {t("workout_plan_single.weight_label")} (
-                  {t("measurements.weight")})
-                </div>
-                <div className="sm:hidden">
-                  {t("workout_plan_single.weight_label_short")} (
                   {t("measurements.weight")})
                 </div>
                 <div className="">{t("workout_plan_single.reps_label")}</div>
