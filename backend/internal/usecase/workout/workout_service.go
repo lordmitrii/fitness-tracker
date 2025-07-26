@@ -670,7 +670,7 @@ func (s *workoutServiceImpl) UpdateWorkoutSet(ctx context.Context, ws *workout.W
 		return err
 	}
 
-	ie.LastCompletedWorkoutExerciseID = we.ID
+	ie.LastCompletedWorkoutExerciseID = &we.ID
 	if err := s.individualExerciseRepo.Update(ctx, ie); err != nil {
 		return err
 	}
@@ -930,11 +930,11 @@ func (s *workoutServiceImpl) GetPreviousSets(ctx context.Context, individualExer
 		return nil, err
 	}
 
-	if ie.LastCompletedWorkoutExerciseID == 0 {
+	if ie.LastCompletedWorkoutExerciseID == nil {
 		return nil, nil
 	}
 
-	prevWE, err := s.workoutExerciseRepo.GetByID(ctx, ie.LastCompletedWorkoutExerciseID)
+	prevWE, err := s.workoutExerciseRepo.GetByID(ctx, *ie.LastCompletedWorkoutExerciseID)
 	if err != nil {
 		return nil, err
 	}

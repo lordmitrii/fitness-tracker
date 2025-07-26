@@ -71,7 +71,10 @@
     "current_best": "Current Best",
     "no_stats": "No stats available yet.",
     "loading_stats": "Loading your stats...",
-    "start_logging": "Start logging workouts to see your progress!"
+    "start_logging": "Start logging workouts to see your progress!",
+    "muscle_groups_strength": "Muscle Groups Strength",
+    "best_exercise": "Best Exercise",
+    "estimated_1rm": "Estimated 1-RM"
   },
   "not_found": {
     "page_not_found": "Page Not Found",
