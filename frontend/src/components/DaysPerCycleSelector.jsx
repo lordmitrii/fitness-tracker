@@ -8,12 +8,12 @@ const DaysPerCycleSelector = ({ value, onChange }) => {
   const { t } = useTranslation();
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customValue, setCustomValue] = useState(
-    value > MAX_STANDARD_DAYS ? value : MAX_STANDARD_DAYS + 1
+    value > MAX_STANDARD_DAYS ? String(value) : String(MAX_STANDARD_DAYS + 1)
   );
 
   useEffect(() => {
     if (value > MAX_STANDARD_DAYS && value !== customValue) {
-      setCustomValue(value);
+      setCustomValue(String(value));
     }
   }, [value]);
 
@@ -26,7 +26,13 @@ const DaysPerCycleSelector = ({ value, onChange }) => {
   };
 
   const handleInputChange = (e) => {
-    let val = Number(e.target.value);
+    let val = e.target.value;
+    if (val === "") {
+      setCustomValue("");
+      onChange(0);
+      return;
+    }
+    val = parseInt(val, 10);
     if (val > MAX_CUSTOM_DAYS) val = MAX_CUSTOM_DAYS;
 
     setCustomValue(val);
@@ -75,6 +81,7 @@ const DaysPerCycleSelector = ({ value, onChange }) => {
               value={customValue}
               onChange={handleInputChange}
               inputMode="numeric"
+              placeholder={t("days_per_cycle_selector.days")}
               className="input-style text-center"
             />
           </div>

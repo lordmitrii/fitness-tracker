@@ -12,6 +12,7 @@ import {
   e1RM,
   EXPECTED_RATIOS,
   MAIN_GROUPS,
+  BODYWEIGHT_FACTOR,
 } from "../utils/exerciseStatsUtils";
 
 function findMainGroup(name) {
@@ -25,21 +26,34 @@ function findMainGroup(name) {
 
 function aggregateStats(stats) {
   const maxByGroup = {};
-
-  for (const { name, muscle_group, current_weight, current_reps } of stats) {
-    if (!muscle_group || !current_weight || !current_reps) continue;
+  for (const {
+    name,
+    muscle_group,
+    current_weight,
+    current_reps,
+    is_time_based,
+    is_bodyweight,
+  } of stats) {
+    if (!muscle_group || !current_weight || !current_reps || is_time_based)
+      continue;
     const group = findMainGroup(muscle_group.name);
     if (!group) continue;
     const est = e1RM(current_weight, current_reps);
-    if (!maxByGroup[group] || est > maxByGroup[group].e1RM) {
-      maxByGroup[group] = { exercise: name, e1RM: est };
+    if (
+      !maxByGroup[group] ||
+      est * (is_bodyweight ? BODYWEIGHT_FACTOR : 1) > maxByGroup[group].e1RM
+    ) {
+      maxByGroup[group] = { exercise: name, e1RM: est, is_bodyweight };
     }
   }
 
   const rows = MAIN_GROUPS.map(({ key }) => {
     const entry = maxByGroup[key];
     const raw = entry?.e1RM || 0;
-    const scaled = raw / EXPECTED_RATIOS[key];
+    const scaled =
+      (raw / EXPECTED_RATIOS[key]) *
+      (entry?.is_bodyweight ? BODYWEIGHT_FACTOR : 1);
+
     return {
       group: key,
       e1RM: Math.round(raw),

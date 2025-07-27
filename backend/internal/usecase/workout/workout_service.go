@@ -907,10 +907,8 @@ func (s *workoutServiceImpl) GetIndividualExerciseStats(ctx context.Context, use
 
 		for _, we := range last5WorkoutExercises {
 			for _, ws := range we.WorkoutSets {
-				if ws.Weight > bestWeight {
+				if ws.Weight * float64(ws.Reps) > bestWeight * float64(bestReps) {
 					bestWeight = ws.Weight
-				}
-				if ws.Reps > bestReps {
 					bestReps = ws.Reps
 				}
 			}

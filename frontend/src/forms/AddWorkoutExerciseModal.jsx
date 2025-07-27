@@ -3,6 +3,7 @@ import api from "../api";
 import { cloneElement } from "react";
 import SpinnerIcon from "../icons/SpinnerIcon";
 import { useTranslation } from "react-i18next";
+import CheckBox from "../components/CheckBox";
 
 const AddWorkoutExerciseModal = ({
   open: openProp,
@@ -32,6 +33,7 @@ const AddWorkoutExerciseModal = ({
   const [exercisesFetched, setExercisesFetched] = useState(false);
 
   const [loading, setLoading] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
 
   const [makingCustomExercise, setMakingCustomExercise] = useState(false);
 
@@ -39,6 +41,8 @@ const AddWorkoutExerciseModal = ({
   const [name, setName] = useState("");
   const [muscleGroupID, setMuscleGroupID] = useState("");
   const [sets, setSets] = useState("");
+  const [isBodyweight, setIsBodyweight] = useState(false);
+  const [isTimeBased, setIsTimeBased] = useState(false);
 
   // Fetch exercises when the modal opens
   useEffect(() => {
@@ -87,8 +91,11 @@ const AddWorkoutExerciseModal = ({
     if (open) {
       setExerciseID("");
       setName("");
+      setIsBodyweight(false);
+      setIsTimeBased(false);
       setMuscleGroupID("");
       setSets("");
+      setFormErrors({});
     }
   }, [open, workoutID, makingCustomExercise]);
 
@@ -96,14 +103,58 @@ const AddWorkoutExerciseModal = ({
     if (!open) setMakingCustomExercise(false);
   }, [open]);
 
+  const validate = () => {
+    const newErrors = {};
+    if (makingCustomExercise) {
+      if (!name) newErrors.name = t("add_workout_exercise_modal.name_required");
+      if (!muscleGroupID)
+        newErrors.muscleGroupID = t(
+          "add_workout_exercise_modal.muscle_group_required"
+        );
+      if (!sets || isNaN(sets) || sets < 1)
+        newErrors.sets = t("add_workout_exercise_modal.sets_required");
+      if (
+        exercisesArray.find(
+          (ex) => ex.name.toLowerCase() === name.toLowerCase()
+        )
+      )
+        newErrors.name = t(
+          "add_workout_exercise_modal.exercise_already_exists"
+        );
+    } else {
+      if (!exerciseID)
+        newErrors.exerciseID = t(
+          "add_workout_exercise_modal.exercise_required"
+        );
+    }
+    return newErrors;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const formErrors = validate();
+    if (Object.keys(formErrors).length > 0) {
+      setFormErrors(formErrors);
+      return;
+    }
+
+    setLoading(true);
 
     let source, id;
     if (exerciseID) [source, id] = String(exerciseID).split("-");
 
     if (makingCustomExercise) {
-      handleSaveNewExercise({ name, muscle_group_id: muscleGroupID }, sets);
+      handleSaveNewExercise(
+        {
+          name,
+          muscle_group_id: muscleGroupID,
+          is_bodyweight: isBodyweight,
+          is_time_based: isTimeBased,
+        },
+        sets
+      );
+      setExercisesFetched(false); // Reset exercises to refetch on next open
       return;
     }
 
@@ -112,17 +163,31 @@ const AddWorkoutExerciseModal = ({
     );
 
     if (!exObj) {
-      console.error("Selected exercise not found in the list.");
+      console.error("Selected exercise not found in the list: ", exerciseID);
+      onError(new Error("Selected exercise not found in the list."));
+      setLoading(false);
       return;
     }
 
     if (source === "pool") {
-      handleSaveNewExercise({ id: exObj.id }, sets);
+      handleSaveNewExercise(
+        {
+          id: exObj.id,
+          is_bodyweight: exObj.is_bodyweight,
+          is_time_based: exObj.is_time_based,
+        },
+        sets
+      );
     }
     // If picked from custom, send name and muscle group only
     else {
       handleSaveNewExercise(
-        { name: exObj.name, muscle_group_id: exObj.muscle_group_id },
+        {
+          name: exObj.name,
+          muscle_group_id: exObj.muscle_group_id,
+          is_bodyweight: exObj.is_bodyweight,
+          is_time_based: exObj.is_time_based,
+        },
         sets
       );
     }
@@ -130,12 +195,15 @@ const AddWorkoutExerciseModal = ({
 
   const handleSaveNewExercise = async (newExercise, sets) => {
     try {
+      sets = Number(sets);
       const { data: individualExercise } = await api.post(
         "individual-exercises",
         {
           exercise_id: newExercise.id,
           name: newExercise.name,
           muscle_group_id: newExercise.muscle_group_id,
+          is_bodyweight: newExercise.is_bodyweight,
+          is_time_based: newExercise.is_time_based,
         }
       );
 
@@ -187,6 +255,8 @@ const AddWorkoutExerciseModal = ({
     } catch (error) {
       console.error("Error saving new exercise:", error);
       onError(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -230,43 +300,91 @@ const AddWorkoutExerciseModal = ({
                   </option>
                 ))}
               </select>
+              {formErrors.muscleGroupID && (
+                <p className="text-caption-red mt-1">
+                  {formErrors.muscleGroupID}
+                </p>
+              )}
               {!makingCustomExercise ? (
-                <select
-                  className="input-style"
-                  value={exerciseID}
-                  onChange={(e) => setExerciseID(e.target.value)}
-                  required
-                >
-                  <option value="" disabled>
-                    {t("add_workout_exercise_modal.select_exercise")}
-                  </option>
-                  {exercisesArray
-                    .filter((ex) =>
-                      muscleGroupID ? ex.muscle_group_id === muscleGroupID : ex
-                    )
-                    .map((ex) => (
-                      <option
-                        key={`${ex.source}-${ex.id}`}
-                        value={`${ex.source}-${ex.id}`}
-                      >
-                        {ex.name}
-                        {ex.source === "custom"
-                          ? ` ${t("add_workout_exercise_modal.custom_suffix")}`
-                          : ""}
-                      </option>
-                    ))}
-                </select>
-              ) : (
-                <input
-                  className="input-style"
-                  type="text"
-                  placeholder={t(
-                    "add_workout_exercise_modal.exercise_name_placeholder"
+                <>
+                  <select
+                    className="input-style"
+                    value={exerciseID}
+                    onChange={(e) => setExerciseID(e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>
+                      {t("add_workout_exercise_modal.select_exercise")}
+                    </option>
+                    {exercisesArray
+                      .filter((ex) =>
+                        muscleGroupID
+                          ? ex.muscle_group_id === muscleGroupID
+                          : ex
+                      )
+                      .map((ex) => (
+                        <option
+                          key={`${ex.source}-${ex.id}`}
+                          value={`${ex.source}-${ex.id}`}
+                        >
+                          {ex.name}
+                          {ex.source === "custom"
+                            ? ` ${t(
+                                "add_workout_exercise_modal.custom_suffix"
+                              )}`
+                            : ""}
+                        </option>
+                      ))}
+                  </select>
+                  {formErrors.exerciseID && (
+                    <p className="text-caption-red mt-1">
+                      {formErrors.exerciseID}
+                    </p>
                   )}
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
+                </>
+              ) : (
+                <>
+                  <input
+                    className="input-style"
+                    type="text"
+                    placeholder={t(
+                      "add_workout_exercise_modal.exercise_name_placeholder"
+                    )}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                  {formErrors.name && (
+                    <p className="text-caption-red mt-1">{formErrors.name}</p>
+                  )}
+
+                  <div className="flex justify-between align-center gap-6">
+                    <span className="flex items-center text-caption gap-2">
+                      <span>
+                        {t("add_workout_exercise_modal.is_bodyweight")}
+                      </span>
+                      <CheckBox
+                        title={t("workout_plan_single.is_bodyweight")}
+                        checked={isBodyweight}
+                        onChange={(e) => {
+                          setIsBodyweight(e.target.checked);
+                        }}
+                      />
+                    </span>
+                    <span className="flex items-center text-caption gap-2">
+                      <span>
+                        {t("add_workout_exercise_modal.is_time_based")}
+                      </span>
+                      <CheckBox
+                        title={t("workout_plan_single.set_completed")}
+                        checked={isTimeBased}
+                        onChange={(e) => {
+                          setIsTimeBased(e.target.checked);
+                        }}
+                      />
+                    </span>
+                  </div>
+                </>
               )}
               <input
                 className="input-style"
@@ -277,10 +395,13 @@ const AddWorkoutExerciseModal = ({
                 }
                 inputMode="numeric"
                 value={sets}
-                onChange={(e) => setSets(Number(e.target.value))}
+                onChange={(e) => setSets(e.target.value)}
                 min={1}
                 required
               />
+              {formErrors.sets && (
+                <p className="text-caption-red mt-1">{formErrors.sets}</p>
+              )}
               <button
                 type="button"
                 className="text-caption-blue hover:underline mb-2"

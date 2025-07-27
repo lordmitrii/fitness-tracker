@@ -6,8 +6,10 @@ import (
 )
 
 type IndividualExercise struct {
-	ID   uint   `json:"id"              gorm:"primaryKey"`
-	Name string `json:"name"            gorm:"uniqueIndex:idx_name_user_id;not null"`
+	ID           uint   `json:"id"              gorm:"primaryKey"`
+	Name         string `json:"name"            gorm:"uniqueIndex:idx_name_user_id;not null"`
+	IsBodyweight bool   `json:"is_bodyweight"  gorm:"default:false"`
+	IsTimeBased  bool   `json:"is_time_based" gorm:"default:false"`
 
 	MuscleGroupID *uint        `json:"muscle_group_id"`
 	MuscleGroup   *MuscleGroup `json:"muscle_group"    gorm:"foreignKey:MuscleGroupID;constraint:OnDelete:SET NULL,OnUpdate:CASCADE;"`

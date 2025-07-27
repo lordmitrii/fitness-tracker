@@ -56,12 +56,16 @@ const ExerciseStats = () => {
                 key={exercise.id}
                 className="sm:grid sm:grid-cols-2 rounded-xl shadow p-6 items-center justify-between gap-4 hover:shadow-lg transition border border-gray-200 shadow-md"
               >
-                <div>
+                <div className="mb-2">
                   <div className="text-body-blue font-semibold">
                     {exercise.name}
                   </div>
-                  <div className="text-caption capitalize mb-2">
+                  <div className="text-caption capitalize">
                     {exercise.muscle_group && `${exercise.muscle_group.name}`}
+                  </div>
+                  <div className="text-caption">
+                    {exercise.is_bodyweight &&
+                      "*" + t("exercise_stats.with_bodyweight")}
                   </div>
                 </div>
                 <div>
@@ -71,7 +75,10 @@ const ExerciseStats = () => {
                   {exercise.current_reps && exercise.current_weight ? (
                     <div className="inline-block rounded-lg bg-blue-100 text-body-blue px-4 py-2 font-semibold">
                       {exercise.current_weight} {t("measurements.weight")} x{" "}
-                      {exercise.current_reps} {t("measurements.reps")}
+                      {exercise.current_reps}{" "}
+                      {exercise.is_time_based
+                        ? t("measurements.seconds")
+                        : t("measurements.reps")}
                     </div>
                   ) : (
                     <div className="text-caption italic">

@@ -4,7 +4,7 @@ import api from "../api";
 import WorkoutExerciseDetailsMenu from "./WorkoutExerciseDetailsMenu";
 import WorkoutSetDetailsMenu from "./WorkoutSetDetailsMenu";
 import { useTranslation } from "react-i18next";
-import CheckIcon from "../icons/CheckIcon";
+import CheckBox from "./CheckBox";
 
 const WorkoutExerciseTable = ({
   planID,
@@ -85,45 +85,55 @@ const WorkoutExerciseTable = ({
             className="sm:rounded-2xl shadow-md bg-white sm:p-4 flex flex-col gap-4 sm:border sm:border-gray-100"
           >
             {/* Exercise header */}
-            <div className="flex flex-row items-start sm:items-center justify-between gap-1">
-              <div className="font-medium text-body-blue">
-                {ex.index}. {ex.individual_exercise.name}
-                <span className="ml-2 text-caption font-bold">
-                  {ex.individual_exercise.muscle_group &&
-                    `(${ex.individual_exercise.muscle_group.name})`}
-                </span>
+            <div>
+              <div className="flex flex-row items-start sm:items-center justify-between gap-1">
+                <div className="font-medium text-body-blue">
+                  {ex.index}. {ex.individual_exercise.name}
+                  <span className="ml-2 text-caption font-bold">
+                    {ex.individual_exercise.muscle_group &&
+                      `(${ex.individual_exercise.muscle_group.name})`}
+                  </span>
+                </div>
+                <DropdownMenu
+                  dotsHorizontal={true}
+                  dotsHidden={!isCurrentCycle}
+                  menu={({ close }) => (
+                    <WorkoutExerciseDetailsMenu
+                      planID={planID}
+                      cycleID={cycleID}
+                      workoutID={workoutID}
+                      workoutName={workoutName}
+                      exercise={ex}
+                      exercises={exercises}
+                      updateExercises={onUpdateExercises}
+                      closeMenu={close}
+                      onError={onError}
+                    />
+                  )}
+                />
               </div>
-              <DropdownMenu
-                dotsHorizontal={true}
-                dotsHidden={!isCurrentCycle}
-                menu={({ close }) => (
-                  <WorkoutExerciseDetailsMenu
-                    planID={planID}
-                    cycleID={cycleID}
-                    workoutID={workoutID}
-                    workoutName={workoutName}
-                    exercise={ex}
-                    exercises={exercises}
-                    updateExercises={onUpdateExercises}
-                    closeMenu={close}
-                    onError={onError}
-                  />
-                )}
-              />
+              <div className="flex text-caption">
+                {ex.individual_exercise.is_bodyweight &&
+                  t("workout_plan_single.bodyweight_exercise")}
+              </div>
             </div>
 
             {/* Sets table */}
             <div className="overflow-x-auto">
-              <div className="min-w-full grid grid-cols-[7dvw_1fr_1fr_7dvw_1fr] sm:grid-cols-[36px_1fr_1fr_1fr_1fr_1fr] gap-4 text-gray-600 font-semibold border-b pb-2 sm:text-normal text-sm">
+              <div className="min-w-full grid grid-cols-[6dvw_minmax(20dvw,1fr)_minmax(20dvw,1fr)_minmax(0,6dvw)_1fr] sm:grid-cols-[36px_1fr_1fr_1fr_1fr_1fr] gap-4 text-gray-600 font-semibold border-b pb-2 sm:text-normal text-sm">
                 <div className=""></div>
                 <div className="hidden sm:block">
                   {t("workout_plan_single.set_label")}
                 </div>
-                <div className="">
+                <div className="whitespace-nowrap">
                   {t("workout_plan_single.weight_label")} (
                   {t("measurements.weight")})
                 </div>
-                <div className="">{t("workout_plan_single.reps_label")}</div>
+                <div className="">
+                  {ex.individual_exercise.is_time_based
+                    ? t("workout_plan_single.time_label")
+                    : t("workout_plan_single.reps_label")}
+                </div>
                 <div className="invisible sm:visible text-center">
                   {t("workout_plan_single.badge_label")}
                 </div>
@@ -138,7 +148,7 @@ const WorkoutExerciseTable = ({
                   .map((set) => (
                     <div
                       key={set.id}
-                      className="min-w-full grid grid-cols-[7dvw_1fr_1fr_7dvw_1fr] sm:grid-cols-[36px_1fr_1fr_1fr_1fr_1fr] gap-4 items-center py-2"
+                      className="min-w-full grid grid-cols-[6dvw_minmax(20dvw,1fr)_minmax(20dvw,1fr)_minmax(0,6dvw)_1fr] sm:grid-cols-[36px_1fr_1fr_1fr_1fr_1fr] gap-4 items-center py-2"
                     >
                       <DropdownMenu
                         dotsHidden={!isCurrentCycle}
@@ -230,42 +240,25 @@ const WorkoutExerciseTable = ({
                       <span className="text-gray-600 w-5 justify-self-center">
                         {getExerciseProgressBadge(set)}
                       </span>
-                      <label className="relative flex justify-center items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={!!set.completed}
-                          onChange={(e) => {
-                            const checked = e.target.checked;
-                            if (checked && !checkInputFields(set)) {
-                              alert(
-                                t("workout_plan_single.please_check_fields")
-                              );
-                              return;
-                            }
-                            handleToggleExercise(
-                              ex.id,
-                              set.id,
-                              set.reps,
-                              set.weight,
-                              checked
-                            );
-                          }}
-                          className="sr-only peer"
-                          title={t("workout_plan_single.set_completed")}
-                          disabled={!isCurrentCycle}
-                        />
-                        <div
-                          className={`size-6 bg-white dark:bg-gray-500 border border-gray-300 rounded transition duration-150 ease-in-out
-                                      peer-checked:bg-blue-600 peer-checked:border-transparent
-                                      peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-400
-                                      flex items-center justify-center
-                                    `}
-                        />
-
-                        <CheckIcon
-                          className={`absolute size-6 text-white hidden peer-checked:block`}
-                        />
-                      </label>
+                      <CheckBox
+                        title={t("workout_plan_single.set_completed")}
+                        checked={!!set.completed}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          if (checked && !checkInputFields(set)) {
+                            alert(t("workout_plan_single.please_check_fields"));
+                            return;
+                          }
+                          handleToggleExercise(
+                            ex.id,
+                            set.id,
+                            set.reps,
+                            set.weight,
+                            checked
+                          );
+                        }}
+                        disabled={!isCurrentCycle}
+                      />
                     </div>
                   ))}
               </div>
