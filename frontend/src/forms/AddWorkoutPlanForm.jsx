@@ -15,7 +15,7 @@ import CloseIcon from "../icons/CloseIcon";
 const ExerciseChip = ({ ex, onDelete }) => {
   const { t } = useTranslation();
   return (
-    <div className="w-35 h-10 inline-flex items-center justify-center px-2 rounded-lg bg-blue-50 text-caption-blue font-medium border border-blue-200 mr-2 mb-2">
+    <div className="w-35 min-h-10 inline-flex items-center justify-center py-1 px-2 rounded-lg bg-blue-50 text-caption-blue font-medium border border-blue-200 mr-2 mb-2">
       <span className="flex items-center justify-between gap-2">
         {ex.individual_exercise?.name || ex}
         {ex.sets_qt

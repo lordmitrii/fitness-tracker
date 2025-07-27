@@ -38,7 +38,8 @@
     "height": "厘米",
     "reps": "次",
     "set": "组",
-    "sets": "组"
+    "sets": "组",
+    "seconds": "秒"
   },
   "errors": {
     "network_error": "网络错误。请检查服务器状态。",
@@ -74,7 +75,8 @@
     "start_logging": "开始记录锻炼以查看进展！",
     "muscle_groups_strength": "肌肉群力量",
     "best_exercise": "最佳锻炼",
-    "estimated_1rm": "估计 1-RM"
+    "estimated_1rm": "估计 1-RM",
+    "with_bodyweight": "使用自身体重"
   },
   "not_found": {
     "page_not_found": "页面未找到",
@@ -130,7 +132,9 @@
     "badge_label": "徽章",
     "done_label": "已完成",
     "please_check_fields": "请确保所有字段都有效后再标记为完成。",
-    "set_completed": "组已完成"
+    "set_completed": "组已完成",
+    "time_label": "秒",
+    "bodyweight_exercise": "自重练习"
   },
   "error_state": {
     "oops_message": "抱歉！发生了错误",
@@ -213,10 +217,18 @@
     "exercise_name_placeholder": "练习名称",
     "create_custom_exercise": "创建自定义练习",
     "select_from_exercise_pool": "从练习库选择",
-    "custom_suffix": "（自定义）"
+    "custom_suffix": "（自定义）",
+    "is_bodyweight": "自重练习",
+    "is_time_based": "基于时间的练习",
+    "name_required": "练习名称为必填项。",
+    "sets_required": "组数为必填项。",
+    "muscle_group_required": "肌肉群为必填项。",
+    "exercise_required": "练习为必填项。",
+    "exercise_already_exists": "此练习已存在。"
   },
   "days_per_cycle_selector": {
-    "more": "更多"
+    "more": "更多",
+    "days": "天"
   },
   "private_route": {
     "checking_auth": "正在验证身份..."

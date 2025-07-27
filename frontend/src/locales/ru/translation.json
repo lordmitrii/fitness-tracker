@@ -36,9 +36,10 @@
   "measurements": {
     "weight": "кг",
     "height": "см",
-    "reps": "повтор.",
+    "reps": "повторений",
     "set": "подход",
-    "sets": "подходы"
+    "sets": "подходы",
+    "seconds": "секунд"
   },
   "errors": {
     "network_error": "Ошибка сети. Пожалуйста, проверьте статус сервера.",
@@ -74,7 +75,8 @@
     "start_logging": "Начните фиксировать тренировки, чтобы увидеть прогресс!",
     "muscle_groups_strength": "Сила мышечных групп",
     "best_exercise": "Лучшее упражнение",
-    "estimated_1rm": "Расчетный 1-RM"
+    "estimated_1rm": "Расчетный 1-RM",
+    "with_bodyweight": "с собственным весом"
   },
   "not_found": {
     "page_not_found": "Страница не найдена",
@@ -130,7 +132,9 @@
     "badge_label": "Значок",
     "done_label": "Выполнено",
     "please_check_fields": "Пожалуйста, убедитесь, что все поля корректны перед завершением.",
-    "set_completed": "Подход завершен"
+    "set_completed": "Подход завершен",
+    "time_label": "Секунды",
+    "bodyweight_exercise": "Упражнение с собственным весом"
   },
   "error_state": {
     "oops_message": "Ой! Что-то пошло не так",
@@ -213,10 +217,18 @@
     "exercise_name_placeholder": "Название упражнения",
     "create_custom_exercise": "Создать свое упражнение",
     "select_from_exercise_pool": "Выбрать из списка упражнений",
-    "custom_suffix": "(кастом)"
+    "custom_suffix": "(кастом)",
+    "is_bodyweight": "С собственным весом",
+    "is_time_based": "Упражнение по времени",
+    "name_required": "Название упражнения обязательно.",
+    "sets_required": "Подходы обязательны.",
+    "muscle_group_required": "Группа мышц обязательна.",
+    "exercise_required": "Упражнение обязательно.",
+    "exercise_already_exists": "Это упражнение уже существует."
   },
   "days_per_cycle_selector": {
-    "more": "Более"
+    "more": "Более",
+    "days": "Дней"
   },
   "private_route": {
     "checking_auth": "Проверка авторизации..."

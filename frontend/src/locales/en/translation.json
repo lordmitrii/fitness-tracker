@@ -38,7 +38,8 @@
     "height": "cm",
     "reps": "reps",
     "set": "set",
-    "sets": "sets"
+    "sets": "sets",
+    "seconds": "seconds"
   },
   "errors": {
     "network_error": "Network error. Please, check server status.",
@@ -74,7 +75,8 @@
     "start_logging": "Start logging workouts to see your progress!",
     "muscle_groups_strength": "Muscle Groups Strength",
     "best_exercise": "Best Exercise",
-    "estimated_1rm": "Estimated 1-RM"
+    "estimated_1rm": "Estimated 1-RM",
+    "with_bodyweight": "with bodyweight"
   },
   "not_found": {
     "page_not_found": "Page Not Found",
@@ -130,7 +132,9 @@
     "badge_label": "Badge",
     "done_label": "Done",
     "please_check_fields": "Please ensure all fields are valid before marking as done.",
-    "set_completed": "Set completed"
+    "set_completed": "Set completed",
+    "time_label": "Seconds",
+    "bodyweight_exercise": "Bodyweight exercise"
   },
   "error_state": {
     "oops_message": "Oops! Something went wrong",
@@ -213,10 +217,18 @@
     "exercise_name_placeholder": "Exercise Name",
     "create_custom_exercise": "Create custom exercise",
     "select_from_exercise_pool": "Select from exercise pool",
-    "custom_suffix": "(custom)"
+    "custom_suffix": "(custom)",
+    "is_bodyweight": "Bodyweight Exercise",
+    "is_time_based": "Time Based Exercise",
+    "name_required": "Exercise name is required.",
+    "sets_required": "Sets are required.",
+    "muscle_group_required": "Muscle group is required.",
+    "exercise_required": "Exercise is required.",
+    "exercise_already_exists": "This exercise already exists."
   },
   "days_per_cycle_selector": {
-    "more": "More"
+    "more": "More",
+    "days": "Days"
   },
   "private_route": {
     "checking_auth": "Checking authentication..."
