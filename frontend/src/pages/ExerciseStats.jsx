@@ -59,10 +59,13 @@ const ExerciseStats = () => {
               >
                 <div className="mb-2">
                   <div className="text-body-blue font-semibold">
-                    {exercise.name}
+                    {!!exercise.exercise?.slug
+                      ? t(`exercise.${exercise.exercise.slug}`)
+                      : exercise.name}
                   </div>
                   <div className="text-caption capitalize">
-                    {exercise.muscle_group && `${exercise.muscle_group.name}`}
+                    {!!exercise.muscle_group &&
+                      t(`muscle_group.${exercise.muscle_group.slug}`)}
                   </div>
                   <div className="text-caption">
                     {exercise.is_bodyweight &&

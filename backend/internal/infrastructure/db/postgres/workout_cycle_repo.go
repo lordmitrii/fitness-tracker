@@ -21,11 +21,11 @@ func (r *WorkoutCycleRepo) Create(ctx context.Context, wc *workout.WorkoutCycle)
 func (r *WorkoutCycleRepo) GetByID(ctx context.Context, id uint) (*workout.WorkoutCycle, error) {
 	var wc workout.WorkoutCycle
 	if err := r.db.WithContext(ctx).Preload("Workouts", func(db *gorm.DB) *gorm.DB {
-		return db.Preload("WorkoutExercises.IndividualExercise.MuscleGroup").Preload("WorkoutExercises.WorkoutSets").Order("index ASC").Order("id ASC")
+		return db.Preload("WorkoutExercises.IndividualExercise.MuscleGroup").Preload("WorkoutExercises.IndividualExercise.Exercise").Preload("WorkoutExercises.WorkoutSets").Order("index ASC").Order("id ASC")
 	}).First(&wc, id).Error; err != nil {
 		return nil, err
 	}
-	return &wc, nil
+	return &wc, nil	
 }
 
 func (r *WorkoutCycleRepo) GetByPlanIDAndWeek(ctx context.Context, planID uint, week int) (*workout.WorkoutCycle, error) {

@@ -41,7 +41,7 @@ const DaysPerCycleSelector = ({ value, onChange }) => {
 
   return (
     <div>
-      <div className="flex w-full justify-between bg-gray-100 rounded-2xl p-1 sm:p-2 shadow-inner">
+      <div className="flex w-full overflow-x-auto justify-between bg-gray-100 rounded-2xl p-1 sm:p-2 shadow-inner">
         {[...Array(MAX_STANDARD_DAYS)].map((_, i) => (
           <button
             key={i}

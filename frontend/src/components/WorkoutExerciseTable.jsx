@@ -88,10 +88,15 @@ const WorkoutExerciseTable = ({
             <div>
               <div className="flex flex-row items-start sm:items-center justify-between gap-1">
                 <div className="font-medium text-body-blue">
-                  {ex.index}. {ex.individual_exercise.name}
+                  {ex.index}.{" "}
+                  {!!ex.individual_exercise.exercise?.slug
+                    ? t(`exercise.${ex.individual_exercise.exercise.slug}`)
+                    : ex.individual_exercise.name}
                   <span className="ml-2 text-caption font-bold">
                     {ex.individual_exercise.muscle_group &&
-                      `(${ex.individual_exercise.muscle_group.name})`}
+                      `(${t(
+                        `muscle_group.${ex.individual_exercise.muscle_group.slug}`
+                      )})`}
                   </span>
                 </div>
                 <DropdownMenu

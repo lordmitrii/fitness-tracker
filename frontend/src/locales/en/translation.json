@@ -369,6 +369,9 @@
     "abs": "Abs",
     "calves": "Calves",
     "forearms": "Forearms",
-    "traps": "Traps"
+    "traps": "Traps",
+    "arms": "Arms",
+    "legs": "Legs",
+    "core": "Core"
   }
 }

@@ -296,7 +296,7 @@ const AddWorkoutExerciseModal = ({
                 </option>
                 {muscleGroupsArray.map((group) => (
                   <option key={group.id} value={group.id}>
-                    {group.name}
+                    {t(`muscle_group.${group.slug}`)}
                   </option>
                 ))}
               </select>
@@ -327,7 +327,7 @@ const AddWorkoutExerciseModal = ({
                           key={`${ex.source}-${ex.id}`}
                           value={`${ex.source}-${ex.id}`}
                         >
-                          {ex.name}
+                          {ex.slug ? t(`exercise.${ex.slug}`) : ex.name}
                           {ex.source === "custom"
                             ? ` ${t(
                                 "add_workout_exercise_modal.custom_suffix"
