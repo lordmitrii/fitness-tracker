@@ -3,10 +3,10 @@ const e1RM = (w, r) => w * (1 + r / 30);
 const MAIN_GROUPS = [
   { key: "Chest", labels: ["chest"] },
   { key: "Back", labels: ["back", "traps"] },
-  { key: "Shoulders", labels: ["shoulders"] },
-  { key: "Legs", labels: ["quads", "hamstrings", "glutes", "calves"] },
   { key: "Arms", labels: ["biceps", "triceps", "forearms"] },
+  { key: "Legs", labels: ["quads", "hamstrings", "glutes", "calves"] },
   { key: "Core", labels: ["abs"] },
+  { key: "Shoulders", labels: ["shoulders"] },
 ];
 
 const EXPECTED_RATIOS = {
