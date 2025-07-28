@@ -41,18 +41,24 @@ function aggregateStats(stats) {
     const est = e1RM(current_weight, current_reps);
     if (
       !maxByGroup[group] ||
-      est * (is_bodyweight ? BODYWEIGHT_FACTOR : 1) > maxByGroup[group].e1RM
+      est * (is_bodyweight ? BODYWEIGHT_FACTOR : 1) >
+        maxByGroup[group].weightedE1RM
     ) {
-      maxByGroup[group] = { exercise: name, e1RM: est, is_bodyweight };
+      maxByGroup[group] = {
+        exercise: name,
+        weightedE1RM: est * (is_bodyweight ? BODYWEIGHT_FACTOR : 1),
+        e1RM: est,
+        is_bodyweight,
+      };
     }
   }
 
-  const rows = MAIN_GROUPS.map(({ key }) => {
+  const rows = MAIN_GROUPS.map(({ key }) => {   
     const entry = maxByGroup[key];
     const raw = entry?.e1RM || 0;
     const scaled =
-      (raw / EXPECTED_RATIOS[key]) *
-      (entry?.is_bodyweight ? BODYWEIGHT_FACTOR : 1);
+      (raw * (entry?.is_bodyweight ? BODYWEIGHT_FACTOR : 1)) /
+      EXPECTED_RATIOS[key];
 
     return {
       group: key,

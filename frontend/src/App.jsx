@@ -16,12 +16,14 @@ import WorkoutPlanSingle from "./pages/WorkoutPlanSingle";
 import ExerciseStats from "./pages/ExerciseStats";
 import PrivateRoute from "./components/PrivateRoute";
 import InstallationGuide from "./pages/InstallationGuide";
+import ScrollToTop from "./utils/scrollToTop";
 import "./i18n";
 
 function App() {
   return (
     <AuthProvider>
       <Router>
+        <ScrollToTop />
         <Layout>
           <Routes>
             <Route path="/" element={<Home />} />

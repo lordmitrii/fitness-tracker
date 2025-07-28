@@ -30,7 +30,7 @@ func (r *IndividualExerciseRepo) GetByID(ctx context.Context, id uint) (*workout
 
 func (r *IndividualExerciseRepo) GetByUserID(ctx context.Context, userID uint) ([]*workout.IndividualExercise, error) {
 	var exercises []*workout.IndividualExercise
-	if err := r.db.WithContext(ctx).Preload("MuscleGroup").Where("user_id = ?", userID).Find(&exercises).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("MuscleGroup").Preload("Exercise").Where("user_id = ?", userID).Find(&exercises).Error; err != nil {
 		return nil, err
 	}
 	return exercises, nil
@@ -38,7 +38,7 @@ func (r *IndividualExerciseRepo) GetByUserID(ctx context.Context, userID uint) (
 
 func (r *IndividualExerciseRepo) GetByUserAndExerciseID(ctx context.Context, userID, exerciseID uint) (*workout.IndividualExercise, error) {
 	var pe workout.IndividualExercise
-	if err := r.db.WithContext(ctx).Preload("MuscleGroup").Where("user_id = ? AND exercise_id = ?", userID, exerciseID).First(&pe).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("MuscleGroup").Preload("Exercise").Where("user_id = ? AND exercise_id = ?", userID, exerciseID).First(&pe).Error; err != nil {
 		return nil, custom_err.ErrIndividualExerciseNotFound
 	}
 	return &pe, nil

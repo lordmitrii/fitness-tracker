@@ -4,6 +4,7 @@ import LoadingState from "../states/LoadingState";
 import ErrorState from "../states/ErrorState";
 import { useTranslation } from "react-i18next";
 import MuscleGroupRadar from "../components/MuscleGroupRadar";
+import { e1RM } from "../utils/exerciseStatsUtils";
 
 const ExerciseStats = () => {
   const [stats, setStats] = useState(null);
@@ -73,12 +74,47 @@ const ExerciseStats = () => {
                     {t("exercise_stats.current_best")}
                   </div>
                   {exercise.current_reps && exercise.current_weight ? (
-                    <div className="inline-block rounded-lg bg-blue-100 text-body-blue px-4 py-2 font-semibold">
-                      {exercise.current_weight} {t("measurements.weight")} x{" "}
-                      {exercise.current_reps}{" "}
-                      {exercise.is_time_based
-                        ? t("measurements.seconds")
-                        : t("measurements.reps")}
+                    <div className="relative inline-block">
+                      <label
+                        htmlFor={`toggle-e1rm-${exercise.id}`}
+                        className="inline-block rounded-lg bg-blue-100 text-body-blue px-4 py-2 font-semibold cursor-pointer"
+                        title="Click to toggle view"
+                        tabIndex={0}
+                      >
+                        <input
+                          type="checkbox"
+                          id={`toggle-e1rm-${exercise.id}`}
+                          className="peer hidden"
+                        />
+                        <span className="peer-checked:hidden">
+                          {exercise.current_weight} {t("measurements.weight")} x{" "}
+                          {exercise.current_reps}{" "}
+                          {exercise.is_time_based
+                            ? t("measurements.seconds")
+                            : t("measurements.reps")}
+                        </span>
+                        <span className="hidden peer-checked:inline">
+                          {!exercise.is_time_based ? (
+                            <>
+                              {Math.round(
+                                e1RM(
+                                  exercise.current_weight,
+                                  exercise.current_reps
+                                )
+                              )}{" "}
+                              {t("measurements.weight")} x 1{" "}
+                              {t("measurements.reps")} (
+                              {t("exercise_stats.estimated")})
+                            </>
+                          ) : (
+                            <>
+                              {t(
+                                "exercise_stats.1rm_not_applicable_for_time_based"
+                              )}{" "}
+                            </>
+                          )}
+                        </span>
+                      </label>
                     </div>
                   ) : (
                     <div className="text-caption italic">
