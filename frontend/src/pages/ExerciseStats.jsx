@@ -44,14 +44,16 @@ const ExerciseStats = () => {
         {t("exercise_stats.your_stats")}
       </h1>
 
+      <div className="flex justify-center mb-4">
         <AIChat
           trigger={
-            <button className="btn btn-primary flex items-center justify-center gap-2 justify-self-center mb-4">
+            <button className="btn btn-primary flex items-center justify-center gap-2">
               <span>{t("ai_chat.button_label")}</span>
             </button>
           }
           endpoint="/ai/ask-stats"
         />
+      </div>
 
       <MuscleGroupRadar stats={stats} className="mb-4" />
       {stats && stats.length > 0 ? (

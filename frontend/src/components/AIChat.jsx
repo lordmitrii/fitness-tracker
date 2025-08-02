@@ -6,6 +6,8 @@ import { cloneElement } from "react";
 import CloseIcon from "../icons/CloseIcon";
 import useScrollLock from "../hooks/useScrollLock";
 import ReactMarkdown from "react-markdown";
+import useConsent from "../hooks/useConsent";
+import ConsentModal from "../components/ConsentModal";
 
 const AIChat = ({ open: openProp, onOpenChange, trigger, endpoint }) => {
   const [internalOpen, setInternalOpen] = useState(false);
@@ -26,6 +28,14 @@ const AIChat = ({ open: openProp, onOpenChange, trigger, endpoint }) => {
   const open = isControlled ? openProp : internalOpen;
   const setOpen = isControlled ? onOpenChange : setInternalOpen;
   const close = () => setOpen(false);
+
+  const { consentGiven, giveConsent } = useConsent("aiChatConsent");
+  const [showConsent, setShowConsent] = useState(false);
+
+  const handleTriggerClick = () => {
+    if (!consentGiven) setShowConsent(true);
+    else setOpen(true);
+  };
 
   // Disable body scroll when chat is open
   useScrollLock(open);
@@ -61,7 +71,8 @@ const AIChat = ({ open: openProp, onOpenChange, trigger, endpoint }) => {
     setError(null);
 
     try {
-      const previousResponseId = messages[messages.length - 1]?.responseId || null;
+      const previousResponseId =
+        messages[messages.length - 1]?.responseId || null;
 
       const { data } = await api.post(endpoint, {
         question: input,
@@ -92,7 +103,19 @@ const AIChat = ({ open: openProp, onOpenChange, trigger, endpoint }) => {
 
   return (
     <>
-      {trigger ? cloneElement(trigger, { onClick: () => setOpen(true) }) : null}
+      {trigger ? cloneElement(trigger, { onClick: handleTriggerClick }) : null}
+      <ConsentModal
+        open={showConsent}
+        onAccept={() => {
+          giveConsent();
+          setShowConsent(false);
+          setOpen(true);
+        }}
+        onDecline={() => {
+          setShowConsent(false);
+          setOpen(false);
+        }}
+      />
       {open && (
         <div className="fixed inset-0 w-full h-full pt-[calc(4rem+env(safe-area-inset-top))] bg-white rounded-2xl shadow-lg flex flex-col z-10">
           <button

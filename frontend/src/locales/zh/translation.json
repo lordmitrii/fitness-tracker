@@ -383,5 +383,12 @@
     "user_input_placeholder": "在此输入您的消息...",
     "close_chat": "关闭聊天",
     "thinking": "思考中..."
+  },
+  "consent": {
+    "title": "需要同意",
+    "description": "继续使用本应用即表示您同意我们的条款和条件。",
+    "privacy_policy": "阅读我们的<0>隐私政策</0>",
+    "accept": "我同意",
+    "decline": "取消"
   }
 }

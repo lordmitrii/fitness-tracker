@@ -383,5 +383,12 @@
     "user_input_placeholder": "Type your message here...",
     "close_chat": "Close Chat",
     "thinking": "Thinking..."
+  },
+  "consent": {
+    "title": "Consent Required",
+    "description": "By continuing, you agree with our terms and conditions.",
+    "privacy_policy": "Read our <0>Privacy Policy</0>",
+    "accept": "I Agree",
+    "decline": "Cancel"
   }
 }
