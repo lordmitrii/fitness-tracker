@@ -5,6 +5,7 @@ import ErrorState from "../states/ErrorState";
 import { useTranslation } from "react-i18next";
 import MuscleGroupRadar from "../components/MuscleGroupRadar";
 import { e1RM } from "../utils/exerciseStatsUtils";
+import AIChat from "../components/AIChat";
 
 const ExerciseStats = () => {
   const [stats, setStats] = useState(null);
@@ -42,6 +43,16 @@ const ExerciseStats = () => {
       <h1 className="text-title font-bold mb-8 text-center">
         {t("exercise_stats.your_stats")}
       </h1>
+
+        <AIChat
+          trigger={
+            <button className="btn btn-primary flex items-center justify-center gap-2 justify-self-center mb-4">
+              <span>{t("ai_chat.button_label")}</span>
+            </button>
+          }
+          endpoint="/ai/ask-stats"
+        />
+
       <MuscleGroupRadar stats={stats} className="mb-4" />
       {stats && stats.length > 0 ? (
         <div className="flex flex-col gap-6">

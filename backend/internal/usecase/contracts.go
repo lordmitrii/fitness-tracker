@@ -79,4 +79,8 @@ type (
 		UpdateProfile(ctx context.Context, p *user.Profile) error
 		DeleteProfile(ctx context.Context, id uint) error
 	}
+
+	AIService interface {
+		AskStatsQuestion(ctx context.Context, userID uint, question string, previousResponseID string) (string, string, error)
+	}
 )

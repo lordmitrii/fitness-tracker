@@ -373,5 +373,15 @@
     "arms": "Arms",
     "legs": "Legs",
     "core": "Core"
+  },
+  "ai_chat": {
+    "button_label": "AI Chat",
+    "welcome_message_stats": "👋 Ask me anything about your workout stats! (e.g. 'How can I improve my squat?' or 'What muscle group is my strongest?')",
+    "error_response": "Sorry, I couldn't process your request. Please try again later.",
+    "error": "An error occured. Please try again.",
+    "send_button": "Send",
+    "user_input_placeholder": "Type your message here...",
+    "close_chat": "Close Chat",
+    "thinking": "Thinking..."
   }
 }

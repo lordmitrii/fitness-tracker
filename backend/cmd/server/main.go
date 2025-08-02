@@ -19,9 +19,9 @@ import (
 	"os"
 
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
+	"github.com/lordmitrii/golang-web-gin/internal/usecase/ai"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/user"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/workout"
-
 	// "github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/inmemory"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/postgres"
 	"github.com/lordmitrii/golang-web-gin/internal/interface/http"
@@ -31,7 +31,7 @@ func main() {
 	// repo := inmemory.NewWorkoutRepo()
 	var dsn string
 	if dsn = os.Getenv("DATABASE_URL"); dsn == "" {
-	   	dsn = "postgres://username:password@localhost:5432/fitness_tracker?sslmode=disable" // Default DSN if not set
+		dsn = "postgres://username:password@localhost:5432/fitness_tracker?sslmode=disable" // Default DSN if not set
 	}
 
 	db, err := postgres.NewPostgresDB(dsn)
@@ -53,19 +53,19 @@ func main() {
 	individualExerciseRepo := postgres.NewIndividualExerciseRepo(db)
 	workoutSetRepo := postgres.NewWorkoutSetRepo(db)
 
-
 	userRepo := postgres.NewUserRepo(db)
 	profileRepo := postgres.NewProfileRepo(db)
 
 	var exerciseService usecase.ExerciseService = workout.NewExerciseService(exerciseRepo, muscleGroupRepo)
 	var workoutService usecase.WorkoutService = workout.NewWorkoutService(workoutPlanRepo, workoutCycleRepo, workoutRepo, workoutExerciseRepo, workoutSetRepo, individualExerciseRepo, exerciseRepo)
 	var userService usecase.UserService = user.NewUserService(userRepo, profileRepo)
+	var aiService usecase.AIService = ai.NewAIService(workoutService, userService)
 
-	server := http.NewServer(exerciseService, workoutService, userService)
+	server := http.NewServer(exerciseService, workoutService, userService, aiService)
 
 	var port string
-	if port = os.Getenv("PORT"); port == "" {
+	if port = os.Getenv("PORT"); port == "" {	
 		port = "8080" // Default port if not set
-	}	
-	server.Run(":" + port) 
+	}
+	server.Run(":" + port)
 }

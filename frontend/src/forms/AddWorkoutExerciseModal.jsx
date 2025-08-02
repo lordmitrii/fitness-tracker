@@ -4,6 +4,7 @@ import { cloneElement } from "react";
 import SpinnerIcon from "../icons/SpinnerIcon";
 import { useTranslation } from "react-i18next";
 import CheckBox from "../components/CheckBox";
+import useScrollLock from "../hooks/useScrollLock";
 
 const AddWorkoutExerciseModal = ({
   open: openProp,
@@ -43,6 +44,9 @@ const AddWorkoutExerciseModal = ({
   const [sets, setSets] = useState("");
   const [isBodyweight, setIsBodyweight] = useState(false);
   const [isTimeBased, setIsTimeBased] = useState(false);
+
+  // Lock scroll when modal is open
+  useScrollLock(open);
 
   // Fetch exercises when the modal opens
   useEffect(() => {
