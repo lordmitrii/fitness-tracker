@@ -6,7 +6,7 @@ import GlobalLoadingState from "../states/GlobalLoadingState";
 import NetworkStatusBanner from "./NetworkStatusBanner";
 import LanguageSwitcher from "./LanguageSwitcher";
 import ThemeSwitcher from "./ThemeSwitcher";
-import { useTranslation } from "react-i18next";
+import { useTranslation, Trans } from "react-i18next";
 
 const Layout = ({ children }) => {
   const { isAuth, logout } = useAuth();
@@ -209,6 +209,23 @@ const Layout = ({ children }) => {
             >
               {t("general.contact_support")}
             </a>
+          </div>
+          <div className="text-center sm:text-left text-sm font-medium tracking-wide">
+            <Trans
+              i18nKey="general.our_policies"
+              components={[
+                <Link
+                  key="privacy-policy-link"
+                  to="/privacy-policy"
+                  className="underline"
+                />,
+                <Link
+                  key="health-data-policy-link"
+                  to="/health-data-policy"
+                  className="underline"
+                />,
+              ]}
+            />
           </div>
         </div>
       </footer>

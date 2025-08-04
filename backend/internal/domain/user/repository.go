@@ -18,3 +18,10 @@ type ProfileRepository interface {
 	Update(ctx context.Context, p *Profile) error
 	Delete(ctx context.Context, id uint) error
 }
+
+type UserConsentRepository interface {
+	Create(ctx context.Context, uc *UserConsent) error
+	GetByUserID(ctx context.Context, userID uint) ([]*UserConsent, error)
+	Update(ctx context.Context, uc *UserConsent) error
+	DeleteByUserIDAndType(ctx context.Context, userID uint, consentType, version string) error
+}

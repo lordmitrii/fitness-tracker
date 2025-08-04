@@ -55,10 +55,11 @@ func main() {
 
 	userRepo := postgres.NewUserRepo(db)
 	profileRepo := postgres.NewProfileRepo(db)
+	userConsentRepo := postgres.NewUserConsentRepository(db)
 
 	var exerciseService usecase.ExerciseService = workout.NewExerciseService(exerciseRepo, muscleGroupRepo)
 	var workoutService usecase.WorkoutService = workout.NewWorkoutService(workoutPlanRepo, workoutCycleRepo, workoutRepo, workoutExerciseRepo, workoutSetRepo, individualExerciseRepo, exerciseRepo)
-	var userService usecase.UserService = user.NewUserService(userRepo, profileRepo)
+	var userService usecase.UserService = user.NewUserService(userRepo, profileRepo, userConsentRepo)
 	var aiService usecase.AIService = ai.NewAIService(workoutService, userService)
 
 	server := http.NewServer(exerciseService, workoutService, userService, aiService)

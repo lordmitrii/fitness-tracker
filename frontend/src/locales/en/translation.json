@@ -21,6 +21,7 @@
     "n_a": "N/A",
     "active": "Active",
     "contact_support": "Contact Support",
+    "our_policies": "<0>Privacy</0> and <1>Health Data Policy</1>",
     "loading": "Loading...",
     "email": "Email",
     "password": "Password",
@@ -162,7 +163,11 @@
     "register_title": "Register",
     "password_min_length": "Password must be at least 8 characters.",
     "password_placeholder": "Create a password",
-    "already_have_account": "Already have an account?"
+    "already_have_account": "Already have an account?",
+    "privacy_policy_consent": "I agree to the <0>Privacy Policy</0>.",
+    "health_data_consent": "I agree to the <0>Health Data Policy</0>.",
+    "privacy_policy_consent_missing": "You must agree to the Privacy Policy.",
+    "health_data_consent_missing": "You must agree to the Health Data Policy."
   },
   "login_form": {
     "login_title": "Login",
@@ -384,11 +389,91 @@
     "close_chat": "Close Chat",
     "thinking": "Thinking..."
   },
-  "consent": {
+  "consent_modal": {
     "title": "Consent Required",
-    "description": "By continuing, you agree with our terms and conditions.",
-    "privacy_policy": "Read our <0>Privacy Policy</0>",
-    "accept": "I Agree",
-    "decline": "Cancel"
+    "description": "To use AI features, your health and exercise data will be shared with third parties like <0>OpenAI</0>. This is needed for analytics and to provide AI-powered responses.",
+    "privacy_policy": "Please read our <0>Privacy Policy</0> and <1>Health Data Policy</1> for more details.",
+    "accept": "Accept",
+    "decline": "Decline"
+  },
+  "privacy_policy": {
+    "title": "Privacy Policy",
+    "intro": "Your privacy is important to us. This Privacy Policy explains how we collect, use, and protect your information.",
+    "sections": {
+      "information_we_collect": {
+        "title": "Information We Collect",
+        "description": "We may collect the following types of information:",
+        "list": {
+          "personal_info": "Personal information (e.g., name, email address)",
+          "usage_data": "Usage data (e.g., how you use the service)",
+          "cookies": "Cookies and tracking technologies",
+          "health_data": "<0>Health data</0> (e.g., weight, height)",
+          "exercise_data": "Exercise data (e.g., workout plans, exercise logs)"
+        }
+      },
+      "use_of_information": {
+        "title": "How We Use Your Information",
+        "description": "We use your information to:",
+        "list": {
+          "to_provide_services": "Provide and maintain our services",
+          "to_improve_services": "Improve and personalize your experience",
+          "to_communicate": "Communicate with you about updates or offers"
+        }
+      },
+      "data_sharing": {
+        "title": "Data Sharing",
+        "description": "We may share your health and exercise data with trusted third-party providers, such as <0>OpenAI</0>, to deliver features like AI chat and analytics. When you use these features, relevant data is securely sent to engaged parties to generate personalized responses. For details on how OpenAI handles your data, please refer to the <1>OpenAI Privacy Policy</1>. We only share the minimum data required, and require all partners to protect your information in accordance with applicable laws. Explicit consent will always be requested before your data is shared with OpenAI or similar providers."
+      },
+      "data_security": {
+        "title": "Data Security",
+        "description": "We take reasonable measures to protect your information from unauthorized access, disclosure, or loss."
+      },
+      "your_rights": {
+        "title": "Your Rights",
+        "description": "You have the right to access, update, or delete your personal information. Contact us to exercise these rights."
+      },
+      "changes": {
+        "title": "Changes to This Policy",
+        "description": "We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new policy on this page."
+      },
+      "contact_us": {
+        "title": "Contact Us",
+        "description": "If you have any questions about this Privacy Policy, please contact us at <0>support@ftrackerapp.co.uk</0>."
+      }
+    }
+  },
+  "health_data_policy": {
+    "title": "Health Data Policy",
+    "intro": "We value the privacy and security of your health information. This policy explains how we collect, use, and protect your health data.",
+    "sections": {
+      "what_is_health_data": {
+        "title": "What Is Health Data?",
+        "description": "Health data includes information such as your weight, age, exercise stats, and any other health-related information you provide when using our services."
+      },
+      "how_we_use": {
+        "title": "How We Use Your Health Data",
+        "description": "We use your health data to provide personalized insights, track your progress, improve our services, and enable features like AI-powered chat."
+      },
+      "data_sharing": {
+        "title": "Sharing Your Health Data",
+        "description": "We may share your health data with trusted third-party providers, such as OpenAI, for features like AI chat and analytics. For details on how OpenAI handles your data, please refer to the <0>OpenAI Privacy Policy</0>. We only share the minimum necessary data and require our partners to protect your information according to the law. Explicit consent will always be requested before your data is shared with OpenAI or similar providers."
+      },
+      "data_security": {
+        "title": "How We Protect Your Health Data",
+        "description": "We use industry-standard measures to secure your health data and protect it from unauthorized access or loss."
+      },
+      "your_rights": {
+        "title": "Your Rights",
+        "description": "You have the right to access, update, or delete your health data. You may withdraw your consent at any time by contacting us."
+      },
+      "consent": {
+        "title": "Your Consent",
+        "description": "We only process and share your health data when you give explicit consent, as required by law. You will be specifically asked for this consent before you use any AI features that involve sharing your data with third-party providers."
+      },
+      "contact_us": {
+        "title": "Contact Us",
+        "description": "If you have any questions about this Health Data Policy, or wish to withdraw your consent, please contact us at <0>support@ftrackerapp.co.uk</0>."
+      }
+    }
   }
 }

@@ -52,9 +52,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (email, password) => {
+  const register = async (email, password, privacyConsent, privacyPolicyVersion, healthDataConsent, healthDataPolicyVersion) => {
     try {
-      const response = await registerRequest(email, password);
+      const response = await registerRequest(email, password, privacyConsent, privacyPolicyVersion, healthDataConsent, healthDataPolicyVersion);
       return response;
     } catch (error) {
       if (!error.response) return { message: t("errors.network_error") };

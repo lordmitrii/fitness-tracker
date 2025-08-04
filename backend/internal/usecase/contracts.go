@@ -71,13 +71,18 @@ type (
 	}
 
 	UserService interface {
-		Register(ctx context.Context, email, password string) error
+		Register(ctx context.Context, email, password string, privacyConsent, healthDataConsent bool, privacyPolicyVersion, healthDataPolicyVersion string) error
 		Authenticate(ctx context.Context, email, password string) (*user.User, error)
 		CreateProfile(ctx context.Context, p *user.Profile) error
 		// DeleteUser(ctx context.Context, id uint) error
 		GetProfile(ctx context.Context, userID uint) (*user.Profile, error)
 		UpdateProfile(ctx context.Context, p *user.Profile) error
 		DeleteProfile(ctx context.Context, id uint) error
+
+		GetConsents(ctx context.Context, userID uint) ([]*user.UserConsent, error)
+		CreateConsent(ctx context.Context, consent *user.UserConsent) error
+		UpdateConsent(ctx context.Context, consent *user.UserConsent) error
+		DeleteConsent(ctx context.Context, userID uint, consentType, version string) error
 	}
 
 	AIService interface {

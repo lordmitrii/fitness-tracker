@@ -16,6 +16,8 @@ import WorkoutPlanSingle from "./pages/WorkoutPlanSingle";
 import ExerciseStats from "./pages/ExerciseStats";
 import PrivateRoute from "./components/PrivateRoute";
 import InstallationGuide from "./pages/InstallationGuide";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import HealthDataPolicy from "./pages/HealthDataPolicy";
 import ScrollToTop from "./utils/scrollToTop";
 import "./i18n";
 
@@ -30,6 +32,8 @@ function App() {
             <Route path="/installation-guide" element={<InstallationGuide />} />
             <Route path="/login" element={<LoginForm />} />
             <Route path="/register" element={<RegisterForm />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/health-data-policy" element={<HealthDataPolicy />} />
 
             {/* Private Route */}
             <Route element={<PrivateRoute />}>
@@ -40,12 +44,27 @@ function App() {
               <Route path="/exercise-stats" element={<ExerciseStats />} />
 
               <Route path="/workout-plans" element={<WorkoutPlans />} />
-              <Route path="/create-workout-plan" element={<AddWorkoutPlanForm />} />
-              <Route path="/update-workout-plan/:planID" element={<UpdateWorkoutPlanForm />} />
+              <Route
+                path="/create-workout-plan"
+                element={<AddWorkoutPlanForm />}
+              />
+              <Route
+                path="/update-workout-plan/:planID"
+                element={<UpdateWorkoutPlanForm />}
+              />
 
-              <Route path="/workout-plans/:planID/workout-cycles/:cycleID" element={<WorkoutPlanSingle />} />
-              <Route path="/workout-plans/:planID/workout-cycles/:cycleID/create-workout" element={<CreateWorkoutForm />} />
-              <Route path="/workout-plans/:planID/workout-cycles/:cycleID/update-workout/:workoutID" element={<UpdateWorkoutForm />} />
+              <Route
+                path="/workout-plans/:planID/workout-cycles/:cycleID"
+                element={<WorkoutPlanSingle />}
+              />
+              <Route
+                path="/workout-plans/:planID/workout-cycles/:cycleID/create-workout"
+                element={<CreateWorkoutForm />}
+              />
+              <Route
+                path="/workout-plans/:planID/workout-cycles/:cycleID/update-workout/:workoutID"
+                element={<UpdateWorkoutForm />}
+              />
             </Route>
 
             <Route path="*" element={<NotFound />} />
