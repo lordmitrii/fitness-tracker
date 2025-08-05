@@ -10,6 +10,7 @@ type UserRepository interface {
 	GetByID(ctx context.Context, id uint) (*User, error)
 	Update(ctx context.Context, u *User) error
 	Delete(ctx context.Context, id uint) error
+	SetVerified(ctx context.Context, email string) error
 }
 
 type ProfileRepository interface {

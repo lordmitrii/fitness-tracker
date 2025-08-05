@@ -83,9 +83,18 @@ type (
 		CreateConsent(ctx context.Context, consent *user.UserConsent) error
 		UpdateConsent(ctx context.Context, consent *user.UserConsent) error
 		DeleteConsent(ctx context.Context, userID uint, consentType, version string) error
+
+		SetVerified(ctx context.Context, email string) error
 	}
 
 	AIService interface {
 		AskStatsQuestion(ctx context.Context, userID uint, question string, previousResponseID string) (string, string, error)
+	}
+
+	EmailService interface {
+		SendNotificationEmail(ctx context.Context, to, subject, body string) error
+		SendVerificationEmail(ctx context.Context, to string) error
+		SendResetPasswordEmail(ctx context.Context, to string) error
+		VerifyToken(ctx context.Context, token, tokenType string) (bool, error)
 	}
 )

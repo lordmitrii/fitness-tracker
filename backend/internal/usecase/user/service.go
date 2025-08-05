@@ -112,3 +112,7 @@ func (s *userServiceImpl) UpdateConsent(ctx context.Context, consent *user.UserC
 func (s *userServiceImpl) DeleteConsent(ctx context.Context, userID uint, consentType, version string) error {
 	return s.userConsentRepo.DeleteByUserIDAndType(ctx, userID, consentType, version)
 }
+
+func (s *userServiceImpl) SetVerified(ctx context.Context, email string) error {
+	return s.authRepo.SetVerified(ctx, email)
+}
