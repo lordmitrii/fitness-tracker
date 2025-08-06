@@ -32,7 +32,8 @@
     "last_updated": "Last updated:",
     "completed": "Completed",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "submit": "Submit"
   },
   "measurements": {
     "weight": "kg",
@@ -172,7 +173,28 @@
   "login_form": {
     "login_title": "Login",
     "password_placeholder": "Enter your password",
-    "not_registered": "Not registered yet?"
+    "not_registered": "Not registered yet?",
+    "forgot_password": "Forgot Password?"
+  },
+  "forgot_password": {
+    "title": "Forgot Password",
+    "email_placeholder": "Enter your email",
+    "email_invalid": "Invalid email address.",
+    "send_reset_link": "Send Reset Link",
+    "reset_link_sent": "Reset link has been sent.",
+    "error_sending_email": "Error sending reset link. Please try again later."
+  },
+  "reset_password": {
+    "title": "Reset Password",
+    "new_password_label": "New Password",
+    "confirm_password_label": "Confirm Password",
+    "new_password_placeholder": "Enter new password",
+    "confirm_password_placeholder": "Confirm your new password",
+    "passwords_mismatch": "Passwords do not match.",
+    "password_min_length": "Password must be at least 8 characters.",
+    "reset_password_button": "Reset",
+    "invalid_link": "Invalid or expired reset link.",
+    "verifying_link": "Verifying link..."
   },
   "profile_form": {
     "create_profile": "Create Profile",

@@ -11,6 +11,7 @@ type UserRepository interface {
 	Update(ctx context.Context, u *User) error
 	Delete(ctx context.Context, id uint) error
 	SetVerified(ctx context.Context, email string) error
+	CheckEmail(ctx context.Context, email string) (bool, error)
 }
 
 type ProfileRepository interface {

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import GitHubIcon from "../icons/GitHubIcon";
 import GlobalLoadingState from "../states/GlobalLoadingState";
@@ -15,6 +15,8 @@ const Layout = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const headerRef = useRef(null);
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
+  const spinner = searchParams.get("spinner");
   const [appLoading, setAppLoading] = useState(() => {
     if (sessionStorage.getItem("hasLoaded") === "1") {
       return false;
@@ -65,7 +67,7 @@ const Layout = ({ children }) => {
   const isActive = (to) =>
     to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
 
-  if (appLoading) {
+  if (appLoading && spinner !== "false") {
     return <GlobalLoadingState />;
   }
 

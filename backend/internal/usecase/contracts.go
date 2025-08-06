@@ -85,6 +85,8 @@ type (
 		DeleteConsent(ctx context.Context, userID uint, consentType, version string) error
 
 		SetVerified(ctx context.Context, email string) error
+		CheckEmail(ctx context.Context, email string) (bool, error)
+		ResetPassword(ctx context.Context, email, newPassword string) error
 	}
 
 	AIService interface {
@@ -95,6 +97,7 @@ type (
 		SendNotificationEmail(ctx context.Context, to, subject, body string) error
 		SendVerificationEmail(ctx context.Context, to string) error
 		SendResetPasswordEmail(ctx context.Context, to string) error
-		VerifyToken(ctx context.Context, token, tokenType string) (bool, error)
+		VerifyToken(ctx context.Context, token, tokenType string, preflight bool) (bool, error)
+		ResetPassword(ctx context.Context, token, newPassword string) error
 	}
 )

@@ -75,3 +75,11 @@ func (r *UserRepo) SetVerified(ctx context.Context, email string) error {
 	}
 	return nil
 }
+
+func (r *UserRepo) CheckEmail(ctx context.Context, email string) (bool, error) {
+	var count int64
+	if err := r.db.WithContext(ctx).Model(&user.User{}).Where("email = ?", email).Count(&count).Error; err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}

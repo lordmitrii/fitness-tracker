@@ -23,6 +23,7 @@ func NewEmailHandler(r *gin.RouterGroup, svc usecase.EmailService) {
 		email.POST("/send-notification", h.SendNotificationEmail)
 		email.POST("/send-reset-password", h.SendResetPasswordEmail)
 		email.POST("/verify-token", h.VerifyToken)
+		email.POST("/reset-password", h.ResetPassword)
 	}
 }
 
@@ -80,13 +81,15 @@ func (h *EmailHandler) VerifyToken(c *gin.Context) {
 	var req struct {
 		Token     string `json:"token" binding:"required"`
 		TokenType string `json:"token_type" binding:"required"`
+		Preflight bool   `json:"preflight"`
 	}
+
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	valid, err := h.svc.VerifyToken(c.Request.Context(), req.Token, req.TokenType)
+	valid, err := h.svc.VerifyToken(c.Request.Context(), req.Token, req.TokenType, req.Preflight)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -96,4 +99,21 @@ func (h *EmailHandler) VerifyToken(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Token is valid"})
+}
+
+func (h *EmailHandler) ResetPassword(c *gin.Context) {
+	var req struct {
+		Token       string `json:"token" binding:"required"`
+		NewPassword string `json:"new_password" binding:"required,min=8"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.svc.ResetPassword(c.Request.Context(), req.Token, req.NewPassword); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Password reset successfully"})
 }

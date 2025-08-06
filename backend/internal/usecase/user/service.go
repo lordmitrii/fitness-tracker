@@ -9,8 +9,8 @@ import (
 )
 
 type userServiceImpl struct {
-	authRepo    user.UserRepository
-	profileRepo user.ProfileRepository
+	authRepo        user.UserRepository
+	profileRepo     user.ProfileRepository
 	userConsentRepo user.UserConsentRepository
 }
 
@@ -33,19 +33,19 @@ func (s *userServiceImpl) Register(ctx context.Context, email, password string, 
 	if err != nil {
 		return err
 	}
-	
+
 	healthCons := &user.UserConsent{
-		UserID:                  u.ID,
-		Type:                    "health_data",
-		Given:                   healthDataConsent,
+		UserID:  u.ID,
+		Type:    "health_data",
+		Given:   healthDataConsent,
 		Version: healthDataPolicyVersion,
 	}
 
 	privacyCons := &user.UserConsent{
-		UserID:                  u.ID,
-		Type:                    "user_privacy",
-		Given:                   privacyConsent,
-		Version:                 privacyPolicyVersion,
+		UserID:  u.ID,
+		Type:    "user_privacy",
+		Given:   privacyConsent,
+		Version: privacyPolicyVersion,
 	}
 
 	err = s.userConsentRepo.Create(ctx, healthCons)
@@ -115,4 +115,27 @@ func (s *userServiceImpl) DeleteConsent(ctx context.Context, userID uint, consen
 
 func (s *userServiceImpl) SetVerified(ctx context.Context, email string) error {
 	return s.authRepo.SetVerified(ctx, email)
+}
+
+func (s *userServiceImpl) CheckEmail(ctx context.Context, email string) (bool, error) {
+	exists, err := s.authRepo.CheckEmail(ctx, email)
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
+}
+
+func (s *userServiceImpl) ResetPassword(ctx context.Context, email, newPassword string) error {
+	hash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	user, err := s.authRepo.GetByEmail(ctx, email)
+	if err != nil {
+		return err
+	}
+
+	user.PasswordHash = string(hash)
+	return s.authRepo.Update(ctx, user)
 }
