@@ -5,6 +5,7 @@ import (
 
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
+	"time"
 )
 
 type (
@@ -88,16 +89,20 @@ type (
 		CheckEmail(ctx context.Context, email string) (bool, error)
 		ResetPassword(ctx context.Context, email, newPassword string) error
 	}
-
-	AIService interface {
-		AskStatsQuestion(ctx context.Context, userID uint, question string, previousResponseID string) (string, string, error)
-	}
-
-	EmailService interface {
-		SendNotificationEmail(ctx context.Context, to, subject, body string) error
-		SendVerificationEmail(ctx context.Context, to string) error
-		SendResetPasswordEmail(ctx context.Context, to string) error
-		VerifyToken(ctx context.Context, token, tokenType string, preflight bool) (bool, error)
-		ResetPassword(ctx context.Context, token, newPassword string) error
-	}
 )
+
+type AIService interface {
+	AskStatsQuestion(ctx context.Context, userID uint, question string, previousResponseID string) (string, string, error)
+	AskWorkoutPlanQuestion(ctx context.Context, userID uint, question string, previousResponseID string) (string, string, error)
+}
+
+type EmailService interface {
+	SendNotificationEmail(ctx context.Context, to, subject, body string) error
+	SendVerificationEmail(ctx context.Context, to string) error
+	SendResetPasswordEmail(ctx context.Context, to string) error
+	VerifyToken(ctx context.Context, token, tokenType string, preflight bool) (bool, error)
+	ResetPassword(ctx context.Context, token, newPassword string) error
+}
+type RateLimiter interface {
+	Allow(ctx context.Context, key string, limit int, per time.Duration) (bool, time.Duration, error)
+}

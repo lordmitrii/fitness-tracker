@@ -27,6 +27,7 @@ import (
 	// "github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/inmemory"
 	"context"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/postgres"
+	myredis "github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/redis"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/job"
 	"github.com/lordmitrii/golang-web-gin/internal/interface/http"
 	"time"
@@ -47,6 +48,8 @@ func main() {
 	if err := postgres.AutoMigrate(db); err != nil {
 		panic(err)
 	}
+
+	redisLimiter := myredis.NewRedisLimiter(os.Getenv("REDIS_ADDR"), os.Getenv("REDIS_PASSWORD"), 0)
 
 	exerciseRepo := postgres.NewExerciseRepo(db)
 	muscleGroupRepo := postgres.NewMuscleGroupRepo(db)
@@ -82,7 +85,7 @@ func main() {
 		go cleanupJob.Run(ctx, 24*time.Hour)
 	}
 
-	server := http.NewServer(exerciseService, workoutService, userService, aiService, emailService)
+	server := http.NewServer(exerciseService, workoutService, userService, aiService, emailService, redisLimiter)
 
 	var port string
 	if port = os.Getenv("PORT"); port == "" {

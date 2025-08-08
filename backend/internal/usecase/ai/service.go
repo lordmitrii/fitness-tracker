@@ -73,3 +73,7 @@ func (s *aiServiceImpl) AskStatsQuestion(ctx context.Context, userID uint, quest
 	reply, prevRespID, err := CallOpenAIChat(ctx, fullPrompt, previousResponseID, 256)
 	return reply, prevRespID, err
 }
+
+func (s *aiServiceImpl) AskWorkoutPlanQuestion(ctx context.Context, userID uint, question string, previousResponseID string) (string, string, error) {
+	return fmt.Sprintf("Workout plan question: %s", question), fmt.Sprintf("previous_response_id: %s", previousResponseID), nil
+}
