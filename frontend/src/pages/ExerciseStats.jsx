@@ -47,7 +47,7 @@ const ExerciseStats = () => {
       <div className="flex justify-center mb-4">
         <AIChat
           trigger={
-            <button className="btn btn-primary flex items-center justify-center gap-2">
+            <button className="hidden btn btn-primary flex items-center justify-center gap-2">
               <span>{t("ai_chat.button_label")}</span>
             </button>
           }
