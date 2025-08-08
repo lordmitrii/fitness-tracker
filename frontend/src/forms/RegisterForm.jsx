@@ -2,7 +2,7 @@ import { useAuth } from "../context/AuthContext";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
-import CheckBox from "../components/Checkbox";
+import CheckBox from "../components/CheckBox";
 import { PRIVACY_POLICY_VERSION, HEALTH_DATA_POLICY_VERSION } from "../utils/policiesUtils";
 
 const RegisterForm = () => {
