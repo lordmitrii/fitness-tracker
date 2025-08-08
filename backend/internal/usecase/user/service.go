@@ -2,33 +2,63 @@ package user
 
 import (
 	"context"
-	"errors"
+	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 	"golang.org/x/crypto/bcrypt"
 )
 
-var ErrUserNotFound = errors.New("user not found")
-
-// Service orchestrates auth and profile use-cases.
 type userServiceImpl struct {
-	authRepo    user.UserRepository
-	profileRepo user.ProfileRepository
+	authRepo        user.UserRepository
+	profileRepo     user.ProfileRepository
+	userConsentRepo user.UserConsentRepository
 }
 
-// NewService creates a new user service.
-func NewUserService(ur user.UserRepository, pr user.ProfileRepository) *userServiceImpl {
-	return &userServiceImpl{authRepo: ur, profileRepo: pr}
+func NewUserService(ur user.UserRepository, pr user.ProfileRepository, ucr user.UserConsentRepository) *userServiceImpl {
+	return &userServiceImpl{authRepo: ur, profileRepo: pr, userConsentRepo: ucr}
 }
 
-// Register creates a new AuthUser with hashed password.
-func (s *userServiceImpl) Register(ctx context.Context, email, password string) error {
+func (s *userServiceImpl) Register(ctx context.Context, email, password string, privacyConsent, healthDataConsent bool, privacyPolicyVersion, healthDataPolicyVersion string) error {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
 	u := &user.User{Email: email, PasswordHash: string(hash)}
-	return s.authRepo.Create(ctx, u)
+
+	if !privacyConsent || !healthDataConsent {
+		return custom_err.ErrNoConsent
+	}
+
+	err = s.authRepo.Create(ctx, u)
+	if err != nil {
+		return err
+	}
+
+	healthCons := &user.UserConsent{
+		UserID:  u.ID,
+		Type:    "health_data",
+		Given:   healthDataConsent,
+		Version: healthDataPolicyVersion,
+	}
+
+	privacyCons := &user.UserConsent{
+		UserID:  u.ID,
+		Type:    "user_privacy",
+		Given:   privacyConsent,
+		Version: privacyPolicyVersion,
+	}
+
+	err = s.userConsentRepo.Create(ctx, healthCons)
+	if err != nil {
+		return err
+	}
+
+	err = s.userConsentRepo.Create(ctx, privacyCons)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Authenticate verifies credentials.
@@ -38,7 +68,7 @@ func (s *userServiceImpl) Authenticate(ctx context.Context, email, password stri
 		return nil, err
 	}
 	if bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password)) != nil {
-		return nil, ErrUserNotFound
+		return nil, custom_err.ErrUserNotFound
 	}
 	return u, nil
 }
@@ -65,4 +95,47 @@ func (s *userServiceImpl) UpdateProfile(ctx context.Context, p *user.Profile) er
 // DeleteProfile removes a user's profile.
 func (s *userServiceImpl) DeleteProfile(ctx context.Context, id uint) error {
 	return s.profileRepo.Delete(ctx, id)
+}
+
+func (s *userServiceImpl) GetConsents(ctx context.Context, userID uint) ([]*user.UserConsent, error) {
+	return s.userConsentRepo.GetByUserID(ctx, userID)
+}
+
+func (s *userServiceImpl) CreateConsent(ctx context.Context, consent *user.UserConsent) error {
+	return s.userConsentRepo.Create(ctx, consent)
+}
+
+func (s *userServiceImpl) UpdateConsent(ctx context.Context, consent *user.UserConsent) error {
+	return s.userConsentRepo.Update(ctx, consent)
+}
+
+func (s *userServiceImpl) DeleteConsent(ctx context.Context, userID uint, consentType, version string) error {
+	return s.userConsentRepo.DeleteByUserIDAndType(ctx, userID, consentType, version)
+}
+
+func (s *userServiceImpl) SetVerified(ctx context.Context, email string) error {
+	return s.authRepo.SetVerified(ctx, email)
+}
+
+func (s *userServiceImpl) CheckEmail(ctx context.Context, email string) (bool, error) {
+	exists, err := s.authRepo.CheckEmail(ctx, email)
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
+}
+
+func (s *userServiceImpl) ResetPassword(ctx context.Context, email, newPassword string) error {
+	hash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	user, err := s.authRepo.GetByEmail(ctx, email)
+	if err != nil {
+		return err
+	}
+
+	user.PasswordHash = string(hash)
+	return s.authRepo.Update(ctx, user)
 }

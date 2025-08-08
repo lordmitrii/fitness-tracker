@@ -71,12 +71,33 @@ type (
 	}
 
 	UserService interface {
-		Register(ctx context.Context, email, password string) error
+		Register(ctx context.Context, email, password string, privacyConsent, healthDataConsent bool, privacyPolicyVersion, healthDataPolicyVersion string) error
 		Authenticate(ctx context.Context, email, password string) (*user.User, error)
 		CreateProfile(ctx context.Context, p *user.Profile) error
 		// DeleteUser(ctx context.Context, id uint) error
 		GetProfile(ctx context.Context, userID uint) (*user.Profile, error)
 		UpdateProfile(ctx context.Context, p *user.Profile) error
 		DeleteProfile(ctx context.Context, id uint) error
+
+		GetConsents(ctx context.Context, userID uint) ([]*user.UserConsent, error)
+		CreateConsent(ctx context.Context, consent *user.UserConsent) error
+		UpdateConsent(ctx context.Context, consent *user.UserConsent) error
+		DeleteConsent(ctx context.Context, userID uint, consentType, version string) error
+
+		SetVerified(ctx context.Context, email string) error
+		CheckEmail(ctx context.Context, email string) (bool, error)
+		ResetPassword(ctx context.Context, email, newPassword string) error
+	}
+
+	AIService interface {
+		AskStatsQuestion(ctx context.Context, userID uint, question string, previousResponseID string) (string, string, error)
+	}
+
+	EmailService interface {
+		SendNotificationEmail(ctx context.Context, to, subject, body string) error
+		SendVerificationEmail(ctx context.Context, to string) error
+		SendResetPasswordEmail(ctx context.Context, to string) error
+		VerifyToken(ctx context.Context, token, tokenType string, preflight bool) (bool, error)
+		ResetPassword(ctx context.Context, token, newPassword string) error
 	}
 )

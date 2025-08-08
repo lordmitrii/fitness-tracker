@@ -10,6 +10,8 @@ type UserRepository interface {
 	GetByID(ctx context.Context, id uint) (*User, error)
 	Update(ctx context.Context, u *User) error
 	Delete(ctx context.Context, id uint) error
+	SetVerified(ctx context.Context, email string) error
+	CheckEmail(ctx context.Context, email string) (bool, error)
 }
 
 type ProfileRepository interface {
@@ -17,4 +19,11 @@ type ProfileRepository interface {
 	GetByUserID(ctx context.Context, userID uint) (*Profile, error)
 	Update(ctx context.Context, p *Profile) error
 	Delete(ctx context.Context, id uint) error
+}
+
+type UserConsentRepository interface {
+	Create(ctx context.Context, uc *UserConsent) error
+	GetByUserID(ctx context.Context, userID uint) ([]*UserConsent, error)
+	Update(ctx context.Context, uc *UserConsent) error
+	DeleteByUserIDAndType(ctx context.Context, userID uint, consentType, version string) error
 }

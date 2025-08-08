@@ -27,16 +27,9 @@ const LoginForm = () => {
       <h1 className="text-center mb-8 text-title font-bold">
         {t("login_form.login_title")}
       </h1>
-      {error && (
-        <div className="container-error">
-          {error}
-        </div>
-      )}
+      {error && <div className="container-error">{error}</div>}
       <div>
-        <label
-          className="block text-body font-semibold mb-1"
-          htmlFor="email"
-        >
+        <label className="block text-body font-semibold mb-1" htmlFor="email">
           {t("general.email")}
         </label>
         <input
@@ -51,12 +44,20 @@ const LoginForm = () => {
         />
       </div>
       <div>
-        <label
-          className="block text-body font-semibold mb-1"
-          htmlFor="password"
-        >
-          {t("general.password")}
-        </label>
+        <div className="flex justify-between items-center mb-1">
+          <label
+            className="block text-body font-semibold"
+            htmlFor="password"
+          >
+            {t("general.password")}
+          </label>
+          <Link
+            to="/forgot-password"
+            className="text-caption-blue hover:underline font-semibold"
+          >
+            {t("login_form.forgot_password")}
+          </Link>
+        </div>
         <input
           id="password"
           className="input-style"

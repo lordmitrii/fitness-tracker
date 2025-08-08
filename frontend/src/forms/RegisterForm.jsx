@@ -1,7 +1,9 @@
 import { useAuth } from "../context/AuthContext";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
+import { useTranslation, Trans } from "react-i18next";
+import CheckBox from "../components/Checkbox";
+import { PRIVACY_POLICY_VERSION, HEALTH_DATA_POLICY_VERSION } from "../utils/policiesUtils";
 
 const RegisterForm = () => {
   const navigate = useNavigate();
@@ -9,26 +11,51 @@ const RegisterForm = () => {
   const { register } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [privacyConsent, setPrivacyConsent] = useState(false);
+  const [healthDataConsent, setHealthDataConsent] = useState(false);
   const [error, setError] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
 
-  const validatePassword = (password) => {
-    if (!password || password.length < 8) {
-      return t("register_form.password_min_length");
+  const validateForm = () => {
+    const newErrors = {};
+    if (password.length < 8) {
+      newErrors.password = t("register_form.password_min_length");
     }
-    return "";
+
+    if (!privacyConsent) {
+      newErrors.privacyConsent = t(
+        "register_form.privacy_policy_consent_missing"
+      );
+    }
+
+    if (!healthDataConsent) {
+      newErrors.healthDataConsent = t(
+        "register_form.health_data_consent_missing"
+      );
+    }
+
+    return newErrors;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setFormErrors({});
 
-    const passwordError = validatePassword(password);
-    if (passwordError) {
-      setError(passwordError);
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
       return;
     }
 
-    const resp = await register(email, password);
+    const resp = await register(
+      email,
+      password,
+      privacyConsent,
+      PRIVACY_POLICY_VERSION,
+      healthDataConsent,
+      HEALTH_DATA_POLICY_VERSION
+    );
     if (resp.status === 201) {
       navigate("/login");
     } else {
@@ -41,16 +68,9 @@ const RegisterForm = () => {
       <h1 className="text-center mb-8 text-title font-bold">
         {t("register_form.register_title")}
       </h1>
-      {error && (
-        <div className="container-error">
-          {error}
-        </div>
-      )}
+      {error && <div className="container-error">{error}</div>}
       <div>
-        <label
-          className="block text-body font-semibold mb-1"
-          htmlFor="email"
-        >
+        <label className="block text-body font-semibold mb-1" htmlFor="email">
           {t("general.email")}
         </label>
         <input
@@ -81,6 +101,69 @@ const RegisterForm = () => {
           placeholder={t("register_form.password_placeholder")}
           className="input-style"
         />
+        {formErrors.password && (
+          <p className="text-caption-red mt-1">{formErrors.password}</p>
+        )}
+      </div>
+      <div className="flex sm:flex-row flex-col items-center justify-between gap-2">
+        <div className="flex flex-col justify-center w-full">
+          <span className="flex text-caption items-center gap-2">
+            <CheckBox
+              title="Privacy Policy Consent"
+              checked={privacyConsent}
+              onChange={(e) => {
+                setPrivacyConsent(e.target.checked);
+                setFormErrors((prev) => ({ ...prev, privacyConsent: null }));
+              }}
+            />
+            <span>
+              <Trans
+                i18nKey="register_form.privacy_policy_consent"
+                components={[
+                  <Link
+                    key="privacy-policy-link"
+                    to="/privacy-policy"
+                    className="text-blue-500 underline"
+                  />,
+                ]}
+              />
+            </span>
+          </span>
+          {(formErrors.privacyConsent || formErrors.healthDataConsent) && (
+            <p className="text-caption-red mt-1">
+              {formErrors.privacyConsent || "\u00A0"}
+            </p>
+          )}
+        </div>
+        <div className="flex flex-col justify-start w-full">
+          <span className="flex text-caption items-center gap-2">
+            <CheckBox
+              title="Health Data Policy Consent"
+              checked={healthDataConsent}
+              onChange={(e) => {
+                setHealthDataConsent(e.target.checked);
+                setFormErrors((prev) => ({ ...prev, healthDataConsent: null }));
+              }}
+            />
+            <span>
+              <Trans
+                i18nKey="register_form.health_data_consent"
+                components={[
+                  <Link
+                    key="health-data-policy-link"
+                    to="/health-data-policy"
+                    className="text-blue-500 underline"
+                  />,
+                ]}
+              />
+            </span>
+          </span>
+          {(formErrors.healthDataConsent || formErrors.privacyConsent) && (
+            <p className="text-caption-red mt-1">
+              {formErrors.healthDataConsent || "\u00A0"}
+            </p>
+          )}
+        </div>
       </div>
       <button type="submit" className="btn btn-primary w-full">
         {t("general.register")}

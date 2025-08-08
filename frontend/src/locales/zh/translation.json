@@ -21,6 +21,7 @@
     "n_a": "无",
     "active": "活跃",
     "contact_support": "联系客服",
+    "our_policies": "<0>隐私政策</0>和<1>健康数据政策</1>",
     "loading": "加载中...",
     "email": "电子邮件",
     "password": "密码",
@@ -162,7 +163,11 @@
     "register_title": "注册",
     "password_min_length": "密码至少需要 8 个字符。",
     "password_placeholder": "创建密码",
-    "already_have_account": "已有账号？"
+    "already_have_account": "已有账号？",
+    "privacy_policy_consent": "我同意 <0>隐私政策</0>。",
+    "health_data_consent": "我同意 <0>健康数据处理政策</0>。",
+    "privacy_policy_consent_missing": "您必须同意隐私政策。",
+    "health_data_consent_missing": "您必须同意健康数据处理政策。"
   },
   "login_form": {
     "login_title": "登录",
@@ -369,6 +374,106 @@
     "abs": "腹肌",
     "calves": "小腿",
     "forearms": "前臂",
-    "traps": "斜方肌"
+    "traps": "斜方肌",
+    "arms": "手臂",
+    "legs": "腿部",
+    "core": "核心"
+  },
+  "ai_chat": {
+    "button_label": "AI 聊天",
+    "welcome_message_stats": "👋 向我询问有关您的锻炼统计的任何问题！(例如：'我如何改善我的深蹲？' 或 '哪个肌肉群是我最强的？')",
+    "error_response": "抱歉，我无法处理您的请求。请稍后再试。",
+    "error": "发生错误。请重试。",
+    "send_button": "发送",
+    "user_input_placeholder": "在此输入您的消息...",
+    "close_chat": "关闭聊天",
+    "thinking": "思考中..."
+  },
+  "consent_modal": {
+    "title": "需要同意",
+    "description": "为了使用AI功能，您的健康和锻炼数据将被传输给第三方，例如<0>OpenAI</0>。这对于分析和提供AI驱动的响应是必要的。",
+    "privacy_policy": "请阅读我们的<0>隐私政策</0>和<1>健康数据政策</1>以获取更多详细信息。",
+    "accept": "接受",
+    "decline": "拒绝"
+  },
+  "privacy_policy": {
+    "title": "隐私政策",
+    "intro": "您的隐私对我们很重要。本隐私政策解释了我们如何收集、使用和保护您的信息。",
+    "sections": {
+      "information_we_collect": {
+        "title": "我们收集的信息",
+        "description": "我们可能会收集以下类型的信息：",
+        "list": {
+          "personal_info": "个人信息（如姓名、电子邮箱地址）",
+          "usage_data": "使用数据（如您如何使用本服务）",
+          "cookies": "Cookies 和追踪技术",
+          "health_data": "<0>健康数据</0>（如体重、身高）",
+          "exercise_data": "锻炼数据（如锻炼计划、锻炼记录）"
+        }
+      },
+      "use_of_information": {
+        "title": "我们如何使用您的信息",
+        "description": "我们将您的信息用于：",
+        "list": {
+          "to_provide_services": "提供和维护我们的服务",
+          "to_improve_services": "改进和个性化您的体验",
+          "to_communicate": "与您沟通更新或优惠信息"
+        }
+      },
+      "data_sharing": {
+        "title": "数据共享",
+        "description": "我们可能会将您的健康和锻炼数据与受信任的第三方供应商（如<0>OpenAI</0>）共享，以提供 AI 聊天和分析等功能。当您使用这些功能时，相关数据会安全地发送给相关方以生成个性化回应。有关 OpenAI 如何处理您的数据的详细信息，请参阅<1>OpenAI 隐私政策</1>。我们只会共享所需的最少数据，并要求所有合作伙伴依法保护您的信息。在与 OpenAI 或类似供应商共享您的数据前，我们将始终征求您的明确同意。"
+      },
+      "data_security": {
+        "title": "数据安全",
+        "description": "我们采取合理措施保护您的信息，防止未经授权的访问、泄露或丢失。"
+      },
+      "your_rights": {
+        "title": "您的权利",
+        "description": "您有权访问、更新或删除您的个人信息。请联系我们行使这些权利。"
+      },
+      "changes": {
+        "title": "本政策的更改",
+        "description": "我们可能会不时更新本隐私政策。我们会在本页面上发布新政策来通知您任何更改。"
+      },
+      "contact_us": {
+        "title": "联系我们",
+        "description": "如果您对本隐私政策有任何疑问，请通过<0>support@ftrackerapp.co.uk</0>联系我们。"
+      }
+    }
+  },
+  "health_data_policy": {
+    "title": "健康数据政策",
+    "intro": "我们重视您的健康信息的隐私与安全。本政策解释了我们如何收集、使用和保护您的健康数据。",
+    "sections": {
+      "what_is_health_data": {
+        "title": "什么是健康数据？",
+        "description": "健康数据包括您的体重、年龄、锻炼统计，以及您在使用我们的服务时提供的任何其他健康相关信息。"
+      },
+      "how_we_use": {
+        "title": "我们如何使用您的健康数据",
+        "description": "我们使用您的健康数据来提供个性化洞察、跟踪您的进展、改进我们的服务，以及启用 AI 聊天等功能。"
+      },
+      "data_sharing": {
+        "title": "健康数据共享",
+        "description": "我们可能会将您的健康数据与受信任的第三方供应商（如 OpenAI）共享，用于 AI 聊天和分析等功能。有关 OpenAI 如何处理您的数据的详细信息，请参阅<0>OpenAI 隐私政策</0>。我们只会共享所需的最少数据，并要求合作伙伴依法保护您的信息。在与 OpenAI 或类似供应商共享您的数据前，我们将始终征求您的明确同意。"
+      },
+      "data_security": {
+        "title": "我们如何保护您的健康数据",
+        "description": "我们采用行业标准措施来保护您的健康数据，防止未经授权的访问或丢失。"
+      },
+      "your_rights": {
+        "title": "您的权利",
+        "description": "您有权访问、更新或删除您的健康数据。您可随时联系我们撤回您的同意。"
+      },
+      "consent": {
+        "title": "您的同意",
+        "description": "我们只会在您明确同意的情况下处理和共享您的健康数据，这也是法律的要求。在您使用涉及与第三方供应商共享数据的 AI 功能前，我们会专门向您征求同意。"
+      },
+      "contact_us": {
+        "title": "联系我们",
+        "description": "如果您对本健康数据政策有任何疑问，或希望撤回同意，请通过<0>support@ftrackerapp.co.uk</0>联系我们。"
+      }
+    }
   }
 }

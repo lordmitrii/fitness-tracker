@@ -1,6 +1,6 @@
 import axios from "axios";
 
-let accessToken = null; 
+let accessToken = null;
 
 const api = axios.create({
   baseURL: "/api",
@@ -38,10 +38,10 @@ api.interceptors.response.use(
     ) {
       error.config._retry = true;
       try {
-        const res = await api.post("/users/refresh"); 
+        const res = await api.post("/users/refresh");
         accessToken = res.data.access_token;
         error.config.headers["Authorization"] = `Bearer ${accessToken}`;
-        return api(error.config); 
+        return api(error.config);
       } catch (refreshErr) {
         accessToken = null;
         return Promise.reject(refreshErr);
@@ -62,8 +62,22 @@ export const loginRequest = (email, password) => {
   return api.post("/users/login", { email, password });
 };
 
-export const registerRequest = (email, password) => {
-  return api.post("/users/register", { email, password });
+export const registerRequest = (
+  email,
+  password,
+  privacyConsent,
+  privacyPolicyVersion,
+  healthDataConsent,
+  healthDataPolicyVersion
+) => {
+  return api.post("/users/register", {
+    email,
+    password,
+    privacy_consent: privacyConsent,
+    privacy_policy_version: privacyPolicyVersion,
+    health_data_consent: healthDataConsent,
+    health_data_policy_version: healthDataPolicyVersion,
+  });
 };
 
 export default api;

@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import GitHubIcon from "../icons/GitHubIcon";
 import GlobalLoadingState from "../states/GlobalLoadingState";
 import NetworkStatusBanner from "./NetworkStatusBanner";
 import LanguageSwitcher from "./LanguageSwitcher";
 import ThemeSwitcher from "./ThemeSwitcher";
-import { useTranslation } from "react-i18next";
+import { useTranslation, Trans } from "react-i18next";
 
 const Layout = ({ children }) => {
   const { isAuth, logout } = useAuth();
@@ -15,6 +15,8 @@ const Layout = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const headerRef = useRef(null);
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
+  const spinner = searchParams.get("spinner");
   const [appLoading, setAppLoading] = useState(() => {
     if (sessionStorage.getItem("hasLoaded") === "1") {
       return false;
@@ -65,7 +67,7 @@ const Layout = ({ children }) => {
   const isActive = (to) =>
     to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
 
-  if (appLoading) {
+  if (appLoading && spinner !== "false") {
     return <GlobalLoadingState />;
   }
 
@@ -209,6 +211,23 @@ const Layout = ({ children }) => {
             >
               {t("general.contact_support")}
             </a>
+          </div>
+          <div className="text-center sm:text-left text-sm font-medium tracking-wide">
+            <Trans
+              i18nKey="general.our_policies"
+              components={[
+                <Link
+                  key="privacy-policy-link"
+                  to="/privacy-policy"
+                  className="underline"
+                />,
+                <Link
+                  key="health-data-policy-link"
+                  to="/health-data-policy"
+                  className="underline"
+                />,
+              ]}
+            />
           </div>
         </div>
       </footer>

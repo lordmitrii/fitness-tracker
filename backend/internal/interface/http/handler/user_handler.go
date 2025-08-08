@@ -33,6 +33,10 @@ func NewUserHandler(r *gin.RouterGroup, svc usecase.UserService) {
 			protected.GET("/profile", h.GetProfile)
 			protected.PUT("/profile", h.UpdateProfile)
 			protected.DELETE("/profile", h.DeleteProfile)
+
+			protected.GET("/consents", h.GetConsents)
+			protected.POST("/consents", h.CreateConsent)
+			protected.DELETE("/consents", h.DeleteConsent)
 		}
 	}
 }
@@ -50,15 +54,27 @@ func NewUserHandler(r *gin.RouterGroup, svc usecase.UserService) {
 // @Router       /users [post]
 func (h *UserHandler) Register(c *gin.Context) {
 	var req struct {
-		Email    string `binding:"required,email"`
-		Password string `binding:"required,min=8"`
+		Email                   string `binding:"required,email"`
+		Password                string `binding:"required,min=8"`
+		PrivacyConsent          bool   `json:"privacy_consent" binding:"required"`
+		PrivacyPolicyVersion    string `json:"privacy_policy_version" binding:"required"`
+		HealthDataConsent       bool   `json:"health_data_consent" binding:"required"`
+		HealthDataPolicyVersion string `json:"health_data_policy_version" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := h.svc.Register(c.Request.Context(), req.Email, req.Password); err != nil {
+
+	if !req.PrivacyConsent || !req.HealthDataConsent {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "consent for privacy or health data policy is not given",
+		})
+		return
+	}
+
+	if err := h.svc.Register(c.Request.Context(), req.Email, req.Password, req.PrivacyConsent, req.HealthDataConsent, req.PrivacyPolicyVersion, req.HealthDataPolicyVersion); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -129,7 +145,6 @@ func (h *UserHandler) RefreshToken(c *gin.Context) {
 
 // func (h *UserHandler) DeleteUser(c *gin.Context) {
 // 	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
-	
 
 // 	if err := h.svc.DeleteUser(c.Request.Context(), uint(id)); err != nil {
 // 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -207,6 +222,90 @@ func (h *UserHandler) DeleteProfile(c *gin.Context) {
 	uid := userID.(uint)
 
 	if err := h.svc.DeleteProfile(c.Request.Context(), uid); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
+func (h *UserHandler) GetConsents(c *gin.Context) {
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	uid := userID.(uint)
+
+	consents, err := h.svc.GetConsents(c.Request.Context(), uid)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, consents)
+}
+
+func (h *UserHandler) CreateConsent(c *gin.Context) {
+	var req user.UserConsent
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	req.UserID = userID.(uint)
+
+	if err := h.svc.CreateConsent(c.Request.Context(), &req); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, req)
+}
+
+func (h *UserHandler) UpdateConsent(c *gin.Context) {
+	var req user.UserConsent
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	req.UserID = userID.(uint)
+
+	if err := h.svc.UpdateConsent(c.Request.Context(), &req); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, req)
+}
+
+func (h *UserHandler) DeleteConsent(c *gin.Context) {
+	var req struct {
+		Type    string `json:"type" binding:"required"`
+		Version string `json:"version" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	if err := h.svc.DeleteConsent(c.Request.Context(), userID.(uint), req.Type, req.Version); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

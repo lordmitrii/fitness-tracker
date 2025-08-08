@@ -14,6 +14,7 @@ import {
   MAIN_GROUPS,
   BODYWEIGHT_FACTOR,
 } from "../utils/exerciseStatsUtils";
+import { t } from "i18next";
 
 function findMainGroup(name) {
   if (!name) return null;
@@ -33,11 +34,14 @@ function aggregateStats(stats) {
     current_reps,
     is_time_based,
     is_bodyweight,
+    exercise,
   } of stats) {
     if (!muscle_group || !current_weight || !current_reps || is_time_based)
       continue;
+
     const group = findMainGroup(muscle_group.name);
     if (!group) continue;
+
     const est = e1RM(current_weight, current_reps);
     if (
       !maxByGroup[group] ||
@@ -45,7 +49,7 @@ function aggregateStats(stats) {
         maxByGroup[group].weightedE1RM
     ) {
       maxByGroup[group] = {
-        exercise: name,
+        exercise: !!exercise?.slug ? t(`exercise.${exercise.slug}`) : name,
         weightedE1RM: est * (is_bodyweight ? BODYWEIGHT_FACTOR : 1),
         e1RM: est,
         is_bodyweight,
@@ -53,7 +57,7 @@ function aggregateStats(stats) {
     }
   }
 
-  const rows = MAIN_GROUPS.map(({ key }) => {   
+  const rows = MAIN_GROUPS.map(({ key }) => {
     const entry = maxByGroup[key];
     const raw = entry?.e1RM || 0;
     const scaled =
@@ -90,7 +94,7 @@ const MuscleGroupRadar = ({
     const { group, e1RM, exercise } = payload[0].payload;
     return (
       <div className="rounded-xl bg-white/90 p-2 text-sm text-black shadow-xl backdrop-blur">
-        <p className="font-semibold">{group}</p>
+        <p className="font-semibold">{t(`muscle_group.${group}`)}</p>
         <p>
           {t("exercise_stats.best_exercise")}: {exercise || t("general.n_a")}
         </p>
@@ -107,11 +111,12 @@ const MuscleGroupRadar = ({
         {title ? title : t("exercise_stats.muscle_groups_strength")}
       </h2>
       <ResponsiveContainer width="100%" height={size}>
-        <RadarChart cx="50%" cy="50%" outerRadius="75%" data={data}>
+        <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data}>
           <PolarGrid radialLines strokeDasharray="3 3" />
           <PolarAngleAxis
             dataKey="group"
             tick={{ fontSize: 12, fill: "var(--color-gray-900)" }}
+            tickFormatter={(value) => t(`muscle_group.${value}`) || value}
           />
           <PolarRadiusAxis tick={false} axisLine={false} domain={[0, 100]} />
 

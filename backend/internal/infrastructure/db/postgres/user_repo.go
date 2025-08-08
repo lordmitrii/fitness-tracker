@@ -64,3 +64,22 @@ func (r *UserRepo) Delete(ctx context.Context, id uint) error {
 	}
 	return nil
 }
+
+func (r *UserRepo) SetVerified(ctx context.Context, email string) error {
+	res := r.db.WithContext(ctx).Model(&user.User{}).Where("email = ?", email).Update("is_verified", true)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return custom_err.ErrUserNotFound
+	}
+	return nil
+}
+
+func (r *UserRepo) CheckEmail(ctx context.Context, email string) (bool, error) {
+	var count int64
+	if err := r.db.WithContext(ctx).Model(&user.User{}).Where("email = ?", email).Count(&count).Error; err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
