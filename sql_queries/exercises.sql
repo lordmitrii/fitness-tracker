@@ -39,6 +39,7 @@ VALUES
     ('Cable Lateral Raises', false, 3, 'cable-lateral-raises', false),
     ('Face Pulls', false, 3, 'face-pulls', false),
     ('Upright Rows', false, 3, 'upright-rows', false),
+    ('Delts Machine', false, 3, 'delts-machine', false)
 -- Biceps
     ('Barbell Curls', false, 4, 'barbell-curls', false),
     ('Hammer Curls', false, 4, 'hammer-curls', false),
@@ -54,11 +55,11 @@ VALUES
 
 -- Triceps
     ('Pushdowns', false, 5, 'pushdowns', false),
-    ('Overhead Extensions', false, 5, 'overhead-extensions', false),
+    ('Overhead Tricep Extensions', false, 5, 'overhead-tricep-extensions', false),
     ('Skullcrusher', false, 5, 'skullcrusher', false),
     ('Dips', true, 5, 'dips', false),
     ('Close-Grip Bench Press', false, 5, 'close-grip-bench-press', false),
-    ('Kickbacks', false, 5, 'kickbacks', false),
+    ('Tricep Kickbacks', false, 5, 'tricep-kickbacks', false),
     ('Diamond Push-Ups', true, 5, 'diamond-push-ups', false),
     ('Cable Rope Pushdowns', false, 5, 'cable-rope-pushdowns', false),
 -- Quads
