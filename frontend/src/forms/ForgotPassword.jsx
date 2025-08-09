@@ -1,13 +1,14 @@
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import api from "../api";
+import { useCooldown } from "../hooks/useCooldown";
 
 const ForgotPassword = () => {
   const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
-  const [cooldown, setCooldown] = useState(0);
+  const { cooldown, start: startCooldown } = useCooldown();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,16 +29,7 @@ const ForgotPassword = () => {
       if (response1.status == 200) {
         setError(null);
         setSuccess(true);
-        setCooldown(60);
-        const interval = setInterval(() => {
-          setCooldown((prev) => {
-            if (prev <= 1) {
-              clearInterval(interval);
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
+        startCooldown(60);
       } else {
         throw new Error(t("forgot_password.error_sending_email"));
       }

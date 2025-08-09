@@ -18,6 +18,7 @@
     "workout_plans": "锻炼",
     "stats": "统计",
     "profile": "个人资料",
+    "ai_chat": "AI 聊天",
     "n_a": "无",
     "active": "活跃",
     "contact_support": "联系客服",
@@ -32,7 +33,8 @@
     "last_updated": "最后更新：",
     "completed": "已完成",
     "yes": "是",
-    "no": "否"
+    "no": "否",
+    "submit": "提交"
   },
   "measurements": {
     "weight": "公斤",
@@ -172,7 +174,8 @@
   "login_form": {
     "login_title": "登录",
     "password_placeholder": "请输入密码",
-    "not_registered": "还没有注册？"
+    "not_registered": "还没有注册？",
+    "forgot_password": "忘记密码？"
   },
   "profile_form": {
     "create_profile": "创建资料",
@@ -194,6 +197,26 @@
     "sex_required": "请选择性别。",
     "sex_male": "男",
     "sex_female": "女"
+  },
+  "forgot_password": {
+    "title": "忘记密码",
+    "email_placeholder": "输入您的邮箱",
+    "email_invalid": "邮箱地址无效。",
+    "send_reset_link": "发送重置链接",
+    "reset_link_sent": "重置链接已发送。",
+    "error_sending_email": "发送重置链接时出错，请稍后再试。"
+  },
+  "reset_password": {
+    "title": "重置密码",
+    "new_password_label": "新密码",
+    "confirm_password_label": "确认密码",
+    "new_password_placeholder": "输入新密码",
+    "confirm_password_placeholder": "确认新密码",
+    "passwords_mismatch": "两次输入的密码不一致。",
+    "password_min_length": "密码长度至少为8个字符。",
+    "reset_password_button": "重置",
+    "invalid_link": "重置链接无效或已过期。",
+    "verifying_link": "正在验证链接..."
   },
   "add_workout_plan_form": {
     "create_workout_plan": "创建锻炼计划",
@@ -380,14 +403,14 @@
     "core": "核心"
   },
   "ai_chat": {
-    "button_label": "AI 聊天",
-    "welcome_message_stats": "👋 向我询问有关您的锻炼统计的任何问题！(例如：'我如何改善我的深蹲？' 或 '哪个肌肉群是我最强的？')",
+    "welcome_message_stats": "👋 询问我任何有关您锻炼数据的问题！（例如：“我如何改进深蹲？” 或 “我最强的肌肉群是什么？”）",
     "error_response": "抱歉，我无法处理您的请求。请稍后再试。",
-    "error": "发生错误。请重试。",
+    "error": "发生错误。请稍后再试。",
     "send_button": "发送",
     "user_input_placeholder": "在此输入您的消息...",
     "close_chat": "关闭聊天",
-    "thinking": "思考中..."
+    "thinking": "思考中...",
+    "rate_limit_exceeded": "超过速率限制。请在{{time}}秒后重试。"
   },
   "consent_modal": {
     "title": "需要同意",

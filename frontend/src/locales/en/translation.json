@@ -18,6 +18,7 @@
     "workout_plans": "Workouts",
     "stats": "Stats",
     "profile": "Profile",
+    "ai_chat": "AI Chat",
     "n_a": "N/A",
     "active": "Active",
     "contact_support": "Contact Support",
@@ -176,26 +177,6 @@
     "not_registered": "Not registered yet?",
     "forgot_password": "Forgot Password?"
   },
-  "forgot_password": {
-    "title": "Forgot Password",
-    "email_placeholder": "Enter your email",
-    "email_invalid": "Invalid email address.",
-    "send_reset_link": "Send Reset Link",
-    "reset_link_sent": "Reset link has been sent.",
-    "error_sending_email": "Error sending reset link. Please try again later."
-  },
-  "reset_password": {
-    "title": "Reset Password",
-    "new_password_label": "New Password",
-    "confirm_password_label": "Confirm Password",
-    "new_password_placeholder": "Enter new password",
-    "confirm_password_placeholder": "Confirm your new password",
-    "passwords_mismatch": "Passwords do not match.",
-    "password_min_length": "Password must be at least 8 characters.",
-    "reset_password_button": "Reset",
-    "invalid_link": "Invalid or expired reset link.",
-    "verifying_link": "Verifying link..."
-  },
   "profile_form": {
     "create_profile": "Create Profile",
     "update_profile": "Update Profile",
@@ -216,6 +197,26 @@
     "sex_required": "Please select a sex.",
     "sex_male": "Male",
     "sex_female": "Female"
+  },
+  "forgot_password": {
+    "title": "Forgot Password",
+    "email_placeholder": "Enter your email",
+    "email_invalid": "Invalid email address.",
+    "send_reset_link": "Send Reset Link",
+    "reset_link_sent": "Reset link has been sent.",
+    "error_sending_email": "Error sending reset link. Please try again later."
+  },
+  "reset_password": {
+    "title": "Reset Password",
+    "new_password_label": "New Password",
+    "confirm_password_label": "Confirm Password",
+    "new_password_placeholder": "Enter new password",
+    "confirm_password_placeholder": "Confirm your new password",
+    "passwords_mismatch": "Passwords do not match.",
+    "password_min_length": "Password must be at least 8 characters.",
+    "reset_password_button": "Reset",
+    "invalid_link": "Invalid or expired reset link.",
+    "verifying_link": "Verifying link..."
   },
   "add_workout_plan_form": {
     "create_workout_plan": "Create Workout Plan",
@@ -402,14 +403,14 @@
     "core": "Core"
   },
   "ai_chat": {
-    "button_label": "AI Chat",
     "welcome_message_stats": "👋 Ask me anything about your workout stats! (e.g. 'How can I improve my squat?' or 'What muscle group is my strongest?')",
     "error_response": "Sorry, I couldn't process your request. Please try again later.",
     "error": "An error occured. Please try again.",
     "send_button": "Send",
     "user_input_placeholder": "Type your message here...",
     "close_chat": "Close Chat",
-    "thinking": "Thinking..."
+    "thinking": "Thinking...",
+    "rate_limit_exceeded": "Rate limit exceeded. Please try again in {{time}} seconds."
   },
   "consent_modal": {
     "title": "Consent Required",

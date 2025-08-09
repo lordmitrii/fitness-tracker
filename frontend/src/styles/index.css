@@ -10,6 +10,10 @@ html {
   background-color: var(--color-white);
 }
 
+:root {
+  --custom-header-size: 4rem;
+}
+
 .dark {
   --color-black: rgb(255, 255, 255);
   --color-white: rgb(75, 83, 101);
@@ -102,7 +106,7 @@ html {
 }
 
 .card {
-  @apply max-w-3xl sm:mx-auto mx-3 bg-white rounded-2xl shadow-lg p-8 mt-6;
+  @apply sm:w-3xl sm:mx-auto mx-3 bg-white rounded-2xl shadow-lg p-8 mt-6;
 }
 
 .btn {
@@ -226,5 +230,5 @@ html {
 }
 
 .recharts-wrapper * {
-  @apply focus:outline-none sm:focus:ring-2 sm:focus:ring-blue-400 sm:transition sm:rounded-lg; 
+  @apply focus:outline-none sm:focus:ring-2 sm:focus:ring-blue-400 sm:transition sm:rounded-lg;
 }
