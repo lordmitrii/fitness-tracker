@@ -8,6 +8,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
 
   frontend:
     container_name: ft-frontend-prod
@@ -36,6 +38,31 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    container_name: ft-redis-prod
+    image: redis:7-alpine
+    restart: unless-stopped
+    env_file:
+      - .env.prod
+    command: >
+      sh -lc '
+      exec redis-server
+        --appendonly yes
+        --appendfsync everysec
+        --save "900 1" --save "300 10" --save "60 10000"
+        --protected-mode yes
+        ${REDIS_PASSWORD:+--requirepass "$$REDIS_PASSWORD"}
+        --maxmemory ${REDIS_MAX_MEMORY:-256mb}
+        --maxmemory-policy allkeys-lru
+      '
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "sh -lc 'redis-cli ${REDIS_PASSWORD:+-a \"$REDIS_PASSWORD\"} ping | grep PONG'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # TODO: remove this in the future once I make admin panel
   pgadmin:
     container_name: ft-pgadmin-prod
@@ -60,3 +87,4 @@ volumes:
   db-data:
   certbot-etc:
   certbot-www:
+  redis-data:

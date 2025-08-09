@@ -12,18 +12,24 @@ type EmailHandler struct {
 	svc usecase.EmailService
 }
 
-func NewEmailHandler(r *gin.RouterGroup, svc usecase.EmailService) {
+func NewEmailHandler(r *gin.RouterGroup, svc usecase.EmailService, rateLimiter usecase.RateLimiter) {
 	h := &EmailHandler{svc: svc}
-	auth := r.Group("")
-	auth.Use(middleware.JWTMiddleware())
 
-	email := auth.Group("/email")
+	email := r.Group("/email")
+	email.Use(middleware.RateLimitMiddleware(rateLimiter, 10, "email")) // 10 requests per minute
+
 	{
-		email.POST("/send-verification", h.SendVerificationEmail)
-		email.POST("/send-notification", h.SendNotificationEmail)
 		email.POST("/send-reset-password", h.SendResetPasswordEmail)
-		email.POST("/verify-token", h.VerifyToken)
 		email.POST("/reset-password", h.ResetPassword)
+		email.POST("/verify-token", h.VerifyToken)
+
+		protected := email.Group("/")
+		protected.Use(middleware.JWTMiddleware())
+		{
+			protected.POST("/send-verification", h.SendVerificationEmail)
+			protected.POST("/send-notification", h.SendNotificationEmail)
+		}
+
 	}
 }
 

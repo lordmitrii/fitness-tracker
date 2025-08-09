@@ -239,6 +239,10 @@ const AddWorkoutExerciseModal = ({
         (group) => group.id === individualExercise.muscle_group_id
       );
 
+      individualExercise.exercise = exercisesArray.find(
+        (ex) => ex.id === individualExercise.exercise_id
+      );
+
       onUpdateExercises((prev) =>
         exercise
           ? prev.map((ex) =>

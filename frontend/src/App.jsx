@@ -1,7 +1,7 @@
 import { BrowserRouter as Router } from "react-router-dom";
 import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
-import Layout from "./components/Layout";
+import Layout from "./layout/Layout";
 import Home from "./pages/Home";
 import LoginForm from "./forms/LoginForm";
 import RegisterForm from "./forms/RegisterForm";
@@ -14,6 +14,7 @@ import { CreateWorkoutForm, UpdateWorkoutForm } from "./forms/WorkoutForm";
 import WorkoutPlans from "./pages/WorkoutPlans";
 import WorkoutPlanSingle from "./pages/WorkoutPlanSingle";
 import ExerciseStats from "./pages/ExerciseStats";
+import AIChat from "./pages/AIChat";
 import PrivateRoute from "./components/PrivateRoute";
 import InstallationGuide from "./pages/InstallationGuide";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -41,6 +42,7 @@ function App() {
 
             {/* Private Route */}
             <Route element={<PrivateRoute />}>
+              <Route path="/ai-chat" element={<AIChat />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/create-profile" element={<CreateProfileForm />} />
               <Route path="/update-profile" element={<UpdateProfileForm />} />

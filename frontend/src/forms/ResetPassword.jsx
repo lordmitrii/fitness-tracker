@@ -23,6 +23,7 @@ const ResetPassword = () => {
 
       if (!token) {
         setLinkValid(false);
+        setLoading(false);
         return;
       }
 
