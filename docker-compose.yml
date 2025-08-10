@@ -50,11 +50,12 @@ services:
     ports:
       - "6379:6379"
     command: >
-      sh -c "redis-server
+      sh -lc '
+      exec redis-server
       --appendonly yes
       --save 60 1000
-      ${REDIS_PASSWORD:+--requirepass $REDIS_PASSWORD}"
-    
+      --requirepass "$$REDIS_PASSWORD"
+      '
     env_file:
       - .env.dev
     volumes:

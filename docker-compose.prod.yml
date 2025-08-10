@@ -42,23 +42,23 @@ services:
     container_name: ft-redis-prod
     image: redis:7-alpine
     restart: unless-stopped
-    env_file:
-      - .env.prod
     command: >
       sh -lc '
       exec redis-server
-        --appendonly yes
-        --appendfsync everysec
-        --save "900 1" --save "300 10" --save "60 10000"
-        --protected-mode yes
-        ${REDIS_PASSWORD:+--requirepass "$$REDIS_PASSWORD"}
-        --maxmemory ${REDIS_MAX_MEMORY:-256mb}
-        --maxmemory-policy allkeys-lru
+      --appendonly yes
+      --appendfsync everysec
+      --save "900 1" --save "300 10" --save "60 10000"
+      --protected-mode yes
+      --requirepass "$$REDIS_PASSWORD"
+      --maxmemory "$${REDIS_MAX_MEMORY:-256mb}"
+      --maxmemory-policy allkeys-lru
       '
+    env_file:
+      - .env.prod
     volumes:
       - redis-data:/data
     healthcheck:
-      test: ["CMD-SHELL", "sh -lc 'redis-cli ${REDIS_PASSWORD:+-a \"$REDIS_PASSWORD\"} ping | grep PONG'"]
+      test: ["CMD-SHELL", "sh -lc 'redis-cli $${REDIS_PASSWORD:+-a \"$$REDIS_PASSWORD\"} ping | grep PONG'"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -76,6 +76,7 @@ services:
       - db
 
   certbot:
+    container_name: ft-certbot-prod
     image: certbot/certbot
     volumes:
       - certbot-etc:/etc/letsencrypt

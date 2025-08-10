@@ -1,5 +1,5 @@
 import { useTranslation, Trans } from "react-i18next";
-import { HEALTH_DATA_POLICY_VERSION } from "../utils/policiesUtils";
+import { getPolicyVersion } from "../utils/policiesUtils";
 
 const HealthDataPolicy = () => {
   const { t } = useTranslation();
@@ -8,7 +8,7 @@ const HealthDataPolicy = () => {
     <div className="container mx-auto p-4">
       <span className="flex items-end mb-6 gap-2">
         <h1 className="text-title font-bold">{t("health_data_policy.title")}</h1>
-        <span className="text-caption">v{HEALTH_DATA_POLICY_VERSION}</span>
+        <span className="text-caption">v{getPolicyVersion("health_data")}</span>
       </span>
 
       <p className="text-caption mb-6">{t("health_data_policy.intro")}</p>

@@ -26,10 +26,7 @@ func (s *aiServiceImpl) AskStatsQuestion(ctx context.Context, userID uint, quest
 		return "", "", err
 	}
 
-	profile, err := s.userService.GetProfile(ctx, userID)
-	if err != nil {
-		return "", "", err
-	}
+	profile, _ := s.userService.GetProfile(ctx, userID)
 
 	processedStats := []map[string]any{}
 

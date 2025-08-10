@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import CheckBox from "../components/CheckBox";
-import { PRIVACY_POLICY_VERSION, HEALTH_DATA_POLICY_VERSION } from "../utils/policiesUtils";
+import { getPolicyVersion } from "../utils/policiesUtils";
 
 const RegisterForm = () => {
   const navigate = useNavigate();
@@ -48,13 +48,16 @@ const RegisterForm = () => {
       return;
     }
 
+    const healthDataConsentVersion = getPolicyVersion("health_data");
+    const privacyConsentVersion = getPolicyVersion("privacy_policy");
+
     const resp = await register(
       email,
       password,
       privacyConsent,
-      PRIVACY_POLICY_VERSION,
+      privacyConsentVersion,
       healthDataConsent,
-      HEALTH_DATA_POLICY_VERSION
+      healthDataConsentVersion
     );
     if (resp.status === 201) {
       navigate("/login");

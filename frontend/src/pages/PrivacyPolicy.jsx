@@ -1,5 +1,5 @@
 import { useTranslation, Trans } from "react-i18next";
-import { PRIVACY_POLICY_VERSION } from "../utils/policiesUtils";
+import { getPolicyVersion } from "../utils/policiesUtils";
 import { Link } from "react-router-dom";
 
 const PrivacyPolicy = () => {
@@ -9,7 +9,7 @@ const PrivacyPolicy = () => {
     <div className="container mx-auto p-4">
       <span className="flex items-end mb-6 gap-2">
         <h1 className="text-title font-bold">{t("privacy_policy.title")}</h1>
-        <span className="text-caption">v{PRIVACY_POLICY_VERSION}</span>
+        <span className="text-caption">v{getPolicyVersion("privacy_policy")}</span>
       </span>
 
       <p className="text-caption mb-6">{t("privacy_policy.intro")}</p>
