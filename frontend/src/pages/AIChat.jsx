@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, use } from "react";
 import api from "../api";
 import SpinnerIcon from "../icons/SpinnerIcon";
 import { useTranslation } from "react-i18next";
@@ -7,6 +7,7 @@ import useConsent from "../hooks/useConsent";
 import ConsentModal from "../components/ConsentModal";
 import { useNavigate } from "react-router-dom";
 import { useCooldown } from "../hooks/useCooldown";
+import useStorageState from "../hooks/useStorageObject";
 
 const TOPICS = [
   {
@@ -31,14 +32,18 @@ const AIChat = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const [selectedTopic, setSelectedTopic] = useState(null);
-  const [threadIds, setThreadIds] = useState({});
-  const [messagesByTopic, setMessagesByTopic] = useState({});
+  const [store, setStore, { restoring }] = useStorageState("aiChatState", {
+    selectedTopic: null,
+    threadIds: {},
+    messagesByTopic: {},
+  });
+
+  const { selectedTopic, threadIds, messagesByTopic } = store;
+
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const chatWindowRef = useRef(null);
-  const [restoring, setRestoring] = useState(true);
 
   const { consentGiven, giveConsent } = useConsent("ai_chat");
   const { cooldown, start: startCooldown } = useCooldown();
@@ -47,30 +52,6 @@ const AIChat = () => {
     () => TOPICS.find((tpc) => tpc.key === selectedTopic) || null,
     [selectedTopic]
   );
-
-  useEffect(() => {
-    try {
-      const saved = sessionStorage.getItem("aiChatState");
-      if (saved) {
-        const { selectedTopic, threadIds, messagesByTopic } = JSON.parse(saved);
-        setSelectedTopic(selectedTopic);
-        setThreadIds(threadIds || {});
-        setMessagesByTopic(messagesByTopic || {});
-      }
-    } catch (err) {
-      console.error("Failed to restore AI chat state:", err);
-    } finally {
-      setRestoring(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (restoring) return;
-    sessionStorage.setItem(
-      "aiChatState",
-      JSON.stringify({ selectedTopic, threadIds, messagesByTopic })
-    );
-  }, [selectedTopic, threadIds, messagesByTopic]);
 
   const messages = selectedTopic ? messagesByTopic[selectedTopic] || [] : [];
 
@@ -81,11 +62,14 @@ const AIChat = () => {
       role: "ai",
       text: t(activeTopicMeta?.welcomeKey || "ai_chat.welcome_message_generic"),
     };
-    setMessagesByTopic((prev) => {
-      if (prev[selectedTopic]?.length) return prev;
+    setStore((prev) => {
+      if (prev.messagesByTopic[selectedTopic]?.length) return prev;
       return {
         ...prev,
-        [selectedTopic]: [welcome],
+        messagesByTopic: {
+          ...prev.messagesByTopic,
+          [selectedTopic]: [welcome],
+        },
       };
     });
     setError(null);
@@ -105,9 +89,12 @@ const AIChat = () => {
   }, [messages]);
 
   const appendMessage = (topicKey, msg) => {
-    setMessagesByTopic((prev) => ({
+    setStore((prev) => ({
       ...prev,
-      [topicKey]: [...(prev[topicKey] || []), msg],
+      messagesByTopic: {
+        ...prev.messagesByTopic,
+        [topicKey]: [...(prev.messagesByTopic[topicKey] || []), msg],
+      },
     }));
   };
 
@@ -138,7 +125,13 @@ const AIChat = () => {
       const responseId = data?.response_id || null;
 
       if (responseId) {
-        setThreadIds((prev) => ({ ...prev, [selectedTopic]: responseId }));
+        setStore((prev) => ({
+          ...prev,
+          threadIds: {
+            ...prev.threadIds,
+            [selectedTopic]: responseId,
+          },
+        }));
       }
 
       appendMessage(selectedTopic, {
@@ -183,9 +176,11 @@ const AIChat = () => {
                 <button
                   key={topic.key}
                   type="button"
-                  onClick={() => setSelectedTopic(topic.key)}
+                  onClick={() =>
+                    setStore((s) => ({ ...s, selectedTopic: topic.key }))
+                  }
                   className={`px-2 py-1 rounded-xl ${
-                    selectedTopic === topic.key
+                    store.selectedTopic === topic.key
                       ? "btn-primary"
                       : "btn-secondary"
                   }`}

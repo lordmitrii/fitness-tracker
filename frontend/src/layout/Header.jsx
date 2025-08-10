@@ -114,8 +114,7 @@ const Header = () => {
                   to={to}
                   onClick={() => setIsOpen(false)}
                   className={({ isActive }) => linkClasses(isActive)}
-                  e
-                  nd={to === "/"}
+                  end={to === "/"}
                 >
                   <div className="flex items-center gap-2">
                     <span className="whitespace-nowrap">{label}</span>
