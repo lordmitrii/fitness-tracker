@@ -11,6 +11,7 @@ import EditIcon from "../icons/EditIcon";
 import ListIcon from "../icons/ListIcon";
 import { useTranslation } from "react-i18next";
 import CloseIcon from "../icons/CloseIcon";
+import useStorageObject from "../hooks/useStorageObject";
 
 const ExerciseChip = ({ ex, onDelete }) => {
   const { t } = useTranslation();
@@ -36,72 +37,72 @@ const ExerciseChip = ({ ex, onDelete }) => {
 const AddWorkoutPlanForm = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [planName, setPlanName] = useState("");
-  const [daysPerCycle, setDaysPerCycle] = useState(1);
-  const [workouts, setWorkouts] = useState([]);
+
   const [formErrors, setFormErrors] = useState({});
-  const [step, setStep] = useState(1);
-
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
+
+  const [draft, setDraft, { restoring, clear }] = useStorageObject(
+    "workoutPlanDraft",
+    { planName: "", daysPerCycle: 1, workouts: [], step: 1 }
+  );
+
+  const { planName, daysPerCycle, workouts, step } = draft;
+
+  const setStep = (next) =>
+    setDraft((d) => ({
+      ...d,
+      step: typeof next === "function" ? next(d.step) : next,
+    }));
 
   useEffect(() => {
-    const savedData = sessionStorage.getItem("workoutPlanDraft");
-    if (savedData) {
-      const { planName, daysPerCycle, workouts, step } = JSON.parse(savedData);
-      setPlanName(planName);
-      setDaysPerCycle(daysPerCycle);
-      setWorkouts(workouts);
-      setStep(step || 1);
-    }
-    setLoading(false);
-  }, []);
+    if (restoring) return;
 
-  useEffect(() => {
-    if (loading) return;
-
-    setWorkouts((prev) => {
-      if (daysPerCycle > prev.length) {
-        return [
-          ...prev,
-          ...Array.from({ length: daysPerCycle - prev.length }, (_, i) => ({
-            id: prev.length + i + 1,
-            name: `Workout ${prev.length + i + 1}`,
-            workout_exercises: [],
-            index: prev.length + i + 1,
-          })),
+    setDraft((prev) => {
+      const prevWorkouts = prev.workouts || [];
+      if (prev.daysPerCycle === prevWorkouts.length) return prev;
+      let nextWorkouts = prevWorkouts;
+      if (prev.daysPerCycle > prevWorkouts.length) {
+        nextWorkouts = [
+          ...prevWorkouts,
+          ...Array.from(
+            { length: prev.daysPerCycle - prevWorkouts.length },
+            (_, i) => ({
+              id: prevWorkouts.length + i + 1,
+              name: `Workout ${prevWorkouts.length + i + 1}`,
+              workout_exercises: [],
+              index: prevWorkouts.length + i + 1,
+            })
+          ),
         ];
-      } else if (daysPerCycle < prev.length) {
-        return prev.slice(0, daysPerCycle);
+      } else if (prev.daysPerCycle < prevWorkouts.length) {
+        nextWorkouts = prevWorkouts.slice(0, prev.daysPerCycle);
       }
-      return prev;
+      return nextWorkouts === prevWorkouts
+        ? prev
+        : { ...prev, workouts: nextWorkouts };
     });
-  }, [daysPerCycle, loading]);
+  }, [daysPerCycle, restoring, setDraft]);
 
-  useEffect(() => {
-    if (loading) return;
-    sessionStorage.setItem(
-      "workoutPlanDraft",
-      JSON.stringify({
-        planName,
-        daysPerCycle,
-        workouts,
-        step,
-      })
-    );
-  }, [planName, daysPerCycle, workouts, step]);
-
-  const handleClearDraft = () => {
-    sessionStorage.removeItem("workoutPlanDraft");
-    setPlanName("");
-    setDaysPerCycle(1);
-    setWorkouts([]);
-    setStep(1);
-  };
+  const handleClearDraft = () => clear();
 
   const handleUpdateExercises = (dayIdx) => (update) => {
-    setWorkouts((prev) =>
-      prev.map((w, i) =>
+    // setWorkouts((prev) =>
+    //   prev.map((w, i) =>
+    //     i === dayIdx
+    //       ? {
+    //           ...w,
+    //           workout_exercises:
+    //             typeof update === "function"
+    //               ? update(w.workout_exercises)
+    //               : update,
+    //         }
+    //       : w
+    //   )
+    // );
+
+    setDraft((prev) => ({
+      ...prev,
+      workouts: prev.workouts.map((w, i) =>
         i === dayIdx
           ? {
               ...w,
@@ -111,8 +112,8 @@ const AddWorkoutPlanForm = () => {
                   : update,
             }
           : w
-      )
-    );
+      ),
+    }));
   };
 
   const validateStep1 = () => {
@@ -135,7 +136,7 @@ const AddWorkoutPlanForm = () => {
     setStep(nextStep);
   };
 
-  if (loading) return <LoadingState />;
+  if (restoring) return <LoadingState />;
   if (error)
     return (
       <ErrorState
@@ -194,7 +195,9 @@ const AddWorkoutPlanForm = () => {
               value={planName}
               maxLength={50}
               placeholder={t("add_workout_plan_form.plan_name_placeholder")}
-              onChange={(e) => setPlanName(e.target.value)}
+              onChange={(e) =>
+                setDraft((d) => ({ ...d, planName: e.target.value }))
+              }
               className="input-style"
             />
             <div className="text-right text-caption mt-1">
@@ -215,7 +218,7 @@ const AddWorkoutPlanForm = () => {
             </div>
             <DaysPerCycleSelector
               value={daysPerCycle}
-              onChange={setDaysPerCycle}
+              onChange={(v) => setDraft((d) => ({ ...d, daysPerCycle: v }))}
             />
             {formErrors.daysPerCycle && (
               <p className="text-caption-red mt-1">{formErrors.daysPerCycle}</p>
@@ -279,7 +282,7 @@ const AddWorkoutPlanForm = () => {
           workouts
         );
 
-        sessionStorage.removeItem("workoutPlanDraft");
+        clear();
         navigate("/workout-plans");
       } catch (error) {
         console.error("Error creating workout plan:", error);

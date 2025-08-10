@@ -34,7 +34,8 @@
     "completed": "Completed",
     "yes": "Yes",
     "no": "No",
-    "submit": "Submit"
+    "submit": "Submit",
+    "new": "New"
   },
   "measurements": {
     "weight": "kg",
@@ -404,14 +405,32 @@
     "core": "Core"
   },
   "ai_chat": {
-    "welcome_message_stats": "👋 Ask me anything about your workout stats! (e.g. 'How can I improve my squat?' or 'What muscle group is my strongest?')",
-    "error_response": "Sorry, I couldn't process your request. Please try again later.",
-    "error": "An error occured. Please try again.",
+    "choose_topic": "Choose a topic",
+    "select_topic_helper": "Please select a topic to start the conversation.",
+    "topic_general": {
+      "label": "General",
+      "description": "Ask general questions about fitness.",
+      "welcome_message": "Welcome! Ask me anything about fitness."
+    },
+    "topic_workouts": {
+      "label": "Workouts",
+      "description": "Ask about your active workout plan or workouts and get some insights.",
+      "welcome_message": "Welcome! Ask me anything about your workouts."
+    },
+    "topic_stats": {
+      "label": "Statistics",
+      "description": "Ask for your latest stats and progress reports.",
+      "welcome_message": "Welcome! Ask me about your stats or progress."
+    },
+    "user_input_placeholder": "Type your message...",
+    "user_input_placeholder_select_topic": "Select a topic to start chatting...",
     "send_button": "Send",
-    "user_input_placeholder": "Type your message here...",
-    "close_chat": "Close Chat",
     "thinking": "Thinking...",
-    "rate_limit_exceeded": "Rate limit exceeded. Please try again in {{time}} seconds."
+    "error": "Something went wrong.",
+    "error_response": "Sorry, I couldn't process your request.",
+    "error_select_topic_first": "Please select a topic before sending a message.",
+    "rate_limit_exceeded": "You are sending too many requests. Please wait {{time}} seconds.",
+    "wait_seconds": "Please wait {{seconds}} seconds."
   },
   "consent_modal": {
     "title": "Consent Required",

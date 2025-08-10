@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import api from "../api";
-import { AI_CHAT_CONSENT_VERSION } from "../utils/policiesUtils";
+import { getPolicyVersion } from "../utils/policiesUtils";
 
-const useConsent = (storageKey = "aiChatConsent") => {
+const useConsent = (type) => {
+  const storageKey = `${type}_consent`;
   const [consentGiven, setConsentGiven] = useState(() => {
     return sessionStorage.getItem(storageKey) === "true";
   });
@@ -12,13 +13,12 @@ const useConsent = (storageKey = "aiChatConsent") => {
     const fetchConsent = async () => {
       try {
         const response = await api.get("users/consents");
-        const aiConsent = response.data.find(
+        const consent = response.data.find(
           (consent) =>
-            consent.type === "ai_chat" &&
-            consent.version === AI_CHAT_CONSENT_VERSION
+            consent.type === type && consent.version === getPolicyVersion(type)
         );
         if (isMounted) {
-          const given = !!(aiConsent && aiConsent.given);
+          const given = !!(consent && consent.given);
           setConsentGiven(given);
           sessionStorage.setItem(storageKey, given ? "true" : "false");
         }
@@ -40,8 +40,8 @@ const useConsent = (storageKey = "aiChatConsent") => {
     sessionStorage.setItem(storageKey, "true");
     try {
       await api.post("users/consents", {
-        type: "ai_chat",
-        version: AI_CHAT_CONSENT_VERSION,
+        type,
+        version: getPolicyVersion(type),
         given: true,
       });
     } catch (error) {
@@ -55,8 +55,8 @@ const useConsent = (storageKey = "aiChatConsent") => {
     try {
       await api.delete("users/consents", {
         data: {
-          type: "ai_chat",
-          version: AI_CHAT_CONSENT_VERSION,
+          type,
+          version: getPolicyVersion(type),
         },
       });
     } catch (error) {

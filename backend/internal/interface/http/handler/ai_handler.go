@@ -19,9 +19,10 @@ func NewAIHandler(r *gin.RouterGroup, svc usecase.AIService, rateLimiter usecase
 	ai.Use(middleware.JWTMiddleware())
 	ai.Use(middleware.RateLimitMiddleware(rateLimiter, 3, "ai")) // 3 requests per minute
 
-	{
+	{	
+		ai.POST("/ask-general", h.AskGeneralQuestion)
 		ai.POST("/ask-stats", h.AskStatsQuestion)
-		ai.POST("/ask-workout-plan", h.AskWorkoutPlanQuestion)
+		ai.POST("/ask-workouts", h.AskWorkoutsQuestion)
 	}
 }
 
@@ -47,7 +48,7 @@ func (h *AIHandler) AskStatsQuestion(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"answer": resp, "response_id": prevRespID})
 }
 
-func (h *AIHandler) AskWorkoutPlanQuestion(c *gin.Context) {
+func (h *AIHandler) AskWorkoutsQuestion(c *gin.Context) {
 	userID, _ := c.Get("userID")
 
 	var req struct {
@@ -60,7 +61,29 @@ func (h *AIHandler) AskWorkoutPlanQuestion(c *gin.Context) {
 		return
 	}
 
-	resp, prevRespID, err := h.svc.AskWorkoutPlanQuestion(c.Request.Context(), userID.(uint), req.Question, req.PreviousResponseID)
+	resp, prevRespID, err := h.svc.AskWorkoutsQuestion(c.Request.Context(), userID.(uint), req.Question, req.PreviousResponseID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"answer": resp, "response_id": prevRespID})
+}
+
+func (h *AIHandler) AskGeneralQuestion(c *gin.Context) {
+	userID, _ := c.Get("userID")
+
+	var req struct {
+		Question           string `json:"question"`
+		PreviousResponseID string `json:"previous_response_id"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	resp, prevRespID, err := h.svc.AskGeneralQuestion(c.Request.Context(), userID.(uint), req.Question, req.PreviousResponseID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

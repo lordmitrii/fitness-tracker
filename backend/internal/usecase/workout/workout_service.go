@@ -896,7 +896,7 @@ func (s *workoutServiceImpl) GetIndividualExerciseStats(ctx context.Context, use
 	for _, ie := range individualExercise {
 		last5WorkoutExercises, err := s.workoutExerciseRepo.GetLast5ByIndividualExerciseID(ctx, ie.ID)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get last 5 workout exercises for individual exercise %d", ie.ID)
+			return nil, err
 		}
 		if len(last5WorkoutExercises) == 0 {
 			continue
@@ -907,7 +907,7 @@ func (s *workoutServiceImpl) GetIndividualExerciseStats(ctx context.Context, use
 
 		for _, we := range last5WorkoutExercises {
 			for _, ws := range we.WorkoutSets {
-				if ws.Weight * float64(ws.Reps) > bestWeight * float64(bestReps) {
+				if ws.Weight*float64(ws.Reps) > bestWeight*float64(bestReps) {
 					bestWeight = ws.Weight
 					bestReps = ws.Reps
 				}
@@ -959,4 +959,19 @@ func (s *workoutServiceImpl) GetPreviousSets(ctx context.Context, individualExer
 		prevSets = append(prevSets, pSet)
 	}
 	return prevSets, nil
+}
+
+func (s *workoutServiceImpl) GetActivePlanByUserID(ctx context.Context, userID uint) (*workout.WorkoutPlan, error) {
+	workoutPlans, err := s.workoutPlanRepo.GetByUserID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, wp := range workoutPlans {
+		if wp.Active {
+			return wp, nil
+		}
+	}
+
+	return nil, nil
 }

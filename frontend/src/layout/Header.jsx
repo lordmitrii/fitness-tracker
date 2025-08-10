@@ -1,13 +1,15 @@
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useState, useEffect, useRef } from "react";
+import NewIcon from "../icons/NewIcon";
 
 const Header = () => {
   const { t } = useTranslation();
   const { isAuth, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const headerRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -19,9 +21,6 @@ const Header = () => {
     document.addEventListener("pointerdown", handleClick);
     return () => document.removeEventListener("pointerdown", handleClick);
   }, [isOpen]);
-
-  const isActive = (to) =>
-    to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
 
   const handleLogout = () => {
     logout();
@@ -35,12 +34,17 @@ const Header = () => {
       label: t("general.workout_plans"),
       auth: true,
     },
+    { to: "/ai-chat", label: t("general.ai_chat"), auth: true },
     { to: "/exercise-stats", label: t("general.stats"), auth: true },
-    // { to: "/ai-chat", label: t("general.ai_chat"), auth: true },
     { to: "/profile", label: t("general.profile"), auth: true },
     { to: "/login", label: t("general.login"), auth: false },
     { to: "/register", label: t("general.register"), auth: false },
   ];
+
+  const linkClasses = (isActive) =>
+    `font-semibold px-3 py-2 rounded-lg transition ${
+      isActive ? "text-blue-700 bg-blue-100" : `text-gray-700 hover:bg-blue-50`
+    }`;
 
   return (
     <header
@@ -96,40 +100,39 @@ const Header = () => {
             .filter((l) => l.auth === null || l.auth === isAuth)
             .map(({ to, label }) =>
               label === t("general.register") ? (
-                <Link
+                <NavLink
                   key={to}
                   to={to}
                   className="text-center font-semibold bg-gradient-to-r from-blue-500 to-indigo-400 text-white px-4 py-2 rounded-lg shadow hover:scale-105 transition"
                   onClick={() => setIsOpen(false)}
                 >
                   {label}
-                </Link>
-              ) : label === t("general.login") ? (
-                <Link
+                </NavLink>
+              ) : label === t("general.ai_chat") ? ( //TODO: Remove later
+                <NavLink
                   key={to}
                   to={to}
-                  className={`font-semibold px-3 py-2 rounded-lg ${
-                    isActive(to)
-                      ? "text-blue-700 bg-blue-100"
-                      : "text-gray-700 hover:bg-blue-100"
-                  } transition`}
                   onClick={() => setIsOpen(false)}
+                  className={({ isActive }) => linkClasses(isActive)}
+                  end={to === "/"}
                 >
-                  {label}
-                </Link>
+                  <div className="flex items-center gap-2">
+                    <span className="whitespace-nowrap">{label}</span>
+                    <span className="flex items-center border rounded-xl border-green-400 p-1 text-caption-green italic font-thin">
+                      <NewIcon size="4" /> {t("general.new")}
+                    </span>
+                  </div>
+                </NavLink>
               ) : (
-                <Link
+                <NavLink
                   key={to}
                   to={to}
-                  className={`font-semibold px-3 py-2 rounded-lg ${
-                    isActive(to)
-                      ? "text-blue-700 bg-blue-100"
-                      : "text-gray-700 hover:bg-blue-50"
-                  } transition`}
                   onClick={() => setIsOpen(false)}
+                  className={({ isActive }) => linkClasses(isActive)}
+                  end={to === "/"}
                 >
-                  {label}
-                </Link>
+                  <span className="whitespace-nowrap">{label}</span>
+                </NavLink>
               )
             )}
           {isAuth && (
