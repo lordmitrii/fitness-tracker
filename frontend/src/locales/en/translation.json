@@ -407,10 +407,21 @@
   "ai_chat": {
     "choose_topic": "Choose a topic",
     "select_topic_helper": "Please select a topic to start the conversation.",
-    "topic_workout": "Workout Plan",
-    "topic_workout_description": "Ask for a personalized workout plan based on your goals.",
-    "topic_stats": "Statistics",
-    "topic_stats_description": "Ask for your latest stats and progress reports.",
+    "topic_general": {
+      "label": "General",
+      "description": "Ask general questions about fitness.",
+      "welcome_message": "Welcome! Ask me anything about fitness."
+    },
+    "topic_workouts": {
+      "label": "Workouts",
+      "description": "Ask about your active workout plan or workouts and get some insights.",
+      "welcome_message": "Welcome! Ask me anything about your workouts."
+    },
+    "topic_stats": {
+      "label": "Statistics",
+      "description": "Ask for your latest stats and progress reports.",
+      "welcome_message": "Welcome! Ask me about your stats or progress."
+    },
     "user_input_placeholder": "Type your message...",
     "user_input_placeholder_select_topic": "Select a topic to start chatting...",
     "send_button": "Send",
@@ -419,9 +430,7 @@
     "error_response": "Sorry, I couldn't process your request.",
     "error_select_topic_first": "Please select a topic before sending a message.",
     "rate_limit_exceeded": "You are sending too many requests. Please wait {{time}} seconds.",
-    "wait_seconds": "Please wait {{seconds}} seconds.",
-    "welcome_message_workout": "Welcome! Ask me anything about your workout plan.",
-    "welcome_message_stats": "Welcome! Ask me about your stats or progress."
+    "wait_seconds": "Please wait {{seconds}} seconds."
   },
   "consent_modal": {
     "title": "Consent Required",

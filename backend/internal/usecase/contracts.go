@@ -16,6 +16,7 @@ type (
 		UpdateWorkoutPlan(ctx context.Context, wp *workout.WorkoutPlan) error
 		DeleteWorkoutPlan(ctx context.Context, id uint) error
 		SetActiveWorkoutPlan(ctx context.Context, wp *workout.WorkoutPlan) error
+		GetActivePlanByUserID(ctx context.Context, userID uint) (*workout.WorkoutPlan, error)
 
 		CreateWorkoutCycle(ctx context.Context, wc *workout.WorkoutCycle) error
 		GetWorkoutCycleByID(ctx context.Context, id uint) (*workout.WorkoutCycle, error)
@@ -48,12 +49,11 @@ type (
 		DeleteWorkoutSet(ctx context.Context, id uint) error
 		GetIncompleteSetsCount(ctx context.Context, workoutExerciseID uint) (int64, error)
 		MoveWorkoutSet(ctx context.Context, exerciseID, setID uint, direction string) error
+		GetPreviousSets(ctx context.Context, individualExerciseID uint, qt int64) ([]*workout.WorkoutSet, error)
 
 		GetIndividualExercisesByUserID(ctx context.Context, userID uint) ([]*workout.IndividualExercise, error)
 		GetOrCreateIndividualExercise(ctx context.Context, individualExercise *workout.IndividualExercise) (*workout.IndividualExercise, error)
 		GetIndividualExerciseStats(ctx context.Context, userID uint) ([]*workout.IndividualExercise, error)
-
-		GetPreviousSets(ctx context.Context, individualExerciseID uint, qt int64) ([]*workout.WorkoutSet, error)
 	}
 
 	ExerciseService interface {
@@ -93,7 +93,8 @@ type (
 
 type AIService interface {
 	AskStatsQuestion(ctx context.Context, userID uint, question string, previousResponseID string) (string, string, error)
-	AskWorkoutPlanQuestion(ctx context.Context, userID uint, question string, previousResponseID string) (string, string, error)
+	AskWorkoutsQuestion(ctx context.Context, userID uint, question string, previousResponseID string) (string, string, error)
+	AskGeneralQuestion(ctx context.Context, userID uint, question string, previousResponseID string) (string, string, error)
 }
 
 type EmailService interface {

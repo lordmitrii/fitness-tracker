@@ -406,22 +406,31 @@
   },
   "ai_chat": {
     "choose_topic": "选择主题",
-    "select_topic_helper": "请选择一个主题开始对话。",
-    "topic_workout": "锻炼计划",
-    "topic_workout_desc": "根据您的目标获取个性化的锻炼计划。",
-    "topic_stats": "统计数据",
-    "topic_stats_desc": "查看您的最新统计数据和进度报告。",
-    "user_input_placeholder": "输入您的消息...",
-    "user_input_placeholder_select_topic": "请选择一个主题开始聊天...",
+    "select_topic_helper": "请选择一个主题以开始对话。",
+    "topic_general": {
+      "label": "常规",
+      "description": "提出关于健身的一般性问题。",
+      "welcome_message": "欢迎！可以问我任何关于健身的问题。"
+    },
+    "topic_workouts": {
+      "label": "锻炼",
+      "description": "询问您的当前锻炼计划或训练，并获取一些见解。",
+      "welcome_message": "欢迎！可以问我任何关于您锻炼的问题。"
+    },
+    "topic_stats": {
+      "label": "统计",
+      "description": "查询您的最新数据和进度报告。",
+      "welcome_message": "欢迎！可以问我关于您的数据或进度的问题。"
+    },
+    "user_input_placeholder": "请输入您的消息...",
+    "user_input_placeholder_select_topic": "选择一个主题开始聊天...",
     "send_button": "发送",
     "thinking": "思考中...",
-    "error": "出现了一些问题。",
-    "error_response": "抱歉，无法处理您的请求。",
+    "error": "出现错误。",
+    "error_response": "抱歉，我无法处理您的请求。",
     "error_select_topic_first": "请先选择一个主题再发送消息。",
-    "rate_limit_exceeded": "请求过多，请等待 {{time}} 秒。",
-    "wait_seconds": "请等待 {{seconds}} 秒。",
-    "welcome_message_workout": "欢迎！您可以向我咨询任何有关锻炼计划的问题。",
-    "welcome_message_stats": "欢迎！您可以向我咨询您的统计数据或进度。"
+    "rate_limit_exceeded": "您发送的请求过多。请等待 {{time}} 秒。",
+    "wait_seconds": "请等待 {{seconds}} 秒。"
   },
   "consent_modal": {
     "title": "需要同意",

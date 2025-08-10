@@ -11,20 +11,27 @@ import useStorageState from "../hooks/useStorageObject";
 
 const TOPICS = [
   {
-    key: "askWorkoutPlan",
-    endpoint: "/ai/ask-workout-plan",
-    i18nLabel: "ai_chat.topic_workout",
+    key: "askGeneral",
+    endpoint: "/ai/ask-general",
+    i18nLabel: "ai_chat.topic_general.label",
+    i18nDesc: "Sorry, this is not working yet. Please try other topics.",
     //TODO: uncomment once endpoint is ready
-    // i18nDesc: "ai_chat.topic_workout_description",
-    i18nDesc: "Sorry, this is not working yet. Please try statistics topic.",
-    welcomeKey: "ai_chat.welcome_message_workout",
+    // i18nDesc: "ai_chat.topic_general.description",
+    welcomeKey: "ai_chat.topic_general.welcome_message",
+  },
+  {
+    key: "askWorkouts",
+    endpoint: "/ai/ask-workouts",
+    i18nLabel: "ai_chat.topic_workouts.label",
+    i18nDesc: "ai_chat.topic_workouts.description",
+    welcomeKey: "ai_chat.topic_workouts.welcome_message",
   },
   {
     key: "askStats",
     endpoint: "/ai/ask-stats",
-    i18nLabel: "ai_chat.topic_stats",
-    i18nDesc: "ai_chat.topic_stats_description",
-    welcomeKey: "ai_chat.welcome_message_stats",
+    i18nLabel: "ai_chat.topic_stats.label",
+    i18nDesc: "ai_chat.topic_stats.description",
+    welcomeKey: "ai_chat.topic_stats.welcome_message",
   },
 ];
 
@@ -33,7 +40,7 @@ const AIChat = () => {
   const navigate = useNavigate();
 
   const [store, setStore, { restoring }] = useStorageState("aiChatState", {
-    selectedTopic: null,
+    selectedTopic: "askGeneral", // Set to null if want to show "choose topic" first. Now general topic will be preselected.
     threadIds: {},
     messagesByTopic: {},
   });
@@ -119,6 +126,8 @@ const AIChat = () => {
       const { data } = await api.post(activeTopicMeta.endpoint, {
         question: input,
         previous_response_id: previousResponseId,
+      }, {
+        timeout: 60000, // 60 seconds timeout
       });
 
       const answerText = data?.answer || t("ai_chat.error");
@@ -149,6 +158,7 @@ const AIChat = () => {
           parseInt(err.response.headers?.["retry-after"], 10) || 60;
         startCooldown(retryAfter);
       } else {
+        console.error("AI Chat error:", err);
         setError(err.message || t("ai_chat.error"));
       }
     } finally {
