@@ -143,5 +143,17 @@ func (s *aiServiceImpl) AskWorkoutsQuestion(ctx context.Context, userID uint, qu
 }
 
 func (s *aiServiceImpl) AskGeneralQuestion(ctx context.Context, userID uint, question string, previousResponseID string) (string, string, error) {
-	return fmt.Sprintf("General question: %s", question), fmt.Sprintf("previous_response_id: %s", previousResponseID), nil
+	var fullPrompt string
+
+	if previousResponseID == "" {
+		fullPrompt = fmt.Sprintf(
+			"The user asks: %s\n",
+			question,
+		)
+	} else {
+		fullPrompt = fmt.Sprintf("The user asks: %s\n", question)
+	}
+
+	return CallOpenAIChat(ctx, fullPrompt, previousResponseID, 256)
+	// return fmt.Sprintf("General question: %s", question), fmt.Sprintf("previous_response_id: %s", previousResponseID), nil
 }

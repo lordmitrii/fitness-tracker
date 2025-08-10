@@ -14,9 +14,7 @@ const TOPICS = [
     key: "askGeneral",
     endpoint: "/ai/ask-general",
     i18nLabel: "ai_chat.topic_general.label",
-    i18nDesc: "Sorry, this is not working yet. Please try other topics.",
-    //TODO: uncomment once endpoint is ready
-    // i18nDesc: "ai_chat.topic_general.description",
+    i18nDesc: "ai_chat.topic_general.description",
     welcomeKey: "ai_chat.topic_general.welcome_message",
   },
   {
