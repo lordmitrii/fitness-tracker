@@ -35,7 +35,8 @@
     "yes": "是",
     "no": "否",
     "submit": "提交",
-    "new": "新建"
+    "new": "新建",
+    "page_no_permissions": "您没有权限访问此页面。"
   },
   "measurements": {
     "weight": "公斤",
@@ -429,6 +430,7 @@
     "error": "出现错误。",
     "error_response": "抱歉，我无法处理您的请求。",
     "error_select_topic_first": "请先选择一个主题再发送消息。",
+    "error_insufficient_permissions": "您没有权限使用此功能。",
     "rate_limit_exceeded": "您发送的请求过多。请等待 {{time}} 秒。",
     "wait_seconds": "请等待 {{seconds}} 秒。"
   },

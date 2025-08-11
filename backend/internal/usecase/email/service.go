@@ -113,7 +113,7 @@ func (s *emailServiceImpl) SendResetPasswordEmail(ctx context.Context, to string
 	return s.emailSender.SendResetPasswordEmail(to, link)
 }
 
-func (s *emailServiceImpl) VerifyToken(ctx context.Context, token, tokenType string, preflight bool) (bool, error) {
+func (s *emailServiceImpl) ValidateToken(ctx context.Context, token, tokenType string) (bool, error) {
 	emailToken, err := s.emailTokenRepo.GetByTokenAndType(ctx, token, tokenType)
 	if err != nil {
 		return false, err
@@ -122,16 +122,21 @@ func (s *emailServiceImpl) VerifyToken(ctx context.Context, token, tokenType str
 		return false, nil
 	}
 
-	if preflight {
-		return true, nil
-	}
-
-	if tokenType == "verification" {
-		s.userService.SetVerified(ctx, emailToken.Email)
-		s.emailTokenRepo.Delete(ctx, emailToken.ID)
-	}
-
 	return true, nil
+}
+
+func (s *emailServiceImpl) VerifyAccount(ctx context.Context, token string) error {
+	emailToken, err := s.emailTokenRepo.GetByTokenAndType(ctx, token, "verification")
+	if err != nil {
+		return err
+	}
+	if emailToken == nil || emailToken.IsExpired() {
+		return nil
+	}
+
+	s.userService.SetVerified(ctx, emailToken.Email)
+	s.emailTokenRepo.Delete(ctx, emailToken.ID)
+	return nil
 }
 
 func (s *emailServiceImpl) ResetPassword(ctx context.Context, token, newPassword string) error {

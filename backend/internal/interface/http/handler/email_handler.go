@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
 	"github.com/lordmitrii/golang-web-gin/internal/interface/http/middleware"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 )
@@ -12,22 +13,29 @@ type EmailHandler struct {
 	svc usecase.EmailService
 }
 
-func NewEmailHandler(r *gin.RouterGroup, svc usecase.EmailService, rateLimiter usecase.RateLimiter) {
+func NewEmailHandler(r *gin.RouterGroup, svc usecase.EmailService, rateLimiter usecase.RateLimiter, rbacService usecase.RBACService) {
 	h := &EmailHandler{svc: svc}
 
 	email := r.Group("/email")
 	email.Use(middleware.RateLimitMiddleware(rateLimiter, 10, "email")) // 10 requests per minute
 
 	{
+		email.POST("/validate-token", h.ValidateToken)
+
 		email.POST("/send-reset-password", h.SendResetPasswordEmail)
 		email.POST("/reset-password", h.ResetPassword)
-		email.POST("/verify-token", h.VerifyToken)
 
 		protected := email.Group("/")
 		protected.Use(middleware.JWTMiddleware())
 		{
-			protected.POST("/send-verification", h.SendVerificationEmail)
-			protected.POST("/send-notification", h.SendNotificationEmail)
+			protected.POST("/send-account-verification", h.SendVerificationEmail)
+			protected.POST("/verify-account", h.VerifyAccount)
+
+			adminonly := protected.Group("")
+			adminonly.Use(middleware.RequirePerm(rbacService, rbac.PermAdmin))
+			{
+				adminonly.POST("/send-notification", h.SendNotificationEmail)
+			}
 		}
 
 	}
@@ -83,11 +91,10 @@ func (h *EmailHandler) SendResetPasswordEmail(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Reset password email sent"})
 }
 
-func (h *EmailHandler) VerifyToken(c *gin.Context) {
+func (h *EmailHandler) ValidateToken(c *gin.Context) {
 	var req struct {
 		Token     string `json:"token" binding:"required"`
 		TokenType string `json:"token_type" binding:"required"`
-		Preflight bool   `json:"preflight"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -95,7 +102,7 @@ func (h *EmailHandler) VerifyToken(c *gin.Context) {
 		return
 	}
 
-	valid, err := h.svc.VerifyToken(c.Request.Context(), req.Token, req.TokenType, req.Preflight)
+	valid, err := h.svc.ValidateToken(c.Request.Context(), req.Token, req.TokenType)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -122,4 +129,20 @@ func (h *EmailHandler) ResetPassword(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Password reset successfully"})
+}
+
+func (h *EmailHandler) VerifyAccount(c *gin.Context) {
+	var req struct {
+		Token string `json:"token" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.svc.VerifyAccount(c.Request.Context(), req.Token); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Account verified successfully"})
 }

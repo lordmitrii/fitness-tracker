@@ -35,7 +35,8 @@
     "yes": "Yes",
     "no": "No",
     "submit": "Submit",
-    "new": "New"
+    "new": "New",
+    "page_no_permissions": "You do not have permission to access this page."
   },
   "measurements": {
     "weight": "kg",
@@ -429,6 +430,7 @@
     "error": "Something went wrong.",
     "error_response": "Sorry, I couldn't process your request.",
     "error_select_topic_first": "Please select a topic before sending a message.",
+    "error_insufficient_permissions": "You do not have permission to use this feature.",
     "rate_limit_exceeded": "You are sending too many requests. Please wait {{time}} seconds.",
     "wait_seconds": "Please wait {{seconds}} seconds."
   },

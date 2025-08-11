@@ -6,7 +6,7 @@ import NewIcon from "../icons/NewIcon";
 
 const Header = () => {
   const { t } = useTranslation();
-  const { isAuth, logout } = useAuth();
+  const { isAuth, logout, hasAnyRole } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const headerRef = useRef(null);
   const navigate = useNavigate();
@@ -28,17 +28,18 @@ const Header = () => {
   };
 
   const navLinks = [
-    { to: "/", label: t("general.home"), auth: null },
+    { to: "/", label: t("general.home"), auth: null, roles: [] },
     {
       to: "/workout-plans",
       label: t("general.workout_plans"),
       auth: true,
+      roles: [],
     },
-    { to: "/ai-chat", label: t("general.ai_chat"), auth: true },
-    { to: "/exercise-stats", label: t("general.stats"), auth: true },
-    { to: "/profile", label: t("general.profile"), auth: true },
-    { to: "/login", label: t("general.login"), auth: false },
-    { to: "/register", label: t("general.register"), auth: false },
+    { to: "/ai-chat", label: t("general.ai_chat"), auth: true, roles: ["admin", "member"] },
+    { to: "/exercise-stats", label: t("general.stats"), auth: true, roles: [] },
+    { to: "/profile", label: t("general.profile"), auth: true, roles: [] },
+    { to: "/login", label: t("general.login"), auth: false, roles: [] },
+    { to: "/register", label: t("general.register"), auth: false, roles: [] },
   ];
 
   const linkClasses = (isActive) =>
@@ -98,6 +99,7 @@ const Header = () => {
         >
           {navLinks
             .filter((l) => l.auth === null || l.auth === isAuth)
+            .filter((l) => !l.roles.length || hasAnyRole(l.roles))
             .map(({ to, label }) =>
               label === t("general.register") ? (
                 <NavLink

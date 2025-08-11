@@ -1,10 +1,11 @@
 package handler
 
 import (
-	"strconv"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 	"github.com/lordmitrii/golang-web-gin/internal/interface/http/middleware"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
@@ -14,7 +15,7 @@ type ExerciseHandler struct {
 	svc usecase.ExerciseService
 }
 
-func NewExerciseHandler(r *gin.RouterGroup, svc usecase.ExerciseService) {
+func NewExerciseHandler(r *gin.RouterGroup, svc usecase.ExerciseService, rbacService usecase.RBACService) {
 	h := &ExerciseHandler{svc: svc}
 	auth := r.Group("")
 	auth.Use(middleware.JWTMiddleware())
@@ -23,18 +24,26 @@ func NewExerciseHandler(r *gin.RouterGroup, svc usecase.ExerciseService) {
 	{
 		ex.GET("/", h.GetAllExercises)
 		ex.GET("/:id", h.GetExerciseByID)
-		ex.POST("/", h.CreateExercise)
-		ex.PATCH("/:id", h.UpdateExercise)
-		ex.DELETE("/:id", h.DeleteExercise)
+		adminonly := ex.Group("")
+		adminonly.Use(middleware.RequirePerm(rbacService, rbac.PermAdmin))
+		{
+			adminonly.POST("/", h.CreateExercise)
+			adminonly.PATCH("/:id", h.UpdateExercise)
+			adminonly.DELETE("/:id", h.DeleteExercise)
+		}
 	}
 
 	mg := auth.Group("/muscle-groups")
 	{
 		mg.GET("/", h.GetAllMuscleGroups)
 		mg.GET("/:id", h.GetMuscleGroupByID)
-		mg.POST("/", h.CreateMuscleGroup)
-		mg.PATCH("/:id", h.UpdateMuscleGroup)
-		mg.DELETE("/:id", h.DeleteMuscleGroup)
+		adminonly := mg.Group("")
+		adminonly.Use(middleware.RequirePerm(rbacService, rbac.PermAdmin))
+		{
+			adminonly.POST("/", h.CreateMuscleGroup)
+			adminonly.PATCH("/:id", h.UpdateMuscleGroup)
+			adminonly.DELETE("/:id", h.DeleteMuscleGroup)
+		}
 
 	}
 }

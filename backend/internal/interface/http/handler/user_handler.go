@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 	"github.com/lordmitrii/golang-web-gin/internal/interface/http/middleware"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
@@ -15,7 +16,6 @@ type UserHandler struct {
 	svc usecase.UserService
 }
 
-// NewUserHandler instantiates the handler and sets up the routes
 func NewUserHandler(r *gin.RouterGroup, svc usecase.UserService) {
 	h := &UserHandler{svc: svc}
 	us := r.Group("/users")
@@ -24,11 +24,12 @@ func NewUserHandler(r *gin.RouterGroup, svc usecase.UserService) {
 		us.POST("/login", h.Login)
 		us.POST("/logout", h.Logout)
 		us.POST("/refresh", h.RefreshToken)
-		// us.DELETE("/:id", h.DeleteUser)
 
 		protected := us.Group("/")
 		protected.Use(middleware.JWTMiddleware())
 		{
+			protected.GET("/me", h.Me)
+
 			protected.POST("/profile", h.CreateProfile)
 			protected.GET("/profile", h.GetProfile)
 			protected.PUT("/profile", h.UpdateProfile)
@@ -142,16 +143,6 @@ func (h *UserHandler) RefreshToken(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"access_token": accessToken})
 }
-
-// func (h *UserHandler) DeleteUser(c *gin.Context) {
-// 	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
-
-// 	if err := h.svc.DeleteUser(c.Request.Context(), uint(id)); err != nil {
-// 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-// 		return
-// 	}
-// 	c.Status(http.StatusNoContent)
-// }
 
 func (h *UserHandler) GetProfile(c *gin.Context) {
 	userID, exists := c.Get("userID")
@@ -310,4 +301,31 @@ func (h *UserHandler) DeleteConsent(c *gin.Context) {
 		return
 	}
 	c.Status(http.StatusNoContent)
+}
+
+func (h *UserHandler) Me(c *gin.Context) {
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	uid := userID.(uint)
+
+	user, err := h.svc.Me(c.Request.Context(), uid)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	var resp struct {
+		Email      string      `json:"email"`
+		Roles      []rbac.Role `json:"roles"`
+		IsVerified bool        `json:"is_verified"`
+	}
+
+	resp.Email = user.Email
+	resp.Roles = user.Roles
+	resp.IsVerified = user.IsVerified
+
+	c.JSON(http.StatusOK, resp)
 }
