@@ -5,7 +5,6 @@ import ErrorState from "../states/ErrorState";
 import { useTranslation } from "react-i18next";
 import MuscleGroupRadar from "../components/MuscleGroupRadar";
 import { e1RM } from "../utils/exerciseStatsUtils";
-import AIChat from "./AIChat";
 
 const ExerciseStats = () => {
   const [stats, setStats] = useState(null);

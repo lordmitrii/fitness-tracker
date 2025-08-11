@@ -4,7 +4,7 @@ import SpinnerIcon from "../icons/SpinnerIcon";
 import { useTranslation } from "react-i18next";
 import ReactMarkdown from "react-markdown";
 import useConsent from "../hooks/useConsent";
-import ConsentModal from "../components/ConsentModal";
+import ConsentModal from "../modals/ConsentModal";
 import { useNavigate } from "react-router-dom";
 import { useCooldown } from "../hooks/useCooldown";
 import useStorageState from "../hooks/useStorageObject";
@@ -206,7 +206,7 @@ const AIChat = () => {
                   onClick={() =>
                     setStore((s) => ({ ...s, selectedTopic: topic.key }))
                   }
-                  className={`px-2 py-1 rounded-xl ${
+                  className={`btn ${
                     store.selectedTopic === topic.key
                       ? "btn-primary"
                       : "btn-secondary"

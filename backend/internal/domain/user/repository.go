@@ -12,6 +12,7 @@ type UserRepository interface {
 	Delete(ctx context.Context, id uint) error
 	SetVerified(ctx context.Context, email string) error
 	CheckEmail(ctx context.Context, email string) (bool, error)
+	GetUsers(ctx context.Context, q string, page, pageSize int64) ([]*User, int64, error)
 }
 
 type ProfileRepository interface {

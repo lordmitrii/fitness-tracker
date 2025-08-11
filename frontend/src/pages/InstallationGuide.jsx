@@ -11,7 +11,7 @@ const InstallationGuide = () => {
   return (
     <div className="card flex flex-col items-center">
       <h1 className="text-title-blue-gradient font-bold mb-2 text-center">
-        {t("installation_guide.installation_guide")}
+        {t("installation_guide.installation_guide")}  
       </h1>
       <h2 className="text-body mb-10 text-center">
         {t("installation_guide.steps_below")}
@@ -23,7 +23,7 @@ const InstallationGuide = () => {
             <AppleIcon />
             <span className="font-semibold text-body-blue">iOS</span>
           </div>
-          <ul className="flex flex-col gap-3 w-full">
+          <ul className="flex flex-col gap-3 w-full text-body">
             <li className="rounded-xl border border-blue-100 bg-white/70 px-4 py-3 shadow-sm flex items-start gap-2 hover:bg-blue-50/50 transition">
               <span className="font-bold text-body-blue">1</span>
               <span>
@@ -71,7 +71,7 @@ const InstallationGuide = () => {
             <AndroidIcon />
             <span className="font-semibold text-body-blue">Android</span>
           </div>
-          <ul className="flex flex-col gap-3 w-full">
+          <ul className="flex flex-col gap-3 w-full text-body">
             <li className="rounded-xl border border-blue-100 bg-white/70 px-4 py-3 shadow-sm flex items-start gap-2 hover:bg-blue-50/50 transition">
               <span className="font-bold text-body-blue">1</span>
               <span>
@@ -91,7 +91,7 @@ const InstallationGuide = () => {
                   components={[
                     <span className="font-semibold" />, // <0>
                     <span className="inline-block align-middle">
-                      <VerticalDots color="text-body-blue" />
+                      <VerticalDots color="text-blue-500" />
                     </span>, // <1>
                   ]}
                 />

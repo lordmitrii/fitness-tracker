@@ -30,12 +30,23 @@ const Header = () => {
   const navLinks = [
     { to: "/", label: t("general.home"), auth: null, roles: [] },
     {
+      to: "/admin-panel",
+      label: t("general.admin_panel"),
+      auth: true,
+      roles: ["admin"],
+    },
+    {
       to: "/workout-plans",
       label: t("general.workout_plans"),
       auth: true,
       roles: [],
     },
-    { to: "/ai-chat", label: t("general.ai_chat"), auth: true, roles: ["admin", "member"] },
+    {
+      to: "/ai-chat",
+      label: t("general.ai_chat"),
+      auth: true,
+      roles: ["admin", "member"],
+    },
     { to: "/exercise-stats", label: t("general.stats"), auth: true, roles: [] },
     { to: "/profile", label: t("general.profile"), auth: true, roles: [] },
     { to: "/login", label: t("general.login"), auth: false, roles: [] },

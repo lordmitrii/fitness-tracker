@@ -93,6 +93,11 @@ type (
 		ResetPassword(ctx context.Context, email, newPassword string) error
 	}
 
+	AdminService interface {
+		ListUsers(ctx context.Context, q string, page, pageSize int64) ([]*user.User, int64, error)
+		ListRoles(ctx context.Context) ([]*rbac.Role, error)
+	}
+
 	RBACService interface {
 		HasRole(ctx context.Context, userID uint, roleName string) (bool, error)
 		HasPermission(ctx context.Context, userID uint, permKey string) (bool, error)
