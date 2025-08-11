@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
 	"github.com/lordmitrii/golang-web-gin/internal/interface/http/middleware"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 )
@@ -12,7 +13,7 @@ type EmailHandler struct {
 	svc usecase.EmailService
 }
 
-func NewEmailHandler(r *gin.RouterGroup, svc usecase.EmailService, rateLimiter usecase.RateLimiter) {
+func NewEmailHandler(r *gin.RouterGroup, svc usecase.EmailService, rateLimiter usecase.RateLimiter, rbacService usecase.RBACService) {
 	h := &EmailHandler{svc: svc}
 
 	email := r.Group("/email")
@@ -27,10 +28,14 @@ func NewEmailHandler(r *gin.RouterGroup, svc usecase.EmailService, rateLimiter u
 		protected := email.Group("/")
 		protected.Use(middleware.JWTMiddleware())
 		{
-			protected.POST("/send-verification", h.SendVerificationEmail)
+			protected.POST("/send-account-verification", h.SendVerificationEmail)
 			protected.POST("/verify-account", h.VerifyAccount)
 
-			protected.POST("/send-notification", h.SendNotificationEmail)
+			adminonly := protected.Group("")
+			adminonly.Use(middleware.RequirePerm(rbacService, rbac.PermAdmin))
+			{
+				adminonly.POST("/send-notification", h.SendNotificationEmail)
+			}
 		}
 
 	}

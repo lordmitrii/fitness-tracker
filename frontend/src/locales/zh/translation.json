@@ -35,7 +35,8 @@
     "yes": "是",
     "no": "否",
     "submit": "提交",
-    "new": "新建"
+    "new": "新建",
+    "page_no_permissions": "您没有权限访问此页面。"
   },
   "measurements": {
     "weight": "公斤",

@@ -133,7 +133,7 @@ const InstallationGuide = () => {
         <div className="text-caption mt-3 text-center">
           {t("installation_guide.need_help")}{" "}
           <a
-            href="mailto:dmitrii.lor@glasgow.ac.uk"
+            href="mailto:help.ftrackerapp@mail.com"
             className="underline hover:text-blue-500"
           >
             {t("general.contact_support")}

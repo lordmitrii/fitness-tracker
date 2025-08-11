@@ -34,7 +34,7 @@ func (r *UserRepo) GetByEmail(ctx context.Context, email string) (*user.User, er
 
 func (r *UserRepo) GetByID(ctx context.Context, id uint) (*user.User, error) {
 	var u user.User
-	if err := r.db.WithContext(ctx).Where("id = ?", id).First(&u).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("Roles").Where("id = ?", id).First(&u).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, custom_err.ErrUserNotFound
 		}

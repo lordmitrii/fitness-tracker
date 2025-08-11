@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo, use } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import api from "../api";
 import SpinnerIcon from "../icons/SpinnerIcon";
 import { useTranslation } from "react-i18next";
@@ -8,6 +8,9 @@ import ConsentModal from "../components/ConsentModal";
 import { useNavigate } from "react-router-dom";
 import { useCooldown } from "../hooks/useCooldown";
 import useStorageState from "../hooks/useStorageObject";
+import { useAuth } from "../context/AuthContext";
+import ErrorState from "../states/ErrorState";
+import LoadingState from "../states/LoadingState";
 
 const TOPICS = [
   {
@@ -36,6 +39,7 @@ const TOPICS = [
 const AIChat = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { hasAnyRole } = useAuth();
 
   const [store, setStore, { restoring }] = useStorageState("aiChatState", {
     selectedTopic: "askGeneral", // Set to null if want to show "choose topic" first. Now general topic will be preselected.
@@ -46,7 +50,7 @@ const AIChat = () => {
   const { selectedTopic, threadIds, messagesByTopic } = store;
 
   const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
   const chatWindowRef = useRef(null);
 
@@ -105,7 +109,7 @@ const AIChat = () => {
 
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!input.trim() || loading) return;
+    if (!input.trim() || sending) return;
 
     if (!selectedTopic) {
       setError(t("ai_chat.error_select_topic_first"));
@@ -113,7 +117,7 @@ const AIChat = () => {
     }
 
     appendMessage(selectedTopic, { role: "user", text: input });
-    setLoading(true);
+    setSending(true);
     setError(null);
 
     try {
@@ -167,9 +171,18 @@ const AIChat = () => {
       }
     } finally {
       setInput("");
-      setLoading(false);
+      setSending(false);
     }
   };
+
+  if (restoring) return <LoadingState />;
+  if (!hasAnyRole(["admin", "member"]))
+    return (
+      <ErrorState
+        message={t("general.page_no_permissions")}
+        onRetry={() => navigate("/")}
+      />
+    );
 
   return (
     <>
@@ -236,7 +249,7 @@ const AIChat = () => {
               </div>
             </div>
           ))}
-          {loading && (
+          {sending && (
             <div className="flex justify-start">
               <div className="px-4 py-2 text-gray-500 rounded-xl bg-gray-100 shadow flex items-center gap-2">
                 <SpinnerIcon className="animate-spin w-4 h-4" />
@@ -264,7 +277,7 @@ const AIChat = () => {
               }
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              disabled={loading || !selectedTopic}
+              disabled={sending || !selectedTopic}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) handleSend(e);
               }}
@@ -275,11 +288,11 @@ const AIChat = () => {
                 cooldown > 0 || !selectedTopic ? "btn-secondary" : "btn-primary"
               }`}
               disabled={
-                loading || !input.trim() || cooldown > 0 || !selectedTopic
+                sending || !input.trim() || cooldown > 0 || !selectedTopic
               }
             >
               <span className="whitespace-nowrap">
-                {loading ? (
+                {sending ? (
                   <SpinnerIcon className="animate-spin w-4 h-4" />
                 ) : (
                   t("ai_chat.send_button")

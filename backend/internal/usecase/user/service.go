@@ -82,9 +82,9 @@ func (s *userServiceImpl) Authenticate(ctx context.Context, email, password stri
 	return u, nil
 }
 
-// func (s * userServiceImpl) DeleteUser(ctx context.Context, id uint) error {
-// 	return s.authRepo.Delete(ctx, id)
-// }
+func (s *userServiceImpl) Me(ctx context.Context, userID uint) (*user.User, error) {
+	return s.authRepo.GetByID(ctx, userID)
+}
 
 // CreateProfile associates metadata with a user.
 func (s *userServiceImpl) CreateProfile(ctx context.Context, p *user.Profile) error {

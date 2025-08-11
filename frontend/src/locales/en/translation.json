@@ -35,7 +35,8 @@
     "yes": "Yes",
     "no": "No",
     "submit": "Submit",
-    "new": "New"
+    "new": "New",
+    "page_no_permissions": "You do not have permission to access this page."
   },
   "measurements": {
     "weight": "kg",

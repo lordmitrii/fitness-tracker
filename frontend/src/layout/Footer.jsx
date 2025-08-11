@@ -26,7 +26,7 @@ const Footer = () => {
             <GitHubIcon />
           </a>
           <a
-            href="mailto:dmitrii.lor@glasgow.ac.uk"
+            href="mailto:help.ftrackerapp@mail.com"
             className="hover:text-blue-300 transition text-sm sm:text-base"
           >
             {t("general.contact_support")}
