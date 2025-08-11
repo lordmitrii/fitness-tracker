@@ -2,7 +2,9 @@ package user
 
 import (
 	"context"
+
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
 
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 	"golang.org/x/crypto/bcrypt"
@@ -12,10 +14,12 @@ type userServiceImpl struct {
 	authRepo        user.UserRepository
 	profileRepo     user.ProfileRepository
 	userConsentRepo user.UserConsentRepository
+	roleRepo        rbac.RoleRepository
+	permissionRepo  rbac.PermissionRepository
 }
 
-func NewUserService(ur user.UserRepository, pr user.ProfileRepository, ucr user.UserConsentRepository) *userServiceImpl {
-	return &userServiceImpl{authRepo: ur, profileRepo: pr, userConsentRepo: ucr}
+func NewUserService(ur user.UserRepository, pr user.ProfileRepository, ucr user.UserConsentRepository, roleRepo rbac.RoleRepository, permissionRepo rbac.PermissionRepository) *userServiceImpl {
+	return &userServiceImpl{authRepo: ur, profileRepo: pr, userConsentRepo: ucr, roleRepo: roleRepo, permissionRepo: permissionRepo}
 }
 
 func (s *userServiceImpl) Register(ctx context.Context, email, password string, privacyConsent, healthDataConsent bool, privacyPolicyVersion, healthDataPolicyVersion string) error {
@@ -54,6 +58,11 @@ func (s *userServiceImpl) Register(ctx context.Context, email, password string, 
 	}
 
 	err = s.userConsentRepo.Create(ctx, privacyCons)
+	if err != nil {
+		return err
+	}
+
+	err = s.roleRepo.AssignRoleToUser(ctx, u.ID, rbac.RoleRestricted)
 	if err != nil {
 		return err
 	}
@@ -114,6 +123,21 @@ func (s *userServiceImpl) DeleteConsent(ctx context.Context, userID uint, consen
 }
 
 func (s *userServiceImpl) SetVerified(ctx context.Context, email string) error {
+	user, err := s.authRepo.GetByEmail(ctx, email)
+	if err != nil {
+		return err
+	}
+
+	err = s.roleRepo.RemoveRoleFromUser(ctx, user.ID, rbac.RoleRestricted)
+	if err != nil {
+		return err
+	}
+
+	err = s.roleRepo.AssignRoleToUser(ctx, user.ID, rbac.RoleVerified)
+	if err != nil {
+		return err
+	}
+
 	return s.authRepo.SetVerified(ctx, email)
 }
 

@@ -121,12 +121,16 @@ const AIChat = () => {
         throw new Error("No endpoint for selected topic.");
 
       const previousResponseId = threadIds[selectedTopic] || null;
-      const { data } = await api.post(activeTopicMeta.endpoint, {
-        question: input,
-        previous_response_id: previousResponseId,
-      }, {
-        timeout: 60000, // 60 seconds timeout
-      });
+      const { data } = await api.post(
+        activeTopicMeta.endpoint,
+        {
+          question: input,
+          previous_response_id: previousResponseId,
+        },
+        {
+          timeout: 60000, // 60 seconds timeout
+        }
+      );
 
       const answerText = data?.answer || t("ai_chat.error");
       const responseId = data?.response_id || null;
@@ -155,6 +159,8 @@ const AIChat = () => {
         const retryAfter =
           parseInt(err.response.headers?.["retry-after"], 10) || 60;
         startCooldown(retryAfter);
+      } else if (err?.response?.status === 403) {
+        setError(t("ai_chat.error_insufficient_permissions"));
       } else {
         console.error("AI Chat error:", err);
         setError(err.message || t("ai_chat.error"));

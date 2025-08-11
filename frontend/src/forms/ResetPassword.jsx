@@ -28,10 +28,9 @@ const ResetPassword = () => {
       }
 
       try {
-        const response = await api.post("/email/verify-token", {
+        const response = await api.post("/email/validate-token", {
           token,
-          token_type: "reset_password",
-          preflight: true,
+          token_type: "reset_password"
         });
 
         if (response.status !== 200) {

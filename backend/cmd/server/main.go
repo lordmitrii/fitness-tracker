@@ -24,6 +24,7 @@ import (
 	email_usecase "github.com/lordmitrii/golang-web-gin/internal/usecase/email"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/user"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/workout"
+	"github.com/lordmitrii/golang-web-gin/internal/usecase/rbac"
 	// "github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/inmemory"
 	"context"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/postgres"
@@ -49,6 +50,10 @@ func main() {
 		panic(err)
 	}
 
+	if err := postgres.SeedRBAC(db); err != nil {
+		panic(err)
+	}
+
 	redisLimiter := myredis.NewRedisLimiter(os.Getenv("REDIS_ADDR"), os.Getenv("REDIS_PASSWORD"), 0)
 
 	exerciseRepo := postgres.NewExerciseRepo(db)
@@ -64,6 +69,9 @@ func main() {
 	userRepo := postgres.NewUserRepo(db)
 	profileRepo := postgres.NewProfileRepo(db)
 	userConsentRepo := postgres.NewUserConsentRepository(db)
+	
+	roleRepo := postgres.NewRoleRepo(db)
+	permissionRepo := postgres.NewPermissionRepo(db)
 
 	emailTokenRepo := postgres.NewEmailTokenRepo(db)
 	emailSender := email.NewGmailSender(
@@ -73,9 +81,10 @@ func main() {
 
 	var exerciseService usecase.ExerciseService = workout.NewExerciseService(exerciseRepo, muscleGroupRepo)
 	var workoutService usecase.WorkoutService = workout.NewWorkoutService(workoutPlanRepo, workoutCycleRepo, workoutRepo, workoutExerciseRepo, workoutSetRepo, individualExerciseRepo, exerciseRepo)
-	var userService usecase.UserService = user.NewUserService(userRepo, profileRepo, userConsentRepo)
+	var userService usecase.UserService = user.NewUserService(userRepo, profileRepo, userConsentRepo, roleRepo, permissionRepo)
 	var aiService usecase.AIService = ai.NewAIService(workoutService, userService)
 	var emailService usecase.EmailService = email_usecase.NewEmailService(userService, emailSender, emailTokenRepo)
+	var rbacService usecase.RBACService = rbac.NewRBACService(roleRepo, permissionRepo, userRepo)
 
 	if os.Getenv("DEVELOPMENT_MODE") == "false" {
 		cleanupJob := job.NewCleanupJob(db)
@@ -85,7 +94,7 @@ func main() {
 		go cleanupJob.Run(ctx, 24*time.Hour)
 	}
 
-	server := http.NewServer(exerciseService, workoutService, userService, aiService, emailService, redisLimiter)
+	server := http.NewServer(exerciseService, workoutService, userService, aiService, emailService, redisLimiter, rbacService)
 
 	var port string
 	if port = os.Getenv("PORT"); port == "" {

@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 
+	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 	"time"
@@ -89,6 +90,13 @@ type (
 		CheckEmail(ctx context.Context, email string) (bool, error)
 		ResetPassword(ctx context.Context, email, newPassword string) error
 	}
+
+	RBACService interface {
+		HasRole(ctx context.Context, userID uint, roleName string) (bool, error)
+		HasPermission(ctx context.Context, userID uint, permKey string) (bool, error)
+		GetUserRoles(ctx context.Context, userID uint) ([]*rbac.Role, error)
+		GetUserPermissions(ctx context.Context, userID uint) ([]*rbac.Permission, error)
+	}
 )
 
 type AIService interface {
@@ -101,8 +109,9 @@ type EmailService interface {
 	SendNotificationEmail(ctx context.Context, to, subject, body string) error
 	SendVerificationEmail(ctx context.Context, to string) error
 	SendResetPasswordEmail(ctx context.Context, to string) error
-	VerifyToken(ctx context.Context, token, tokenType string, preflight bool) (bool, error)
+	ValidateToken(ctx context.Context, token, tokenType string) (bool, error)
 	ResetPassword(ctx context.Context, token, newPassword string) error
+	VerifyAccount(ctx context.Context, token string) error
 }
 type RateLimiter interface {
 	Allow(ctx context.Context, key string, limit int, per time.Duration) (bool, time.Duration, error)

@@ -3,6 +3,7 @@ package postgres
 import (
 	"fmt"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/email"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 	"os"
@@ -37,7 +38,12 @@ func AutoMigrate(db *gorm.DB) error {
 		&user.User{},
 		&user.Profile{},
 		&user.UserConsent{},
+
+		&rbac.Role{}, &rbac.UserRole{},
+		&rbac.Permission{}, &rbac.RolePermission{},
+
 		&email.EmailToken{},
+
 		&workout.Exercise{},
 		&workout.WorkoutPlan{},
 		&workout.WorkoutCycle{},
