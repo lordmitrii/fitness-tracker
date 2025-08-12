@@ -7,6 +7,7 @@ const AdminNav = () => {
     { to: "/admin-panel/users", label: t("admin.nav.users") },
     { to: "/admin-panel/roles", label: t("admin.nav.roles") },
     { to: "/admin-panel/audit", label: t("admin.nav.audit") },
+    { to: "/admin-panel/exercises-and-muscles", label: t("admin.nav.exercises_and_muscles") },
     // { to: "/admin-panel/settings", label: t("admin.nav.settings") },
   ];
   return (

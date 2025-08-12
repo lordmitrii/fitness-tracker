@@ -537,7 +537,8 @@
       "dashboard": "控制面板",
       "users": "用户",
       "roles": "角色",
-      "audit": "审计"
+      "audit": "审计",
+      "exercises_and_muscles": "锻炼与肌肉"
     },
     "users": { "title": "用户" },
     "table": {

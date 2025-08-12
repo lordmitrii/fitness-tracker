@@ -537,7 +537,8 @@
       "dashboard": "Панель управления",
       "users": "Пользователи",
       "roles": "Роли",
-      "audit": "Аудит"
+      "audit": "Аудит",
+      "exercises_and_muscles": "Упражнения и мышцы"
     },
     "users": { "title": "Пользователи" },
     "table": {

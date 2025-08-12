@@ -190,6 +190,10 @@ func ToIndividualExerciseResponse(e *workout.IndividualExercise) IndividualExerc
 		resp.Exercise = ToExerciseResponse(e.Exercise)
 	}
 
+	if e.LastCompletedWorkoutExercise != nil {
+		resp.LastCompletedWorkoutExercise = ToWorkoutExerciseResponse(e.LastCompletedWorkoutExercise)
+	}
+
 	return resp
 }
 

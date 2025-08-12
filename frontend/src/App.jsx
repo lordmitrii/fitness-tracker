@@ -17,6 +17,7 @@ import Admin from "./pages/admin/Admin";
 import Users from "./pages/admin/Users";
 import Roles from "./pages/admin/Roles";
 import Audit from "./pages/admin/Audit";
+import ExercisesAndMuscles from "./pages/admin/ExercisesAndMuscles";
 
 import AIChat from "./pages/AIChat";
 import InstallationGuide from "./pages/InstallationGuide";
@@ -101,6 +102,10 @@ function App() {
                   <Route path="users" element={<Users />} />
                   <Route path="roles" element={<Roles />} />
                   <Route path="audit" element={<Audit />} />
+                  <Route
+                    path="exercises-and-muscles"
+                    element={<ExercisesAndMuscles />}
+                  />
                 </Route>
               </Route>
             </Route>

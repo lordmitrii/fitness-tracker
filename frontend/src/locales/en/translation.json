@@ -537,7 +537,8 @@
       "dashboard": "Dashboard",
       "users": "Users",
       "roles": "Roles",
-      "audit": "Audit"
+      "audit": "Audit",
+      "exercises_and_muscles": "Exercises & Muscles"
     },
     "users": { "title": "Users" },
     "table": {

@@ -143,19 +143,20 @@ type WorkoutResponse struct {
 }
 
 type IndividualExerciseResponse struct {
-	ID                             uint                `json:"id"`
-	Name                           string              `json:"name"`
-	IsBodyweight                   bool                `json:"is_bodyweight"`
-	IsTimeBased                    bool                `json:"is_time_based"`
-	MuscleGroupID                  *uint               `json:"muscle_group_id"`
-	MuscleGroup                    MuscleGroupResponse `json:"muscle_group"`
-	ExerciseID                     *uint               `json:"exercise_id"`
-	Exercise                       ExerciseResponse    `json:"exercise"`
-	LastCompletedWorkoutExerciseID *uint               `json:"last_completed_workout_exercise_id"`
-	CurrentWeight                  float64             `json:"current_weight"`
-	CurrentReps                    int                 `json:"current_reps"`
-	CreatedAt                      time.Time           `json:"created_at"`
-	UpdatedAt                      time.Time           `json:"updated_at"`
+	ID                             uint                    `json:"id"`
+	Name                           string                  `json:"name"`
+	IsBodyweight                   bool                    `json:"is_bodyweight"`
+	IsTimeBased                    bool                    `json:"is_time_based"`
+	MuscleGroupID                  *uint                   `json:"muscle_group_id"`
+	MuscleGroup                    MuscleGroupResponse     `json:"muscle_group"`
+	ExerciseID                     *uint                   `json:"exercise_id"`
+	Exercise                       ExerciseResponse        `json:"exercise"`
+	LastCompletedWorkoutExerciseID *uint                   `json:"last_completed_workout_exercise_id"`
+	LastCompletedWorkoutExercise   WorkoutExerciseResponse `json:"last_completed_workout_exercise"`
+	CurrentWeight                  float64                 `json:"current_weight"`
+	CurrentReps                    int                     `json:"current_reps"`
+	CreatedAt                      time.Time               `json:"created_at"`
+	UpdatedAt                      time.Time               `json:"updated_at"`
 }
 
 type WorkoutExerciseResponse struct {
