@@ -89,7 +89,13 @@ func (s *workoutServiceImpl) DeleteWorkoutPlan(ctx context.Context, id uint) err
 	return s.workoutPlanRepo.Delete(ctx, id)
 }
 
-func (s *workoutServiceImpl) SetActiveWorkoutPlan(ctx context.Context, wp *workout.WorkoutPlan) error {
+func (s *workoutServiceImpl) SetActiveWorkoutPlan(ctx context.Context, id uint, active bool) error {
+	wp, err := s.workoutPlanRepo.GetByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	wp.Active = active
+
 	if wp.Active {
 		// If the workout plan is active, we need to set other plans to inactive
 		plans, err := s.workoutPlanRepo.GetByUserID(ctx, wp.UserID)
@@ -376,7 +382,7 @@ func (s *workoutServiceImpl) DeleteWorkout(ctx context.Context, id uint) error {
 	}
 	return nil
 }
-func (s *workoutServiceImpl) CreateWorkoutExercise(ctx context.Context, e *workout.WorkoutExercise, qt int64) error {
+func (s *workoutServiceImpl) CreateWorkoutExercise(ctx context.Context, e *workout.WorkoutExercise) error {
 	maxIndex, err := s.workoutExerciseRepo.GetMaxIndexByWorkoutID(ctx, e.WorkoutID)
 	if err != nil {
 		return err
@@ -390,16 +396,16 @@ func (s *workoutServiceImpl) CreateWorkoutExercise(ctx context.Context, e *worko
 		}
 	}
 
-	if qt <= 0 {
+	if e.SetsQt <= 0 {
 		return fmt.Errorf("sets quantity must be greater than 0")
 	}
 
-	prevSets, err := s.GetPreviousSets(ctx, e.IndividualExerciseID, qt)
+	prevSets, err := s.GetPreviousSets(ctx, e.IndividualExerciseID, e.SetsQt)
 	if err != nil {
 		return err
 	}
 
-	for i := int64(0); i < qt; i++ {
+	for i := int64(0); i < e.SetsQt; i++ {
 		set := &workout.WorkoutSet{
 			WorkoutExerciseID: e.ID,
 			Index:             int(i) + 1,

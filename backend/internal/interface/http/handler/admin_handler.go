@@ -4,10 +4,9 @@ import (
 	"net/http"
 	"strings"
 
-	"strconv"
-
 	"github.com/gin-gonic/gin"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
+	"github.com/lordmitrii/golang-web-gin/internal/interface/http/dto"
 	"github.com/lordmitrii/golang-web-gin/internal/interface/http/middleware"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 )
@@ -35,10 +34,7 @@ func NewAdminHandler(r *gin.RouterGroup, svc usecase.AdminService, rbacService u
 func (h *AdminHandler) GetUsers(c *gin.Context) {
 	q := strings.TrimSpace(c.Query("q"))
 	page := parseInt(c.Query("page"), 1)
-	pageSize := parseInt(c.Query("page_size"), 20)
-	if pageSize > 200 {
-		pageSize = 200
-	}
+	pageSize := min(parseInt(c.Query("page_size"), 20), 200)
 
 	users, total, err := h.svc.ListUsers(c.Request.Context(), q, page, pageSize)
 	if err != nil {
@@ -46,27 +42,21 @@ func (h *AdminHandler) GetUsers(c *gin.Context) {
 		return
 	}
 
-	respUsers := make([]gin.H, 0, len(users))
+	respUsers := make([]dto.UserResponse, 0, len(users))
 	for _, user := range users {
-		roleDTOs := make([]gin.H, 0, len(user.Roles))
-		for _, role := range user.Roles {
-			roleDTOs = append(roleDTOs, gin.H{
-				"id":   role.ID,
-				"name": role.Name,
-			})
-		}
-		respUsers = append(respUsers, gin.H{
-			"id":         user.ID,
-			"email":      user.Email,
-			"created_at": user.CreatedAt,
-			"roles":      roleDTOs,
+		respUsers = append(respUsers, dto.UserResponse{
+			ID:        user.ID,
+			Email:     user.Email,
+			CreatedAt: user.CreatedAt,
+			Roles:     dto.ToRoleResponses(user.Roles),
 		})
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"users": respUsers,
-		"total": total,
+	c.JSON(http.StatusOK, dto.ListUserResponse{
+		Users: respUsers,
+		Total: total,
 	})
+
 }
 
 func (h *AdminHandler) GetRoles(c *gin.Context) {
@@ -76,11 +66,11 @@ func (h *AdminHandler) GetRoles(c *gin.Context) {
 		return
 	}
 
-	respRoles := make([]gin.H, 0, len(roles))
+	respRoles := make([]dto.RoleResponse, 0, len(roles))
 	for _, role := range roles {
-		respRoles = append(respRoles, gin.H{
-			"id":   role.ID,
-			"name": role.Name,
+		respRoles = append(respRoles, dto.RoleResponse{
+			ID:   role.ID,
+			Name: role.Name,
 		})
 	}
 
@@ -94,16 +84,13 @@ func (h *AdminHandler) SetUserRoles(c *gin.Context) {
 		return
 	}
 
-	var body struct {
-		RoleNames []string `json:"role_names"`
-	}
-
-	if err := c.BindJSON(&body); err != nil {
+	var req dto.SetRolesRequest
+	if err := c.BindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := h.svc.SetUserRoles(c.Request.Context(), userID, body.RoleNames); err != nil {
+	if err := h.svc.SetUserRoles(c.Request.Context(), userID, req.RoleNames); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -136,26 +123,4 @@ func (h *AdminHandler) TriggerResetUserPassword(c *gin.Context) {
 		return
 	}
 	c.Status(http.StatusNoContent)
-}
-
-func parseUint(s string, def uint) uint {
-	if s == "" {
-		return def
-	}
-	n, err := strconv.ParseUint(s, 10, 64)
-	if err != nil {
-		return def
-	}
-	return uint(n)
-}
-
-func parseInt(s string, def int64) int64 {
-	if s == "" {
-		return def
-	}
-	n, err := strconv.Atoi(s)
-	if err != nil {
-		return def
-	}
-	return int64(n)
 }

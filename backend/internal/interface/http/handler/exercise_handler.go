@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
+	"github.com/lordmitrii/golang-web-gin/internal/interface/http/dto"
 	"github.com/lordmitrii/golang-web-gin/internal/interface/http/middleware"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 )
@@ -49,17 +50,25 @@ func NewExerciseHandler(r *gin.RouterGroup, svc usecase.ExerciseService, rbacSer
 }
 
 func (h *ExerciseHandler) CreateExercise(c *gin.Context) {
-	var req workout.Exercise
+	var req dto.ExerciseCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := h.svc.CreateExercise(c.Request.Context(), &req); err != nil {
+	ex := workout.Exercise{
+		Name:          req.Name,
+		IsBodyweight:  req.IsBodyweight,
+		IsTimeBased:   req.IsTimeBased,
+		MuscleGroupID: req.MuscleGroupID,
+	}
+
+	if err := h.svc.CreateExercise(c.Request.Context(), &ex); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, req)
+
+	c.JSON(http.StatusCreated, dto.ToExerciseResponse(&ex))
 }
 
 func (h *ExerciseHandler) GetExerciseByID(c *gin.Context) {
@@ -69,7 +78,7 @@ func (h *ExerciseHandler) GetExerciseByID(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}
-	c.JSON(http.StatusOK, exercise)
+	c.JSON(http.StatusOK, dto.ToExerciseResponse(exercise))
 }
 
 func (h *ExerciseHandler) GetAllExercises(c *gin.Context) {
@@ -78,23 +87,37 @@ func (h *ExerciseHandler) GetAllExercises(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}
-	c.JSON(http.StatusOK, exercises)
+
+	resp := make([]dto.ExerciseResponse, 0, len(exercises))
+	for _, e := range exercises {
+		resp = append(resp, dto.ToExerciseResponse(e))
+	}
+
+	c.JSON(http.StatusOK, resp)
 }
 
 func (h *ExerciseHandler) UpdateExercise(c *gin.Context) {
 	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
-	var req workout.Exercise
+
+	var req dto.ExerciseUpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	req.ID = uint(id)
 
-	if err := h.svc.UpdateExercise(c.Request.Context(), &req); err != nil {
+	ex := workout.Exercise{
+		ID:            uint(id),
+		Name:          req.Name,
+		IsBodyweight:  req.IsBodyweight,
+		IsTimeBased:   req.IsTimeBased,
+		MuscleGroupID: req.MuscleGroupID,
+	}
+
+	if err := h.svc.UpdateExercise(c.Request.Context(), &ex); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, req)
+	c.JSON(http.StatusOK, dto.ToExerciseResponse(&ex))
 }
 
 func (h *ExerciseHandler) DeleteExercise(c *gin.Context) {
@@ -103,7 +126,7 @@ func (h *ExerciseHandler) DeleteExercise(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}
-	c.JSON(http.StatusNoContent, nil)
+	c.Status(http.StatusNoContent)
 }
 
 func (h *ExerciseHandler) GetAllMuscleGroups(c *gin.Context) {
@@ -112,7 +135,13 @@ func (h *ExerciseHandler) GetAllMuscleGroups(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}
-	c.JSON(http.StatusOK, muscleGroups)
+
+	resp := make([]dto.MuscleGroupResponse, 0, len(muscleGroups))
+	for _, mg := range muscleGroups {
+		resp = append(resp, dto.ToMuscleGroupResponse(mg))
+	}
+
+	c.JSON(http.StatusOK, resp)
 }
 
 func (h *ExerciseHandler) GetMuscleGroupByID(c *gin.Context) {
@@ -122,37 +151,46 @@ func (h *ExerciseHandler) GetMuscleGroupByID(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}
-	c.JSON(http.StatusOK, muscleGroup)
+
+	c.JSON(http.StatusOK, dto.ToMuscleGroupResponse(muscleGroup))
 }
 
 func (h *ExerciseHandler) CreateMuscleGroup(c *gin.Context) {
-	var req workout.MuscleGroup
+	var req dto.MuscleGroupCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := h.svc.CreateMuscleGroup(c.Request.Context(), &req); err != nil {
+	muscleGroup := workout.MuscleGroup{
+		Name: req.Name,
+	}
+
+	if err := h.svc.CreateMuscleGroup(c.Request.Context(), &muscleGroup); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, req)
+	c.JSON(http.StatusCreated, dto.ToMuscleGroupResponse(&muscleGroup))
 }
 
 func (h *ExerciseHandler) UpdateMuscleGroup(c *gin.Context) {
 	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
-	var req workout.MuscleGroup
+	var req dto.MuscleGroupUpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	req.ID = uint(id)
 
-	if err := h.svc.UpdateMuscleGroup(c.Request.Context(), &req); err != nil {
+	muscleGroup := workout.MuscleGroup{
+		ID:   uint(id),
+		Name: req.Name,
+	}
+
+	if err := h.svc.UpdateMuscleGroup(c.Request.Context(), &muscleGroup); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, req)
+	c.JSON(http.StatusOK, dto.ToMuscleGroupResponse(&muscleGroup))
 }
 
 func (h *ExerciseHandler) DeleteMuscleGroup(c *gin.Context) {
@@ -161,5 +199,5 @@ func (h *ExerciseHandler) DeleteMuscleGroup(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}
-	c.JSON(http.StatusNoContent, nil)
+	c.Status(http.StatusNoContent)
 }

@@ -10,7 +10,7 @@ const ConsentModal = ({ open, onAccept, onDecline }) => {
 
   return (
     <div className="fixed inset-0 bg-black/10 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 flex flex-col gap-4 mx-2 max-w-3xl">
+      <div className="bg-white rounded-xl shadow-lg p-6 flex flex-col gap-4 mx-2 max-w-3xl w-full">
         <h1 className="text-title font-semibold">{t("consent_modal.title")}</h1>
         <div className="text-body">
           <Trans

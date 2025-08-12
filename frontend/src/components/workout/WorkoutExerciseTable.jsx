@@ -89,6 +89,7 @@ const WorkoutExerciseTable = ({
               <div className="flex flex-row items-start sm:items-center justify-between gap-1">
                 <div className="font-medium text-body-blue">
                   {ex.index}.{" "}
+                  {console.log(ex.individual_exercise)}
                   {!!ex.individual_exercise.exercise?.slug
                     ? t(`exercise.${ex.individual_exercise.exercise.slug}`)
                     : ex.individual_exercise.name}

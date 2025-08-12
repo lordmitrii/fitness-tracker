@@ -31,7 +31,7 @@ const QuestionMarkTooltipModal = ({ text }) => {
         >
           <div
             ref={modalRef}
-            className="bg-white rounded-2xl p-4 mx-2 max-w-3xl shadow-xl text-gray-900 border border-gray-400"
+            className="bg-white rounded-xl p-6 mx-2 max-w-3xl w-full shadow-xl text-gray-900 border border-gray-400"
           >
             <div className="flex justify-end">
               <button

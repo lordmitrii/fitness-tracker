@@ -151,7 +151,7 @@ const WorkoutPlanSingle = () => {
       <div className="fixed bg-white/75 backdrop-blur-md shadow-md w-full h-2 sm:h-3 z-1">
         <ProgressBar completed={completedSets} total={totalSets} />
       </div>
-      <div className="mx-auto sm:p-8">
+      <div className="w-full sm:w-8/10 mx-auto sm:p-8">
         {workoutCycle && (
           <>
             <div className="sm:bg-transparent bg-white p-6 pt-14 sm:p-0 shadow-md sm:shadow-none">
@@ -180,7 +180,7 @@ const WorkoutPlanSingle = () => {
               </h2>
               <div className="flex flex-row gap-4 mb-8">
                 <div className="w-1/2">
-                  {workoutCycle.previous_cycle_id && (
+                  {!!workoutCycle.previous_cycle_id && (
                     <button
                       className="btn btn-primary w-auto"
                       onClick={() =>
@@ -199,7 +199,7 @@ const WorkoutPlanSingle = () => {
                   )}
                 </div>
                 <div className="w-1/2 text-right">
-                  {(workoutCycle.next_cycle_id || nextCycleID) && (
+                  {(!!workoutCycle.next_cycle_id || !!nextCycleID) && (
                     <button
                       className="btn btn-primary-inverted w-auto"
                       onClick={() =>

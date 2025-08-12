@@ -7,6 +7,7 @@ import (
 	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
 	"github.com/lordmitrii/golang-web-gin/internal/interface/http/middleware"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
+	"github.com/lordmitrii/golang-web-gin/internal/interface/http/dto"
 )
 
 type EmailHandler struct {
@@ -42,9 +43,7 @@ func NewEmailHandler(r *gin.RouterGroup, svc usecase.EmailService, rateLimiter u
 }
 
 func (h *EmailHandler) SendVerificationEmail(c *gin.Context) {
-	var req struct {
-		To string `json:"to" binding:"required,email"`
-	}
+	var req dto.SendVerificationEmailRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -54,15 +53,11 @@ func (h *EmailHandler) SendVerificationEmail(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Verification email sent"})
+	c.JSON(http.StatusOK, dto.MessageResponse{Message: "Verification email sent"})
 }
 
 func (h *EmailHandler) SendNotificationEmail(c *gin.Context) {
-	var req struct {
-		To      string `json:"to" binding:"required,email"`
-		Subject string `json:"subject" binding:"required"`
-		Body    string `json:"body" binding:"required"`
-	}
+	var req dto.SendNotificationEmailRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -72,13 +67,11 @@ func (h *EmailHandler) SendNotificationEmail(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Notification email sent"})
+	c.JSON(http.StatusOK, dto.MessageResponse{Message: "Notification email sent"})
 }
 
 func (h *EmailHandler) SendResetPasswordEmail(c *gin.Context) {
-	var req struct {
-		To string `json:"to" binding:"required,email"`
-	}
+	var req dto.SendResetPasswordEmailRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -88,14 +81,11 @@ func (h *EmailHandler) SendResetPasswordEmail(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Reset password email sent"})
+	c.JSON(http.StatusOK, dto.MessageResponse{Message: "Reset password email sent"})
 }
 
 func (h *EmailHandler) ValidateToken(c *gin.Context) {
-	var req struct {
-		Token     string `json:"token" binding:"required"`
-		TokenType string `json:"token_type" binding:"required"`
-	}
+	var req dto.ValidateTokenRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -108,17 +98,14 @@ func (h *EmailHandler) ValidateToken(c *gin.Context) {
 		return
 	}
 	if !valid {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid or expired token"})
+		c.JSON(http.StatusUnauthorized, dto.MessageResponse{Message: "Invalid or expired token"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Token is valid"})
+	c.JSON(http.StatusOK, dto.MessageResponse{Message: "Token is valid"})
 }
 
 func (h *EmailHandler) ResetPassword(c *gin.Context) {
-	var req struct {
-		Token       string `json:"token" binding:"required"`
-		NewPassword string `json:"new_password" binding:"required,min=8"`
-	}
+	var req dto.ResetPasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -128,13 +115,11 @@ func (h *EmailHandler) ResetPassword(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Password reset successfully"})
+	c.JSON(http.StatusOK, dto.MessageResponse{Message: "Password reset successfully"})
 }
 
 func (h *EmailHandler) VerifyAccount(c *gin.Context) {
-	var req struct {
-		Token string `json:"token" binding:"required"`
-	}
+	var req dto.VerifyAccountRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -144,5 +129,5 @@ func (h *EmailHandler) VerifyAccount(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Account verified successfully"})
+	c.JSON(http.StatusOK, dto.MessageResponse{Message: "Account verified successfully"})
 }

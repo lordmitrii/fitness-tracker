@@ -5,7 +5,6 @@ import (
 )
 
 type Profile struct {
-	// @ReadOnly
 	ID uint `gorm:"primaryKey" json:"-"`
 
 	UserID uint `gorm:"uniqueIndex;not null" json:"-"`

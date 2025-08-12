@@ -275,7 +275,7 @@ const AddWorkoutExerciseModal = ({
         <div className="fixed inset-0 bg-black/10 backdrop-blur-sm flex justify-center items-center z-50">
           <div
             ref={modalRef}
-            className="relative bg-white rounded-2xl shadow-lg p-8 min-w-sm sm:min-w-lg"
+            className="relative bg-white rounded-xl shadow-lg p-6 w-full max-w-3xl mx-2"
           >
             {loading && (
               <div className="absolute inset-0 bg-white/60 flex flex-col items-center justify-center z-10 rounded-2xl">
