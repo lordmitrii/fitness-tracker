@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
@@ -72,7 +71,11 @@ func (h *ExerciseHandler) CreateExercise(c *gin.Context) {
 }
 
 func (h *ExerciseHandler) GetExerciseByID(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	id := parseUint(c.Param("id"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Exercise ID is required"})
+		return
+	}
 	exercise, err := h.svc.GetExerciseByID(c.Request.Context(), uint(id))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
@@ -97,7 +100,11 @@ func (h *ExerciseHandler) GetAllExercises(c *gin.Context) {
 }
 
 func (h *ExerciseHandler) UpdateExercise(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	id := parseUint(c.Param("id"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Exercise ID is required"})
+		return
+	}
 
 	var req dto.ExerciseUpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -121,7 +128,11 @@ func (h *ExerciseHandler) UpdateExercise(c *gin.Context) {
 }
 
 func (h *ExerciseHandler) DeleteExercise(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	id := parseUint(c.Param("id"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Exercise ID is required"})
+		return
+	}
 	if err := h.svc.DeleteExercise(c.Request.Context(), uint(id)); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
@@ -145,7 +156,11 @@ func (h *ExerciseHandler) GetAllMuscleGroups(c *gin.Context) {
 }
 
 func (h *ExerciseHandler) GetMuscleGroupByID(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	id := parseUint(c.Param("id"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Muscle Group ID is required"})
+		return
+	}
 	muscleGroup, err := h.svc.GetMuscleGroupByID(c.Request.Context(), uint(id))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
@@ -174,7 +189,11 @@ func (h *ExerciseHandler) CreateMuscleGroup(c *gin.Context) {
 }
 
 func (h *ExerciseHandler) UpdateMuscleGroup(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	id := parseUint(c.Param("id"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Muscle Group ID is required"})
+		return
+	}
 	var req dto.MuscleGroupUpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -194,7 +213,11 @@ func (h *ExerciseHandler) UpdateMuscleGroup(c *gin.Context) {
 }
 
 func (h *ExerciseHandler) DeleteMuscleGroup(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	id := parseUint(c.Param("id"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Muscle Group ID is required"})
+		return
+	}
 	if err := h.svc.DeleteMuscleGroup(c.Request.Context(), uint(id)); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return

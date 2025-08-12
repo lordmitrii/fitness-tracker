@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
@@ -57,21 +56,21 @@ func NewWorkoutHandler(r *gin.RouterGroup, svc usecase.WorkoutService) {
 		wp.POST("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises", h.AddWorkoutExerciseToWorkout)
 		wp.GET("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises", h.GetWorkoutExercisesByWorkoutID)
 
-		wp.GET("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID", h.GetWorkoutExerciseByID)
-		wp.PATCH("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID", h.UpdateWorkoutExercise)
-		wp.DELETE("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID", h.DeleteWorkoutExercise)
-		wp.PATCH("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/update-complete", h.CompleteWorkoutExercise)
-		wp.POST("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/move", h.MoveWorkoutExercise)
-		wp.POST("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/replace", h.ReplaceWorkoutExercise)
+		wp.GET("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:weID", h.GetWorkoutExerciseByID)
+		wp.PATCH("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:weID", h.UpdateWorkoutExercise)
+		wp.DELETE("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:weID", h.DeleteWorkoutExercise)
+		wp.PATCH("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:weID/update-complete", h.CompleteWorkoutExercise)
+		wp.POST("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:weID/move", h.MoveWorkoutExercise)
+		wp.POST("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:weID/replace", h.ReplaceWorkoutExercise)
 
-		wp.POST("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/workout-sets", h.AddWorkoutSetToWorkoutExercise)
-		wp.GET("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/workout-sets", h.GetWorkoutSetsByWorkoutExerciseID)
+		wp.POST("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:weID/workout-sets", h.AddWorkoutSetToWorkoutExercise)
+		wp.GET("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:weID/workout-sets", h.GetWorkoutSetsByWorkoutExerciseID)
 
-		wp.GET("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/workout-sets/:setID", h.GetWorkoutSetByID)
-		wp.PATCH(":id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/workout-sets/:setID", h.UpdateWorkoutSet)
-		wp.DELETE("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/workout-sets/:setID", h.DeleteWorkoutSet)
-		wp.PATCH(":id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/workout-sets/:setID/update-complete", h.CompleteWorkoutSet)
-		wp.POST(":id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:exerciseID/workout-sets/:setID/move", h.MoveWorkoutSet)
+		wp.GET("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:weID/workout-sets/:setID", h.GetWorkoutSetByID)
+		wp.PATCH(":id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:weID/workout-sets/:setID", h.UpdateWorkoutSet)
+		wp.DELETE("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:weID/workout-sets/:setID", h.DeleteWorkoutSet)
+		wp.PATCH(":id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:weID/workout-sets/:setID/update-complete", h.CompleteWorkoutSet)
+		wp.POST(":id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:weID/workout-sets/:setID/move", h.MoveWorkoutSet)
 	}
 
 }
@@ -103,7 +102,11 @@ func (h *WorkoutHandler) CreateWorkoutPlan(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) GetWorkoutPlan(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	id := parseUint(c.Param("id"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Plan ID is required"})
+		return
+	}
 	wp, err := h.svc.GetWorkoutPlanByID(c.Request.Context(), uint(id))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
@@ -132,7 +135,11 @@ func (h *WorkoutHandler) GetWorkoutPlansByUserID(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) UpdateWorkoutPlan(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	id := parseUint(c.Param("id"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Plan ID is required"})
+		return
+	}
 	var req dto.WorkoutPlanUpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -154,7 +161,11 @@ func (h *WorkoutHandler) UpdateWorkoutPlan(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToWorkoutPlanResponse(wp))
 }
 func (h *WorkoutHandler) DeleteWorkoutPlan(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	id := parseUint(c.Param("id"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Plan ID is required"})
+		return
+	}
 	if err := h.svc.DeleteWorkoutPlan(c.Request.Context(), uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -163,7 +174,11 @@ func (h *WorkoutHandler) DeleteWorkoutPlan(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) SetActiveWorkoutPlan(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	id := parseUint(c.Param("id"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Plan ID is required"})
+		return
+	}
 	var req dto.SetActiveWorkoutPlanRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -177,7 +192,11 @@ func (h *WorkoutHandler) SetActiveWorkoutPlan(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) AddWorkoutCycleToWorkoutPlan(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	id := parseUint(c.Param("id"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Plan ID is required"})
+		return
+	}
 
 	var req dto.WorkoutCycleCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -200,7 +219,11 @@ func (h *WorkoutHandler) AddWorkoutCycleToWorkoutPlan(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) GetWorkoutCyclesByWorkoutPlanID(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	id := parseUint(c.Param("id"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Plan ID is required"})
+		return
+	}
 
 	workouts, err := h.svc.GetWorkoutCyclesByWorkoutPlanID(c.Request.Context(), uint(id))
 	if err != nil {
@@ -217,7 +240,11 @@ func (h *WorkoutHandler) GetWorkoutCyclesByWorkoutPlanID(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) GetWorkoutCycleByID(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("cycleID"), 10, 64)
+	id := parseUint(c.Param("cycleID"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cycle ID is required"})
+		return
+	}
 
 	workoutCycle, err := h.svc.GetWorkoutCycleByID(c.Request.Context(), uint(id))
 	if err != nil {
@@ -227,7 +254,11 @@ func (h *WorkoutHandler) GetWorkoutCycleByID(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToWorkoutCycleResponse(workoutCycle))
 }
 func (h *WorkoutHandler) UpdateWorkoutCycle(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("cycleID"), 10, 64)
+	id := parseUint(c.Param("cycleID"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cycle ID is required"})
+		return
+	}
 
 	var req dto.WorkoutCycleUpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -250,7 +281,11 @@ func (h *WorkoutHandler) UpdateWorkoutCycle(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToWorkoutCycleResponse(wc))
 }
 func (h *WorkoutHandler) DeleteWorkoutCycle(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("cycleID"), 10, 64)
+	id := parseUint(c.Param("cycleID"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cycle ID is required"})
+		return
+	}
 
 	if err := h.svc.DeleteWorkoutCycle(c.Request.Context(), uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -260,8 +295,16 @@ func (h *WorkoutHandler) DeleteWorkoutCycle(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) CompleteWorkoutCycle(c *gin.Context) {
-	workoutPlanID, _ := strconv.ParseUint(c.Param("id"), 10, 64)
-	cycleID, _ := strconv.ParseUint(c.Param("cycleID"), 10, 64)
+	id := parseUint(c.Param("id"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Plan ID is required"})
+		return
+	}
+	cycleID := parseUint(c.Param("cycleID"), 0)
+	if cycleID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cycle ID is required"})
+		return
+	}
 
 	var req dto.WorkoutCycleCompleteRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -271,7 +314,7 @@ func (h *WorkoutHandler) CompleteWorkoutCycle(c *gin.Context) {
 
 	wc := &workout.WorkoutCycle{
 		ID:            uint(cycleID),
-		WorkoutPlanID: uint(workoutPlanID),
+		WorkoutPlanID: uint(id),
 		Completed:     req.Completed,
 	}
 
@@ -287,7 +330,11 @@ func (h *WorkoutHandler) CompleteWorkoutCycle(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) AddWorkoutToWorkoutCycle(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("cycleID"), 10, 64)
+	id := parseUint(c.Param("cycleID"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cycle ID is required"})
+		return
+	}
 
 	var req dto.WorkoutCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -311,7 +358,11 @@ func (h *WorkoutHandler) AddWorkoutToWorkoutCycle(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) GetWorkoutsByWorkoutCycleID(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("cycleID"), 10, 64)
+	id := parseUint(c.Param("cycleID"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cycle ID is required"})
+		return
+	}
 
 	workouts, err := h.svc.GetWorkoutsByWorkoutCycleID(c.Request.Context(), uint(id))
 	if err != nil {
@@ -328,7 +379,11 @@ func (h *WorkoutHandler) GetWorkoutsByWorkoutCycleID(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) CreateMultipleWorkouts(c *gin.Context) {
-	cycleID, _ := strconv.ParseUint(c.Param("cycleID"), 10, 64)
+	id := parseUint(c.Param("cycleID"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cycle ID is required"})
+		return
+	}
 
 	var req []dto.WorkoutBulkCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -342,7 +397,7 @@ func (h *WorkoutHandler) CreateMultipleWorkouts(c *gin.Context) {
 			Name:           r.Name,
 			Date:           r.Date,
 			Index:          r.Index,
-			WorkoutCycleID: uint(cycleID),
+			WorkoutCycleID: uint(id),
 		}
 		if len(r.WorkoutExercises) > 0 {
 			w.WorkoutExercises = make([]*workout.WorkoutExercise, 0, len(r.WorkoutExercises))
@@ -358,7 +413,7 @@ func (h *WorkoutHandler) CreateMultipleWorkouts(c *gin.Context) {
 		workouts = append(workouts, w)
 	}
 
-	if err := h.svc.CreateMultipleWorkouts(c.Request.Context(), uint(cycleID), workouts); err != nil {
+	if err := h.svc.CreateMultipleWorkouts(c.Request.Context(), uint(id), workouts); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -366,7 +421,11 @@ func (h *WorkoutHandler) CreateMultipleWorkouts(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) GetWorkoutByID(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("workoutID"), 10, 64)
+	id := parseUint(c.Param("workoutID"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout ID is required"})
+		return
+	}
 
 	workout, err := h.svc.GetWorkoutByID(c.Request.Context(), uint(id))
 	if err != nil {
@@ -377,7 +436,11 @@ func (h *WorkoutHandler) GetWorkoutByID(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) UpdateWorkout(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("workoutID"), 10, 64)
+	id := parseUint(c.Param("workoutID"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout ID is required"})
+		return
+	}
 
 	var req dto.WorkoutUpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -401,7 +464,11 @@ func (h *WorkoutHandler) UpdateWorkout(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToWorkoutResponse(w))
 }
 func (h *WorkoutHandler) DeleteWorkout(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("workoutID"), 10, 64)
+	id := parseUint(c.Param("workoutID"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout ID is required"})
+		return
+	}
 
 	if err := h.svc.DeleteWorkout(c.Request.Context(), uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -410,7 +477,11 @@ func (h *WorkoutHandler) DeleteWorkout(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 func (h *WorkoutHandler) AddWorkoutExerciseToWorkout(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("workoutID"), 10, 64)
+	id := parseUint(c.Param("workoutID"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout ID is required"})
+		return
+	}
 
 	var req dto.WorkoutExerciseCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -435,7 +506,11 @@ func (h *WorkoutHandler) AddWorkoutExerciseToWorkout(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) GetWorkoutExercisesByWorkoutID(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("workoutID"), 10, 64)
+	id := parseUint(c.Param("workoutID"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout ID is required"})
+		return
+	}
 
 	exercises, err := h.svc.GetWorkoutExercisesByWorkoutID(c.Request.Context(), uint(id))
 	if err != nil {
@@ -452,7 +527,11 @@ func (h *WorkoutHandler) GetWorkoutExercisesByWorkoutID(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) GetWorkoutExerciseByID(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("exerciseID"), 10, 64)
+	id := parseUint(c.Param("weID"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
+		return
+	}
 
 	exercise, err := h.svc.GetWorkoutExerciseByID(c.Request.Context(), uint(id))
 	if err != nil {
@@ -463,8 +542,16 @@ func (h *WorkoutHandler) GetWorkoutExerciseByID(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) UpdateWorkoutExercise(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("exerciseID"), 10, 64)
-	workoutID, _ := strconv.ParseUint(c.Param("workoutID"), 10, 64)
+	id := parseUint(c.Param("weID"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
+		return
+	}
+	workoutID := parseUint(c.Param("workoutID"), 0)
+	if workoutID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout ID is required"})
+		return
+	}
 
 	var req dto.WorkoutExerciseUpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -488,8 +575,16 @@ func (h *WorkoutHandler) UpdateWorkoutExercise(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) CompleteWorkoutExercise(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("exerciseID"), 10, 64)
-	workoutID, _ := strconv.ParseUint(c.Param("workoutID"), 10, 64)
+	id := parseUint(c.Param("weID"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
+		return
+	}
+	workoutID := parseUint(c.Param("workoutID"), 0)
+	if workoutID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout ID is required"})
+		return
+	}
 
 	var req dto.WorkoutExerciseCompleteRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -512,8 +607,16 @@ func (h *WorkoutHandler) CompleteWorkoutExercise(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) MoveWorkoutExercise(c *gin.Context) {
-	workoutID, _ := strconv.ParseUint(c.Param("workoutID"), 10, 64)
-	exerciseID, _ := strconv.ParseUint(c.Param("exerciseID"), 10, 64)
+	id := parseUint(c.Param("workoutID"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout ID is required"})
+		return
+	}
+	weID := parseUint(c.Param("weID"), 0)
+	if weID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
+		return
+	}
 
 	var req dto.WorkoutExerciseMoveRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -521,7 +624,7 @@ func (h *WorkoutHandler) MoveWorkoutExercise(c *gin.Context) {
 		return
 	}
 
-	if err := h.svc.MoveWorkoutExercise(c.Request.Context(), uint(workoutID), uint(exerciseID), req.Direction); err != nil {
+	if err := h.svc.MoveWorkoutExercise(c.Request.Context(), uint(id), uint(weID), req.Direction); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -530,8 +633,16 @@ func (h *WorkoutHandler) MoveWorkoutExercise(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) ReplaceWorkoutExercise(c *gin.Context) {
-	workoutID, _ := strconv.ParseUint(c.Param("workoutID"), 10, 64)
-	exerciseID, _ := strconv.ParseUint(c.Param("exerciseID"), 10, 64)
+	id := parseUint(c.Param("workoutID"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout ID is required"})
+		return
+	}
+	weID := parseUint(c.Param("weID"), 0)
+	if weID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
+		return
+	}
 
 	var req dto.WorkoutExerciseReplaceRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -539,7 +650,7 @@ func (h *WorkoutHandler) ReplaceWorkoutExercise(c *gin.Context) {
 		return
 	}
 
-	we, err := h.svc.ReplaceWorkoutExercise(c.Request.Context(), uint(workoutID), uint(exerciseID), req.IndividualExerciseID, req.SetsQt)
+	we, err := h.svc.ReplaceWorkoutExercise(c.Request.Context(), uint(id), uint(weID), req.IndividualExerciseID, req.SetsQt)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -549,7 +660,11 @@ func (h *WorkoutHandler) ReplaceWorkoutExercise(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) DeleteWorkoutExercise(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("exerciseID"), 10, 64)
+	id := parseUint(c.Param("weID"), 0)
+	if id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
+		return
+	}
 
 	if err := h.svc.DeleteWorkoutExercise(c.Request.Context(), uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -559,7 +674,11 @@ func (h *WorkoutHandler) DeleteWorkoutExercise(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) AddWorkoutSetToWorkoutExercise(c *gin.Context) {
-	workoutExerciseID, _ := strconv.ParseUint(c.Param("exerciseID"), 10, 64)
+	weID := parseUint(c.Param("weID"), 0)
+	if weID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
+		return
+	}
 
 	var req dto.WorkoutSetCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -568,7 +687,7 @@ func (h *WorkoutHandler) AddWorkoutSetToWorkoutExercise(c *gin.Context) {
 	}
 
 	ws := &workout.WorkoutSet{
-		WorkoutExerciseID: uint(workoutExerciseID),
+		WorkoutExerciseID: uint(weID),
 		Index:             req.Index,
 		Weight:            req.Weight,
 		Reps:              req.Reps,
@@ -583,9 +702,13 @@ func (h *WorkoutHandler) AddWorkoutSetToWorkoutExercise(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) GetWorkoutSetsByWorkoutExerciseID(c *gin.Context) {
-	workoutExerciseID, _ := strconv.ParseUint(c.Param("exerciseID"), 10, 64)
+	weID := parseUint(c.Param("weID"), 0)
+	if weID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
+		return
+	}
 
-	sets, err := h.svc.GetWorkoutSetsByWorkoutExerciseID(c.Request.Context(), uint(workoutExerciseID))
+	sets, err := h.svc.GetWorkoutSetsByWorkoutExerciseID(c.Request.Context(), uint(weID))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
@@ -598,7 +721,11 @@ func (h *WorkoutHandler) GetWorkoutSetsByWorkoutExerciseID(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 func (h *WorkoutHandler) DeleteWorkoutSet(c *gin.Context) {
-	setID, _ := strconv.ParseUint(c.Param("setID"), 10, 64)
+	setID := parseUint(c.Param("setID"), 0)
+	if setID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Set ID is required"})
+		return
+	}
 
 	if err := h.svc.DeleteWorkoutSet(c.Request.Context(), uint(setID)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -608,7 +735,11 @@ func (h *WorkoutHandler) DeleteWorkoutSet(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) GetWorkoutSetByID(c *gin.Context) {
-	setID, _ := strconv.ParseUint(c.Param("setID"), 10, 64)
+	setID := parseUint(c.Param("setID"), 0)
+	if setID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Set ID is required"})
+		return
+	}
 
 	set, err := h.svc.GetWorkoutSetByID(c.Request.Context(), uint(setID))
 	if err != nil {
@@ -620,8 +751,16 @@ func (h *WorkoutHandler) GetWorkoutSetByID(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) UpdateWorkoutSet(c *gin.Context) {
-	setID, _ := strconv.ParseUint(c.Param("setID"), 10, 64)
-	workoutExerciseID, _ := strconv.ParseUint(c.Param("exerciseID"), 10, 64)
+	setID := parseUint(c.Param("setID"), 0)
+	if setID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Set ID is required"})
+		return
+	}
+	weID := parseUint(c.Param("weID"), 0)
+	if weID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
+		return
+	}
 
 	var req dto.WorkoutSetUpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -631,7 +770,7 @@ func (h *WorkoutHandler) UpdateWorkoutSet(c *gin.Context) {
 
 	ws := &workout.WorkoutSet{
 		ID:                uint(setID),
-		WorkoutExerciseID: uint(workoutExerciseID),
+		WorkoutExerciseID: uint(weID),
 		Index:             req.Index,
 		Weight:            req.Weight,
 		Reps:              req.Reps,
@@ -647,8 +786,16 @@ func (h *WorkoutHandler) UpdateWorkoutSet(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) CompleteWorkoutSet(c *gin.Context) {
-	setID, _ := strconv.ParseUint(c.Param("setID"), 10, 64)
-	workoutExerciseID, _ := strconv.ParseUint(c.Param("exerciseID"), 10, 64)
+	setID := parseUint(c.Param("setID"), 0)
+	if setID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Set ID is required"})
+		return
+	}
+	weID := parseUint(c.Param("weID"), 0)
+	if weID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
+		return
+	}
 
 	var req dto.WorkoutSetCompleteRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -658,7 +805,7 @@ func (h *WorkoutHandler) CompleteWorkoutSet(c *gin.Context) {
 
 	ws := &workout.WorkoutSet{
 		ID:                uint(setID),
-		WorkoutExerciseID: uint(workoutExerciseID),
+		WorkoutExerciseID: uint(weID),
 		Completed:         req.Completed,
 	}
 
@@ -671,8 +818,16 @@ func (h *WorkoutHandler) CompleteWorkoutSet(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) MoveWorkoutSet(c *gin.Context) {
-	workoutExerciseID, _ := strconv.ParseUint(c.Param("exerciseID"), 10, 64)
-	setID, _ := strconv.ParseUint(c.Param("setID"), 10, 64)
+	weID := parseUint(c.Param("weID"), 0)
+	if weID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
+		return
+	}
+	setID := parseUint(c.Param("setID"), 0)
+	if setID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Set ID is required"})
+		return
+	}
 
 	var req dto.WorkoutSetMoveRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -680,7 +835,7 @@ func (h *WorkoutHandler) MoveWorkoutSet(c *gin.Context) {
 		return
 	}
 
-	if err := h.svc.MoveWorkoutSet(c.Request.Context(), uint(workoutExerciseID), uint(setID), req.Direction); err != nil {
+	if err := h.svc.MoveWorkoutSet(c.Request.Context(), uint(weID), uint(setID), req.Direction); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
