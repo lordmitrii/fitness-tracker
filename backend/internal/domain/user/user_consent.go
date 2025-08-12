@@ -13,4 +13,5 @@ type UserConsent struct {
 	Given   bool   `json:"given"`
 
 	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }

@@ -2,12 +2,11 @@ package handler
 
 import (
 	"net/http"
-	// "strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
-	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
+	"github.com/lordmitrii/golang-web-gin/internal/interface/http/dto"
 	"github.com/lordmitrii/golang-web-gin/internal/interface/http/middleware"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 )
@@ -42,26 +41,8 @@ func NewUserHandler(r *gin.RouterGroup, svc usecase.UserService) {
 	}
 }
 
-// RegisterUser godoc
-// @Summary      Register a new user
-// @Description  create a user record
-// @Tags         users
-// @Accept       json
-// @Produce      json
-// @Param        user  body      user.User  true  "User payload"
-// @Success      201      {object}  user.User
-// @Failure      400      {object}  handler.ErrorResponse
-// @Failure      500      {object}  handler.ErrorResponse
-// @Router       /users [post]
 func (h *UserHandler) Register(c *gin.Context) {
-	var req struct {
-		Email                   string `binding:"required,email"`
-		Password                string `binding:"required,min=8"`
-		PrivacyConsent          bool   `json:"privacy_consent" binding:"required"`
-		PrivacyPolicyVersion    string `json:"privacy_policy_version" binding:"required"`
-		HealthDataConsent       bool   `json:"health_data_consent" binding:"required"`
-		HealthDataPolicyVersion string `json:"health_data_policy_version" binding:"required"`
-	}
+	var req dto.RegisterRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -83,10 +64,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 }
 
 func (h *UserHandler) Login(c *gin.Context) {
-	var req struct {
-		Email    string `binding:"required,email"`
-		Password string `binding:"required,min=8"`
-	}
+	var req dto.LoginRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -111,13 +89,12 @@ func (h *UserHandler) Login(c *gin.Context) {
 	}
 
 	c.SetCookie("refresh_token", refreshToken, 60*60*24*7, "/", "", false, true)
-
-	c.JSON(http.StatusOK, gin.H{"access_token": accessToken})
+	c.JSON(http.StatusOK, dto.TokenResponse{AccessToken: accessToken})
 }
 
 func (h *UserHandler) Logout(c *gin.Context) {
 	c.SetCookie("refresh_token", "", -1, "/", "", false, true)
-	c.JSON(http.StatusOK, gin.H{"message": "logged out"})
+	c.JSON(http.StatusOK, dto.MessageResponse{Message: "logged out"})
 }
 
 func (h *UserHandler) RefreshToken(c *gin.Context) {
@@ -127,8 +104,8 @@ func (h *UserHandler) RefreshToken(c *gin.Context) {
 		return
 	}
 
-	tok, err := jwt.ParseWithClaims(refreshToken, &middleware.Claims{}, func(t *jwt.Token) (interface{}, error) {
-		return middleware.JwtSecret(), nil // expose jwtSecret with getter
+	tok, err := jwt.ParseWithClaims(refreshToken, &middleware.Claims{}, func(t *jwt.Token) (any, error) {
+		return middleware.JwtSecret(), nil
 	})
 	if err != nil || !tok.Valid {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid refresh token"})
@@ -141,78 +118,83 @@ func (h *UserHandler) RefreshToken(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not generate token"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"access_token": accessToken})
+	c.JSON(http.StatusOK, dto.TokenResponse{AccessToken: accessToken})
 }
 
 func (h *UserHandler) GetProfile(c *gin.Context) {
-	userID, exists := c.Get("userID")
+	userID, exists := currentUserID(c)
 	if !exists {
-		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	uid := userID.(uint)
-	p, err := h.svc.GetProfile(c.Request.Context(), uid)
+	p, err := h.svc.GetProfile(c.Request.Context(), userID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "profile not found"})
 		return
 	}
-	c.JSON(http.StatusOK, p)
+	c.JSON(http.StatusOK, dto.ToProfileResponse(p))
 }
 
 func (h *UserHandler) CreateProfile(c *gin.Context) {
-	var req user.Profile
+	userID, exists := currentUserID(c)
+	if !exists {
+		return
+	}
 
+	var req dto.ProfileCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	userID, exists := c.Get("userID")
-	if !exists {
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
+	p := &user.Profile{
+		UserID:   userID,
+		Age:      req.Age,
+		HeightCm: req.HeightCm,
+		WeightKg: req.WeightKg,
+		Sex:      req.Sex,
 	}
-	uid := userID.(uint)
-	req.UserID = uid
 
-	if err := h.svc.CreateProfile(c.Request.Context(), &req); err != nil {
+	if err := h.svc.CreateProfile(c.Request.Context(), p); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, req)
+	c.JSON(http.StatusCreated, dto.ToProfileResponse(p))
 }
 
 func (h *UserHandler) UpdateProfile(c *gin.Context) {
-	var req user.Profile
+	userID, exists := currentUserID(c)
+	if !exists {
+		return
+	}
 
+	var req dto.ProfileUpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	userID, exists := c.Get("userID")
-	if !exists {
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
+	p := &user.Profile{
+		UserID:   userID,
+		Age:      req.Age,
+		HeightCm: req.HeightCm,
+		WeightKg: req.WeightKg,
+		Sex:      req.Sex,
 	}
-	uid := userID.(uint)
-	req.UserID = uid
-	if err := h.svc.UpdateProfile(c.Request.Context(), &req); err != nil {
+
+	if err := h.svc.UpdateProfile(c.Request.Context(), p); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, req)
+	c.JSON(http.StatusOK, dto.ToProfileResponse(p))
 }
 
 func (h *UserHandler) DeleteProfile(c *gin.Context) {
-	userID, exists := c.Get("userID")
+	userID, exists := currentUserID(c)
 	if !exists {
-		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	uid := userID.(uint)
 
-	if err := h.svc.DeleteProfile(c.Request.Context(), uid); err != nil {
+	if err := h.svc.DeleteProfile(c.Request.Context(), userID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -220,83 +202,90 @@ func (h *UserHandler) DeleteProfile(c *gin.Context) {
 }
 
 func (h *UserHandler) GetConsents(c *gin.Context) {
-	userID, exists := c.Get("userID")
+	userID, exists := currentUserID(c)
 	if !exists {
-		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	uid := userID.(uint)
 
-	consents, err := h.svc.GetConsents(c.Request.Context(), uid)
+	consents, err := h.svc.GetConsents(c.Request.Context(), userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, consents)
+
+	resp := make([]dto.ConsentResponse, 0, len(consents))
+	for _, cns := range consents {
+		resp = append(resp, dto.ToConsentResponse(cns))
+	}
+
+	c.JSON(http.StatusOK, resp)
 }
 
 func (h *UserHandler) CreateConsent(c *gin.Context) {
-	var req user.UserConsent
+	userID, exists := currentUserID(c)
+	if !exists {
+		return
+	}
 
+	var req dto.ConsentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	userID, exists := c.Get("userID")
-	if !exists {
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
+	cns := &user.UserConsent{
+		UserID:  userID,
+		Type:    req.Type,
+		Version: req.Version,
+		Given:   req.Given,
 	}
-	req.UserID = userID.(uint)
 
-	if err := h.svc.CreateConsent(c.Request.Context(), &req); err != nil {
+	if err := h.svc.CreateConsent(c.Request.Context(), cns); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, req)
+	c.JSON(http.StatusCreated, dto.ToConsentResponse(cns))
 }
 
 func (h *UserHandler) UpdateConsent(c *gin.Context) {
-	var req user.UserConsent
+	userID, exists := currentUserID(c)
+	if !exists {
+		return
+	}
 
+	var req dto.ConsentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	userID, exists := c.Get("userID")
-	if !exists {
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
+	cns := &user.UserConsent{
+		UserID:  userID,
+		Type:    req.Type,
+		Version: req.Version,
+		Given:   req.Given,
 	}
-	req.UserID = userID.(uint)
 
-	if err := h.svc.UpdateConsent(c.Request.Context(), &req); err != nil {
+	if err := h.svc.UpdateConsent(c.Request.Context(), cns); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, req)
+	c.JSON(http.StatusOK, dto.ToConsentResponse(cns))
 }
 
 func (h *UserHandler) DeleteConsent(c *gin.Context) {
-	var req struct {
-		Type    string `json:"type" binding:"required"`
-		Version string `json:"version" binding:"required"`
+	userID, exists := currentUserID(c)
+	if !exists {
+		return
 	}
 
+	var req dto.DeleteConsentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	userID, exists := c.Get("userID")
-	if !exists {
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
-
-	if err := h.svc.DeleteConsent(c.Request.Context(), userID.(uint), req.Type, req.Version); err != nil {
+	if err := h.svc.DeleteConsent(c.Request.Context(), userID, req.Type, req.Version); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -304,28 +293,22 @@ func (h *UserHandler) DeleteConsent(c *gin.Context) {
 }
 
 func (h *UserHandler) Me(c *gin.Context) {
-	userID, exists := c.Get("userID")
+	userID, exists := currentUserID(c)
 	if !exists {
-		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	uid := userID.(uint)
 
-	user, err := h.svc.Me(c.Request.Context(), uid)
+	user, err := h.svc.Me(c.Request.Context(), userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	var resp struct {
-		Email      string      `json:"email"`
-		Roles      []rbac.Role `json:"roles"`
-		IsVerified bool        `json:"is_verified"`
+	resp := dto.MeResponse{
+		Email:      user.Email,
+		Roles:      dto.ToRoleResponses(user.Roles),
+		IsVerified: user.IsVerified,
 	}
-
-	resp.Email = user.Email
-	resp.Roles = user.Roles
-	resp.IsVerified = user.IsVerified
 
 	c.JSON(http.StatusOK, resp)
 }

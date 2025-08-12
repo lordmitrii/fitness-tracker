@@ -14,6 +14,7 @@ type RoleRepository interface {
 	GetUserRoles(ctx context.Context, userID uint) ([]*Role, error)
 	AssignRoleToUser(ctx context.Context, userID uint, roleName string) error
 	RemoveRoleFromUser(ctx context.Context, userID uint, roleName string) error
+	ClearUserRoles(ctx context.Context, userID uint) error
 }
 
 type PermissionRepository interface {

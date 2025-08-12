@@ -1,26 +1,50 @@
 import { BrowserRouter as Router } from "react-router-dom";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+
 import Layout from "./layout/Layout";
+
 import Home from "./pages/Home";
-import LoginForm from "./forms/LoginForm";
-import RegisterForm from "./forms/RegisterForm";
+
+import WorkoutPlans from "./pages/workout/WorkoutPlans";
+import WorkoutPlanSingle from "./pages/workout/WorkoutPlanSingle";
+
+import ExerciseStats from "./pages/ExerciseStats";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
-import { CreateProfileForm, UpdateProfileForm } from "./forms/ProfileForm";
-import AddWorkoutPlanForm from "./forms/AddWorkoutPlanForm";
-import UpdateWorkoutPlanForm from "./forms/UpdateWorkoutPlanForm";
-import { CreateWorkoutForm, UpdateWorkoutForm } from "./forms/WorkoutForm";
-import WorkoutPlans from "./pages/WorkoutPlans";
-import WorkoutPlanSingle from "./pages/WorkoutPlanSingle";
-import ExerciseStats from "./pages/ExerciseStats";
+
+import Admin from "./pages/admin/Admin";
+import Users from "./pages/admin/Users";
+import Roles from "./pages/admin/Roles";
+import Audit from "./pages/admin/Audit";
+import ExercisesAndMuscles from "./pages/admin/ExercisesAndMuscles";
+
 import AIChat from "./pages/AIChat";
-import PrivateRoute from "./components/PrivateRoute";
 import InstallationGuide from "./pages/InstallationGuide";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import HealthDataPolicy from "./pages/HealthDataPolicy";
-import ForgotPassword from "./forms/ForgotPassword";
-import ResetPassword from "./forms/ResetPassword";
+
+import PrivacyPolicy from "./pages/policies/PrivacyPolicy";
+import HealthDataPolicy from "./pages/policies/HealthDataPolicy";
+
+import LoginForm from "./forms/login/LoginForm";
+import RegisterForm from "./forms/login/RegisterForm";
+import ForgotPassword from "./forms/login/ForgotPassword";
+import ResetPassword from "./forms/login/ResetPassword";
+
+import {
+  CreateProfileForm,
+  UpdateProfileForm,
+} from "./forms/profile/ProfileForm";
+
+import AddWorkoutPlanForm from "./forms/workout/AddWorkoutPlanForm";
+import UpdateWorkoutPlanForm from "./forms/workout/UpdateWorkoutPlanForm";
+import {
+  CreateWorkoutForm,
+  UpdateWorkoutForm,
+} from "./forms/workout/WorkoutForm";
+
+import PrivateRoute from "./routes/PrivateRoute";
+import AdminRoute from "./routes/AdminRoute";
+
 import ScrollToTop from "./utils/scrollToTop";
 import "./i18n";
 
@@ -71,6 +95,19 @@ function App() {
                 path="/workout-plans/:planID/workout-cycles/:cycleID/update-workout/:workoutID"
                 element={<UpdateWorkoutForm />}
               />
+
+              <Route element={<AdminRoute />}>
+                <Route path="/admin-panel/*" element={<Admin />}>
+                  <Route index element={<Navigate to="users" replace />} />
+                  <Route path="users" element={<Users />} />
+                  <Route path="roles" element={<Roles />} />
+                  <Route path="audit" element={<Audit />} />
+                  <Route
+                    path="exercises-and-muscles"
+                    element={<ExercisesAndMuscles />}
+                  />
+                </Route>
+              </Route>
             </Route>
 
             <Route path="*" element={<NotFound />} />

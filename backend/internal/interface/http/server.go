@@ -13,7 +13,7 @@ import (
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 )
 
-func NewServer(exerciseService usecase.ExerciseService, workoutService usecase.WorkoutService, userService usecase.UserService, aiService usecase.AIService, emailService usecase.EmailService, rateLimiter usecase.RateLimiter, rbacService usecase.RBACService) *gin.Engine {
+func NewServer(exerciseService usecase.ExerciseService, workoutService usecase.WorkoutService, userService usecase.UserService, aiService usecase.AIService, emailService usecase.EmailService, rateLimiter usecase.RateLimiter, adminService usecase.AdminService, rbacService usecase.RBACService) *gin.Engine {
 	if os.Getenv("DEVELOPMENT_MODE") == "true" {
 		gin.SetMode(gin.DebugMode)
 	} else {
@@ -29,6 +29,7 @@ func NewServer(exerciseService usecase.ExerciseService, workoutService usecase.W
 	handler.NewUserHandler(api, userService)
 	handler.NewAIHandler(api, aiService, rateLimiter, rbacService)
 	handler.NewEmailHandler(api, emailService, rateLimiter, rbacService)
+	handler.NewAdminHandler(api, adminService, rbacService)
 
 	// Swagger endpoint at /swagger/index.html
 	if os.Getenv("DEVELOPMENT_MODE") == "true" {

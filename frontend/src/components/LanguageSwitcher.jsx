@@ -64,7 +64,6 @@ const LanguageSwitcher = () => {
             bg-white border border-blue-200
             rounded-lg shadow-lg space-y-1 p-1
           "
-          role="listbox"
         >
           {languages.map((l) => (
             <li key={l.code}>
@@ -80,7 +79,6 @@ const LanguageSwitcher = () => {
                   i18n.changeLanguage(l.code);
                   setOpen(false);
                 }}
-                role="option"
                 tabIndex={0}
                 type="button"
               >

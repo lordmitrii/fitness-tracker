@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
+	"github.com/lordmitrii/golang-web-gin/internal/interface/http/dto"
 	"github.com/lordmitrii/golang-web-gin/internal/interface/http/middleware"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 )
@@ -29,67 +30,76 @@ func NewAIHandler(r *gin.RouterGroup, svc usecase.AIService, rateLimiter usecase
 }
 
 func (h *AIHandler) AskStatsQuestion(c *gin.Context) {
-	userID, _ := c.Get("userID")
-
-	var req struct {
-		Question           string `json:"question"`
-		PreviousResponseID string `json:"previous_response_id"`
+	userID, exists := currentUserID(c)
+	if !exists {
+		return
 	}
+
+	var req dto.AIQuestionRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	resp, prevRespID, err := h.svc.AskStatsQuestion(c.Request.Context(), userID.(uint), req.Question, req.PreviousResponseID)
+	resp, prevRespID, err := h.svc.AskStatsQuestion(c.Request.Context(), userID, req.Question, req.PreviousResponseID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"answer": resp, "response_id": prevRespID})
+	c.JSON(http.StatusOK, dto.AIQuestionResponse{
+		Answer:     resp,
+		ResponseID: prevRespID,
+	})
 }
 
 func (h *AIHandler) AskWorkoutsQuestion(c *gin.Context) {
-	userID, _ := c.Get("userID")
-
-	var req struct {
-		Question           string `json:"question"`
-		PreviousResponseID string `json:"previous_response_id"`
+	userID, exists := currentUserID(c)
+	if !exists {
+		return
 	}
+
+	var req dto.AIQuestionRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	resp, prevRespID, err := h.svc.AskWorkoutsQuestion(c.Request.Context(), userID.(uint), req.Question, req.PreviousResponseID)
+	resp, prevRespID, err := h.svc.AskWorkoutsQuestion(c.Request.Context(), userID, req.Question, req.PreviousResponseID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"answer": resp, "response_id": prevRespID})
+	c.JSON(http.StatusOK, dto.AIQuestionResponse{
+		Answer:     resp,
+		ResponseID: prevRespID,
+	})
 }
 
 func (h *AIHandler) AskGeneralQuestion(c *gin.Context) {
-	userID, _ := c.Get("userID")
-
-	var req struct {
-		Question           string `json:"question"`
-		PreviousResponseID string `json:"previous_response_id"`
+	userID, exists := currentUserID(c)
+	if !exists {
+		return
 	}
+
+	var req dto.AIQuestionRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	resp, prevRespID, err := h.svc.AskGeneralQuestion(c.Request.Context(), userID.(uint), req.Question, req.PreviousResponseID)
+	resp, prevRespID, err := h.svc.AskGeneralQuestion(c.Request.Context(), userID, req.Question, req.PreviousResponseID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"answer": resp, "response_id": prevRespID})
+	c.JSON(http.StatusOK, dto.AIQuestionResponse{
+		Answer:     resp,
+		ResponseID: prevRespID,
+	})
 }

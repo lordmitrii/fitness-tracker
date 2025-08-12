@@ -83,3 +83,23 @@ func (r *UserRepo) CheckEmail(ctx context.Context, email string) (bool, error) {
 	}
 	return count > 0, nil
 }
+
+func (r *UserRepo) GetUsers(ctx context.Context, q string, page, pageSize int64) ([]*user.User, int64, error) {
+	var users []*user.User
+	var total int64
+
+	db := r.db.WithContext(ctx).Model(&user.User{})
+	if q != "" {
+		db = db.Where("email ILIKE ?", "%"+q+"%")
+	}
+
+	if err := db.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if err := db.Offset(int((page - 1) * pageSize)).Limit(int(pageSize)).Preload("Roles.Permissions").Order("created_at").Find(&users).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return users, total, nil
+}

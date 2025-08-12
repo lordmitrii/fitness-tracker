@@ -20,18 +20,21 @@ import (
 
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/email"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
+	"github.com/lordmitrii/golang-web-gin/internal/usecase/admin"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/ai"
 	email_usecase "github.com/lordmitrii/golang-web-gin/internal/usecase/email"
+	"github.com/lordmitrii/golang-web-gin/internal/usecase/rbac"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/user"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/workout"
-	"github.com/lordmitrii/golang-web-gin/internal/usecase/rbac"
+
 	// "github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/inmemory"
 	"context"
+	"time"
+
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/postgres"
 	myredis "github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/redis"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/job"
 	"github.com/lordmitrii/golang-web-gin/internal/interface/http"
-	"time"
 )
 
 func main() {
@@ -69,7 +72,7 @@ func main() {
 	userRepo := postgres.NewUserRepo(db)
 	profileRepo := postgres.NewProfileRepo(db)
 	userConsentRepo := postgres.NewUserConsentRepository(db)
-	
+
 	roleRepo := postgres.NewRoleRepo(db)
 	permissionRepo := postgres.NewPermissionRepo(db)
 
@@ -85,6 +88,7 @@ func main() {
 	var aiService usecase.AIService = ai.NewAIService(workoutService, userService)
 	var emailService usecase.EmailService = email_usecase.NewEmailService(userService, emailSender, emailTokenRepo)
 	var rbacService usecase.RBACService = rbac.NewRBACService(roleRepo, permissionRepo, userRepo)
+	var adminService usecase.AdminService = admin.NewAdminService(userRepo, roleRepo, emailService)
 
 	if os.Getenv("DEVELOPMENT_MODE") == "false" {
 		cleanupJob := job.NewCleanupJob(db)
@@ -94,7 +98,7 @@ func main() {
 		go cleanupJob.Run(ctx, 24*time.Hour)
 	}
 
-	server := http.NewServer(exerciseService, workoutService, userService, aiService, emailService, redisLimiter, rbacService)
+	server := http.NewServer(exerciseService, workoutService, userService, aiService, emailService, redisLimiter, adminService, rbacService)
 
 	var port string
 	if port = os.Getenv("PORT"); port == "" {

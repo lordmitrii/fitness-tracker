@@ -1,0 +1,48 @@
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import api from "../../api";
+
+const DangerMenu = ({ user, onDone, setError }) => {
+  const { t } = useTranslation();
+  const [busy, setBusy] = useState(null);
+
+  const act = async (label, call) => {
+    setError(null);
+    setBusy(label);
+    try {
+      await call();
+      onDone();
+    } catch (e) {
+      setError(e?.response?.data?.message || e?.message);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <>
+      <button
+        className="btn btn-secondary whitespace-nowrap"
+        disabled={busy !== null}
+        onClick={() =>
+          act("reset", () => api.post(`/admin/users/${user.id}/password-reset`))
+        }
+      >
+        {busy === "reset" ? t("general.working") : t("admin.reset_password")}
+      </button>
+      <button
+        className="btn btn-danger whitespace-nowrap"
+        disabled={busy !== null}
+        onClick={() => {
+          const ok = prompt(t("admin.type_delete_to_confirm")) === "DELETE";
+          if (!ok) return;
+          return act("delete", () => api.delete(`/admin/users/${user.id}`));
+        }}
+      >
+        {busy === "delete" ? t("general.working") : t("general.delete")}
+      </button>
+    </>
+  );
+};
+
+export default DangerMenu;
