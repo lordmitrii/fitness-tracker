@@ -5,6 +5,7 @@ import (
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type RoleRepo struct {
@@ -83,7 +84,12 @@ func (r *RoleRepo) AssignRoleToUser(ctx context.Context, userID uint, roleName s
 		UserID: userID,
 		RoleID: role.ID,
 	}
-	err = r.db.WithContext(ctx).Create(&userRole).Error
+	err = r.db.WithContext(ctx).
+		Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "user_id"}, {Name: "role_id"}},
+			DoNothing: true,
+		}).
+		Create(&userRole).Error
 	if err != nil {
 		return err
 	}
@@ -101,6 +107,14 @@ func (r *RoleRepo) RemoveRoleFromUser(ctx context.Context, userID uint, roleName
 		RoleID: role.ID,
 	}
 	res := r.db.WithContext(ctx).Delete(&userRole)
+	if res.Error != nil {
+		return res.Error
+	}
+	return nil
+}
+
+func (r *RoleRepo) ClearUserRoles(ctx context.Context, userID uint) error {
+	res := r.db.WithContext(ctx).Where("user_id = ?", userID).Delete(&rbac.UserRole{})
 	if res.Error != nil {
 		return res.Error
 	}

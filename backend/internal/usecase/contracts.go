@@ -96,6 +96,9 @@ type (
 	AdminService interface {
 		ListUsers(ctx context.Context, q string, page, pageSize int64) ([]*user.User, int64, error)
 		ListRoles(ctx context.Context) ([]*rbac.Role, error)
+		SetUserRoles(ctx context.Context, userID uint, roleNames []string) error
+		TriggerResetUserPassword(ctx context.Context, userID uint) error
+		DeleteUser(ctx context.Context, userID uint) error
 	}
 
 	RBACService interface {

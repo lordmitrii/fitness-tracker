@@ -44,6 +44,36 @@ export default function Users() {
     };
   }, []);
 
+  const handleSaveRoles = async (newRoleNames) => {
+    if (!editingUser) return;
+
+    setSaving(true);
+    setActionError(null);
+
+    const prev = users.slice();
+    const idx = users.findIndex((x) => x.id === editingUser.id);
+    const nextUsers = users.slice();
+    nextUsers[idx] = {
+      ...editingUser,
+      roles: newRoleNames.map((name) => ({ id: 0, name })),
+    };
+
+    setUsers(nextUsers);
+
+    try {
+      await api.post(`/admin/users/${editingUser.id}/roles`, {
+        role_names: newRoleNames,
+      });
+      setEditingUser(null);
+    } catch (err) {
+      setUsers(prev);
+      setActionError(err?.response?.data?.message || err?.message);
+    } finally {
+      setSaving(false);
+      loadUsers();
+    }
+  };
+
   const loadUsers = useCallback(() => {
     setLoading(true);
     setFetchError(null);
@@ -199,32 +229,7 @@ export default function Users() {
           allRoles={allRoles}
           saving={saving}
           onClose={() => setEditingUser(null)}
-          onSave={async (newRoleNames) => {
-            setSaving(true);
-            setActionError(null);
-
-            const prev = users.slice();
-            const idx = users.findIndex((x) => x.id === editingUser.id);
-            const nextUsers = users.slice();
-            nextUsers[idx] = {
-              ...editingUser,
-              roles: newRoleNames.map((name) => ({ id: 0, name })),
-            };
-            setUsers(nextUsers);
-
-            try {
-              await api.post(`/admin/users/${editingUser.id}/roles`, {
-                roles: newRoleNames,
-              });
-              setEditingUser(null);
-            } catch (e) {
-              setUsers(prev);
-              setActionError(e?.response?.data?.message || e?.message);
-            } finally {
-              setSaving(false);
-              loadUsers();
-            }
-          }}
+          onSave={handleSaveRoles}
         />
       )}
     </div>

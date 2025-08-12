@@ -26,9 +26,9 @@ func NewAdminHandler(r *gin.RouterGroup, svc usecase.AdminService, rbacService u
 	{
 		admin.GET("/users", h.GetUsers)
 		admin.GET("/roles", h.GetRoles)
-		// admin.POST("/users/:id/roles", h.SetUserRole)
-		// admin.POST("/users/:id/password-reset", h.ResetUserPassword)
-		// admin.DELETE("/users/:id", h.DeleteUser)
+		admin.POST("/users/:id/roles", h.SetUserRoles)
+		admin.POST("/users/:id/password-reset", h.TriggerResetUserPassword)
+		admin.DELETE("/users/:id", h.DeleteUser)
 	}
 }
 
@@ -84,7 +84,69 @@ func (h *AdminHandler) GetRoles(c *gin.Context) {
 		})
 	}
 
-	c.JSON(http.StatusOK, roles)
+	c.JSON(http.StatusOK, respRoles)
+}
+
+func (h *AdminHandler) SetUserRoles(c *gin.Context) {
+	userID := parseUint(c.Param("id"), 0)
+	if userID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID is required"})
+		return
+	}
+
+	var body struct {
+		RoleNames []string `json:"role_names"`
+	}
+
+	if err := c.BindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.svc.SetUserRoles(c.Request.Context(), userID, body.RoleNames); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
+func (h *AdminHandler) DeleteUser(c *gin.Context) {
+	userID := parseUint(c.Param("id"), 0)
+	if userID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID is required"})
+		return
+	}
+
+	if err := h.svc.DeleteUser(c.Request.Context(), userID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
+func (h *AdminHandler) TriggerResetUserPassword(c *gin.Context) {
+	userID := parseUint(c.Param("id"), 0)
+	if userID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID is required"})
+		return
+	}
+
+	if err := h.svc.TriggerResetUserPassword(c.Request.Context(), userID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
+func parseUint(s string, def uint) uint {
+	if s == "" {
+		return def
+	}
+	n, err := strconv.ParseUint(s, 10, 64)
+	if err != nil {
+		return def
+	}
+	return uint(n)
 }
 
 func parseInt(s string, def int64) int64 {

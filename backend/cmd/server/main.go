@@ -88,7 +88,7 @@ func main() {
 	var aiService usecase.AIService = ai.NewAIService(workoutService, userService)
 	var emailService usecase.EmailService = email_usecase.NewEmailService(userService, emailSender, emailTokenRepo)
 	var rbacService usecase.RBACService = rbac.NewRBACService(roleRepo, permissionRepo, userRepo)
-	var adminService usecase.AdminService = admin.NewAdminService(userRepo, roleRepo)
+	var adminService usecase.AdminService = admin.NewAdminService(userRepo, roleRepo, emailService)
 
 	if os.Getenv("DEVELOPMENT_MODE") == "false" {
 		cleanupJob := job.NewCleanupJob(db)
