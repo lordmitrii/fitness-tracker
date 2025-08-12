@@ -117,7 +117,7 @@ export default function Users() {
                 setQuery(e.target.value);
                 setPage(1);
               }}
-              placeholder={t("admin.search_placeholder")}
+              placeholder={t("admin.users.search_placeholder")}
               className="input-style"
             />
           </div>

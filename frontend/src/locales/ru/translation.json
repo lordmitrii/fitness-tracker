@@ -540,14 +540,16 @@
       "audit": "Аудит",
       "exercises_and_muscles": "Упражнения и мышцы"
     },
-    "users": { "title": "Пользователи" },
+    "users": {
+      "title": "Пользователи",
+      "search_placeholder": "Поиск пользователей…",
+      "search_label": "Поиск пользователей"
+    },
     "table": {
       "email": "Email",
       "roles": "Роли",
       "joined_at": "Дата регистрации"
     },
-    "search_placeholder": "Поиск пользователей…",
-    "search_label": "Поиск пользователей",
     "no_users": "Пользователей пока нет.",
     "no_roles": "Нет ролей",
     "no_roles_defined": "Роли не определены.",

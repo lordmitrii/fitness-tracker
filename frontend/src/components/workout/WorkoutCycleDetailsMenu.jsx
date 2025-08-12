@@ -2,6 +2,7 @@ import api from "../../api";
 import { useNavigate } from "react-router-dom";
 import DeleteIcon from "../../icons/DeleteIcon";
 import { useTranslation } from "react-i18next";
+import { memo, useCallback } from "react";
 
 const WorkoutCycleDetailsMenu = ({
   closeMenu,
@@ -13,7 +14,7 @@ const WorkoutCycleDetailsMenu = ({
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const handleDeleteCycle = () => {
+  const handleDeleteCycle = useCallback(() => {
     if (
       !window.confirm(
         t("menus.confirm_delete_cycle", {
@@ -38,7 +39,16 @@ const WorkoutCycleDetailsMenu = ({
       .finally(() => {
         closeMenu();
       });
-  };
+  }, [
+    planID,
+    cycleID,
+    workoutCycle,
+    navigate,
+    onError,
+    setNextCycleID,
+    closeMenu,
+    t,
+  ]);
 
   if (!workoutCycle) return null;
 
@@ -65,4 +75,4 @@ const WorkoutCycleDetailsMenu = ({
   );
 };
 
-export default WorkoutCycleDetailsMenu;
+export default memo(WorkoutCycleDetailsMenu);

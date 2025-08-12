@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import api from "../../api";
 import WorkoutCard from "../../components/workout/WorkoutCard";
 import DropdownMenu from "../../components/DropdownMenu";
@@ -21,10 +21,9 @@ const WorkoutPlanSingle = () => {
 
   const [nextCycleID, setNextCycleID] = useState(null);
 
-  const [allWorkoutsCompleted, setAllWorkoutsCompleted] = useState(false);
   const [cycleCompleted, setCycleCompleted] = useState(false);
 
-  const workoutRefs = useRef([]);
+  const workoutRefs = useRef(new Map());
   const hasScrolled = useRef(false);
 
   const [loading, setLoading] = useState(true);
@@ -32,9 +31,12 @@ const WorkoutPlanSingle = () => {
 
   useEffect(() => {
     setLoading(true);
+    const ac = new AbortController();
     Promise.all([
-      api.get(`workout-plans/${planID}`),
-      api.get(`/workout-plans/${planID}/workout-cycles/${cycleID}`),
+      api.get(`workout-plans/${planID}`, { signal: ac.signal }),
+      api.get(`/workout-plans/${planID}/workout-cycles/${cycleID}`, {
+        signal: ac.signal,
+      }),
     ])
       .then(([res1, res2]) => {
         setWorkoutPlanActive(res1.data.active);
@@ -45,45 +47,53 @@ const WorkoutPlanSingle = () => {
         setNextCycleID(res2.data.next_cycle_id);
       })
       .catch((error) => {
-        console.error("Error fetching workout cycle:", error);
-        setError(error);
+        if (!ac.signal.aborted) {
+          setError(error);
+          console.error("Error fetching workout plan or cycle:", error);
+        }
       })
       .finally(() => {
         setLoading(false);
       });
   }, [planID, cycleID]);
 
-  useEffect(() => {
-    if (!hasScrolled.current && workouts.length > 0) {
-      const firstIncompleteWorkout = workouts.find(
-        (workout) => !workout.completed && workout.workout_exercises.length > 0
-      );
-      if (firstIncompleteWorkout) {
-        const index = workouts.indexOf(firstIncompleteWorkout);
-        const ref = workoutRefs.current[index];
-        if (ref) {
-          ref.scrollIntoView({ behavior: "smooth", block: "start" });
-          hasScrolled.current = true;
-        } else {
-          hasScrolled.current = false;
-        }
-      }
-    }
-  }, [workouts]);
-
-  useEffect(() => {
-    const allCompleted =
-      workouts.length > 0 && workouts.every((workout) => workout.completed);
-    setAllWorkoutsCompleted(allCompleted);
-  }, [workouts]);
-
-  const allSets = workouts.flatMap((workout) =>
-    (workout.workout_exercises || []).flatMap((ex) => ex.workout_sets || [])
+  const sortedWorkouts = useMemo(
+    () => workouts.slice().sort((a, b) => a.index - b.index),
+    [workouts]
   );
-  const totalSets = allSets.length;
-  const completedSets = allSets.filter((set) => set.completed).length;
 
-  const handleCycleComplete = () => {
+  useEffect(() => {
+    if (hasScrolled.current || workouts.length === 0) return;
+    const firstIncomplete = sortedWorkouts.find(
+      (w) => !w.completed && (w.workout_exercises?.length ?? 0) > 0
+    );
+    if (!firstIncomplete) return;
+
+    const ref = workoutRefs.current.get(firstIncomplete.id);
+    if (ref) {
+      ref.scrollIntoView({ behavior: "smooth", block: "start" });
+      hasScrolled.current = true;
+    }
+  }, [sortedWorkouts, workouts.length]);
+
+  const { allSets, totalSets, completedSets, allWorkoutsCompleted } =
+    useMemo(() => {
+      const sets = workouts.flatMap((w) =>
+        (w.workout_exercises || []).flatMap((ex) => ex.workout_sets || [])
+      );
+      const total = sets.length;
+      const completed = sets.filter((s) => s.completed).length;
+      const allCompleted =
+        workouts.length > 0 && workouts.every((w) => w.completed);
+      return {
+        allSets: sets,
+        totalSets: total,
+        completedSets: completed,
+        allWorkoutsCompleted: allCompleted,
+      };
+    }, [workouts]);
+
+  const handleCycleComplete = useCallback(() => {
     if (
       !allWorkoutsCompleted &&
       !window.confirm(t("workout_plan_single.confirm_complete"))
@@ -102,10 +112,11 @@ const WorkoutPlanSingle = () => {
       })
       .catch((error) => {
         setError(error);
+        console.error("Error completing cycle:", error);
       });
-  };
+  }, [allWorkoutsCompleted, cycleID, planID, t]);
 
-  const handleUpdateWorkouts = (workoutId, newExercises) => {
+  const handleUpdateWorkouts = useCallback((workoutId, newExercises) => {
     setWorkouts((prevWorkouts) =>
       prevWorkouts.map((w) => {
         if (w.id !== workoutId) return w;
@@ -128,13 +139,27 @@ const WorkoutPlanSingle = () => {
         };
       })
     );
-  };
+  }, []);
 
-  const handleDeleteWorkout = (workoutId) => {
+  const handleDeleteWorkout = useCallback((workoutId) => {
     setWorkouts((prevWorkouts) =>
       prevWorkouts.filter((w) => w.id !== workoutId)
     );
-  };
+  }, []);
+
+  const renderCycleDetailsMenu = useCallback(
+    ({ close }) => (
+      <WorkoutCycleDetailsMenu
+        closeMenu={close}
+        planID={planID}
+        cycleID={cycleID}
+        workoutCycle={workoutCycle}
+        setNextCycleID={setNextCycleID}
+        onError={setError}
+      />
+    ),
+    [planID, cycleID, workoutCycle, setNextCycleID]
+  );
 
   if (loading)
     return <LoadingState message={t("workout_plan_single.loading_workouts")} />;
@@ -162,16 +187,7 @@ const WorkoutPlanSingle = () => {
                 <DropdownMenu
                   dotsHorizontal={true}
                   dotsHidden={!workoutPlanActive}
-                  menu={({ close }) => (
-                    <WorkoutCycleDetailsMenu
-                      closeMenu={close}
-                      planID={planID}
-                      cycleID={cycleID}
-                      workoutCycle={workoutCycle}
-                      setNextCycleID={setNextCycleID}
-                      onError={setError}
-                    />
-                  )}
+                  menu={renderCycleDetailsMenu}
                 />
               </div>
               <h2 className="text-body mb-6">
@@ -224,25 +240,25 @@ const WorkoutPlanSingle = () => {
             <div className="bg-gray-200 sm:bg-transparent">
               {workouts && workouts.length > 0 ? (
                 <div className="space-y-6 py-6 sm:py-0">
-                  {workouts
-                    .slice()
-                    .sort((a, b) => a.index - b.index)
-                    .map((workout, idx) => (
-                      <div
-                        key={workout.id}
-                        ref={(el) => (workoutRefs.current[idx] = el)}
-                      >
-                        <WorkoutCard
-                          planID={planID}
-                          cycleID={cycleID}
-                          workout={workout}
-                          onDeleteWorkout={handleDeleteWorkout}
-                          isCurrentCycle={!nextCycleID && workoutPlanActive}
-                          onUpdateWorkouts={handleUpdateWorkouts}
-                          onError={setError}
-                        />
-                      </div>
-                    ))}
+                  {sortedWorkouts.map((workout, idx) => (
+                    <div
+                      key={workout.id}
+                      ref={(el) => {
+                        if (el) workoutRefs.current.set(workout.id, el);
+                        else workoutRefs.current.delete(workout.id);
+                      }}
+                    >
+                      <WorkoutCard
+                        planID={planID}
+                        cycleID={cycleID}
+                        workout={workout}
+                        onDeleteWorkout={handleDeleteWorkout}
+                        isCurrentCycle={!nextCycleID && workoutPlanActive}
+                        onUpdateWorkouts={handleUpdateWorkouts}
+                        onError={setError}
+                      />
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div className="text-center py-6">

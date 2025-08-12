@@ -78,8 +78,8 @@ type WorkoutExerciseReplaceRequest struct {
 
 type WorkoutSetCreateRequest struct {
 	Index  int     `json:"index"`
-	Weight float64 `json:"weight" binding:"required"`
-	Reps   int     `json:"reps" binding:"required"`
+	Weight float64 `json:"weight"`
+	Reps   int     `json:"reps"`
 }
 
 type WorkoutSetUpdateRequest struct {

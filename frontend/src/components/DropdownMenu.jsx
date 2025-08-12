@@ -1,4 +1,11 @@
-import { useState, useRef, useEffect, useLayoutEffect } from "react";
+import {
+  memo,
+  useState,
+  useRef,
+  useEffect,
+  useLayoutEffect,
+  useCallback,
+} from "react";
 import { createPortal } from "react-dom";
 import { HorizontalDots, VerticalDots } from "../icons/DotsIcon";
 import CloseIcon from "../icons/CloseIcon";
@@ -15,7 +22,24 @@ const DropdownMenu = ({
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
   const buttonRef = useRef(null);
   const menuRef = useRef(null);
-  const close = () => setOpen(false);
+
+  const close = useCallback(() => setOpen(false), []);
+
+  const computePos = useCallback(() => {
+    if (!buttonRef.current) return;
+    const rect = buttonRef.current.getBoundingClientRect();
+    setDropdownPos({
+      top: rect.top + window.scrollY,
+      left: isLeft
+        ? rect.left + window.scrollX
+        : rect.right - DROPDOWN_WIDTH + window.scrollX,
+    });
+  }, [isLeft]);
+
+  const handleOpen = useCallback(() => {
+    computePos();
+    setOpen(true);
+  }, [computePos]);
 
   useEffect(() => {
     function handleClick(e) {
@@ -45,34 +69,22 @@ const DropdownMenu = ({
   //   }
   // }, [open]);
 
-  const handleOpen = () => {
-    if (buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      setDropdownPos({
-        top: rect.top + window.scrollY,
-        left: isLeft
-          ? rect.left + window.scrollX
-          : rect.right - DROPDOWN_WIDTH + window.scrollX,
-      });
-      setOpen(true);
-    }
-  };
-
   useLayoutEffect(() => {
-    function handleResize() {
-      if (open && buttonRef.current) {
-        const rect = buttonRef.current.getBoundingClientRect();
-        setDropdownPos({
-          top: rect.top + window.scrollY,
-          left: isLeft
-            ? rect.left + window.scrollX
-            : rect.right - DROPDOWN_WIDTH + window.scrollX,
-        });
-      }
-    }
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [open]);
+    if (!open) return;
+
+    const onResize = () => computePos();
+    const onScroll = () => computePos();
+
+    window.addEventListener("resize", onResize);
+    window.addEventListener("scroll", onScroll);
+
+    computePos();
+
+    return () => {
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, [open, computePos]);
 
   return (
     <>
@@ -83,7 +95,6 @@ const DropdownMenu = ({
         }`}
         onClick={handleOpen}
       >
-        {/* Three dots icon */}
         {!dotsHorizontal ? <VerticalDots /> : <HorizontalDots />}
       </button>
 
@@ -116,4 +127,4 @@ const DropdownMenu = ({
   );
 };
 
-export default DropdownMenu;
+export default memo(DropdownMenu);

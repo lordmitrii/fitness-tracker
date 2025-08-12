@@ -540,14 +540,16 @@
       "audit": "审计",
       "exercises_and_muscles": "锻炼与肌肉"
     },
-    "users": { "title": "用户" },
+    "users": {
+      "title": "用户",
+      "search_placeholder": "搜索用户…",
+      "search_label": "搜索用户"
+    },
     "table": {
       "email": "邮箱",
       "roles": "角色",
       "joined_at": "加入时间"
     },
-    "search_placeholder": "搜索用户…",
-    "search_label": "搜索用户",
     "no_users": "暂无用户。",
     "no_roles": "无角色",
     "no_roles_defined": "未定义角色。",
