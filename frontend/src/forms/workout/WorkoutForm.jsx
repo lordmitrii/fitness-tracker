@@ -101,7 +101,7 @@ export const CreateWorkoutForm = () => {
       })
       .catch((error) => {
         console.error("Error creating workout:", error);
-        setError(error);
+        setError(error)
       });
   };
 
@@ -109,7 +109,7 @@ export const CreateWorkoutForm = () => {
   if (error)
     return (
       <ErrorState
-        message={error?.message}
+        error={error}
         onRetry={() => window.location.reload()}
       />
     );
@@ -146,7 +146,7 @@ export const UpdateWorkoutForm = () => {
       })
       .catch((error) => {
         console.error("Error fetching workout:", error);
-        setError(error);
+        setError(error)
       })
       .finally(() => {
         setLoading(false);
@@ -164,7 +164,7 @@ export const UpdateWorkoutForm = () => {
       })
       .catch((error) => {
         console.error("Error updating workout:", error);
-        setError(error);
+        setError(error)
       });
   };
 
@@ -173,7 +173,7 @@ export const UpdateWorkoutForm = () => {
   if (error)
     return (
       <ErrorState
-        message={error?.message}
+        error={error}
         onRetry={() => window.location.reload()}
       />
     );

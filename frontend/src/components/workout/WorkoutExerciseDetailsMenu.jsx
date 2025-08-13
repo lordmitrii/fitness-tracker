@@ -4,149 +4,130 @@ import ReplaceIcon from "../../icons/ReplaceIcon";
 import DeleteIcon from "../../icons/DeleteIcon";
 import AddWorkoutExerciseModal from "../../modals/workout/AddWorkoutExerciseModal";
 import { useTranslation } from "react-i18next";
+import { withOptimisticUpdate } from "../../utils/updates";
+import { useState } from "react";
 
 const WorkoutExerciseDetailsMenu = ({
   planID,
   cycleID,
   workoutID,
   workoutName,
-  exercise,
-  exercises,
+  exerciseID,
+  exerciseOrder,
   updateExercises,
   closeMenu,
   onError,
 }) => {
   const { t } = useTranslation();
-  const handleMoveUp = () => {
-    if (exercise.index === 1) {
-      console.error("Already at the top");
-      closeMenu();
-      return;
-    } // Already at the top
+  const [pending, setPending] = useState(false);
 
-    api
-      .post(
-        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exercise.id}/move`,
-        { direction: "up" }
-      )
-      .then(() => {
-        updateExercises((prev) => {
-          const higherIndexExercise = prev.find(
-            (ex) => ex.index === exercise.index - 1
-          );
-          if (!higherIndexExercise) return prev;
-          return prev.map((ex) =>
-            ex.id === exercise.id
-              ? {
-                  ...ex,
-                  index: ex.index - 1,
-                }
-              : ex.id === higherIndexExercise.id
-              ? {
-                  ...higherIndexExercise,
-                  index: higherIndexExercise.index + 1,
-                }
-              : ex
-          );
-        });
-      })
-      .catch((error) => {
-        console.error("Error moving exercise up:", error);
-        onError(error);
-      });
-    closeMenu();
+  const indices = exerciseOrder?.map((e) => e.index) ?? [];
+  const maxIndex = indices.length ? Math.max(...indices) : 1;
+  const currentIndex =
+    exerciseOrder.find((e) => e.id === exerciseID)?.index ?? 1;
+  const isOnlyExercise = exerciseOrder.length === 1;
+  const isTop = currentIndex === 1;
+  const isBottom = currentIndex === maxIndex;
+
+  const postMove = async (direction) => {
+    await api.post(
+      `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exerciseID}/move`,
+      { direction }
+    );
   };
 
-  const handleMoveDown = () => {
-    const maxIndex = Math.max(...exercises.map((e) => e.index));
-    if (exercise.index === maxIndex) {
-      console.error("Already at the bottom");
-      closeMenu();
-      return;
-    }
-    api
-      .post(
-        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exercise.id}/move`,
-        { direction: "down" }
-      )
-      .then(() => {
-        updateExercises((prev) => {
-          const lowerIndexExercise = prev.find(
-            (ex) => ex.index === exercise.index + 1
-          );
-          if (!lowerIndexExercise) return prev; // No lower index to swap with
-          return prev.map((ex) =>
-            ex.id === exercise.id
-              ? {
-                  ...ex,
-                  index: ex.index + 1,
-                }
-              : ex.id === lowerIndexExercise.id
-              ? {
-                  ...lowerIndexExercise,
-                  index: lowerIndexExercise.index - 1,
-                }
-              : ex
-          );
-        });
-      })
-      .catch((error) => {
-        console.error("Error moving exercise down:", error);
-        onError(error);
-      });
-    closeMenu();
-  };
+  const handleMoveUp = async () => {
+    if (pending) return;
+    setPending(true);
 
-  // UNIMPLEMENTED: this thing is not working yet and may not be needed in the future
-  const handleDuplicateExercise = () => {
-    const newExercise = {
-      ...exercise,
-      id: Date.now(), // Simple ID generation
-      workout_sets: exercise.workout_sets.map((set) => ({
-        ...set,
-        id: Date.now() + Math.random(), // Unique ID for each set
-        completed: false, // Reset completed status
-      })),
-      completed: false,
-    };
-    updateExercises((prev) => [...prev, newExercise]);
-    closeMenu();
-  };
-
-  const handleDeleteExercise = () => {
-    if (confirm(t("menus.confirm_delete_exercise"))) {
-      api
-        .delete(
-          `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exercise.id}`
-        )
-        .then(() =>
-          updateExercises((prev) => {
-            const filteredExercises = prev
-              .filter((ex) => ex.id !== exercise.id)
-              .map((ex) =>
-                ex.index > exercise.index ? { ...ex, index: ex.index - 1 } : ex
-              );
-            return filteredExercises;
-          })
-        )
-        .catch((error) => {
-          console.error("Error deleting exercise:", error);
-          onError(error);
-        });
+    try {
+      await withOptimisticUpdate(
+        updateExercises,
+        (prev) => {
+          const me = prev.find((e) => e.id === exerciseID);
+          if (!me || me.index === 1) return prev;
+          const above = prev.find((e) => e.index === me.index - 1);
+          if (!above) return prev;
+          return prev.map((e) =>
+            e.id === me.id
+              ? { ...e, index: e.index - 1 }
+              : e.id === above.id
+              ? { ...e, index: e.index + 1 }
+              : e
+          );
+        },
+        () => postMove("up")
+      );
+    } catch (error) {
+      onError(error);
+    } finally {
+      setPending(false);
       closeMenu();
     }
   };
 
-  if (!exercise) return null;
+  const handleMoveDown = async () => {
+    if (pending) return;
+    setPending(true);
+
+    try {
+      await withOptimisticUpdate(
+        updateExercises,
+        (prev) => {
+          const me = prev.find((e) => e.id === exerciseID);
+          if (!me) return prev;
+          const maxIndex = Math.max(...prev.map((e) => e.index));
+          if (me.index === maxIndex) return prev;
+          const below = prev.find((e) => e.index === me.index + 1);
+          if (!below) return prev;
+          return prev.map((e) =>
+            e.id === me.id
+              ? { ...e, index: e.index + 1 }
+              : e.id === below.id
+              ? { ...e, index: e.index - 1 }
+              : e
+          );
+        },
+        () => postMove("down")
+      );
+    } catch (error) {
+      onError(error);
+    } finally {
+      setPending(false);
+      closeMenu();
+    }
+  };
+
+  const handleDeleteExercise = async () => {
+    if (!confirm(t("menus.confirm_delete_exercise"))) return;
+    try {
+      await api.delete(
+        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exerciseID}`
+      );
+      updateExercises((prev) => {
+        const me = prev.find((e) => e.id === exerciseID);
+        if (!me) return prev;
+        return prev
+          .filter((e) => e.id !== exerciseID)
+          .map((e) => (e.index > me.index ? { ...e, index: e.index - 1 } : e));
+      });
+    } catch (error) {
+      onError(error);
+    } finally {
+      closeMenu();
+    }
+  };
+
+  if (!exerciseID) return null;
 
   return (
     <div className="flex flex-col space-y-2 mt-2">
       <button
         className={`btn btn-secondary-light text-left ${
-          exercise.index === 1 ? "opacity-50 cursor-not-allowed" : ""
+          isTop || pending ? "opacity-50 cursor-not-allowed" : ""
         }`}
         onClick={handleMoveUp}
-        disabled={exercise.index === 1}
+        disabled={isTop || pending}
       >
         <span className="flex items-center gap-2">
           <MoveUpIcon />
@@ -155,16 +136,12 @@ const WorkoutExerciseDetailsMenu = ({
       </button>
       <button
         className={`btn btn-secondary-light text-left ${
-          exercises.length === 1 ||
-          exercise.index === Math.max(...exercises.map((e) => e.index))
+          isOnlyExercise || isBottom || pending
             ? "opacity-50 cursor-not-allowed"
             : ""
         }`}
         onClick={handleMoveDown}
-        disabled={
-          exercises.length === 1 ||
-          exercise.index === Math.max(...exercises.map((e) => e.index))
-        }
+        disabled={isOnlyExercise || isBottom || pending}
       >
         <span className="flex items-center gap-2">
           <MoveDownIcon />
@@ -206,7 +183,7 @@ const WorkoutExerciseDetailsMenu = ({
         workoutName={workoutName}
         planID={planID}
         cycleID={cycleID}
-        exercise={exercise}
+        replaceExerciseID={exerciseID}
         onUpdateExercises={updateExercises}
         onError={onError}
         buttonText={t("general.replace")}

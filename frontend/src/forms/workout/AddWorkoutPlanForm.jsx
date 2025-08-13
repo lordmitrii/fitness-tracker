@@ -140,7 +140,7 @@ const AddWorkoutPlanForm = () => {
   if (error)
     return (
       <ErrorState
-        message={error?.message}
+        error={error}
         onRetry={() => window.location.reload()}
       />
     );
@@ -224,7 +224,7 @@ const AddWorkoutPlanForm = () => {
               <p className="text-caption-red mt-1">{formErrors.daysPerCycle}</p>
             )}
           </div>
-          <button className="btn btn-primary w-full">
+          <button className="btn btn-primary w-full" type="submit">
             {t("general.continue")}
           </button>
         </form>
@@ -286,7 +286,7 @@ const AddWorkoutPlanForm = () => {
         navigate("/workout-plans");
       } catch (error) {
         console.error("Error creating workout plan:", error);
-        setError(error);
+        setError(error)
       }
     };
 

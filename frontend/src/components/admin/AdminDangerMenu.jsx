@@ -12,8 +12,8 @@ const DangerMenu = ({ user, onDone, setError }) => {
     try {
       await call();
       onDone();
-    } catch (e) {
-      setError(e?.response?.data?.message || e?.message);
+    } catch (error) {
+      setError(error);
     } finally {
       setBusy(null);
     }

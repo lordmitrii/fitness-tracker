@@ -167,7 +167,7 @@ const AIChat = () => {
         setError(t("ai_chat.error_insufficient_permissions"));
       } else {
         console.error("AI Chat error:", err);
-        setError(err.message || t("ai_chat.error"));
+        setError(err.response?.data?.message || err.message || t("ai_chat.error"));
       }
     } finally {
       setInput("");
@@ -179,7 +179,7 @@ const AIChat = () => {
   if (!hasAnyRole(["admin", "member"]))
     return (
       <ErrorState
-        message={t("general.page_no_permissions")}
+        error={t("general.page_no_permissions")}
         onRetry={() => navigate("/")}
       />
     );

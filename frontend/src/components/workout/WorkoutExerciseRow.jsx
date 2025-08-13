@@ -23,15 +23,25 @@ const WorkoutExerciseRow = ({
     [exercise.workout_sets]
   );
 
-  const renderExerciseMenu = useCallback(
+  const setOrder = useMemo(
+    () => sortedSets.map((s) => ({ id: s.id, index: s.index })),
+    [sortedSets]
+  );
+
+  const exerciseOrder = useMemo(
+    () => allExercises.map((e) => ({ id: e.id, index: e.index })),
+    [allExercises]
+  );
+
+  const renderExerciseDetailsMenu = useCallback(
     ({ close }) => (
       <WorkoutExerciseDetailsMenu
         planID={planID}
         cycleID={cycleID}
         workoutID={workoutID}
         workoutName={workoutName}
-        exercise={exercise}
-        exercises={allExercises}
+        exerciseID={exercise.id}
+        exerciseOrder={exerciseOrder}
         updateExercises={onUpdateExercises}
         closeMenu={close}
         onError={onError}
@@ -42,8 +52,8 @@ const WorkoutExerciseRow = ({
       cycleID,
       workoutID,
       workoutName,
-      exercise,
-      allExercises,
+      exercise.id,
+      exerciseOrder,
       onUpdateExercises,
       onError,
     ]
@@ -68,7 +78,7 @@ const WorkoutExerciseRow = ({
           <DropdownMenu
             dotsHorizontal
             dotsHidden={!isCurrentCycle}
-            menu={renderExerciseMenu}
+            menu={renderExerciseDetailsMenu}
           />
         </div>
         <div className="flex text-caption">
@@ -78,7 +88,7 @@ const WorkoutExerciseRow = ({
       </div>
 
       <div className="overflow-x-auto">
-        <div className="min-w-full grid grid-cols-[6dvw_minmax(20dvw,1fr)_minmax(20dvw,1fr)_minmax(0,6dvw)_1fr] sm:grid-cols-[36px_1fr_1fr_1fr_1fr_1fr] gap-4 text-gray-600 font-semibold border-b pb-2 sm:text-normal text-sm">
+        <div className="min-w-full grid grid-cols-[6dvw_minmax(20dvw,1fr)_minmax(20dvw,1fr)_minmax(0,6dvw)_1fr] sm:grid-cols-[36px_1fr_1fr_1fr_1fr_1fr] gap-4 text-gray-600 font-semibold border-b pb-2 sm:text-base text-sm">
           <div className=""></div>
           <div className="hidden sm:block">
             {t("workout_plan_single.set_label")}
@@ -105,8 +115,9 @@ const WorkoutExerciseRow = ({
               planID={planID}
               cycleID={cycleID}
               workoutID={workoutID}
-              exercise={exercise}
+              exerciseID={exercise.id}
               setItem={set}
+              setOrder={setOrder}
               isCurrentCycle={isCurrentCycle}
               onUpdateExercises={onUpdateExercises}
               onError={onError}

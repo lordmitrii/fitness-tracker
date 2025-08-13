@@ -72,7 +72,10 @@ const AddWorkoutExerciseModal = ({
         setExercisesFetched(true);
       })
       .catch((err) => {
-        if (!ac.signal.aborted) onError(err);
+        if (!ac.signal.aborted) {
+          console.error("Error fetching exercises data:", err);
+          onError(err);
+        }
       })
       .finally(() => {
         if (!ac.signal.aborted) setLoading(false);
@@ -214,14 +217,14 @@ const AddWorkoutExerciseModal = ({
       const { data: workoutExercise } = !dummyMode
         ? exercise
           ? await api.post(
-              `workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exercise.id}/replace`,
+              `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exercise.id}/replace`,
               {
                 individual_exercise_id: individualExercise.id,
                 sets_qt: sets,
               }
             )
           : await api.post(
-              `workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises`,
+              `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises`,
               {
                 individual_exercise_id: individualExercise.id,
                 sets_qt: sets,

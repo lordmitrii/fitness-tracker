@@ -31,9 +31,10 @@ const WorkoutPlanSingle = () => {
 
   useEffect(() => {
     setLoading(true);
+    setError(null);
     const ac = new AbortController();
     Promise.all([
-      api.get(`workout-plans/${planID}`, { signal: ac.signal }),
+      api.get(`/workout-plans/${planID}`, { signal: ac.signal }),
       api.get(`/workout-plans/${planID}/workout-cycles/${cycleID}`, {
         signal: ac.signal,
       }),
@@ -48,13 +49,14 @@ const WorkoutPlanSingle = () => {
       })
       .catch((error) => {
         if (!ac.signal.aborted) {
-          setError(error);
           console.error("Error fetching workout plan or cycle:", error);
+          setError(error);
         }
       })
       .finally(() => {
-        setLoading(false);
+        if (!ac.signal.aborted) setLoading(false);
       });
+    return () => ac.abort();
   }, [planID, cycleID]);
 
   const sortedWorkouts = useMemo(
@@ -74,7 +76,7 @@ const WorkoutPlanSingle = () => {
       ref.scrollIntoView({ behavior: "smooth", block: "start" });
       hasScrolled.current = true;
     }
-  }, [sortedWorkouts, workouts.length]);
+  }, [sortedWorkouts]);
 
   const { allSets, totalSets, completedSets, allWorkoutsCompleted } =
     useMemo(() => {
@@ -111,8 +113,8 @@ const WorkoutPlanSingle = () => {
         setCycleCompleted(true);
       })
       .catch((error) => {
-        setError(error);
         console.error("Error completing cycle:", error);
+        setError(error);
       });
   }, [allWorkoutsCompleted, cycleID, planID, t]);
 
@@ -153,30 +155,28 @@ const WorkoutPlanSingle = () => {
         closeMenu={close}
         planID={planID}
         cycleID={cycleID}
-        workoutCycle={workoutCycle}
+        cycleName={workoutCycle?.name}
+        previousCycleID={workoutCycle?.previous_cycle_id}
         setNextCycleID={setNextCycleID}
         onError={setError}
       />
     ),
-    [planID, cycleID, workoutCycle, setNextCycleID]
+    [planID, cycleID, workoutCycle]
   );
 
   if (loading)
     return <LoadingState message={t("workout_plan_single.loading_workouts")} />;
   if (error)
     return (
-      <ErrorState
-        message={error?.message}
-        onRetry={() => window.location.reload()}
-      />
+      <ErrorState error={error} onRetry={() => window.location.reload()} />
     );
 
   return (
     <>
-      <div className="fixed bg-white/75 backdrop-blur-md shadow-md w-full h-2 sm:h-3 z-1">
+      <div className="fixed bg-white/75 backdrop-blur-md shadow-md w-full h-2 sm:h-3 z-10">
         <ProgressBar completed={completedSets} total={totalSets} />
       </div>
-      <div className="w-full sm:w-8/10 mx-auto sm:p-8">
+      <div className="w-full sm:w-4/5 mx-auto sm:p-8">
         {workoutCycle && (
           <>
             <div className="sm:bg-transparent bg-white p-6 pt-14 sm:p-0 shadow-md sm:shadow-none">

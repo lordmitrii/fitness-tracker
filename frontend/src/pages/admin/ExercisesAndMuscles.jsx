@@ -8,7 +8,7 @@ const ExercisesAndMuscles = () => {
   const { t } = useTranslation();
 
   const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState(null);
+  const [error, setError] = useState(null);
 
   const [exercises, setExercises] = useState([]);
   const [muscles, setMuscles] = useState([]);
@@ -18,13 +18,13 @@ const ExercisesAndMuscles = () => {
 
   const reload = () => {
     setLoading(true);
-    setErr(null);
+    setError(null);
     Promise.all([api.get("/exercises"), api.get("/muscle-groups")])
       .then(([exRes, muRes]) => {
         setExercises(exRes.data || []);
         setMuscles(muRes.data || []);
       })
-      .catch((e) => setErr(e))
+      .catch((e) => setError(e))
       .finally(() => setLoading(false));
   };
 
@@ -60,15 +60,8 @@ const ExercisesAndMuscles = () => {
 
   if (loading) return <LoadingState />;
 
-  if (err) {
-    return (
-      <ErrorState
-        message={
-          err?.response?.data?.message || err?.message || t("errors.generic")
-        }
-        onRetry={reload}
-      />
-    );
+  if (error) {
+    return <ErrorState error={error} onRetry={reload} />;
   }
 
   return (

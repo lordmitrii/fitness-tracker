@@ -8,7 +8,8 @@ const WorkoutCycleDetailsMenu = ({
   closeMenu,
   planID,
   cycleID,
-  workoutCycle,
+  cycleName,
+  previousCycleID,
   setNextCycleID,
   onError,
 }) => {
@@ -18,7 +19,7 @@ const WorkoutCycleDetailsMenu = ({
     if (
       !window.confirm(
         t("menus.confirm_delete_cycle", {
-          cycleName: workoutCycle.name,
+          cycleName,
         })
       )
     ) {
@@ -27,9 +28,7 @@ const WorkoutCycleDetailsMenu = ({
     api
       .delete(`/workout-plans/${planID}/workout-cycles/${cycleID}`)
       .then(() => {
-        navigate(
-          `/workout-plans/${planID}/workout-cycles/${workoutCycle.previous_cycle_id}`
-        );
+        navigate(`/workout-plans/${planID}/workout-cycles/${previousCycleID}`);
         setNextCycleID(null);
       })
       .catch((error) => {
@@ -42,7 +41,8 @@ const WorkoutCycleDetailsMenu = ({
   }, [
     planID,
     cycleID,
-    workoutCycle,
+    cycleName,
+    previousCycleID,
     navigate,
     onError,
     setNextCycleID,
@@ -50,18 +50,18 @@ const WorkoutCycleDetailsMenu = ({
     t,
   ]);
 
-  if (!workoutCycle) return null;
+  if (!cycleID) return null;
 
   return (
     <div className="flex flex-col space-y-2 mt-2">
       <button
         className={`btn btn-danger-light text-left  ${
-          !workoutCycle.previous_cycle_id ? "opacity-50 cursor-not-allowed" : ""
+          !previousCycleID ? "opacity-50 cursor-not-allowed" : ""
         }`}
         onClick={handleDeleteCycle}
-        disabled={!workoutCycle.previous_cycle_id}
+        disabled={!previousCycleID}
         title={
-          !workoutCycle.previous_cycle_id
+          !previousCycleID
             ? t("menus.cannot_delete_first_cycle")
             : t("menus.delete_this_cycle")
         }

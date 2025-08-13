@@ -2,7 +2,7 @@ import WorkoutExerciseTable from "./WorkoutExerciseTable";
 import DropdownMenu from "../DropdownMenu";
 import WorkoutDetailsMenu from "./WorkoutDetailsMenu";
 import AddWorkoutExerciseModal from "../../modals/workout/AddWorkoutExerciseModal";
-import { useTranslation } from "react-i18next";
+import { useTranslation, } from "react-i18next";
 import { memo, useCallback } from "react";
 
 const WorkoutCard = ({
@@ -14,26 +14,35 @@ const WorkoutCard = ({
   onUpdateWorkouts,
   onError,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const handleUpdateExercises = useCallback(
     (newExercises) => onUpdateWorkouts(workout.id, newExercises),
     [onUpdateWorkouts, workout.id]
   );
 
-  const renderDetailsMenu = useCallback(
+  const renderWorkoutDetailsMenu = useCallback(
     ({ close }) => (
       <WorkoutDetailsMenu
         closeMenu={close}
         planID={planID}
         cycleID={cycleID}
-        workout={workout}
+        workoutID={workout.id}
+        workoutName={workout.name}
         updateWorkouts={onUpdateWorkouts}
         onDeleteWorkout={onDeleteWorkout}
         onError={onError}
       />
     ),
-    [planID, cycleID, workout, onUpdateWorkouts, onDeleteWorkout, onError]
+    [
+      planID,
+      cycleID,
+      workout.id,
+      workout.name,
+      onUpdateWorkouts,
+      onDeleteWorkout,
+      onError,
+    ]
   );
 
   return (
@@ -44,12 +53,12 @@ const WorkoutCard = ({
           <DropdownMenu
             dotsHorizontal={true}
             dotsHidden={!isCurrentCycle}
-            menu={renderDetailsMenu}
+            menu={renderWorkoutDetailsMenu}
           />
         </div>
         <div className="text-caption mt-1">
           {t("general.last_updated")}{" "}
-          {new Date(workout.updated_at).toLocaleDateString()}
+          {new Date(workout.updated_at).toLocaleDateString(i18n.language)}
           <br />
           {t("general.completed")}:{" "}
           {workout.completed ? (
