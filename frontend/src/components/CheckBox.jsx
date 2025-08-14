@@ -1,4 +1,5 @@
 import CheckIcon from "../icons/CheckIcon";
+import { memo } from "react";
 
 const CheckBox = ({ title, checked, onChange, disabled = false }) => {
   return (
@@ -26,4 +27,4 @@ const CheckBox = ({ title, checked, onChange, disabled = false }) => {
   );
 };
 
-export default CheckBox;
+export default memo(CheckBox);

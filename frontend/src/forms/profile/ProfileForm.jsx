@@ -197,7 +197,7 @@ export const CreateProfileForm = () => {
   if (error)
     return (
       <ErrorState
-        message={error?.message}
+        error={error}
         onRetry={() => window.location.reload()}
       />
     );
@@ -234,7 +234,7 @@ export const UpdateProfileForm = () => {
       })
       .catch((error) => {
         console.error("Error fetching profile:", error);
-        setError(error);
+        setError(error)
       })
       .finally(() => {
         setLoading(false);
@@ -249,7 +249,7 @@ export const UpdateProfileForm = () => {
       })
       .catch((error) => {
         console.error("Error updating profile:", error);
-        setError(error);
+        setError(error)
       });
   };
 
@@ -258,7 +258,7 @@ export const UpdateProfileForm = () => {
   if (error)
     return (
       <ErrorState
-        message={error?.message}
+        error={error}
         onRetry={() => window.location.reload()}
       />
     );

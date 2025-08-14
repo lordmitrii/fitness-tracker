@@ -20,7 +20,8 @@ const ExerciseStats = () => {
         setStats(response.data);
       })
       .catch((error) => {
-        setError(error);
+        console.error("Error fetching exercise stats:", error);
+        setError(error)
       })
       .finally(() => {
         setLoading(false);
@@ -32,7 +33,7 @@ const ExerciseStats = () => {
   if (error)
     return (
       <ErrorState
-        message={error?.message}
+        error={error}
         onRetry={() => window.location.reload()}
       />
     );

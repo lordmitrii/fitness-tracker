@@ -63,7 +63,13 @@ backend/
 │   │       └── cleanup.go
 │
 │   ├── interface/http/
+│   │   ├── dto/                               # DTOs
+│   │   │   ├── mappers.go
+│   │   │   ├── ai_dto.go
+│   │   │   ├── user_handler.go
+│   │   │   └── ...
 │   │   ├── handler/                           # Handlers defining routes
+│   │   │   ├── helpers.go
 │   │   │   ├── ai_handler.go
 │   │   │   ├── exercise_handler.go
 │   │   │   ├── user_handler.go
@@ -107,11 +113,19 @@ frontend/
 │
 ├── src/
 │   ├── components/
+│   │   ├── admin/
+│   │   ├── workout/
+│   │   └── ...
 │   ├── context/
 │   │   └── AuthContext.jsx               # Context for authentication
 │   ├── forms/
-│   │   ├── RegisterForm.jsx
-│   │   ├── LoginForm.jsx
+│   │   ├── login/
+│   │   │   ├── RegisterForm.jsx
+│   │   │   ├── LoginForm.jsx
+│   │   │   └── ...
+│   │   ├── workout/
+│   │   ├── profile/
+│   │   ├── admin/
 │   │   └── ...
 │   ├── hooks/
 │   │   ├── useConsent.jsx
@@ -129,9 +143,17 @@ frontend/
 │   │   ├── en/
 │   │   ├── ru/
 │   │   └── zh/
+│   ├── modals/
+│   │   ├── admin/
+│   │   ├── workout/
+│   │   └── ...
 │   ├── pages/
+│   │   ├── admin/
+│   │   ├── policies/
+│   │   ├── workout/
+│   │   │   ├── WorkoutPlans.jsx
+│   │   │   └── ...
 │   │   ├── Home.jsx
-│   │   ├── WorkoutPlans.jsx
 │   │   └── ...
 │   ├── states/                           # Pages showing states
 │   │   ├── ErrorState.jsx

@@ -1,25 +1,40 @@
-import { useEffect, useRef } from "react";
+import { useLayoutEffect } from "react";
 
-export default function useScrollLock(locked) {
-  const scrollYRef = useRef(0);
-
-  useEffect(() => {
+const useScrollLock = (isLocked) => {
+  useLayoutEffect(() => {
     const body = document.body;
 
-    if (locked) {
-      scrollYRef.current = window.scrollY;
-
-      const originalOverflow = body.style.overflow;
-      const originalHtmlOverflow = document.documentElement.style.overflow;
-
+    if (isLocked) {
+      const scrollY = window.scrollY;
+      body.style.position = "fixed";
+      body.style.top = `-${scrollY}px`;
+      body.style.left = "0";
+      body.style.right = "0";
       body.style.overflow = "hidden";
-      document.documentElement.style.overflow = "hidden";
-
-      return () => {
-        body.style.overflow = originalOverflow;
-        document.documentElement.style.overflow = originalHtmlOverflow;
-        window.scrollTo(0, scrollYRef.current);
-      };
+    } else {
+      const scrollY = body.style.top;
+      body.style.position = "";
+      body.style.top = "";
+      body.style.left = "";
+      body.style.right = "";
+      body.style.overflow = "";
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || "0") * -1);
+      }
     }
-  }, [locked]);
-}
+
+    return () => {
+      const scrollY = body.style.top;
+      body.style.position = "";
+      body.style.top = "";
+      body.style.left = "";
+      body.style.right = "";
+      body.style.overflow = "";
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || "0") * -1);
+      }
+    };
+  }, [isLocked]);
+};
+
+export default useScrollLock;

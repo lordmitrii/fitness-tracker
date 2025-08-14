@@ -8,7 +8,8 @@ const WorkoutDetailsMenu = ({
   closeMenu,
   planID,
   cycleID,
-  workout,
+  workoutID,
+  workoutName,
   updateWorkouts,
   onDeleteWorkout,
   onError,
@@ -17,7 +18,7 @@ const WorkoutDetailsMenu = ({
   const navigate = useNavigate();
   const handleUpdateWorkout = () => {
     navigate(
-      `/workout-plans/${planID}/workout-cycles/${cycleID}/update-workout/${workout.id}`
+      `/workout-plans/${planID}/workout-cycles/${cycleID}/update-workout/${workoutID}`
     );
     closeMenu();
   };
@@ -26,7 +27,7 @@ const WorkoutDetailsMenu = ({
     if (
       !window.confirm(
         t("menus.confirm_delete_workout", {
-          workoutName: workout.name,
+          workoutName: workoutName,
         })
       )
     ) {
@@ -35,10 +36,10 @@ const WorkoutDetailsMenu = ({
 
     api
       .delete(
-        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workout.id}`
+        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}`
       )
       .then(() => {
-        onDeleteWorkout(workout.id);
+        onDeleteWorkout(workoutID);
       })
       .catch((error) => {
         console.error("Error deleting workout:", error);
@@ -47,7 +48,7 @@ const WorkoutDetailsMenu = ({
     closeMenu();
   };
 
-  if (!workout) return null;
+  if (!workoutID) return null;
 
   return (
     <div className="flex flex-col space-y-2 mt-2">

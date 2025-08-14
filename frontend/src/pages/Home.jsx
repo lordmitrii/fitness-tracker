@@ -20,7 +20,7 @@ const Home = () => {
   if (error)
     return (
       <ErrorState
-        message={error?.message}
+        error={error}
         onRetry={() => window.location.reload()}
       />
     );

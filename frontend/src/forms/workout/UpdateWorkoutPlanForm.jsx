@@ -26,7 +26,7 @@ const UpdateWorkoutPlanForm = () => {
       })
       .catch((error) => {
         console.error("Error fetching workout plan:", error);
-        setError(error);
+        setError(error)
       })
       .finally(() => {
         setLoading(false);
@@ -64,7 +64,7 @@ const UpdateWorkoutPlanForm = () => {
       })
       .catch((error) => {
         console.error("Error updating workout plan:", error);
-        setError(error);
+        setError(error)
       });
   };
 
@@ -77,7 +77,7 @@ const UpdateWorkoutPlanForm = () => {
   if (error)
     return (
       <ErrorState
-        message={error?.message}
+        error={error}
         onRetry={() => window.location.reload()}
       />
     );

@@ -19,7 +19,7 @@ html {
   --color-white: rgb(75, 83, 101);
 
   --color-gray-50: rgb(100, 109, 129);
-  --color-gray-100: rgb(56, 61, 73);
+  --color-gray-100: #383d49;
   --color-gray-200: rgb(68, 73, 86);
   --color-gray-300: rgb(81, 87, 106);
   --color-gray-400: rgb(95, 102, 121);
@@ -161,6 +161,10 @@ html {
   @apply border-2 border-green-400/70 backdrop-blur bg-white;
 }
 
+.modal-content {
+  -webkit-overflow-scrolling: touch;
+}
+
 @keyframes shake {
   0%,
   100% {
@@ -217,6 +221,15 @@ html {
   }
 }
 
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .animate-shake {
   animation: shake 0.6s;
 }
@@ -235,4 +248,8 @@ html {
 
 .recharts-wrapper * {
   @apply focus:outline-none sm:focus:ring-2 sm:focus:ring-blue-400 sm:transition sm:rounded-lg;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
 }

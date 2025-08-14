@@ -10,8 +10,8 @@ import DangerMenu from "../../components/admin/AdminDangerMenu";
 
 const PAGE_SIZE = 20;
 
-export default function Users() {
-  const { t } = useTranslation();
+const Users = () => {
+  const { t, i18n } = useTranslation();
 
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
@@ -85,7 +85,10 @@ export default function Users() {
         setUsers(res.data.users || []);
         setTotal(res.data.total || 0);
       })
-      .catch((err) => setFetchError(err))
+      .catch((err) => {
+        console.error("Error fetching users:", err);
+        setFetchError(err);
+      })
       .finally(() => setLoading(false));
   }, [page, search]);
 
@@ -96,9 +99,7 @@ export default function Users() {
   if (loading) return <LoadingState />;
 
   if (fetchError) {
-    return (
-      <ErrorState message={fetchError?.message} onRetry={() => loadUsers()} />
-    );
+    return <ErrorState error={fetchError} onRetry={() => loadUsers()} />;
   }
 
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -117,7 +118,7 @@ export default function Users() {
                 setQuery(e.target.value);
                 setPage(1);
               }}
-              placeholder={t("admin.search_placeholder")}
+              placeholder={t("admin.users.search_placeholder")}
               className="input-style"
             />
           </div>
@@ -151,7 +152,7 @@ export default function Users() {
               <tr>
                 <td colSpan={3} className="p-6 text-center text-body">
                   {search
-                    ? t("admin.no_results_for", { search })
+                    ? t("general.no_results_for", { search })
                     : t("admin.no_users")}
                 </td>
               </tr>
@@ -167,7 +168,7 @@ export default function Users() {
                       {u.created_at && (
                         <span className="text-caption">
                           {t("admin.table.joined_at")}:{" "}
-                          {new Date(u.created_at).toLocaleString()}
+                          {new Date(u.created_at).toLocaleString(i18n.language)}
                         </span>
                       )}
                     </div>
@@ -228,10 +229,15 @@ export default function Users() {
           user={editingUser}
           allRoles={allRoles}
           saving={saving}
-          onClose={() => setEditingUser(null)}
+          onClose={() => {
+            if (saving) return;
+            setEditingUser(null);
+          }}
           onSave={handleSaveRoles}
         />
       )}
     </div>
   );
-}
+};
+
+export default Users;

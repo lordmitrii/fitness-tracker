@@ -46,7 +46,8 @@
     "saving": "Сохранение…",
     "working": "Выполняется…",
     "forbidden": "Доступ запрещён",
-    "pagination": { "page_of": "Страница {{page}} из {{pageCount}}" }
+    "pagination": { "page_of": "Страница {{page}} из {{pageCount}}" },
+    "no_results_for": "Нет результатов для \"{{search}}\""
   },
   "measurements": {
     "weight": "кг",
@@ -540,18 +541,19 @@
       "audit": "Аудит",
       "exercises_and_muscles": "Упражнения и мышцы"
     },
-    "users": { "title": "Пользователи" },
+    "users": {
+      "title": "Пользователи",
+      "search_placeholder": "Поиск пользователей…",
+      "search_label": "Поиск пользователей"
+    },
     "table": {
       "email": "Email",
       "roles": "Роли",
       "joined_at": "Дата регистрации"
     },
-    "search_placeholder": "Поиск пользователей…",
-    "search_label": "Поиск пользователей",
     "no_users": "Пользователей пока нет.",
     "no_roles": "Нет ролей",
     "no_roles_defined": "Роли не определены.",
-    "no_results_for": "Нет результатов для \"{{search}}\"",
     "edit_roles": "Редактировать роли",
     "edit_roles_for": "Редактировать роли для {{email}}",
     "edit_roles_hint": "Выберите роли, которые должен иметь этот пользователь.",

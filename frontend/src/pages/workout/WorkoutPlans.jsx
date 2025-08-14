@@ -14,7 +14,7 @@ const WorkoutPlans = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     setLoading(true);
@@ -24,7 +24,8 @@ const WorkoutPlans = () => {
         setWorkoutPlans(response.data);
       })
       .catch((error) => {
-        setError(error);
+        console.error("Error fetching workout plans:", error);
+        setError(error)
       })
       .finally(() => {
         setLoading(false);
@@ -56,7 +57,7 @@ const WorkoutPlans = () => {
       })
       .catch((error) => {
         console.error("Error activating workout plan:", error);
-        setError(error);
+        setError(error)
       });
   };
 
@@ -65,7 +66,7 @@ const WorkoutPlans = () => {
   if (error)
     return (
       <ErrorState
-        message={error?.message}
+        error={error}
         onRetry={() => window.location.reload()}
       />
     );
@@ -129,7 +130,7 @@ const WorkoutPlans = () => {
 
                   <div className="text-caption mt-1">
                     {t("general.last_updated")}{" "}
-                    {new Date(workoutPlan.updated_at).toLocaleDateString()}
+                    {new Date(workoutPlan.updated_at).toLocaleDateString(i18n.language)}
                   </div>
                 </div>
               </li>

@@ -46,7 +46,8 @@
     "saving": "Saving…",
     "working": "Working…",
     "forbidden": "Forbidden",
-    "pagination": { "page_of": "Page {{page}} of {{pageCount}}" }
+    "pagination": { "page_of": "Page {{page}} of {{pageCount}}" },
+    "no_results_for": "No results for \"{{search}}\""
   },
   "measurements": {
     "weight": "kg",
@@ -540,18 +541,19 @@
       "audit": "Audit",
       "exercises_and_muscles": "Exercises & Muscles"
     },
-    "users": { "title": "Users" },
+    "users": {
+      "title": "Users",
+      "search_placeholder": "Search users…",
+      "search_label": "Search users"
+    },
     "table": {
       "email": "Email",
       "roles": "Roles",
       "joined_at": "Joined"
     },
-    "search_placeholder": "Search users…",
-    "search_label": "Search users",
     "no_users": "No users yet.",
     "no_roles": "No roles",
     "no_roles_defined": "No roles defined.",
-    "no_results_for": "No results for \"{{search}}\"",
     "edit_roles": "Edit roles",
     "edit_roles_for": "Edit roles for {{email}}",
     "edit_roles_hint": "Select the roles this user should have.",

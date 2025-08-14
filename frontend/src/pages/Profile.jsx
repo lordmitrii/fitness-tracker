@@ -24,7 +24,8 @@ const Profile = () => {
           setProfile({});
           return;
         }
-        setError(error);
+        console.error("Error fetching profile:", error);
+        setError(error)
       })
       .finally(() => {
         setLoading(false);
@@ -35,7 +36,7 @@ const Profile = () => {
   if (error)
     return (
       <ErrorState
-        message={error?.message}
+        error={error}
         onRetry={() => window.location.reload()}
       />
     );

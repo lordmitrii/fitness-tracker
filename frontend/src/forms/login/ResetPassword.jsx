@@ -94,7 +94,7 @@ const ResetPassword = () => {
   if (!linkValid)
     return (
       <ErrorState
-        message={t("reset_password.invalid_link")}
+        error={t("reset_password.invalid_link")}
         onRetry={() => navigate("/forgot-password")}
       />
     );
