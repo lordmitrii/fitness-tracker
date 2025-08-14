@@ -546,14 +546,25 @@
       "search_placeholder": "搜索用户…",
       "search_label": "搜索用户"
     },
+    "exercises": {
+      "title": "锻炼",
+      "search_placeholder": "搜索锻炼…",
+      "search_label": "搜索锻炼",
+      "exercise": "锻炼",
+      "muscles_title": "肌肉群",
+      "muscles_hint": "选择该锻炼应针对的肌肉群。",
+      "all_muscles": "所有肌肉"
+    },
     "table": {
       "email": "邮箱",
       "roles": "角色",
-      "joined_at": "加入时间"
+      "joined_at": "加入时间",
+      "exercises": "锻炼"
     },
     "no_users": "暂无用户。",
     "no_roles": "无角色",
     "no_roles_defined": "未定义角色。",
+    "no_exercises": "暂无锻炼。",
     "edit_roles": "编辑角色",
     "edit_roles_for": "编辑 {{email}} 的角色",
     "edit_roles_hint": "选择该用户应拥有的角色。",

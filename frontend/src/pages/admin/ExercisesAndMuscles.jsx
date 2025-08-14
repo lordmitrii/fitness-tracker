@@ -70,7 +70,7 @@ const ExercisesAndMuscles = () => {
         <h1 className="text-title">{t("admin.exercises.title")}</h1>
 
         <div className="flex items-center gap-2">
-          <div className="flex w-100 gap-2">
+          <div className="w-80">
             <input
               type="text"
               value={query}
@@ -78,26 +78,6 @@ const ExercisesAndMuscles = () => {
               placeholder={t("admin.exercises.search_placeholder")}
               className="input-style"
             />
-
-            <select
-              className="w-30 input-style"
-              value={muscleFilter}
-              onChange={(e) =>
-                setMuscleFilter(
-                  e.target.value === "all" ? "all" : Number(e.target.value)
-                )
-              }
-            >
-              <option value="all">{t("admin.exercises.all_muscles")}</option>
-              {muscles
-                .slice()
-                .sort((a, b) => a.name.localeCompare(b.name))
-                .map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name}
-                  </option>
-                ))}
-            </select>
           </div>
           <button
             className={`btn ${
@@ -119,16 +99,14 @@ const ExercisesAndMuscles = () => {
           <table className="min-w-full text-caption">
             <thead className="text-center text-body uppercase tracking-wide bg-gray-50">
               <tr>
-                <th className="px-4 py-3">
-                  {t("admin.exercises.table.exercise")}
-                </th>
+                <th className="px-4 py-3">{t("admin.exercises.exercise")}</th>
               </tr>
             </thead>
             <tbody>
               {filteredExercises.length === 0 ? (
                 <tr>
-                  <td colSpan={1} className="p-6 text-center text-gray-500">
-                    {t("admin.exercises.no_results")}
+                  <td colSpan={1} className="p-6 text-center text-caption">
+                    {t("admin.no_exercises")}
                   </td>
                 </tr>
               ) : (
@@ -149,12 +127,8 @@ const ExercisesAndMuscles = () => {
 
         <div className="rounded-xl border shadow-sm">
           <div className="p-3 border-b bg-gray-50 rounded-t-xl">
-            <h3 className="font-medium">
-              {t("admin.exercises.muscles_title")}
-            </h3>
-            <p className="text-xs text-gray-500">
-              {t("admin.exercises.muscles_hint")}
-            </p>
+            <h3 className="text-title">{t("admin.exercises.muscles_title")}</h3>
+            <p className="text-caption">{t("admin.exercises.muscles_hint")}</p>
           </div>
           <ul className="divide-y">
             {muscles
@@ -170,17 +144,12 @@ const ExercisesAndMuscles = () => {
                     className={`p-3 ${
                       muscles.length - 1 === index ? "rounded-b-xl" : ""
                     } flex items-center justify-between cursor-pointer hover:bg-gray-50 ${
-                      active ? "bg-gray-100" : ""
+                      active ? "bg-gray-300" : ""
                     }`}
                     onClick={() => setMuscleFilter(active ? "all" : m.id)}
                   >
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium">{m.name}</span>
-                      {m.group ? (
-                        <span className="text-xs text-gray-500">{m.group}</span>
-                      ) : null}
-                    </div>
-                    <span className="text-caption px-2 py-1 rounded-xl bg-gray-100">
+                    <span className="text-body">{m.name}</span>
+                    <span className="px-2 py-1 rounded-xl text-caption border border-gray-400 bg-gray-100">
                       {count}
                     </span>
                   </li>

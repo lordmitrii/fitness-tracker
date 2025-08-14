@@ -55,6 +55,7 @@ const AIChat = () => {
   const chatWindowRef = useRef(null);
 
   const { consentGiven, giveConsent } = useConsent("ai_chat");
+  console.log(consentGiven);
   const { cooldown, start: startCooldown } = useCooldown();
 
   const activeTopicMeta = useMemo(
@@ -298,7 +299,7 @@ const AIChat = () => {
           </div>
         </form>
       </div>
-      {consentGiven && (
+      {!consentGiven && (
         <ConsentModal onAccept={giveConsent} onDecline={() => navigate("/")} />
       )}
     </>

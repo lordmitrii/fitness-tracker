@@ -131,7 +131,7 @@ const Header = () => {
                 >
                   <div className="flex items-center gap-2">
                     <span className="whitespace-nowrap">{label}</span>
-                    <span className="flex items-center border rounded-xl border-green-400 p-1 text-caption-green italic font-thin">
+                    <span className="flex items-center border rounded-xl border-green-400 p-1 text-caption-green italic font-light">
                       <NewIcon size="4" /> {t("general.new")}
                     </span>
                   </div>

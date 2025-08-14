@@ -546,14 +546,25 @@
       "search_placeholder": "Search users…",
       "search_label": "Search users"
     },
+    "exercises": {
+      "title": "Exercises",
+      "search_placeholder": "Search exercises…",
+      "search_label": "Search exercises",
+      "exercise": "Exercise",
+      "muscles_title": "Muscle Groups",
+      "muscles_hint": "Select the muscle group the exercise should target.",
+      "all_muscles": "All Muscles"
+    },
     "table": {
       "email": "Email",
       "roles": "Roles",
-      "joined_at": "Joined"
+      "joined_at": "Joined",
+      "exercise": "Exercise"
     },
     "no_users": "No users yet.",
     "no_roles": "No roles",
     "no_roles_defined": "No roles defined.",
+    "no_exercises": "No exercises",
     "edit_roles": "Edit roles",
     "edit_roles_for": "Edit roles for {{email}}",
     "edit_roles_hint": "Select the roles this user should have.",
