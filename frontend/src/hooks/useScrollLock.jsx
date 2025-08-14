@@ -1,21 +1,40 @@
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 
-export default function useScrollLock(locked) {
-  useEffect(() => {
-    const html = document.documentElement;
+const useScrollLock = (isLocked) => {
+  useLayoutEffect(() => {
     const body = document.body;
 
-    if (!locked) return;
-
-    const prevHtmlOverflow = html.style.overflow;
-    const prevBodyOverflow = body.style.overflow;
-
-    html.style.overflow = "hidden";
-    body.style.overflow = "hidden";
+    if (isLocked) {
+      const scrollY = window.scrollY;
+      body.style.position = "fixed";
+      body.style.top = `-${scrollY}px`;
+      body.style.left = "0";
+      body.style.right = "0";
+      body.style.overflow = "hidden";
+    } else {
+      const scrollY = body.style.top;
+      body.style.position = "";
+      body.style.top = "";
+      body.style.left = "";
+      body.style.right = "";
+      body.style.overflow = "";
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || "0") * -1);
+      }
+    }
 
     return () => {
-      html.style.overflow = prevHtmlOverflow;
-      body.style.overflow = prevBodyOverflow;
+      const scrollY = body.style.top;
+      body.style.position = "";
+      body.style.top = "";
+      body.style.left = "";
+      body.style.right = "";
+      body.style.overflow = "";
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || "0") * -1);
+      }
     };
-  }, [locked]);
-}
+  }, [isLocked]);
+};
+
+export default useScrollLock;

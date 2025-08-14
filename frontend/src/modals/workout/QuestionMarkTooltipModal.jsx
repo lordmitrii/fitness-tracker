@@ -14,7 +14,7 @@ const QuestionMarkTooltipModal = ({ text, onClose }) => {
             <CloseIcon />
           </button>
         </div>
-        <div className="mt-2">{text}</div>
+        <div className="text-body mt-2">{text}</div>
       </Modal>
     </>
   );
