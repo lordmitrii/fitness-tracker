@@ -1,25 +1,21 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 export default function useScrollLock(locked) {
-  const scrollYRef = useRef(0);
-
   useEffect(() => {
+    const html = document.documentElement;
     const body = document.body;
 
-    if (locked) {
-      scrollYRef.current = window.scrollY;
+    if (!locked) return;
 
-      const originalOverflow = body.style.overflow;
-      const originalHtmlOverflow = document.documentElement.style.overflow;
+    const prevHtmlOverflow = html.style.overflow;
+    const prevBodyOverflow = body.style.overflow;
 
-      body.style.overflow = "hidden";
-      document.documentElement.style.overflow = "hidden";
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
 
-      return () => {
-        body.style.overflow = originalOverflow;
-        document.documentElement.style.overflow = originalHtmlOverflow;
-        window.scrollTo(0, scrollYRef.current);
-      };
-    }
+    return () => {
+      html.style.overflow = prevHtmlOverflow;
+      body.style.overflow = prevBodyOverflow;
+    };
   }, [locked]);
 }

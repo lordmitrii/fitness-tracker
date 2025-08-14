@@ -46,7 +46,8 @@
     "saving": "正在保存…",
     "working": "正在处理…",
     "forbidden": "禁止访问",
-    "pagination": { "page_of": "第 {{page}} 页，共 {{pageCount}} 页" }
+    "pagination": { "page_of": "第 {{page}} 页，共 {{pageCount}} 页" },
+    "no_results_for": "没有与 \"{{search}}\" 匹配的结果"
   },
   "measurements": {
     "weight": "公斤",
@@ -553,7 +554,6 @@
     "no_users": "暂无用户。",
     "no_roles": "无角色",
     "no_roles_defined": "未定义角色。",
-    "no_results_for": "没有与 \"{{search}}\" 匹配的结果",
     "edit_roles": "编辑角色",
     "edit_roles_for": "编辑 {{email}} 的角色",
     "edit_roles_hint": "选择该用户应拥有的角色。",

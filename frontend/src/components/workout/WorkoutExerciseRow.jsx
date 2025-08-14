@@ -14,6 +14,7 @@ const WorkoutExerciseRow = ({
   isCurrentCycle,
   onUpdateExercises,
   onError,
+  onOpenReplaceExercise,
 }) => {
   const { t } = useTranslation();
 
@@ -45,6 +46,7 @@ const WorkoutExerciseRow = ({
         updateExercises={onUpdateExercises}
         closeMenu={close}
         onError={onError}
+        onReplace={onOpenReplaceExercise}
       />
     ),
     [
@@ -56,6 +58,7 @@ const WorkoutExerciseRow = ({
       exerciseOrder,
       onUpdateExercises,
       onError,
+      onOpenReplaceExercise,
     ]
   );
 

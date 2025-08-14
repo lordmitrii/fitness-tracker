@@ -1,8 +1,7 @@
 import WorkoutExerciseTable from "./WorkoutExerciseTable";
 import DropdownMenu from "../DropdownMenu";
 import WorkoutDetailsMenu from "./WorkoutDetailsMenu";
-import AddWorkoutExerciseModal from "../../modals/workout/AddWorkoutExerciseModal";
-import { useTranslation, } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import { memo, useCallback } from "react";
 
 const WorkoutCard = ({
@@ -13,12 +12,24 @@ const WorkoutCard = ({
   isCurrentCycle,
   onUpdateWorkouts,
   onError,
+  onOpenAddExercise,
+  onOpenReplaceExercise,
 }) => {
   const { t, i18n } = useTranslation();
 
   const handleUpdateExercises = useCallback(
     (newExercises) => onUpdateWorkouts(workout.id, newExercises),
     [onUpdateWorkouts, workout.id]
+  );
+
+  const handleOpenReplace = useCallback(
+    (exerciseID) =>
+      onOpenReplaceExercise?.({
+        workoutId: workout.id,
+        workoutName: workout.name,
+        exerciseId: exerciseID,
+      }),
+    [onOpenReplaceExercise, workout.id, workout.name]
   );
 
   const renderWorkoutDetailsMenu = useCallback(
@@ -75,7 +86,6 @@ const WorkoutCard = ({
       {workout.workout_exercises && workout.workout_exercises.length > 0 && (
         <div className="mt-4 overflow-x-auto">
           <WorkoutExerciseTable
-            key={workout.id}
             planID={planID}
             cycleID={cycleID}
             workoutID={workout.id}
@@ -84,24 +94,20 @@ const WorkoutCard = ({
             isCurrentCycle={isCurrentCycle}
             onUpdateExercises={handleUpdateExercises}
             onError={onError}
+            onOpenReplaceExercise={handleOpenReplace}
           />
         </div>
       )}
       <div className="flex justify-center mt-4">
         {isCurrentCycle && (
-          <AddWorkoutExerciseModal
-            trigger={
-              <button className="btn btn-primary flex items-center gap-2">
-                <span>+ {t("workout_plan_single.add_exercise")}</span>
-              </button>
+          <button
+            className="btn btn-primary flex items-center gap-2"
+            onClick={() =>
+              onOpenAddExercise?.({ id: workout.id, name: workout.name })
             }
-            workoutID={workout.id}
-            workoutName={workout.name}
-            planID={planID}
-            cycleID={cycleID}
-            onUpdateExercises={handleUpdateExercises}
-            onError={onError}
-          />
+          >
+            <span>+ {t("workout_plan_single.add_exercise")}</span>
+          </button>
         )}
       </div>
     </div>

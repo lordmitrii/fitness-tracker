@@ -1,49 +1,56 @@
-import { useState, useEffect, useCallback } from "react";
+// hooks/useExercisesData.ts
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "../api";
 
-function useExercisesData(open, onError) {
-  const [exercises, setExercises] = useState([]);
-  const [muscleGroups, setMuscleGroups] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [fetchedOnce, setFetchedOnce] = useState(false);
+async function fetchExercisesBundle() {
+  const [res1, res2, res3] = await Promise.all([
+    api.get("exercises/"),
+    api.get("individual-exercises"),
+    api.get("muscle-groups/"),
+  ]);
 
-  useEffect(() => {
-    if (!open || fetchedOnce) return;
-    const ac = new AbortController();
-    setLoading(true);
+  const pool = (res1?.data ?? []).map((ex) => ({ ...ex, source: "pool" }));
+  const customs = (res2?.data ?? [])
+    .filter((ex) => !ex.exercise_id)
+    .map((ex) => ({ ...ex, source: "custom" }));
 
-    Promise.all([
-      api.get("exercises/", { signal: ac.signal }),
-      api.get("individual-exercises", { signal: ac.signal }),
-      api.get("muscle-groups/", { signal: ac.signal }),
-    ])
-      .then(([res1, res2, res3]) => {
-        const pool = (res1?.data ?? []).map((ex) => ({ ...ex, source: "pool" }));
-        const customs = (res2?.data ?? [])
-          .filter((ex) => !ex.exercise_id)
-          .map((ex) => ({ ...ex, source: "custom" }));
-        setExercises([...pool, ...customs]);
-        setMuscleGroups(res3?.data ?? []);
-        setFetchedOnce(true);
-      })
-      .catch((err) => {
-        if (!ac.signal.aborted) {
-          console.error("Error fetching exercises data:", err);
-          onError?.(err)
-        };
-      })
-      .finally(() => {
-        if (!ac.signal.aborted) setLoading(false);
-      });
-
-    return () => ac.abort();
-  }, [open, fetchedOnce, onError]);
-
-  const resetForNextOpen = useCallback(() => {
-    setFetchedOnce(false);
-  }, []);
-
-  return { exercises, muscleGroups, loading, fetchedOnce, resetForNextOpen };
+  return {
+    exercises: [...pool, ...customs],
+    muscleGroups: res3?.data ?? [],
+  };
 }
 
-export default useExercisesData;
+export default function useExercisesData(onError) {
+  const queryClient = useQueryClient();
+
+  const { data, isLoading, isFetched } = useQuery({
+    queryKey: ["exercisesBundle"],
+    queryFn: fetchExercisesBundle,
+    staleTime: 5 * 60 * 1000, // cache stays fresh for 5 minutes
+    gcTime: 30 * 60 * 1000, // garbage collected after 30 minutes
+    onError,
+  });
+
+  const addCustomExerciseToCache = (newExercise) => {
+    queryClient.setQueryData(["exercisesBundle"], (old) => {
+      if (!old) return old;
+      return {
+        ...old,
+        exercises: [...old.exercises, { ...newExercise, source: "custom" }],
+      };
+    });
+  };
+
+  const resetForNextOpen = () => {
+    queryClient.invalidateQueries({ queryKey: ["exercisesBundle"] });
+  };
+
+  return {
+    exercises: data?.exercises ?? [],
+    muscleGroups: data?.muscleGroups ?? [],
+    loading: isLoading,
+    fetchedOnce: isFetched,
+    resetForNextOpen,
+    addCustomExerciseToCache,
+  };
+}

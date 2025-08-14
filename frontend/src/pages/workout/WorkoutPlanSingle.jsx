@@ -9,6 +9,7 @@ import ErrorState from "../../states/ErrorState";
 import ProgressBar from "../../components/ProgressBar";
 import { ArrowLeftIcon, ArrowRightIcon } from "../../icons/ArrowIcon";
 import { useTranslation } from "react-i18next";
+import AddWorkoutExerciseModal from "../../modals/workout/AddWorkoutExerciseModal";
 
 const WorkoutPlanSingle = () => {
   const navigate = useNavigate();
@@ -28,6 +29,25 @@ const WorkoutPlanSingle = () => {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const [exerciseModal, setExerciseModal] = useState(null);
+
+  const openAddExercise = useCallback((workout) => {
+    setExerciseModal({ workoutId: workout.id, workoutName: workout.name });
+  }, []);
+
+  const openReplaceExercise = useCallback(
+    ({ workoutId, workoutName, exerciseId }) => {
+      setExerciseModal({
+        workoutId,
+        workoutName,
+        replaceExerciseID: exerciseId,
+      });
+    },
+    []
+  );
+
+  const closeExerciseModal = useCallback(() => setExerciseModal(null), []);
 
   useEffect(() => {
     setLoading(true);
@@ -65,7 +85,7 @@ const WorkoutPlanSingle = () => {
   );
 
   useEffect(() => {
-    if (hasScrolled.current || workouts.length === 0) return;
+    if (hasScrolled.current || sortedWorkouts.length === 0) return;
     const firstIncomplete = sortedWorkouts.find(
       (w) => !w.completed && (w.workout_exercises?.length ?? 0) > 0
     );
@@ -78,22 +98,20 @@ const WorkoutPlanSingle = () => {
     }
   }, [sortedWorkouts]);
 
-  const { allSets, totalSets, completedSets, allWorkoutsCompleted } =
-    useMemo(() => {
-      const sets = workouts.flatMap((w) =>
-        (w.workout_exercises || []).flatMap((ex) => ex.workout_sets || [])
-      );
-      const total = sets.length;
-      const completed = sets.filter((s) => s.completed).length;
-      const allCompleted =
-        workouts.length > 0 && workouts.every((w) => w.completed);
-      return {
-        allSets: sets,
-        totalSets: total,
-        completedSets: completed,
-        allWorkoutsCompleted: allCompleted,
-      };
-    }, [workouts]);
+  const { totalSets, completedSets, allWorkoutsCompleted } = useMemo(() => {
+    const sets = workouts.flatMap((w) =>
+      (w.workout_exercises || []).flatMap((ex) => ex.workout_sets || [])
+    );
+    const total = sets.length;
+    const completed = sets.filter((s) => s.completed).length;
+    const allCompleted =
+      workouts.length > 0 && workouts.every((w) => w.completed);
+    return {
+      totalSets: total,
+      completedSets: completed,
+      allWorkoutsCompleted: allCompleted,
+    };
+  }, [workouts]);
 
   const handleCycleComplete = useCallback(() => {
     if (
@@ -148,6 +166,14 @@ const WorkoutPlanSingle = () => {
       prevWorkouts.filter((w) => w.id !== workoutId)
     );
   }, []);
+
+  const handleModalUpdate = useCallback(
+    (upd) => {
+      if (!exerciseModal) return;
+      handleUpdateWorkouts(exerciseModal.workoutId, upd);
+    },
+    [exerciseModal?.workoutId, handleUpdateWorkouts]
+  );
 
   const renderCycleDetailsMenu = useCallback(
     ({ close }) => (
@@ -240,7 +266,7 @@ const WorkoutPlanSingle = () => {
             <div className="bg-gray-200 sm:bg-transparent">
               {workouts && workouts.length > 0 ? (
                 <div className="space-y-6 py-6 sm:py-0">
-                  {sortedWorkouts.map((workout, idx) => (
+                  {sortedWorkouts.map((workout) => (
                     <div
                       key={workout.id}
                       ref={(el) => {
@@ -256,6 +282,8 @@ const WorkoutPlanSingle = () => {
                         isCurrentCycle={!nextCycleID && workoutPlanActive}
                         onUpdateWorkouts={handleUpdateWorkouts}
                         onError={setError}
+                        onOpenAddExercise={openAddExercise}
+                        onOpenReplaceExercise={openReplaceExercise}
                       />
                     </div>
                   ))}
@@ -296,6 +324,18 @@ const WorkoutPlanSingle = () => {
           </>
         )}
       </div>
+      {exerciseModal && (
+        <AddWorkoutExerciseModal
+          onClose={closeExerciseModal}
+          workoutID={exerciseModal.workoutId}
+          workoutName={exerciseModal.workoutName}
+          planID={planID}
+          cycleID={cycleID}
+          replaceExerciseID={exerciseModal.replaceExerciseID}
+          onUpdateExercises={handleModalUpdate}
+          onError={setError}
+        />
+      )}
     </>
   );
 };

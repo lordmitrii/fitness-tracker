@@ -167,7 +167,9 @@ const AIChat = () => {
         setError(t("ai_chat.error_insufficient_permissions"));
       } else {
         console.error("AI Chat error:", err);
-        setError(err.response?.data?.message || err.message || t("ai_chat.error"));
+        setError(
+          err.response?.data?.message || err.message || t("ai_chat.error")
+        );
       }
     } finally {
       setInput("");
@@ -186,12 +188,6 @@ const AIChat = () => {
 
   return (
     <>
-      <ConsentModal
-        open={!consentGiven}
-        onAccept={giveConsent}
-        onDecline={() => navigate("/")}
-      />
-
       <div className="flex flex-col h-[calc(100vh-env(safe-area-inset-top)-var(--custom-header-size))]">
         <div className="border-b border-gray-200 bg-white p-4 sm:p-6">
           <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -302,6 +298,9 @@ const AIChat = () => {
           </div>
         </form>
       </div>
+      {consentGiven && (
+        <ConsentModal onAccept={giveConsent} onDecline={() => navigate("/")} />
+      )}
     </>
   );
 };

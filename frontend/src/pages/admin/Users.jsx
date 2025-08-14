@@ -152,7 +152,7 @@ const Users = () => {
               <tr>
                 <td colSpan={3} className="p-6 text-center text-body">
                   {search
-                    ? t("admin.no_results_for", { search })
+                    ? t("general.no_results_for", { search })
                     : t("admin.no_users")}
                 </td>
               </tr>
@@ -229,7 +229,10 @@ const Users = () => {
           user={editingUser}
           allRoles={allRoles}
           saving={saving}
-          onClose={() => setEditingUser(null)}
+          onClose={() => {
+            if (saving) return;
+            setEditingUser(null);
+          }}
           onSave={handleSaveRoles}
         />
       )}
