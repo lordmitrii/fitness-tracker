@@ -1,4 +1,4 @@
-const ChartUpIcon = () => (
+const ChartUpIcon = ({ title }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     fill="none"
@@ -7,6 +7,7 @@ const ChartUpIcon = () => (
     stroke="currentColor"
     className="size-6"
   >
+    {title && <title>{title}</title>}
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -15,7 +16,7 @@ const ChartUpIcon = () => (
   </svg>
 );
 
-const ChartDownIcon = () => (
+const ChartDownIcon = ({ title }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     fill="none"
@@ -24,6 +25,7 @@ const ChartDownIcon = () => (
     stroke="currentColor"
     className="size-6"
   >
+    {title && <title>{title}</title>}
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -32,7 +34,7 @@ const ChartDownIcon = () => (
   </svg>
 );
 
-const ChartEqualIcon = () => (
+const ChartEqualIcon = ({ title }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     fill="none"
@@ -41,6 +43,7 @@ const ChartEqualIcon = () => (
     stroke="currentColor"
     className="size-6"
   >
+    {title && <title>{title}</title>}
     <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14" />
   </svg>
 );

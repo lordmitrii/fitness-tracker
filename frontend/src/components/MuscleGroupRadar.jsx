@@ -5,79 +5,11 @@ import {
   PolarRadiusAxis,
   Radar,
   ResponsiveContainer,
-  Tooltip,
+  Tooltip as RechartsTooltip,
 } from "recharts";
+import React, { useMemo, useCallback, useId } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  e1RM,
-  EXPECTED_RATIOS,
-  MAIN_GROUPS,
-  BODYWEIGHT_FACTOR,
-} from "../utils/exerciseStatsUtils";
-import { t } from "i18next";
-
-function findMainGroup(name) {
-  if (!name) return null;
-  const lower = name.toLowerCase();
-  return (
-    MAIN_GROUPS.find((g) => g.labels.some((l) => lower.includes(l)))?.key ||
-    null
-  );
-}
-
-function aggregateStats(stats) {
-  const maxByGroup = {};
-  for (const {
-    name,
-    muscle_group,
-    current_weight,
-    current_reps,
-    is_time_based,
-    is_bodyweight,
-    exercise,
-  } of stats) {
-    if (!muscle_group || !current_weight || !current_reps || is_time_based)
-      continue;
-
-    const group = findMainGroup(muscle_group.name);
-    if (!group) continue;
-
-    const est = e1RM(current_weight, current_reps);
-    if (
-      !maxByGroup[group] ||
-      est * (is_bodyweight ? BODYWEIGHT_FACTOR : 1) >
-        maxByGroup[group].weightedE1RM
-    ) {
-      maxByGroup[group] = {
-        exercise: !!exercise?.slug ? t(`exercise.${exercise.slug}`) : name,
-        weightedE1RM: est * (is_bodyweight ? BODYWEIGHT_FACTOR : 1),
-        e1RM: est,
-        is_bodyweight,
-      };
-    }
-  }
-
-  const rows = MAIN_GROUPS.map(({ key }) => {
-    const entry = maxByGroup[key];
-    const raw = entry?.e1RM || 0;
-    const scaled =
-      (raw * (entry?.is_bodyweight ? BODYWEIGHT_FACTOR : 1)) /
-      EXPECTED_RATIOS[key];
-
-    return {
-      group: key,
-      e1RM: Math.round(raw),
-      scaled,
-      exercise: entry?.exercise || null,
-    };
-  });
-
-  const maxScaled = Math.max(...rows.map((d) => d.scaled), 1);
-  return rows.map((d) => ({
-    ...d,
-    norm: Math.round((d.scaled / maxScaled) * 100),
-  }));
-}
+import { aggregateStats } from "../utils/exerciseStatsUtils";
 
 const MuscleGroupRadar = ({
   stats = [],
@@ -86,24 +18,42 @@ const MuscleGroupRadar = ({
   size = 380,
 }) => {
   const { t } = useTranslation();
-  if (!stats.length) return null;
-  const data = aggregateStats(stats);
+  const gradientId = useId();
 
-  const renderTooltip = ({ active, payload }) => {
-    if (!active || !payload?.length) return null;
-    const { group, e1RM, exercise } = payload[0].payload;
-    return (
-      <div className="rounded-xl bg-white/90 p-2 text-sm text-black shadow-xl backdrop-blur">
-        <p className="font-semibold">{t(`muscle_group.${group}`)}</p>
-        <p>
-          {t("exercise_stats.best_exercise")}: {exercise || t("general.n_a")}
-        </p>
-        <p>
-          {t("exercise_stats.estimated_1rm")}: {e1RM} {t("measurements.weight")}
-        </p>
-      </div>
-    );
-  };
+  const data = useMemo(
+    () => (stats.length ? aggregateStats(stats) : []),
+    [stats]
+  );
+
+  const tickStyle = useMemo(
+    () => ({ fontSize: 12, fill: "var(--color-gray-900)" }),
+    []
+  );
+
+  const renderTooltip = useCallback(
+    ({ active, payload }) => {
+      if (!active || !payload?.length) return null;
+      const { group, e1RM, exerciseSlug, fallbackName } = payload[0].payload;
+      const exerciseLabel = exerciseSlug
+        ? t(`exercise.${exerciseSlug}`)
+        : fallbackName || t("general.n_a");
+      return (
+        <div className="rounded-xl bg-white/90 p-2 text-sm text-black shadow-xl backdrop-blur">
+          <p className="font-semibold">{t(`muscle_group.${group}`)}</p>
+          <p>
+            {t("exercise_stats.best_exercise")}: {exerciseLabel}
+          </p>
+          <p>
+            {t("exercise_stats.estimated_1rm")}: {e1RM}{" "}
+            {t("measurements.weight")}
+          </p>
+        </div>
+      );
+    },
+    [t]
+  );
+
+  if (!data.length) return null;
 
   return (
     <div className={`flex flex-col items-center gap-2 ${className}`}>
@@ -115,13 +65,13 @@ const MuscleGroupRadar = ({
           <PolarGrid radialLines strokeDasharray="3 3" />
           <PolarAngleAxis
             dataKey="group"
-            tick={{ fontSize: 12, fill: "var(--color-gray-900)" }}
+            tick={tickStyle}
             tickFormatter={(value) => t(`muscle_group.${value}`) || value}
           />
           <PolarRadiusAxis tick={false} axisLine={false} domain={[0, 100]} />
 
           <defs>
-            <linearGradient id="radarGradient" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
               <stop
                 offset="0%"
                 stopColor="var(--color-blue-400)"
@@ -138,17 +88,17 @@ const MuscleGroupRadar = ({
           <Radar
             dataKey="norm"
             stroke="var(--color-blue-400)"
-            fill="url(#radarGradient)"
+            fill={`url(#${gradientId})`}
             fillOpacity={0.7}
             strokeWidth={2}
             dot={{ r: 3, fill: "var(--color-white)", strokeWidth: 1 }}
-            isAnimationActive={true}
+            isAnimationActive
           />
-          <Tooltip content={renderTooltip} isAnimationActive={true} />
+          <RechartsTooltip content={renderTooltip} isAnimationActive />
         </RadarChart>
       </ResponsiveContainer>
     </div>
   );
 };
 
-export default MuscleGroupRadar;
+export default React.memo(MuscleGroupRadar);

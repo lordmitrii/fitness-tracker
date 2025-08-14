@@ -315,6 +315,8 @@ const AddWorkoutPlanForm = () => {
                 type="text"
                 value={planName}
                 maxLength={50}
+                inputMode="text"
+                autoComplete="off"
                 placeholder={t("add_workout_plan_form.plan_name_placeholder")}
                 onChange={(e) => setPlanName(e.target.value)}
                 className="input-style"
