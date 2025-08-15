@@ -21,7 +21,7 @@ const ExerciseStats = () => {
       })
       .catch((error) => {
         console.error("Error fetching exercise stats:", error);
-        setError(error)
+        setError(error);
       })
       .finally(() => {
         setLoading(false);
@@ -32,10 +32,7 @@ const ExerciseStats = () => {
     return <LoadingState message={t("exercise_stats.loading_stats")} />;
   if (error)
     return (
-      <ErrorState
-        error={error}
-        onRetry={() => window.location.reload()}
-      />
+      <ErrorState error={error} onRetry={() => window.location.reload()} />
     );
 
   return (
@@ -53,6 +50,9 @@ const ExerciseStats = () => {
               (a, b) =>
                 b.current_weight * b.current_reps -
                 a.current_weight * a.current_reps
+            )
+            .filter(
+              (exercise) => exercise.current_weight && exercise.current_reps
             )
             .map((exercise) => (
               <div

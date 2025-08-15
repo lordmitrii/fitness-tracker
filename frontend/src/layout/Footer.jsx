@@ -8,7 +8,7 @@ const Footer = () => {
   const { t } = useTranslation();
 
   return (
-    <footer className="bg-gradient-to-r from-blue-500 to-blue-700 text-white shadow-inner py-6">
+    <footer className="bg-gradient-to-r from-blue-500 to-blue-700 text-white shadow-inner py-6 mt-2">
       <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="text-center sm:text-left text-sm font-medium tracking-wide">
           &copy; {new Date().getFullYear()} Fitness Tracker &mdash;{" "}

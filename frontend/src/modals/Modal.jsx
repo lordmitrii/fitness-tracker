@@ -1,18 +1,21 @@
 import { useEffect, useRef } from "react";
 import useScrollLock from "../hooks/useScrollLock";
+import { createPortal } from "react-dom";
 
-const Modal = ({ onRequestClose, children }) => {
+const Modal = ({ onRequestClose, children, teleportTo = "modal-root" }) => {
   useScrollLock(true);
   const modalContentRef = useRef();
 
+  const modalRoot = document.getElementById(teleportTo) || document.body;
   useEffect(() => {
     const handleKeyDown = (e) => e.key === "Escape" && onRequestClose?.();
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onRequestClose]);
+  
 
-  return (
-    <div className="fixed inset-0 z-40 overflow-hidden">
+  return createPortal(
+    <div className="fixed inset-0 z-40 overflow-hidden h-[100vh]">
       <div
         className="absolute inset-0 bg-black/10 backdrop-blur-sm animate-fade-in"
         onClick={onRequestClose}
@@ -27,7 +30,8 @@ const Modal = ({ onRequestClose, children }) => {
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    modalRoot
   );
 };
 

@@ -44,7 +44,11 @@ const AIChat = () => {
   const [store, setStore, { restoring }] = useStorageState("aiChatState", {
     selectedTopic: "askGeneral", // Set to null if want to show "choose topic" first. Now general topic will be preselected.
     threadIds: {},
-    messagesByTopic: {},
+    messagesByTopic: {
+      askGeneral: [
+        { role: "ai", text: t("ai_chat.topic_general.welcome_message") },
+      ],
+    },
   });
 
   const { selectedTopic, threadIds, messagesByTopic } = store;
@@ -257,7 +261,7 @@ const AIChat = () => {
         </div>
         <form
           onSubmit={handleSend}
-          className="bg-white gap-2 border-t border-gray-200 p-8 sm:p-6"
+          className="bg-white gap-2 border-t border-gray-200 p-8 sm:p-6 pb-12"
         >
           {(error || cooldown > 0) && (
             <div className="text-caption-red mb-1">

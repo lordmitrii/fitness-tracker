@@ -37,6 +37,7 @@ const SearchableSelect = ({
 }) => {
   const containerRef = useRef(null);
   const inputRef = useRef(null);
+  const listRef = useRef(null);
 
   const isOpen = openWhich === openKey;
   const [query, setQuery] = useState("");
@@ -49,6 +50,44 @@ const SearchableSelect = ({
     disabled: !isOpen,
     touchTapMovementThreshold: 6,
   });
+
+  const [listMaxPx, setListMaxPx] = useState(null);
+
+  const recalcListMaxHeight = useCallback(() => {
+    if (!isOpen || !inputRef.current) return;
+
+    const rect = inputRef.current.getBoundingClientRect();
+    const vv = window.visualViewport;
+
+    const visibleH = vv ? vv.height : window.innerHeight;
+
+    const gap = 28;
+    const available = Math.max(visibleH - rect.bottom - gap, 120);
+
+    const maxCap = Math.round(visibleH * 0.9);
+    setListMaxPx(Math.min(available, maxCap));
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setListMaxPx(null);
+      return;
+    }
+    recalcListMaxHeight();
+
+    const vv = window.visualViewport;
+    vv?.addEventListener("resize", recalcListMaxHeight);
+    vv?.addEventListener("scroll", recalcListMaxHeight);
+    window.addEventListener("resize", recalcListMaxHeight);
+    window.addEventListener("orientationchange", recalcListMaxHeight);
+
+    return () => {
+      vv?.removeEventListener("resize", recalcListMaxHeight);
+      vv?.removeEventListener("scroll", recalcListMaxHeight);
+      window.removeEventListener("resize", recalcListMaxHeight);
+      window.removeEventListener("orientationchange", recalcListMaxHeight);
+    };
+  }, [isOpen, recalcListMaxHeight]);
 
   const filteredItems = useMemo(() => {
     const base = items || [];
@@ -116,8 +155,12 @@ const SearchableSelect = ({
       {isOpen && (
         <ul
           id={listId}
-          className="absolute z-20 mt-1 max-h-[50dvh] w-full overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg"
-          style={{ touchAction: "pan-y" }}
+          ref={listRef}
+          className="absolute z-20 mt-1 w-full overflow-auto rounded-lg border border-gray-500 bg-white shadow-lg overscoll-contain touch-pan-y transition-max-height duration-200 ease-out"
+          style={{
+            maxHeight: listMaxPx != null ? `${listMaxPx}px` : "35dvh",
+            WebkitOverflowScrolling: "touch",
+          }}
         >
           {showClearRow && (
             <li

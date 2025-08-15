@@ -98,7 +98,10 @@ function App() {
 
               <Route element={<AdminRoute />}>
                 <Route path="/admin-panel/*" element={<Admin />}>
-                  <Route index element={<Navigate to="users" replace />} />
+                  <Route
+                    index
+                    element={<Navigate to="users?footer=false" replace />}
+                  />
                   <Route path="users" element={<Users />} />
                   <Route path="roles" element={<Roles />} />
                   <Route path="audit" element={<Audit />} />

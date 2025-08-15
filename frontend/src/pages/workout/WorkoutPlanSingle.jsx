@@ -298,7 +298,7 @@ const WorkoutPlanSingle = () => {
             </div>
 
             {!nextCycleID && workoutPlanActive && (
-              <div className="flex justify-center sm:justify-start items-center gap-4 mt-6 py-6 sm:py-0 px-2 bg-white sm:bg-transparent">
+              <div className="flex justify-center sm:justify-start items-center gap-4 mt-2 py-6 sm:py-0 px-2 bg-white sm:bg-transparent">
                 <button
                   className="btn btn-primary"
                   onClick={() =>

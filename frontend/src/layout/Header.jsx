@@ -42,7 +42,7 @@ const Header = () => {
       roles: [],
     },
     {
-      to: "/ai-chat",
+      to: "/ai-chat?footer=false",
       label: t("general.ai_chat"),
       auth: true,
       roles: ["admin", "member"],
@@ -61,14 +61,15 @@ const Header = () => {
   return (
     <header
       ref={headerRef}
-      className="backdrop-blur-xl bg-white shadow-md sticky top-0 z-80 pt-[env(safe-area-inset-top)]"
+      className="backdrop-blur-xl bg-white shadow-md sticky top-0 z-80 pt-[env(safe-area-inset-top)] sm:overflow-x-auto"
     >
       <div className="container mx-auto px-4 py-3 flex justify-between items-center h-[var(--custom-header-size)]">
         <Link
           to="/"
           className="text-title-blue-gradient tracking-tight font-bold via-blue-500"
         >
-          Fitness Tracker
+          <span className="sm:hidden">Fitness Tracker</span>
+          <span className="hidden sm:inline mr-5">FTracker</span>
         </Link>
 
         {/* Hamburger */}
