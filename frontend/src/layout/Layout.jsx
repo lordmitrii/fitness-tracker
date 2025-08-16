@@ -1,24 +1,55 @@
-import Header from "./Header";
-import Footer from "./Footer";
 import NetworkStatusBanner from "../components/NetworkStatusBanner";
 import GlobalLoadingState from "../states/GlobalLoadingState";
+import { useSearchParams } from "react-router-dom";
+import MenuPanel from "../components/MenuPanel";
+import MoreAside from "../components/more/MoreAside";
+import { useState, useMemo, useRef } from "react";
+import useScrollToTop from "../hooks/useScrollToTop";
+import { HeaderContext } from "./LayoutHeader";
 
 const Layout = ({ children }) => {
+  const [searchParams] = useSearchParams();
+  const spinnerEnabled = searchParams.get("spinner") !== "false";
+
+  const [headerNode, setHeaderNode] = useState(null);
+  const ctxValue = useMemo(() => ({ setHeader: setHeaderNode }), []);
+
+  const scrollRef = useRef(null);
+  useScrollToTop(scrollRef);
+
   return (
     <>
-      <GlobalLoadingState />
+      {spinnerEnabled && <GlobalLoadingState />}
 
-      <div className="min-h-screen flex flex-col">
-        <Header />
+      <HeaderContext.Provider value={ctxValue}>
+        <div className="flex h-dvh min-h-screen flex-col overflow-hidden pt-[env(safe-area-inset-top)]">
+          <NetworkStatusBanner />
 
-        <main id="main-container" className="flex-1 flex flex-col pb-2">
-          {children}
-        </main>
-      </div>
+          <div className="flex-1 min-h-0 flex flex-col sm:flex-row">
+            <MoreAside />
 
-      <NetworkStatusBanner />
+            <main
+              id="main-container"
+              className="flex-1 basis-0 min-w-0 min-h-0 flex flex-col overflow-hidden focus:outline-none bg-gray-200"
+              tabIndex={-1}
+            >
+              {headerNode && (
+                <div className="bg-white min-h-[var(--custom-header-size)] pt-[max(calc(1rem-env(safe-area-inset-top)),_0px)] sm:pt-4">
+                  {headerNode}
+                </div>
+              )}
 
-      <Footer />
+              <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
+                <div className="min-h-full flex flex-col">{children}</div>
+              </div>
+            </main>
+          </div>
+
+          <div className="sm:hidden">
+            <MenuPanel />
+          </div>
+        </div>
+      </HeaderContext.Provider>
     </>
   );
 };

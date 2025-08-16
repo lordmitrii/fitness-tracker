@@ -81,6 +81,10 @@ html {
   @apply text-lg text-blue-700;
 }
 
+.text-body-red {
+  @apply text-lg text-red-700;
+}
+
 .text-caption {
   @apply text-sm text-gray-500;
 }
@@ -110,7 +114,7 @@ html {
 }
 
 .card {
-  @apply sm:w-3xl sm:mx-auto mx-3 bg-white rounded-2xl shadow-lg p-8 mt-6;
+  @apply bg-white rounded-2xl shadow-lg p-8 m-4;
 }
 
 .btn {

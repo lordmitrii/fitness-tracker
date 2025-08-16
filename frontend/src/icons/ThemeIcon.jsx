@@ -22,7 +22,7 @@ const MoonIcon = () => (
     viewBox="0 0 24 24"
     strokeWidth={1.5}
     stroke="currentColor"
-    className="size-6 text-white"
+    className="size-6 text-blue-400"
   >
     <path
       strokeLinecap="round"

@@ -11,6 +11,7 @@ import useStorageState from "../hooks/useStorageObject";
 import { useAuth } from "../context/AuthContext";
 import ErrorState from "../states/ErrorState";
 import LoadingState from "../states/LoadingState";
+import { LayoutHeader } from "../layout/LayoutHeader";
 
 const TOPICS = [
   {
@@ -44,7 +45,11 @@ const AIChat = () => {
   const [store, setStore, { restoring }] = useStorageState("aiChatState", {
     selectedTopic: "askGeneral", // Set to null if want to show "choose topic" first. Now general topic will be preselected.
     threadIds: {},
-    messagesByTopic: {},
+    messagesByTopic: {
+      askGeneral: [
+        { role: "ai", text: t("ai_chat.topic_general.welcome_message") },
+      ],
+    },
   });
 
   const { selectedTopic, threadIds, messagesByTopic } = store;
@@ -55,7 +60,6 @@ const AIChat = () => {
   const chatWindowRef = useRef(null);
 
   const { consentGiven, giveConsent } = useConsent("ai_chat");
-  console.log(consentGiven);
   const { cooldown, start: startCooldown } = useCooldown();
 
   const activeTopicMeta = useMemo(
@@ -189,8 +193,9 @@ const AIChat = () => {
 
   return (
     <>
-      <div className="flex flex-col h-[calc(100vh-env(safe-area-inset-top)-var(--custom-header-size))]">
-        <div className="border-b border-gray-200 bg-white p-4 sm:p-6">
+      <LayoutHeader>
+        <h1 className="text-title font-bold px-4">{t("general.ai_chat")}</h1>
+        <div className="px-4 pb-2">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="text-body font-semibold">
               {t("ai_chat.choose_topic")}
@@ -222,10 +227,11 @@ const AIChat = () => {
             </p>
           )}
         </div>
-
+      </LayoutHeader>
+      <div className="flex-1 flex flex-col min-h-0">
         {/* Chat window */}
         <div
-          className="flex-1 overflow-y-auto p-6 space-y-4"
+          className="flex-1 overflow-y-auto p-6 space-y-4 overscroll-contain"
           ref={chatWindowRef}
         >
           {messages.map((msg, idx) => (
@@ -257,7 +263,7 @@ const AIChat = () => {
         </div>
         <form
           onSubmit={handleSend}
-          className="bg-white gap-2 border-t border-gray-200 p-8 sm:p-6"
+          className="shrink-0 bg-white gap-2 border-t border-gray-200 p-8 sm:p-6"
         >
           {(error || cooldown > 0) && (
             <div className="text-caption-red mb-1">

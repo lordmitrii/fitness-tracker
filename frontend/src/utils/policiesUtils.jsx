@@ -1,6 +1,8 @@
-const PRIVACY_POLICY_VERSION = "1.0";
-const HEALTH_DATA_POLICY_VERSION = "1.0";
-const AI_CHAT_CONSENT_VERSION = "1.0";
+import {
+  PRIVACY_POLICY_VERSION,
+  HEALTH_DATA_POLICY_VERSION,
+  AI_CHAT_CONSENT_VERSION,
+} from "../config/versions";
 
 const PolicyVersionsDict = {
   privacy_policy: PRIVACY_POLICY_VERSION,

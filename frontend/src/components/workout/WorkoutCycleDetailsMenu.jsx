@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import DeleteIcon from "../../icons/DeleteIcon";
 import { useTranslation } from "react-i18next";
 import { memo, useCallback } from "react";
+import { ArrowLeftIcon, ArrowRightIcon } from "../../icons/ArrowIcon";
 
 const WorkoutCycleDetailsMenu = ({
   closeMenu,
@@ -10,6 +11,7 @@ const WorkoutCycleDetailsMenu = ({
   cycleID,
   cycleName,
   previousCycleID,
+  nextCycleID,
   setNextCycleID,
   onError,
 }) => {
@@ -54,6 +56,40 @@ const WorkoutCycleDetailsMenu = ({
 
   return (
     <div className="flex flex-col space-y-2 mt-2">
+      <div className="flex gap-2 items-center justify-between">
+        <div className="w-1/2">
+          {!!previousCycleID && (
+            <button
+              className="btn btn-primary-light w-full"
+              onClick={() =>
+                navigate(
+                  `/workout-plans/${planID}/workout-cycles/${previousCycleID}`
+                )
+              }
+            >
+              <span className="flex items-center justify-center">
+                <ArrowLeftIcon />
+              </span>
+            </button>
+          )}
+        </div>
+        <div className="w-1/2">
+          {!!nextCycleID && (
+            <button
+              className="btn btn-primary-light w-full"
+              onClick={() =>
+                navigate(
+                  `/workout-plans/${planID}/workout-cycles/${nextCycleID}`
+                )
+              }
+            >
+              <span className="flex items-center justify-center">
+                <ArrowRightIcon />
+              </span>
+            </button>
+          )}
+        </div>
+      </div>
       <button
         className={`btn btn-danger-light text-left  ${
           !previousCycleID ? "opacity-50 cursor-not-allowed" : ""

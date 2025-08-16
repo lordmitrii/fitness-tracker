@@ -11,6 +11,7 @@ const useScrollLock = (isLocked) => {
       body.style.left = "0";
       body.style.right = "0";
       body.style.overflow = "hidden";
+      document.documentElement.style.height = "100vh";
     } else {
       const scrollY = body.style.top;
       body.style.position = "";
@@ -18,6 +19,7 @@ const useScrollLock = (isLocked) => {
       body.style.left = "";
       body.style.right = "";
       body.style.overflow = "";
+      document.documentElement.style.height = "100%";
       if (scrollY) {
         window.scrollTo(0, parseInt(scrollY || "0") * -1);
       }
@@ -30,6 +32,7 @@ const useScrollLock = (isLocked) => {
       body.style.left = "";
       body.style.right = "";
       body.style.overflow = "";
+      document.documentElement.style.height = "100%";
       if (scrollY) {
         window.scrollTo(0, parseInt(scrollY || "0") * -1);
       }

@@ -16,6 +16,10 @@
     "logout": "退出登录",
     "home": "主页",
     "workout_plans": "锻炼",
+    "plans": "计划",
+    "more": "更多",
+    "close": "关闭",
+    "exercise_stats": "锻炼统计",
     "stats": "统计",
     "profile": "个人资料",
     "ai_chat": "AI 聊天",
@@ -47,7 +51,8 @@
     "working": "正在处理…",
     "forbidden": "禁止访问",
     "pagination": { "page_of": "第 {{page}} 页，共 {{pageCount}} 页" },
-    "no_results_for": "没有与 \"{{search}}\" 匹配的结果"
+    "no_results_for": "没有与 \"{{search}}\" 匹配的结果",
+    "version": "版本"
   },
   "measurements": {
     "weight": "公斤",
@@ -94,7 +99,8 @@
     "estimated_1rm": "估计 1-RM",
     "with_bodyweight": "使用自身体重",
     "estimated": "估计",
-    "1rm_not_applicable_for_time_based": "1RM 指标不适用于时间基础的锻炼"
+    "1rm_not_applicable_for_time_based": "1RM 指标不适用于时间基础的锻炼",
+    "best_performances": "最佳表现"
   },
   "not_found": {
     "page_not_found": "页面未找到",
