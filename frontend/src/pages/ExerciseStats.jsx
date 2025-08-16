@@ -5,6 +5,7 @@ import ErrorState from "../states/ErrorState";
 import { useTranslation } from "react-i18next";
 import MuscleGroupRadar from "../components/MuscleGroupRadar";
 import { e1RM } from "../utils/exerciseStatsUtils";
+import { LayoutHeader } from "../layout/LayoutHeader";
 
 const ExerciseStats = () => {
   const [stats, setStats] = useState(null);
@@ -36,14 +37,20 @@ const ExerciseStats = () => {
     );
 
   return (
-    <div className="card">
-      <h1 className="text-title font-bold mb-8 text-center">
-        {t("exercise_stats.your_stats")}
-      </h1>
-
-      <MuscleGroupRadar stats={stats} className="mb-4" />
+    <>
+      <LayoutHeader>
+        <h1 className="text-title font-bold px-4">
+          {t("general.exercise_stats")}
+        </h1>
+      </LayoutHeader>
+      <div className="card mb-6">
+        <MuscleGroupRadar stats={stats} />
+      </div>
       {stats && stats.length > 0 ? (
-        <div className="flex flex-col gap-6">
+        <div className="card flex flex-col gap-6">
+          <h2 className="text-title text-center">
+            {t("exercise_stats.best_performances")}
+          </h2>
           {stats
             .slice()
             .sort(
@@ -137,7 +144,7 @@ const ExerciseStats = () => {
           {t("exercise_stats.start_logging")}
         </div>
       )}
-    </div>
+    </>
   );
 };
 

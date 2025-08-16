@@ -7,9 +7,9 @@ import WorkoutCycleDetailsMenu from "../../components/workout/WorkoutCycleDetail
 import LoadingState from "../../states/LoadingState";
 import ErrorState from "../../states/ErrorState";
 import ProgressBar from "../../components/ProgressBar";
-import { ArrowLeftIcon, ArrowRightIcon } from "../../icons/ArrowIcon";
 import { useTranslation } from "react-i18next";
 import AddWorkoutExerciseModal from "../../modals/workout/AddWorkoutExerciseModal";
+import { LayoutHeader } from "../../layout/LayoutHeader";
 
 const WorkoutPlanSingle = () => {
   const navigate = useNavigate();
@@ -183,6 +183,7 @@ const WorkoutPlanSingle = () => {
         cycleID={cycleID}
         cycleName={workoutCycle?.name}
         previousCycleID={workoutCycle?.previous_cycle_id}
+        nextCycleID={nextCycleID || workoutCycle?.next_cycle_id}
         setNextCycleID={setNextCycleID}
         onError={setError}
       />
@@ -199,71 +200,32 @@ const WorkoutPlanSingle = () => {
 
   return (
     <>
-      <div className="fixed bg-white/75 backdrop-blur-md shadow-md w-full h-2 sm:h-3 z-10">
-        <ProgressBar completed={completedSets} total={totalSets} />
-      </div>
-      <div className="w-full sm:w-4/5 mx-auto sm:p-8">
+      <LayoutHeader>
+        <div className="px-4">
+          <h1 className="text-title font-bold">
+            {t("workout_plan_single.plan_label")} {workoutPlanName}
+          </h1>
+
+          <div className="flex justify-between items-center">
+            <h2 className="text-caption">
+              {t("workout_plan_single.cycle_label")}{" "}
+              <span className="font-semibold">{workoutCycle.name}</span>
+            </h2>
+            <DropdownMenu
+              dotsHorizontal={true}
+              dotsHidden={false}
+              menu={renderCycleDetailsMenu}
+            />
+          </div>
+        </div>
+        <div className="bg-white/75 shadow-md w-full h-2 sm:h-3">
+          <ProgressBar completed={completedSets} total={totalSets} />
+        </div>
+      </LayoutHeader>
+      <div className="flex-1 flex flex-col w-full sm:w-4/5 mx-auto sm:p-8">
         {workoutCycle && (
-          <>
-            <div className="sm:bg-transparent bg-white p-6 pt-14 sm:p-0 shadow-md sm:shadow-none">
-              <div className="flex justify-between items-center mb-2">
-                <h1 className="text-title font-bold">
-                  {t("workout_plan_single.plan_label")} {workoutPlanName}
-                </h1>
-                <DropdownMenu
-                  dotsHorizontal={true}
-                  dotsHidden={!workoutPlanActive}
-                  menu={renderCycleDetailsMenu}
-                />
-              </div>
-              <h2 className="text-body mb-6">
-                {t("workout_plan_single.cycle_label")}{" "}
-                <span className="font-semibold">{workoutCycle.name}</span>
-              </h2>
-              <div className="flex flex-row gap-4 mb-8">
-                <div className="w-1/2">
-                  {!!workoutCycle.previous_cycle_id && (
-                    <button
-                      className="btn btn-primary w-auto"
-                      onClick={() =>
-                        navigate(
-                          `/workout-plans/${planID}/workout-cycles/${workoutCycle.previous_cycle_id}`
-                        )
-                      }
-                    >
-                      <span className="flex items-center justify-between">
-                        <ArrowLeftIcon />
-                        <div className="hidden sm:block">
-                          {t("workout_plan_single.view_previous_cycle")}
-                        </div>
-                      </span>
-                    </button>
-                  )}
-                </div>
-                <div className="w-1/2 text-right">
-                  {(!!workoutCycle.next_cycle_id || !!nextCycleID) && (
-                    <button
-                      className="btn btn-primary-inverted w-auto"
-                      onClick={() =>
-                        navigate(
-                          `/workout-plans/${planID}/workout-cycles/${
-                            workoutCycle.next_cycle_id || nextCycleID
-                          }`
-                        )
-                      }
-                    >
-                      <span className="flex items-center justify-between">
-                        <div className="hidden sm:block">
-                          {t("workout_plan_single.view_next_cycle")}
-                        </div>
-                        <ArrowRightIcon />
-                      </span>
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="bg-gray-200 sm:bg-transparent">
+          <div className="flex-1 flex flex-col ">
+            <div className="flex-1 sm:flex-0">
               {workouts && workouts.length > 0 ? (
                 <div className="space-y-6 py-6 sm:py-0">
                   {sortedWorkouts.map((workout) => (
@@ -298,7 +260,7 @@ const WorkoutPlanSingle = () => {
             </div>
 
             {!nextCycleID && workoutPlanActive && (
-              <div className="flex justify-center sm:justify-start items-center gap-4 mt-2 py-6 sm:py-0 px-2 bg-white sm:bg-transparent">
+              <div className="flex justify-center items-center gap-4 py-6 sm:py-0 px-2 bg-white sm:bg-transparent sm:mt-6">
                 <button
                   className="btn btn-primary"
                   onClick={() =>
@@ -321,7 +283,7 @@ const WorkoutPlanSingle = () => {
                 )}
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
       {exerciseModal && (

@@ -45,14 +45,12 @@ import {
 import PrivateRoute from "./routes/PrivateRoute";
 import AdminRoute from "./routes/AdminRoute";
 
-import ScrollToTop from "./utils/scrollToTop";
 import "./i18n";
 
 function App() {
   return (
     <AuthProvider>
       <Router>
-        <ScrollToTop />
         <Layout>
           <Routes>
             <Route path="/" element={<Home />} />

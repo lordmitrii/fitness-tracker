@@ -65,12 +65,12 @@ const ExercisesAndMuscles = () => {
   }
 
   return (
-    <div>
+    <div className="">
       <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h1 className="text-title">{t("admin.exercises.title")}</h1>
 
         <div className="flex items-center gap-2">
-          <div className="w-80">
+          <div className="flex w-full gap-2">
             <input
               type="text"
               value={query}
@@ -78,19 +78,21 @@ const ExercisesAndMuscles = () => {
               placeholder={t("admin.exercises.search_placeholder")}
               className="input-style"
             />
+            <button
+              className={`btn ${
+                !query && muscleFilter === "all"
+                  ? "btn-secondary"
+                  : "btn-primary"
+              }`}
+              onClick={() => {
+                setQuery("");
+                setMuscleFilter("all");
+              }}
+              disabled={!query && muscleFilter === "all"}
+            >
+              {t("general.clear")}
+            </button>
           </div>
-          <button
-            className={`btn ${
-              !query && muscleFilter === "all" ? "btn-secondary" : "btn-primary"
-            }`}
-            onClick={() => {
-              setQuery("");
-              setMuscleFilter("all");
-            }}
-            disabled={!query && muscleFilter === "all"}
-          >
-            {t("general.clear")}
-          </button>
         </div>
       </div>
 

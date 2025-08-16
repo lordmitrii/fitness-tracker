@@ -60,8 +60,8 @@ const LanguageSwitcher = () => {
           ref={dropdownRef}
           tabIndex={-1}
           className="
-            absolute left-1/2 -translate-x-1/2 bottom-full mt-1 w-20 z-50
-            bg-white border border-blue-200
+            absolute left-1/2 -translate-x-1/2 top-full mt-1 w-20 z-50
+            bg-white border border-gray-700
             rounded-lg shadow-lg space-y-1 p-1
           "
         >
@@ -71,8 +71,8 @@ const LanguageSwitcher = () => {
                 className={`w-full px-2 py-2 text-left rounded-lg transition
                   ${
                     i18n.language === l.code
-                      ? "bg-blue-100 text-body-blue font-bold"
-                      : "hover:bg-blue-50 text-blue-900"
+                      ? "bg-gray-500 text-gray-200 font-bold"
+                      : "hover:bg-gray-50 text-gray-600 font-bold"
                   }
                 `}
                 onClick={() => {

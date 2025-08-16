@@ -16,6 +16,10 @@
     "logout": "Выйти",
     "home": "Главная",
     "workout_plans": "Тренировки",
+    "plans": "Планы",
+    "more": "Другое",
+    "close": "Закрыть",
+    "exercise_stats": "Статистика упражнений",
     "stats": "Статистика",
     "profile": "Профиль",
     "ai_chat": "AI Чат",
@@ -47,7 +51,8 @@
     "working": "Выполняется…",
     "forbidden": "Доступ запрещён",
     "pagination": { "page_of": "Страница {{page}} из {{pageCount}}" },
-    "no_results_for": "Нет результатов для \"{{search}}\""
+    "no_results_for": "Нет результатов для \"{{search}}\"",
+    "version": "Версия"
   },
   "measurements": {
     "weight": "кг",
@@ -94,7 +99,8 @@
     "estimated_1rm": "Расчетный 1-RM",
     "with_bodyweight": "с собственным весом",
     "estimated": "расчетный",
-    "1rm_not_applicable_for_time_based": "Метрика 1RM не применима для упражнений по времени"
+    "1rm_not_applicable_for_time_based": "Метрика 1RM не применима для упражнений по времени",
+    "best_performances": "Лучшие результаты"
   },
   "not_found": {
     "page_not_found": "Страница не найдена",

@@ -57,7 +57,7 @@ const MuscleGroupRadar = ({
 
   return (
     <div className={`flex flex-col items-center gap-2 ${className}`}>
-      <h2 className="text-body">
+      <h2 className="text-title">
         {title ? title : t("exercise_stats.muscle_groups_strength")}
       </h2>
       <ResponsiveContainer width="100%" height={size}>

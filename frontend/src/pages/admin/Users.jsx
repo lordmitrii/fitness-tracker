@@ -105,12 +105,12 @@ const Users = () => {
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div>
+    <div className="">
       <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h1 className="text-title">{t("admin.users.title")}</h1>
 
         <div className="flex items-center gap-2">
-          <div className="w-80">
+          <div className="flex w-full gap-2">
             <input
               type="text"
               value={query}
@@ -121,18 +121,18 @@ const Users = () => {
               placeholder={t("admin.users.search_placeholder")}
               className="input-style"
             />
+            <button
+              className={`btn ${query ? "btn-primary" : "btn-secondary"}`}
+              onClick={() => {
+                setQuery("");
+                setSearch("");
+                setPage(1);
+              }}
+              disabled={!query && !search}
+            >
+              {t("general.clear")}
+            </button>
           </div>
-          <button
-            className={`btn ${query ? "btn-primary" : "btn-secondary"}`}
-            onClick={() => {
-              setQuery("");
-              setSearch("");
-              setPage(1);
-            }}
-            disabled={!query && !search}
-          >
-            {t("general.clear")}
-          </button>
         </div>
       </div>
 

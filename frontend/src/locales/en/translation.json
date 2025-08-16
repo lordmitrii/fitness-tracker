@@ -16,6 +16,10 @@
     "logout": "Logout",
     "home": "Home",
     "workout_plans": "Workouts",
+    "plans": "Plans",
+    "more": "More",
+    "close": "Close",
+    "exercise_stats": "Exercise Stats",
     "stats": "Stats",
     "profile": "Profile",
     "ai_chat": "AI Chat",
@@ -29,6 +33,7 @@
     "name": "Name",
     "day": "Day",
     "workout": "Workout",
+
     "to": "to",
     "last_updated": "Last updated:",
     "completed": "Completed",
@@ -47,7 +52,8 @@
     "working": "Working…",
     "forbidden": "Forbidden",
     "pagination": { "page_of": "Page {{page}} of {{pageCount}}" },
-    "no_results_for": "No results for \"{{search}}\""
+    "no_results_for": "No results for \"{{search}}\"",
+    "version": "Version"
   },
   "measurements": {
     "weight": "kg",
@@ -94,7 +100,8 @@
     "estimated_1rm": "Estimated 1-RM",
     "with_bodyweight": "with bodyweight",
     "estimated": "estimated",
-    "1rm_not_applicable_for_time_based": "1RM metric is not applicable for time-based exercises"
+    "1rm_not_applicable_for_time_based": "1RM metric is not applicable for time-based exercises",
+    "best_performances": "Best Results"
   },
   "not_found": {
     "page_not_found": "Page Not Found",

@@ -1,12 +1,10 @@
 import { ChartUpIcon, ChartDownIcon, ChartEqualIcon } from "../icons/ChartIcon";
-import { BODYWEIGHT_FACTOR, e1RM } from "./exerciseStatsUtils";
-
-const DEFAULTS = {
-  // changes smaller than this % are treated as noise
-  strengthTol: 0.02, // 2%
-  volumeTol: 0.05, // 5%
-  bodyweightFactor: BODYWEIGHT_FACTOR,
-};
+import { e1RM } from "./exerciseStatsUtils";
+import {
+  BODYWEIGHT_FACTOR,
+  STRENGTH_TOLERANCE,
+  VOLUME_TOLERANCE,
+} from "../config/constants";
 
 function safeNum(n) {
   return typeof n === "number" && isFinite(n) ? n : 0;
@@ -28,9 +26,9 @@ function pctDelta(curr, prev) {
 export function getExerciseProgressBadge(set, opts = {}) {
   if (!set?.completed) return null;
   const {
-    strengthTol = DEFAULTS.strengthTol,
-    volumeTol = DEFAULTS.volumeTol,
-    bodyweightFactor = DEFAULTS.bodyweightFactor,
+    strengthTol = STRENGTH_TOLERANCE,
+    volumeTol = VOLUME_TOLERANCE,
+    bodyweightFactor = BODYWEIGHT_FACTOR,
   } = opts;
 
   const prevReps = safeNum(set.previous_reps);
@@ -40,8 +38,8 @@ export function getExerciseProgressBadge(set, opts = {}) {
   const isBW = !!set.is_bodyweight;
 
   // compare estimated 1RM (bodyweight scaled)
-  const prevE = computeE1RM(prevWeight, prevReps, isBW, bodyweightFactor);
-  const currE = computeE1RM(currWeight, currReps, isBW, bodyweightFactor);
+  const prevE = computeE1RM(prevWeight, prevReps, isBW, BODYWEIGHT_FACTOR);
+  const currE = computeE1RM(currWeight, currReps, isBW, BODYWEIGHT_FACTOR);
   const dE = pctDelta(currE, prevE);
 
   // optional PR detection if passing best_e1rm_all_time on the set (for the future)

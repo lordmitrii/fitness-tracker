@@ -1,33 +1,10 @@
+import { EXPECTED_MUSCLE_RATIOS, BODYWEIGHT_FACTOR, MAIN_MUSCLE_GROUPS } from "../config/constants";
+
 const e1RM = (w, r) => w * (1 + r / 30);
-
-const MAIN_GROUPS = [
-  { key: "chest", labels: ["chest"] },
-  { key: "back", labels: ["back", "traps"] },
-  { key: "arms", labels: ["biceps", "triceps", "forearms"] },
-  { key: "legs", labels: ["quads", "hamstrings", "glutes", "calves"] },
-  { key: "core", labels: ["abs"] },
-  { key: "shoulders", labels: ["shoulders"] },
-];
-
-const EXPECTED_RATIOS = {
-  forearms: 0.4,
-  biceps: 0.5,
-  triceps: 0.6,
-  shoulders: 0.7,
-  abs: 0.8,
-  chest: 1.0,
-  back: 1.2,
-  glutes: 1.0,
-  hamstrings: 1.2,
-  quads: 1.3,
-  calves: 1.8,
-};
-
-const BODYWEIGHT_FACTOR = 0.7;
 
 const LABEL_TO_MAIN = (() => {
   const map = new Map();
-  for (const g of MAIN_GROUPS) {
+  for (const g of MAIN_MUSCLE_GROUPS) {
     for (const l of g.labels) map.set(l.toLowerCase(), g.key);
   }
   return map;
@@ -65,7 +42,7 @@ function aggregateStats(stats) {
 
     const est = e1RM(current_weight, current_reps);
     const weighted = est * (is_bodyweight ? BODYWEIGHT_FACTOR : 1);
-    const ratio = EXPECTED_RATIOS[label] ?? 1;
+    const ratio = EXPECTED_MUSCLE_RATIOS[label] ?? 1;
     const scaled = weighted / ratio;
 
     if (!byMainGroup[group]) {
@@ -92,7 +69,7 @@ function aggregateStats(stats) {
     }
   }
 
-  const rows = MAIN_GROUPS.map(({ key }) => {
+  const rows = MAIN_MUSCLE_GROUPS.map(({ key }) => {
     const entry = byMainGroup[key];
     if (!entry) {
       return {
@@ -120,4 +97,4 @@ function aggregateStats(stats) {
   }));
 }
 
-export { e1RM, EXPECTED_RATIOS, MAIN_GROUPS, BODYWEIGHT_FACTOR, aggregateStats };
+export { e1RM, aggregateStats };
