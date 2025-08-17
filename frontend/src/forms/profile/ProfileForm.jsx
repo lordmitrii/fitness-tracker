@@ -1,11 +1,19 @@
-import { useState, useEffect } from "react";
-import api from "../../api";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import LoadingState from "../../states/LoadingState";
 import ErrorState from "../../states/ErrorState";
 import { useTranslation } from "react-i18next";
+import useProfileData from "../../hooks/useProfileData";
+import { PROFILE_LIMITS } from "../../config/constants";
+import { toNumberOrEmpty } from "../../utils/numberUtils";
 
-const ProfileForm = ({ initialData = {}, onSubmit, label, submitLabel }) => {
+const ProfileForm = ({
+  initialData = {},
+  onSubmit,
+  label,
+  submitLabel,
+  submitting = false,
+}) => {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
     age: "",
@@ -14,42 +22,92 @@ const ProfileForm = ({ initialData = {}, onSubmit, label, submitLabel }) => {
     sex: "",
     ...initialData,
   });
+
   const [formErrors, setFormErrors] = useState({});
+  const NUMBER_FIELDS = new Set(["age", "weight_kg", "height_cm"]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const nextValue = NUMBER_FIELDS.has(name) ? toNumberOrEmpty(value) : value;
+    setFormData((prev) => ({ ...prev, [name]: nextValue }));
+    if (formErrors[name])
+      setFormErrors((prev) => ({ ...prev, [name]: undefined }));
+  };
+
+  const handleBlur = (e) => {
+    const { name } = e.target;
+    const errs = validate();
+    if (errs[name]) {
+      setFormErrors((prev) => ({ ...prev, [name]: errs[name] }));
+    } else if (formErrors[name]) {
+      setFormErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
   };
 
   const validate = () => {
-    const newErrors = {};
-    if (!formData.age) newErrors.age = t("profile_form.age_required");
-    else if (isNaN(parseInt(formData.age, 10)))
-      newErrors.age = t("profile_form.age_must_be_number");
-    if (!formData.weight_kg)
-      newErrors.weight_kg = t("profile_form.weight_required");
-    else if (isNaN(parseFloat(formData.weight_kg)))
-      newErrors.weight_kg = t("profile_form.weight_must_be_number");
-    if (!formData.height_cm)
-      newErrors.height_cm = t("profile_form.height_required");
-    else if (isNaN(parseFloat(formData.height_cm)))
-      newErrors.height_cm = t("profile_form.height_must_be_number");
-    if (!formData.sex) newErrors.sex = t("profile_form.sex_required");
-    return newErrors;
+    const errs = {};
+
+    // age: integer
+    const age = formData.age;
+    if (age === "" || !Number.isInteger(age)) {
+      errs.age = t("profile_form.age_must_be_number");
+    } else if (age < PROFILE_LIMITS.age.min || age > PROFILE_LIMITS.age.max) {
+      errs.age = t("profile_form.age_out_of_range", {
+        min: PROFILE_LIMITS.age.min,
+        max: PROFILE_LIMITS.age.max,
+      });
+    }
+
+    // weight: float
+    const w = formData.weight_kg;
+    if (w === "" || !Number.isFinite(w)) {
+      errs.weight_kg = t("profile_form.weight_must_be_number");
+    } else if (
+      w < PROFILE_LIMITS.weight_kg.min ||
+      w > PROFILE_LIMITS.weight_kg.max
+    ) {
+      errs.weight_kg = t("profile_form.weight_out_of_range", {
+        min: PROFILE_LIMITS.weight_kg.min,
+        max: PROFILE_LIMITS.weight_kg.max,
+        unit: t("measurements.weight"),
+      });
+    }
+
+    // height: float
+    const h = formData.height_cm;
+    if (h === "" || !Number.isFinite(h)) {
+      errs.height_cm = t("profile_form.height_must_be_number");
+    } else if (
+      h < PROFILE_LIMITS.height_cm.min ||
+      h > PROFILE_LIMITS.height_cm.max
+    ) {
+      errs.height_cm = t("profile_form.height_out_of_range", {
+        min: PROFILE_LIMITS.height_cm.min,
+        max: PROFILE_LIMITS.height_cm.max,
+        unit: t("measurements.height"),
+      });
+    }
+
+    // sex: required
+    if (!["male", "female"].includes(formData.sex)) {
+      errs.sex = t("profile_form.sex_required");
+    }
+
+    return errs;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const validationErrors = validate();
-    if (Object.keys(validationErrors).length > 0) {
+    if (Object.keys(validationErrors).length) {
       setFormErrors(validationErrors);
       return;
     }
 
     const payload = {
-      age: parseInt(formData.age, 10),
-      weight_kg: parseFloat(formData.weight_kg),
-      height_cm: parseFloat(formData.height_cm),
+      age: formData.age, // already a number
+      weight_kg: Number(formData.weight_kg.toFixed(1)),
+      height_cm: Number(formData.height_cm.toFixed(1)),
       sex: formData.sex,
     };
 
@@ -58,15 +116,10 @@ const ProfileForm = ({ initialData = {}, onSubmit, label, submitLabel }) => {
 
   return (
     <div className="card flex flex-col gap-6">
-      <h1 className="text-title font-bold mb-8 text-center">
-        {label}
-      </h1>
+      <h1 className="text-title font-bold mb-8 text-center">{label}</h1>
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label
-            htmlFor="age"
-            className="block text-body font-medium mb-1"
-          >
+          <label htmlFor="age" className="block text-body font-medium mb-1">
             {t("profile_form.age_label")}
           </label>
           <input
@@ -74,9 +127,13 @@ const ProfileForm = ({ initialData = {}, onSubmit, label, submitLabel }) => {
             inputMode="numeric"
             name="age"
             id="age"
+            min={PROFILE_LIMITS.age.min}
+            max={PROFILE_LIMITS.age.max}
+            step="1"
             placeholder={t("profile_form.age_placeholder")}
             value={formData.age}
             onChange={handleChange}
+            onBlur={handleBlur}
             className="input-style"
           />
           {formErrors.age && (
@@ -96,6 +153,9 @@ const ProfileForm = ({ initialData = {}, onSubmit, label, submitLabel }) => {
             inputMode="decimal"
             name="weight_kg"
             id="weight_kg"
+            min={PROFILE_LIMITS.weight_kg.min}
+            max={PROFILE_LIMITS.weight_kg.max}
+            step="0.1"
             placeholder={
               t("profile_form.weight_placeholder") +
               " " +
@@ -103,6 +163,7 @@ const ProfileForm = ({ initialData = {}, onSubmit, label, submitLabel }) => {
             }
             value={formData.weight_kg}
             onChange={handleChange}
+            onBlur={handleBlur}
             className="input-style"
           />
           {formErrors.weight_kg && (
@@ -122,6 +183,9 @@ const ProfileForm = ({ initialData = {}, onSubmit, label, submitLabel }) => {
             inputMode="decimal"
             name="height_cm"
             id="height_cm"
+            min={PROFILE_LIMITS.height_cm.min}
+            max={PROFILE_LIMITS.height_cm.max}
+            step="0.5"
             placeholder={
               t("profile_form.height_placeholder") +
               " " +
@@ -129,6 +193,7 @@ const ProfileForm = ({ initialData = {}, onSubmit, label, submitLabel }) => {
             }
             value={formData.height_cm}
             onChange={handleChange}
+            onBlur={handleBlur}
             className="input-style"
           />
           {formErrors.height_cm && (
@@ -141,29 +206,34 @@ const ProfileForm = ({ initialData = {}, onSubmit, label, submitLabel }) => {
             {t("profile_form.sex_label")}
           </label>
           <div className="flex items-center space-x-4">
-            {[t("profile_form.sex_male"), t("profile_form.sex_female")].map(
-              (s) => (
-                <label key={s} className="inline-flex items-center">
-                  <input
-                    type="radio"
-                    name="sex"
-                    value={s} 
-                    checked={formData.sex === s}
-                    onChange={handleChange}
-                    className="accent-blue-600"
-                  />
-                  <span className="ml-2 text-body">{s}</span>
-                </label>
-              )
-            )}
+            {["male", "female"].map((key) => (
+              <label key={key} className="inline-flex items-center">
+                <input
+                  type="radio"
+                  name="sex"
+                  value={key}
+                  checked={formData.sex === key}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className="accent-blue-600"
+                />
+                <span className="ml-2 text-body">
+                  {t(`profile_form.sex_${key}`)}
+                </span>
+              </label>
+            ))}
           </div>
           {formErrors.sex && (
             <p className="text-caption-red mt-1">{formErrors.sex}</p>
           )}
         </div>
 
-        <button type="submit" className="btn btn-primary w-full">
-          {submitLabel}
+        <button
+          type="submit"
+          className="btn btn-primary w-full"
+          disabled={submitting}
+        >
+          {submitting ? t("general.saving") : submitLabel}
         </button>
       </form>
     </div>
@@ -173,32 +243,23 @@ const ProfileForm = ({ initialData = {}, onSubmit, label, submitLabel }) => {
 // Create profile page
 export const CreateProfileForm = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const { t } = useTranslation();
-
-  useEffect(() => {
-    setLoading(false);
-  }, []);
+  const { loading, error, refetch, mutations } = useProfileData();
 
   const handleCreate = (payload) => {
-    api
-      .post("/users/profile", payload)
-      .then(() => {
-        navigate("/profile");
-      })
-      .catch((error) => {
-        console.error("Error creating profile:", error);
-        setError(error);
-      });
+    mutations.create.mutate(payload, {
+      onSuccess: () => navigate("/profile"),
+      onError: (err) => {
+        console.error("Error creating profile:", err);
+      },
+    });
   };
 
-  if (loading) return <LoadingState />;
-  if (error)
+  if (error || mutations.create.error)
     return (
       <ErrorState
-        error={error}
-        onRetry={() => window.location.reload()}
+        error={error || mutations.create.error}
+        onRetry={mutations.create.error ? mutations.create.reset : refetch}
       />
     );
 
@@ -207,6 +268,7 @@ export const CreateProfileForm = () => {
       onSubmit={handleCreate}
       label={t("profile_form.create_profile")}
       submitLabel={t("general.create")}
+      submitting={mutations.create.isPending}
     />
   );
 };
@@ -214,52 +276,37 @@ export const CreateProfileForm = () => {
 // Update profile page
 export const UpdateProfileForm = () => {
   const navigate = useNavigate();
-  const [initialData, setInitialData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const { t } = useTranslation();
 
-  useEffect(() => {
-    setLoading(true);
-    api
-      .get("/users/profile")
-      .then((response) => {
-        const data = response.data;
-        setInitialData({
-          age: data.age?.toString() || "",
-          weight_kg: data.weight_kg?.toString() || "",
-          height_cm: data.height_cm?.toString() || "",
-          sex: data.sex || "",
-        });
-      })
-      .catch((error) => {
-        console.error("Error fetching profile:", error);
-        setError(error)
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
+  const { profile, loading, error, refetch, mutations } = useProfileData();
+
+  const initialData = useMemo(
+    () => ({
+      age: profile?.age ?? "",
+      weight_kg: profile?.weight_kg ?? "",
+      height_cm: profile?.height_cm ?? "",
+      sex: profile?.sex || "",
+    }),
+    [profile]
+  );
 
   const handleUpdate = (payload) => {
-    api
-      .put("/users/profile", payload)
-      .then(() => {
+    mutations.upsert.mutate(payload, {
+      onSuccess: () => {
         navigate("/profile");
-      })
-      .catch((error) => {
-        console.error("Error updating profile:", error);
-        setError(error)
-      });
+      },
+      onError: (err) => {
+        console.error("Error updating profile:", err);
+      },
+    });
   };
 
-  if (loading)
-    return <LoadingState message={t("profile_form.loading_profile")} />;
-  if (error)
+  if (loading) return <LoadingState message={t("profile.loading_profile")} />;
+  if (error || mutations.upsert.error)
     return (
       <ErrorState
-        error={error}
-        onRetry={() => window.location.reload()}
+        error={error || mutations.upsert.error}
+        onRetry={mutations.upsert.error ? mutations.upsert.reset : refetch}
       />
     );
 
@@ -269,6 +316,7 @@ export const UpdateProfileForm = () => {
       onSubmit={handleUpdate}
       label={t("profile_form.update_profile")}
       submitLabel={t("general.update")}
+      submitting={mutations.upsert.isPending}
     />
   );
 };

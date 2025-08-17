@@ -33,7 +33,6 @@
     "name": "Name",
     "day": "Day",
     "workout": "Workout",
-
     "to": "to",
     "last_updated": "Last updated:",
     "completed": "Completed",
@@ -216,7 +215,10 @@
     "sex_label": "Sex",
     "sex_required": "Please select a sex.",
     "sex_male": "Male",
-    "sex_female": "Female"
+    "sex_female": "Female",
+    "age_out_of_range": "Age must be between {{min}} and {{max}} years",
+    "weight_out_of_range": "Weight must be between {{min}} and {{max}} {{unit}}",
+    "height_out_of_range": "Height must be between {{min}} and {{max}} {{unit}}"
   },
   "forgot_password": {
     "title": "Forgot Password",
@@ -358,7 +360,7 @@
     "ez-bar-curls": "EZ Bar Curls",
     "dumbbell-curls": "Dumbbell Curls",
     "machine-preacher-curls": "Machine Preacher Curls",
-    "pushdowns": "Pushdowns",
+    "tricep-pushdowns": "Pushdowns",
     "overhead-tricep-extensions": "Overhead Tricep Extensions",
     "skullcrusher": "Skullcrusher",
     "dips": "Dips",

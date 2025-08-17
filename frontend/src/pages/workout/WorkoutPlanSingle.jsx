@@ -218,7 +218,7 @@ const WorkoutPlanSingle = () => {
             />
           </div>
         </div>
-        <div className="bg-white/75 shadow-md w-full h-2 sm:h-3">
+        <div className="relative bottom-[-1rem] shadow-md w-full h-2 sm:h-3">
           <ProgressBar completed={completedSets} total={totalSets} />
         </div>
       </LayoutHeader>

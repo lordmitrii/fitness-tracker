@@ -215,7 +215,10 @@
     "sex_label": "性别",
     "sex_required": "请选择性别。",
     "sex_male": "男",
-    "sex_female": "女"
+    "sex_female": "女",
+    "age_out_of_range": "年龄必须在 {{min}} 到 {{max}} 岁之间。",
+    "weight_out_of_range": "体重必须在 {{min}} 到 {{max}} {{unit}} 之间。",
+    "height_out_of_range": "身高必须在 {{min}} 到 {{max}} {{unit}} 之间。"
   },
   "forgot_password": {
     "title": "忘记密码",
@@ -357,7 +360,7 @@
     "ez-bar-curls": "EZ杆弯举",
     "dumbbell-curls": "哑铃弯举",
     "machine-preacher-curls": "牧师凳机弯举",
-    "pushdowns": "下压",
+    "tricep-pushdowns": "下压",
     "overhead-tricep-extensions": "过顶臂屈伸",
     "skullcrusher": "仰卧臂屈伸",
     "dips": "双杠臂屈伸",

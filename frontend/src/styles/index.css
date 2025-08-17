@@ -7,11 +7,13 @@ html {
   padding: 0;
   font-family: -apple-system, Arial, sans-serif;
   overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
   background-color: var(--color-white);
 }
 
 :root {
-  --custom-header-size: 4rem;
+  --custom-header-size: 3rem;
 }
 
 .dark {

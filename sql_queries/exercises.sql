@@ -39,7 +39,7 @@ VALUES
     ('Cable Lateral Raises', false, 3, 'cable-lateral-raises', false),
     ('Face Pulls', false, 3, 'face-pulls', false),
     ('Upright Rows', false, 3, 'upright-rows', false),
-    ('Delts Machine', false, 3, 'delts-machine', false)
+    ('Delts Machine', false, 3, 'delts-machine', false),
 -- Biceps
     ('Barbell Curls', false, 4, 'barbell-curls', false),
     ('Hammer Curls', false, 4, 'hammer-curls', false),
@@ -54,7 +54,7 @@ VALUES
     ('Machine Preacher Curls', false, 4, 'machine-preacher-curls', false),
 
 -- Triceps
-    ('Pushdowns', false, 5, 'pushdowns', false),
+    ('Pushdowns', false, 5, 'tricep-pushdowns', false),
     ('Overhead Tricep Extensions', false, 5, 'overhead-tricep-extensions', false),
     ('Skullcrusher', false, 5, 'skullcrusher', false),
     ('Dips', true, 5, 'dips', false),

@@ -215,7 +215,10 @@
     "sex_label": "Пол",
     "sex_required": "Пожалуйста, выберите пол.",
     "sex_male": "Мужской",
-    "sex_female": "Женский"
+    "sex_female": "Женский",
+    "age_out_of_range": "Возраст должен быть от {{min}} до {{max}} лет.",
+    "weight_out_of_range": "Вес должен быть от {{min}} до {{max}} {{unit}}.",
+    "height_out_of_range": "Рост должен быть от {{min}} до {{max}} {{unit}}."
   },
   "forgot_password": {
     "title": "Забыли пароль",
@@ -357,7 +360,7 @@
     "ez-bar-curls": "Сгибания с EZ-грифом",
     "dumbbell-curls": "Сгибания с гантелями",
     "machine-preacher-curls": "Сгибания на скамье Скотта в тренажёре",
-    "pushdowns": "Разгибания на блоке",
+    "tricep-pushdowns": "Разгибания на блоке",
     "overhead-tricep-extensions": "Французский жим стоя",
     "skullcrusher": "Французский жим лёжа (череполом)",
     "dips": "Отжимания на брусьях",

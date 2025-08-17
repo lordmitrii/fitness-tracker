@@ -26,10 +26,18 @@ const MAIN_MUSCLE_GROUPS = [
   { key: "shoulders", labels: ["shoulders"] },
 ];
 
+const PROFILE_LIMITS = {
+  age: { min: 16, max: 123 },
+  weight_kg: { min: 30, max: 400 }, 
+  height_cm: { min: 120, max: 250 },
+}
+
+
 export {
   EXPECTED_MUSCLE_RATIOS,
   BODYWEIGHT_FACTOR,
   MAIN_MUSCLE_GROUPS,
   STRENGTH_TOLERANCE,
   VOLUME_TOLERANCE,
+  PROFILE_LIMITS,
 };

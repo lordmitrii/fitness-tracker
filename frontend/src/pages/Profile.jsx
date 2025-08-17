@@ -1,49 +1,35 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../api";
 import LoadingState from "../states/LoadingState";
 import ErrorState from "../states/ErrorState";
 import { useTranslation } from "react-i18next";
 import { LayoutHeader } from "../layout/LayoutHeader";
+import useProfileData from "../hooks/useProfileData";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState(null);
   const { t } = useTranslation();
 
-  useEffect(() => {
-    setLoading(true);
-    api
-      .get("/users/profile")
-      .then((response) => {
-        setProfile(response.data);
-      })
-      .catch((error) => {
-        if (error.response && error.response.status === 404) {
-          setProfile({});
-          return;
-        }
-        console.error("Error fetching profile:", error);
-        setError(error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
+  const { profile, loading, error, isFetching, refetch } = useProfileData();
 
-  if (loading) return <LoadingState message={t("profile.loading_profile")} />;
-  if (error)
-    return (
-      <ErrorState error={error} onRetry={() => window.location.reload()} />
-    );
+  const isEmpty = !profile || Object.keys(profile).length === 0;
+
+  if (loading && isEmpty) {
+    return <LoadingState message={t("profile.loading_profile")} />;
+  }
+
+  if (error) {
+    return <ErrorState error={error} onRetry={refetch} />;
+  }
 
   return (
     <>
       <LayoutHeader>
         <h1 className="text-title font-bold px-4">{t("general.profile")}</h1>
+        {isFetching && !isEmpty && (
+          <div className="text-caption px-4">{t("general.refreshing")}…</div>
+        )}
       </LayoutHeader>
+
       <div className="card">
         <h1 className="text-title font-bold mb-8 text-center">
           {t("profile.your_profile")}
@@ -66,7 +52,9 @@ const Profile = () => {
               </div>
 
               <div className="font-semibold">{t("profile.sex_label")}</div>
-              <div className="text-right capitalize">{profile.sex}</div>
+              <div className="text-right capitalize">
+                {t(`profile_form.sex_${profile.sex}`)}
+              </div>
             </div>
             <button
               className="btn btn-primary w-full"
