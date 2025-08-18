@@ -242,7 +242,7 @@ const AIChat = () => {
               }`}
             >
               <div
-                className={`px-4 py-2 rounded-xl max-w-[80%] overflow-x-auto shadow select-auto ${
+                className={`px-4 py-2 rounded-xl max-w-[80%] w-fit overflow-x-auto shadow select-auto break-words ${
                   msg.role === "user"
                     ? "bg-blue-100 text-blue-900"
                     : "bg-gray-100 text-gray-700"
@@ -263,14 +263,20 @@ const AIChat = () => {
         </div>
         <form
           onSubmit={handleSend}
-          className="shrink-0 bg-white gap-2 border-t border-gray-200 p-8 sm:p-6"
+          className="shrink-0 bg-white gap-2 border-t border-gray-200 p-6 pt-2 flex flex-col"
         >
-          {(error || cooldown > 0) && (
-            <div className="text-caption-red mb-1">
-              {error || t("ai_chat.wait_seconds", { seconds: cooldown })}
-            </div>
-          )}
-          <div className="flex w-full gap-2">
+          <div className="flex-1 flex justify-end mb-1 min-w-0 gap-2">
+            {(error || cooldown > 0) && (
+              <div className="flex-1 text-caption-red truncate">
+                {error ||
+                  t("ai_chat.wait_seconds", {
+                    seconds: cooldown,
+                  })}
+              </div>
+            )}
+            <div className="shrink-0 text-caption">{input.length}/255</div>
+          </div>
+          <div className="flex gap-2 items-center">
             <input
               className="input-style"
               placeholder={
@@ -279,7 +285,11 @@ const AIChat = () => {
                   : t("ai_chat.user_input_placeholder_select_topic")
               }
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              type="text"
+              maxLength={255}
+              onChange={(e) => {
+                setInput(e.target.value);
+              }}
               disabled={sending || !selectedTopic}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) handleSend(e);
@@ -287,7 +297,7 @@ const AIChat = () => {
             />
             <button
               type="submit"
-              className={`btn ${
+              className={`btn size-fit ${
                 cooldown > 0 || !selectedTopic ? "btn-secondary" : "btn-primary"
               }`}
               disabled={

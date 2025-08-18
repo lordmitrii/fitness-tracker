@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import LoadingState from "../../states/LoadingState";
 import ErrorState from "../../states/ErrorState";
@@ -7,112 +7,130 @@ import useProfileData from "../../hooks/useProfileData";
 import { PROFILE_LIMITS } from "../../config/constants";
 import { toNumberOrEmpty } from "../../utils/numberUtils";
 
-const ProfileForm = ({
+const NUMBER_FIELDS = new Set(["age", "weight_kg", "height_cm"]);
+
+const ProfileForm = memo(function ProfileForm({
   initialData = {},
   onSubmit,
   label,
   submitLabel,
   submitting = false,
-}) => {
+}) {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
     age: "",
     weight_kg: "",
     height_cm: "",
     sex: "",
-    ...initialData,
   });
+  const loaded = useRef(false);
+
+  useEffect(() => {
+    if (loaded.current || !initialData || !Object.keys(initialData).length)
+      return;
+    setFormData((prev) => ({ ...prev, ...initialData }));
+    loaded.current = true;
+  }, [initialData]);
 
   const [formErrors, setFormErrors] = useState({});
-  const NUMBER_FIELDS = new Set(["age", "weight_kg", "height_cm"]);
 
-  const handleChange = (e) => {
+  const validateField = useCallback(
+    (name, value) => {
+      switch (name) {
+        case "age":
+          if (value === "" || !Number.isInteger(value))
+            return t("profile_form.age_must_be_number");
+          if (value < PROFILE_LIMITS.age.min || value > PROFILE_LIMITS.age.max)
+            return t("profile_form.age_out_of_range", {
+              min: PROFILE_LIMITS.age.min,
+              max: PROFILE_LIMITS.age.max,
+            });
+          return;
+        case "weight_kg":
+          if (value === "" || !Number.isFinite(value))
+            return t("profile_form.weight_must_be_number");
+          if (
+            value < PROFILE_LIMITS.weight_kg.min ||
+            value > PROFILE_LIMITS.weight_kg.max
+          )
+            return t("profile_form.weight_out_of_range", {
+              min: PROFILE_LIMITS.weight_kg.min,
+              max: PROFILE_LIMITS.weight_kg.max,
+              unit: t("measurements.weight"),
+            });
+          return;
+        case "height_cm":
+          if (value === "" || !Number.isFinite(value))
+            return t("profile_form.height_must_be_number");
+          if (
+            value < PROFILE_LIMITS.height_cm.min ||
+            value > PROFILE_LIMITS.height_cm.max
+          )
+            return t("profile_form.height_out_of_range", {
+              min: PROFILE_LIMITS.height_cm.min,
+              max: PROFILE_LIMITS.height_cm.max,
+              unit: t("measurements.height"),
+            });
+          return;
+        case "sex":
+          if (!["male", "female"].includes(value))
+            return t("profile_form.sex_required");
+          return;
+      }
+    },
+    [t]
+  );
+
+  const handleBlur = useCallback(
+    (e) => {
+      const { name } = e.target;
+      const err = validateField(name, formData[name]);
+      setFormErrors((prev) => ({ ...prev, [name]: err }));
+    },
+    [formData, validateField]
+  );
+
+  const validate = useCallback(() => {
+    const fields = ["age", "weight_kg", "height_cm", "sex"];
+    const errs = {};
+    for (const name of fields) {
+      const err = validateField(name, formData[name]);
+      if (err) errs[name] = err;
+    }
+    return errs;
+  }, [formData, validateField]);
+
+  const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     const nextValue = NUMBER_FIELDS.has(name) ? toNumberOrEmpty(value) : value;
+
     setFormData((prev) => ({ ...prev, [name]: nextValue }));
-    if (formErrors[name])
-      setFormErrors((prev) => ({ ...prev, [name]: undefined }));
-  };
 
-  const handleBlur = (e) => {
-    const { name } = e.target;
-    const errs = validate();
-    if (errs[name]) {
-      setFormErrors((prev) => ({ ...prev, [name]: errs[name] }));
-    } else if (formErrors[name]) {
-      setFormErrors((prev) => ({ ...prev, [name]: undefined }));
-    }
-  };
+    setFormErrors((prev) =>
+      prev[name] ? { ...prev, [name]: undefined } : prev
+    );
+  }, []);
 
-  const validate = () => {
-    const errs = {};
+  const handleSubmit = useCallback(
+    (e) => {
+      e.preventDefault();
+      const validationErrors = validate();
+      if (Object.keys(validationErrors).length) {
+        setFormErrors(validationErrors);
+        return;
+      }
 
-    // age: integer
-    const age = formData.age;
-    if (age === "" || !Number.isInteger(age)) {
-      errs.age = t("profile_form.age_must_be_number");
-    } else if (age < PROFILE_LIMITS.age.min || age > PROFILE_LIMITS.age.max) {
-      errs.age = t("profile_form.age_out_of_range", {
-        min: PROFILE_LIMITS.age.min,
-        max: PROFILE_LIMITS.age.max,
-      });
-    }
+      const payload = {
+        age: formData.age, // already a number
+        weight_kg: Math.round(formData.weight_kg * 10) / 10,
+        height_cm: Math.round(formData.height_cm * 10) / 10,
+        sex: formData.sex,
+      };
 
-    // weight: float
-    const w = formData.weight_kg;
-    if (w === "" || !Number.isFinite(w)) {
-      errs.weight_kg = t("profile_form.weight_must_be_number");
-    } else if (
-      w < PROFILE_LIMITS.weight_kg.min ||
-      w > PROFILE_LIMITS.weight_kg.max
-    ) {
-      errs.weight_kg = t("profile_form.weight_out_of_range", {
-        min: PROFILE_LIMITS.weight_kg.min,
-        max: PROFILE_LIMITS.weight_kg.max,
-        unit: t("measurements.weight"),
-      });
-    }
-
-    // height: float
-    const h = formData.height_cm;
-    if (h === "" || !Number.isFinite(h)) {
-      errs.height_cm = t("profile_form.height_must_be_number");
-    } else if (
-      h < PROFILE_LIMITS.height_cm.min ||
-      h > PROFILE_LIMITS.height_cm.max
-    ) {
-      errs.height_cm = t("profile_form.height_out_of_range", {
-        min: PROFILE_LIMITS.height_cm.min,
-        max: PROFILE_LIMITS.height_cm.max,
-        unit: t("measurements.height"),
-      });
-    }
-
-    // sex: required
-    if (!["male", "female"].includes(formData.sex)) {
-      errs.sex = t("profile_form.sex_required");
-    }
-
-    return errs;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const validationErrors = validate();
-    if (Object.keys(validationErrors).length) {
-      setFormErrors(validationErrors);
-      return;
-    }
-
-    const payload = {
-      age: formData.age, // already a number
-      weight_kg: Number(formData.weight_kg.toFixed(1)),
-      height_cm: Number(formData.height_cm.toFixed(1)),
-      sex: formData.sex,
-    };
-
-    onSubmit(payload);
-  };
+      onSubmit(payload);
+    },
+    [formData, onSubmit, validate]
+  );
 
   return (
     <div className="card flex flex-col gap-6">
@@ -130,6 +148,7 @@ const ProfileForm = ({
             min={PROFILE_LIMITS.age.min}
             max={PROFILE_LIMITS.age.max}
             step="1"
+            required
             placeholder={t("profile_form.age_placeholder")}
             value={formData.age}
             onChange={handleChange}
@@ -156,6 +175,7 @@ const ProfileForm = ({
             min={PROFILE_LIMITS.weight_kg.min}
             max={PROFILE_LIMITS.weight_kg.max}
             step="0.1"
+            required
             placeholder={
               t("profile_form.weight_placeholder") +
               " " +
@@ -185,7 +205,8 @@ const ProfileForm = ({
             id="height_cm"
             min={PROFILE_LIMITS.height_cm.min}
             max={PROFILE_LIMITS.height_cm.max}
-            step="0.5"
+            step="0.1"
+            required
             placeholder={
               t("profile_form.height_placeholder") +
               " " +
@@ -212,6 +233,7 @@ const ProfileForm = ({
                   type="radio"
                   name="sex"
                   value={key}
+                  required
                   checked={formData.sex === key}
                   onChange={handleChange}
                   onBlur={handleBlur}
@@ -238,13 +260,13 @@ const ProfileForm = ({
       </form>
     </div>
   );
-};
+});
 
 // Create profile page
 export const CreateProfileForm = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { loading, error, refetch, mutations } = useProfileData();
+  const { refetch, mutations } = useProfileData({ skipQuery: true });
 
   const handleCreate = (payload) => {
     mutations.create.mutate(payload, {
@@ -255,11 +277,15 @@ export const CreateProfileForm = () => {
     });
   };
 
-  if (error || mutations.create.error)
+  if (mutations.create.error)
     return (
       <ErrorState
-        error={error || mutations.create.error}
-        onRetry={mutations.create.error ? mutations.create.reset : refetch}
+        error={mutations.create.error}
+        onRetry={() => {
+          mutations.create.reset();
+          refetch();
+          navigate("/profile");
+        }}
       />
     );
 
@@ -302,16 +328,23 @@ export const UpdateProfileForm = () => {
   };
 
   if (loading) return <LoadingState message={t("profile.loading_profile")} />;
-  if (error || mutations.upsert.error)
+
+  if (mutations.upsert.error || error) {
     return (
       <ErrorState
-        error={error || mutations.upsert.error}
-        onRetry={mutations.upsert.error ? mutations.upsert.reset : refetch}
+        error={mutations.upsert.error || error}
+        onRetry={() => {
+          mutations.upsert.reset();
+          refetch();
+          navigate("/profile");
+        }}
       />
     );
+  }
 
   return (
     <ProfileForm
+      key={profile?.id ?? JSON.stringify(initialData)}
       initialData={initialData}
       onSubmit={handleUpdate}
       label={t("profile_form.update_profile")}

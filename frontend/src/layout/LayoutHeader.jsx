@@ -9,11 +9,11 @@ export const useHeader = () => {
   return ctx;
 };
 
-export const LayoutHeader = ({ children }) => {
+export const LayoutHeader = ({ children, disablePaddingBottom = false }) => {
   const { setHeader } = useHeader();
   useEffect(() => {
-    setHeader(children);
+    setHeader({ node: children, disablePaddingBottom });
     return () => setHeader(null);
-  }, [children, setHeader]);
+  }, [children, setHeader, disablePaddingBottom]);
   return null;
 };

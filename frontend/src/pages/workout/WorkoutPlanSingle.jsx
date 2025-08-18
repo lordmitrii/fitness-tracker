@@ -188,7 +188,7 @@ const WorkoutPlanSingle = () => {
         onError={setError}
       />
     ),
-    [planID, cycleID, workoutCycle]
+    [planID, cycleID, workoutCycle, nextCycleID]
   );
 
   if (loading)
@@ -200,16 +200,18 @@ const WorkoutPlanSingle = () => {
 
   return (
     <>
-      <LayoutHeader>
-        <div className="px-4">
-          <h1 className="text-title font-bold">
+      <LayoutHeader disablePaddingBottom>
+        <div className="px-4 min-w-0">
+          <h1 className="text-title font-bold truncate">
             {t("workout_plan_single.plan_label")} {workoutPlanName}
           </h1>
 
-          <div className="flex justify-between items-center">
-            <h2 className="text-caption">
+          <div className="flex justify-between items-center min-w-0">
+            <h2 className="text-caption min-w-0">
               {t("workout_plan_single.cycle_label")}{" "}
-              <span className="font-semibold">{workoutCycle.name}</span>
+              <span className="font-semibold truncate">
+                {workoutCycle.name}
+              </span>
             </h2>
             <DropdownMenu
               dotsHorizontal={true}
@@ -218,16 +220,16 @@ const WorkoutPlanSingle = () => {
             />
           </div>
         </div>
-        <div className="relative bottom-[-1rem] shadow-md w-full h-2 sm:h-3">
+        <div className="shadow-md w-full h-2 sm:h-3">
           <ProgressBar completed={completedSets} total={totalSets} />
         </div>
       </LayoutHeader>
-      <div className="flex-1 flex flex-col w-full sm:w-4/5 mx-auto sm:p-8">
+      <div className="flex-1 flex flex-col sm:p-4">
         {workoutCycle && (
-          <div className="flex-1 flex flex-col ">
+          <div className="flex-1 flex flex-col">
             <div className="flex-1 sm:flex-0">
               {workouts && workouts.length > 0 ? (
-                <div className="space-y-6 py-6 sm:py-0">
+                <div className="flex-1 py-6 sm:py-0 flex flex-col gap-6">
                   {sortedWorkouts.map((workout) => (
                     <div
                       key={workout.id}

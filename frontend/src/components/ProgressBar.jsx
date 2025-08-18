@@ -3,7 +3,7 @@ const ProgressBar = ({ completed, total }) => {
 
   return (
     <div
-      className="bg-blue-500 transition-all duration-900 h-full w-full"
+      className="bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-900 h-full w-full"
       style={{ width: `${percent}%` }}
     />
   );

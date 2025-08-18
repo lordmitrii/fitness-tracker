@@ -1,7 +1,13 @@
 import CheckIcon from "../icons/CheckIcon";
 import { memo } from "react";
 
-const CheckBox = ({ title, checked, onChange, disabled = false }) => {
+const CheckBox = ({
+  title,
+  checked,
+  onChange,
+  customIcon,
+  disabled = false,
+}) => {
   return (
     <label className="relative flex justify-center items-center cursor-pointer">
       <input
@@ -20,9 +26,9 @@ const CheckBox = ({ title, checked, onChange, disabled = false }) => {
                 `}
       />
 
-      <CheckIcon
-        className={`absolute size-6 text-white hidden peer-checked:block`}
-      />
+      <div className="absolute size-6 text-white hidden peer-checked:block">
+        {customIcon ? customIcon : <CheckIcon />}
+      </div>
     </label>
   );
 };

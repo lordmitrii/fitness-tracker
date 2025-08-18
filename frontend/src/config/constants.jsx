@@ -28,10 +28,16 @@ const MAIN_MUSCLE_GROUPS = [
 
 const PROFILE_LIMITS = {
   age: { min: 16, max: 123 },
-  weight_kg: { min: 30, max: 400 }, 
+  weight_kg: { min: 30, max: 400 },
   height_cm: { min: 120, max: 250 },
-}
+};
 
+const MAX_SET_QT = 20;
+
+const SET_LIMITS = {
+  reps: { min: 1, max: 2000 },
+  weight: { min: 0, max: 2000 },
+};
 
 export {
   EXPECTED_MUSCLE_RATIOS,
@@ -40,4 +46,6 @@ export {
   STRENGTH_TOLERANCE,
   VOLUME_TOLERANCE,
   PROFILE_LIMITS,
+  MAX_SET_QT,
+  SET_LIMITS,
 };

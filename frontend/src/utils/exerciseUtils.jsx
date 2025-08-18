@@ -1,4 +1,5 @@
 import { ChartUpIcon, ChartDownIcon, ChartEqualIcon } from "../icons/ChartIcon";
+import SkipIcon from "../icons/SkipIcon";
 import { e1RM } from "./exerciseStatsUtils";
 import {
   BODYWEIGHT_FACTOR,
@@ -25,6 +26,7 @@ function pctDelta(curr, prev) {
 
 export function getExerciseProgressBadge(set, opts = {}) {
   if (!set?.completed) return null;
+  if (set?.skipped) return <SkipIcon title="Skipped" className="size-6 text-gray-600" />;
   const {
     strengthTol = STRENGTH_TOLERANCE,
     volumeTol = VOLUME_TOLERANCE,

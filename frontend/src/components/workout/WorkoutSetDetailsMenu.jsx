@@ -5,6 +5,7 @@ import DeleteIcon from "../../icons/DeleteIcon";
 import { useTranslation } from "react-i18next";
 import { withOptimisticUpdate } from "../../utils/updates";
 import { useState } from "react";
+import SkipIcon from "../../icons/SkipIcon";
 
 const WorkoutSetDetailsMenu = ({
   planID,
@@ -13,6 +14,8 @@ const WorkoutSetDetailsMenu = ({
   setID,
   setIndex,
   setTemplate,
+  setCompleted,
+  setSkipped,
   setOrder,
   exerciseID,
   updateExercises,
@@ -197,6 +200,36 @@ const WorkoutSetDetailsMenu = ({
     }
   };
 
+  const handleSkipSet = async () => {
+    try {
+      await api.patch(
+        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exerciseID}/workout-sets/${setID}/update-complete`,
+        { skipped: true, completed: true }
+      );
+      updateExercises((prev) =>
+        prev.map((item) => {
+          if (item.id !== exerciseID) return item;
+          const newSets = item.workout_sets.map((s) =>
+            s.id === setID ? { ...s, skipped: true, completed: true } : s
+          );
+
+          const exerciseCompleted = newSets.every(
+            (s) => s.completed || s.skipped
+          );
+          return {
+            ...item,
+            workout_sets: newSets,
+            completed: exerciseCompleted,
+          };
+        })
+      );
+    } catch (error) {
+      onError(error);
+    } finally {
+      closeMenu();
+    }
+  };
+
   const handleDeleteSet = async () => {
     if (!confirm(t("menus.confirm_delete_set"))) return;
     try {
@@ -214,7 +247,8 @@ const WorkoutSetDetailsMenu = ({
               s.index > me.index ? { ...s, index: s.index - 1 } : s
             );
           const allCompleted =
-            filtered.length > 0 && filtered.every((s) => s.completed);
+            filtered.length > 0 &&
+            filtered.every((s) => s.completed || s.skipped);
           return { ...ex, workout_sets: filtered, completed: allCompleted };
         })
       );
@@ -271,6 +305,18 @@ const WorkoutSetDetailsMenu = ({
         <span className="flex items-center gap-2">
           <AddRowBelowIcon />
           {t("menus.add_set_below")}
+        </span>
+      </button>
+      <button
+        className={`btn btn-secondary-light text-left ${
+          setCompleted || setSkipped ? "hidden" : ""
+        }`}
+        onClick={handleSkipSet}
+        disabled={setCompleted || setSkipped}
+      >
+        <span className="flex items-center gap-2">
+          <SkipIcon />
+          {t("menus.skip_set")}
         </span>
       </button>
       <button

@@ -63,9 +63,7 @@ const WorkoutPlans = () => {
               className="btn btn-primary h-fit"
               onClick={() => navigate("/create-workout-plan")}
             >
-              <span className="whitespace-nowrap">
-              + {t("general.create")}
-              </span>
+              <span className="whitespace-nowrap">+ {t("general.create")}</span>
             </button>
           )}
         </div>
@@ -86,9 +84,9 @@ const WorkoutPlans = () => {
                 >
                   <div>
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center justify-center gap-2">
+                      <div className="flex items-center justify-center gap-2 min-w-0">
                         <Link
-                          className="text-body-blue font-semibold hover:underline"
+                          className="text-body-blue font-semibold hover:underline truncate"
                           to={`/workout-plans/${workoutPlan.id}/workout-cycles/${workoutPlan.current_cycle_id}`}
                         >
                           {workoutPlan.name}

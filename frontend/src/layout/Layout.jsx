@@ -11,7 +11,7 @@ const Layout = ({ children }) => {
   const [searchParams] = useSearchParams();
   const spinnerEnabled = searchParams.get("spinner") !== "false";
 
-  const [headerNode, setHeaderNode] = useState(null);
+  const [headerConfig, setHeaderNode] = useState(null);
   const ctxValue = useMemo(() => ({ setHeader: setHeaderNode }), []);
 
   const scrollRef = useRef(null);
@@ -32,9 +32,13 @@ const Layout = ({ children }) => {
               className="flex-1 basis-0 min-w-0 min-h-0 flex flex-col overflow-hidden focus:outline-none bg-gray-200"
               tabIndex={-1}
             >
-              {headerNode && (
-                <div className="bg-white pb-[1rem] pt-[max(calc(1rem-env(safe-area-inset-top)),_0px)] sm:pt-4">
-                  {headerNode}
+              {headerConfig && (
+                <div
+                  className={`bg-white ${
+                    !headerConfig.disablePaddingBottom && "pb-[1rem]"
+                  } pt-[max(calc(1rem-env(safe-area-inset-top)),_0px)] sm:pt-4`}
+                >
+                  {headerConfig.node}
                 </div>
               )}
 

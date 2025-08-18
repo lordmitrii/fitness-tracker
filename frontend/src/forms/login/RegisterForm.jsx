@@ -1,5 +1,5 @@
 import { useAuth } from "../../context/AuthContext";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import CheckBox from "../../components/CheckBox";
@@ -16,10 +16,28 @@ const RegisterForm = () => {
   const [error, setError] = useState(null);
   const [formErrors, setFormErrors] = useState({});
 
-  const validateForm = () => {
+  const validateForm = useCallback(() => {
     const newErrors = {};
-    if (password.length < 8) {
-      newErrors.password = t("register_form.password_min_length");
+    if (!email) {
+      newErrors.email = t("register_form.email_required");
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = t("register_form.email_invalid");
+    } else if (email.length > 255) {
+      newErrors.email = t("register_form.email_too_long", {
+        limit: 255,
+      });
+    }
+
+    if (!password) {
+      newErrors.password = t("register_form.password_required");
+    } else if (password.length < 8) {
+      newErrors.password = t("register_form.password_min_length", {
+        minLength: 8,
+      });
+    } else if (password.length > 128) {
+      newErrors.password = t("register_form.password_too_long", {
+        limit: 128,
+      });
     }
 
     if (!privacyConsent) {
@@ -35,36 +53,47 @@ const RegisterForm = () => {
     }
 
     return newErrors;
-  };
+  }, [email, password, privacyConsent, healthDataConsent, t]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
-    setFormErrors({});
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      setError(null);
+      setFormErrors({});
 
-    const errors = validateForm();
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
-      return;
-    }
+      const errors = validateForm();
+      if (Object.keys(errors).length > 0) {
+        setFormErrors(errors);
+        return;
+      }
 
-    const healthDataConsentVersion = getPolicyVersion("health_data");
-    const privacyConsentVersion = getPolicyVersion("privacy_policy");
+      const healthDataConsentVersion = getPolicyVersion("health_data");
+      const privacyConsentVersion = getPolicyVersion("privacy_policy");
 
-    const resp = await register(
+      const resp = await register(
+        email,
+        password,
+        privacyConsent,
+        privacyConsentVersion,
+        healthDataConsent,
+        healthDataConsentVersion
+      );
+      if (resp.status === 201) {
+        navigate("/login");
+      } else {
+        setError(resp.message);
+      }
+    },
+    [
       email,
       password,
       privacyConsent,
-      privacyConsentVersion,
       healthDataConsent,
-      healthDataConsentVersion
-    );
-    if (resp.status === 201) {
-      navigate("/login");
-    } else {
-      setError(resp.message);
-    }
-  };
+      register,
+      validateForm,
+      navigate,
+    ]
+  );
 
   return (
     <form onSubmit={handleSubmit} className="card flex flex-col gap-6">
@@ -86,6 +115,9 @@ const RegisterForm = () => {
           placeholder="username@example.com"
           className="input-style"
         />
+        {formErrors.email && (
+          <p className="text-caption-red mt-1">{formErrors.email}</p>
+        )}
       </div>
       <div>
         <label

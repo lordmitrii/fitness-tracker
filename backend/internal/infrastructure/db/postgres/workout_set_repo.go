@@ -35,7 +35,15 @@ func (r *WorkoutSetRepo) GetByWorkoutExerciseID(ctx context.Context, workoutExer
 }
 
 func (r *WorkoutSetRepo) Update(ctx context.Context, ws *workout.WorkoutSet) error {
-	res := r.db.WithContext(ctx).Model(&workout.WorkoutSet{}).Where("id = ?", ws.ID).Updates(ws)
+	updates := map[string]any{
+		"weight":    ws.Weight,
+		"reps":      ws.Reps,
+		"completed": ws.Completed,
+		"skipped":   ws.Skipped,
+	}
+
+	res := r.db.WithContext(ctx).Model(&workout.WorkoutSet{}).Where("id = ?", ws.ID).Updates(updates)
+
 	if res.Error != nil {
 		return res.Error
 	}
@@ -46,9 +54,8 @@ func (r *WorkoutSetRepo) Update(ctx context.Context, ws *workout.WorkoutSet) err
 }
 
 func (r *WorkoutSetRepo) Complete(ctx context.Context, ws *workout.WorkoutSet) error {
-	return r.db.WithContext(ctx).Model(&workout.WorkoutSet{}).Where("id = ?", ws.ID).Select("completed").Updates(ws).Error
+	return r.db.WithContext(ctx).Model(&workout.WorkoutSet{}).Where("id = ?", ws.ID).Select("completed", "skipped").Updates(ws).Error
 }
-
 
 func (r *WorkoutSetRepo) Delete(ctx context.Context, id uint) error {
 	res := r.db.WithContext(ctx).Delete(&workout.WorkoutSet{}, id)

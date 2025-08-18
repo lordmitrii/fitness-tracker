@@ -1,7 +1,7 @@
 package dto
 
 type AIQuestionRequest struct {
-	Question           string `json:"question" binding:"required"`
+	Question           string `json:"question" binding:"required,max=256"`
 	PreviousResponseID string `json:"previous_response_id"`
 }
 

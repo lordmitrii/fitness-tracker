@@ -52,7 +52,8 @@
     "forbidden": "禁止访问",
     "pagination": { "page_of": "第 {{page}} 页，共 {{pageCount}} 页" },
     "no_results_for": "没有与 \"{{search}}\" 匹配的结果",
-    "version": "版本"
+    "version": "版本",
+    "name_too_long": "名称必须少于 {{limit}} 个字符。"
   },
   "measurements": {
     "weight": "公斤",
@@ -155,10 +156,19 @@
     "reps_label": "次数",
     "badge_label": "徽章",
     "done_label": "已完成",
-    "please_check_fields": "请确保所有字段都有效后再标记为完成。",
     "set_completed": "组已完成",
     "time_label": "秒",
-    "bodyweight_exercise": "自重练习"
+    "bodyweight_exercise": "自重练习",
+    "validation": {
+      "please_check_fields": "请确保所有字段都有效后再标记为完成。",
+      "reps_required": "次数为必填项。",
+      "reps_number": "次数必须是数字。",
+      "reps_integer": "次数必须是整数。",
+      "reps_range": "次数必须在 {{min}} 到 {{max}} 之间。",
+      "weight_required": "重量为必填项。",
+      "weight_number": "重量必须是数字。",
+      "weight_range": "重量必须在 {{min}} 到 {{max}} {{unit}} 之间。"
+    }
   },
   "error_state": {
     "oops_message": "抱歉！发生了错误",
@@ -171,24 +181,31 @@
     "workout_name_required": "锻炼名称为必填项。",
     "loading_workout": "正在加载锻炼...",
     "create_workout": "创建锻炼",
-    "update_workout": "更新锻炼"
+    "update_workout": "更新锻炼",
+    "workout_name_too_long": "锻炼名称必须少于 {{limit}} 个字符。"
   },
   "update_workout_plan_form": {
     "loading_workout_plan": "正在加载锻炼计划...",
     "update_workout_plan": "更新锻炼计划",
     "plan_name_label": "计划名称",
     "plan_name_placeholder": "输入计划名称",
-    "plan_name_required": "计划名称为必填项。"
+    "plan_name_required": "计划名称为必填项。",
+    "plan_name_too_long": "计划名称必须少于 {{limit}} 个字符。"
   },
   "register_form": {
     "register_title": "注册",
-    "password_min_length": "密码至少需要 8 个字符。",
+    "password_min_length": "密码至少需要 {{minLength}} 个字符。",
     "password_placeholder": "创建密码",
     "already_have_account": "已有账号？",
     "privacy_policy_consent": "我同意 <0>隐私政策</0>。",
     "health_data_consent": "我同意 <0>健康数据处理政策</0>。",
     "privacy_policy_consent_missing": "您必须同意隐私政策。",
-    "health_data_consent_missing": "您必须同意健康数据处理政策。"
+    "health_data_consent_missing": "您必须同意健康数据处理政策。",
+    "email_required": "电子邮件为必填项。",
+    "email_invalid": "无效的电子邮件地址。",
+    "email_too_long": "电子邮件必须少于 {{limit}} 个字符。",
+    "password_required": "密码为必填项。",
+    "password_too_long": "密码必须少于 {{limit}} 个字符。"
   },
   "login_form": {
     "login_title": "登录",
@@ -259,7 +276,8 @@
     "no_exercises_yet": "还未添加练习",
     "add_exercise_button": "添加练习",
     "go_to_next_day": "前往下一天",
-    "skip_to_preview_confirm": "您确定要跳到预览吗？您之后可以添加练习。"
+    "skip_to_preview_confirm": "您确定要跳到预览吗？您之后可以添加练习。",
+    "plan_days_less_than_fifteen": "计划应包含不超过 14 次锻炼。"
   },
   "add_workout_exercise_modal": {
     "exercise_title": "练习",
@@ -276,7 +294,8 @@
     "sets_required": "组数为必填项。",
     "muscle_group_required": "肌肉群为必填项。",
     "exercise_required": "练习为必填项。",
-    "exercise_already_exists": "此练习已存在。"
+    "exercise_already_exists": "此练习已存在。",
+    "sets_limit_exceeded": "每个练习最多只能添加 {{limit}} 组。"
   },
   "days_per_cycle_selector": {
     "more": "更多",

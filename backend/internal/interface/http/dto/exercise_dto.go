@@ -1,25 +1,25 @@
 package dto
 
 type ExerciseCreateRequest struct {
-	Name          string `json:"name" binding:"required"`
+	Name          string `json:"name" binding:"required,max=50"`
 	IsBodyweight  bool   `json:"is_bodyweight"`
 	IsTimeBased   bool   `json:"is_time_based"`
 	MuscleGroupID *uint  `json:"muscle_group_id"`
 }
 
 type ExerciseUpdateRequest struct {
-	Name          string `json:"name"`
+	Name          string `json:"name" binding:"required,max=50"`
 	IsBodyweight  bool   `json:"is_bodyweight"`
 	IsTimeBased   bool   `json:"is_time_based"`
 	MuscleGroupID *uint  `json:"muscle_group_id"`
 }
 
 type MuscleGroupCreateRequest struct {
-	Name string `json:"name" binding:"required"`
+	Name string `json:"name" binding:"required,max=50"`
 }
 
 type MuscleGroupUpdateRequest struct {
-	Name string `json:"name"`
+	Name string `json:"name" binding:"max=50"`
 }
 
 type MuscleGroupResponse struct {

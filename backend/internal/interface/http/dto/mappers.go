@@ -161,6 +161,7 @@ func ToWorkoutSetResponse(s *workout.WorkoutSet) WorkoutSetResponse {
 		Completed:         s.Completed,
 		Weight:            s.Weight,
 		Reps:              s.Reps,
+		Skipped:           s.Skipped,
 		PreviousWeight:    s.PreviousWeight,
 		PreviousReps:      s.PreviousReps,
 		CreatedAt:         s.CreatedAt,
