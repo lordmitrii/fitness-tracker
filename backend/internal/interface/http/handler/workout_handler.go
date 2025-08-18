@@ -691,6 +691,8 @@ func (h *WorkoutHandler) AddWorkoutSetToWorkoutExercise(c *gin.Context) {
 		Index:             req.Index,
 		Weight:            req.Weight,
 		Reps:              req.Reps,
+		PreviousWeight:    req.PreviousWeight,
+		PreviousReps:      req.PreviousReps,
 	}
 
 	if err := h.svc.CreateWorkoutSet(c.Request.Context(), ws); err != nil {
@@ -807,6 +809,7 @@ func (h *WorkoutHandler) CompleteWorkoutSet(c *gin.Context) {
 		ID:                uint(setID),
 		WorkoutExerciseID: uint(weID),
 		Completed:         req.Completed,
+		Skipped:           req.Skipped,
 	}
 
 	if err := h.svc.CompleteWorkoutSet(c.Request.Context(), ws); err != nil {

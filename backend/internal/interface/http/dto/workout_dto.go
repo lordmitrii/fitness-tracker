@@ -5,11 +5,11 @@ import (
 )
 
 type WorkoutPlanCreateRequest struct {
-	Name   string `json:"name" binding:"required"`
+	Name   string `json:"name" binding:"required,max=50"`
 	Active bool   `json:"active"`
 }
 type WorkoutPlanUpdateRequest struct {
-	Name           string `json:"name"`
+	Name           string `json:"name" binding:"max=50"`
 	Active         bool   `json:"active"`
 	CurrentCycleID uint   `json:"current_cycle_id" binding:"omitempty"`
 }
@@ -19,12 +19,12 @@ type SetActiveWorkoutPlanRequest struct {
 }
 
 type WorkoutCycleCreateRequest struct {
-	Name       string `json:"name" binding:"required"`
-	WeekNumber int    `json:"week_number" binding:"min=1"`
+	Name       string `json:"name" binding:"required,max=50"`
+	WeekNumber int    `json:"week_number" binding:"min=1,max=4294967295"`
 }
 type WorkoutCycleUpdateRequest struct {
-	Name       string `json:"name"`
-	WeekNumber int    `json:"week_number" binding:"min=1"`
+	Name       string `json:"name" binding:"max=50"`
+	WeekNumber int    `json:"week_number" binding:"min=1,max=4294967295"`
 	Completed  bool   `json:"completed"`
 }
 
@@ -33,20 +33,20 @@ type WorkoutCycleCompleteRequest struct {
 }
 
 type WorkoutCreateRequest struct {
-	Name  string    `json:"name" binding:"required"`
+	Name  string    `json:"name" binding:"required,max=50"`
 	Date  time.Time `json:"date"`
 	Index int       `json:"index"`
 }
 
 type WorkoutUpdateRequest struct {
-	Name      string    `json:"name"`
+	Name      string    `json:"name" binding:"max=50"`
 	Date      time.Time `json:"date"`
 	Index     int       `json:"index"`
 	Completed bool      `json:"completed"`
 }
 
 type WorkoutBulkCreateRequest struct {
-	Name             string                         `json:"name" binding:"required"`
+	Name             string                         `json:"name" binding:"required,max=50"`
 	Date             time.Time                      `json:"date"`
 	Index            int                            `json:"index"`
 	WorkoutExercises []WorkoutExerciseCreateRequest `json:"workout_exercises"`
@@ -55,7 +55,7 @@ type WorkoutBulkCreateRequest struct {
 type WorkoutExerciseCreateRequest struct {
 	IndividualExerciseID uint  `json:"individual_exercise_id" binding:"required"`
 	Index                int   `json:"index"`
-	SetsQt               int64 `json:"sets_qt" binding:"omitempty,min=0"`
+	SetsQt               int64 `json:"sets_qt" binding:"omitempty,min=0,max=20"`
 }
 
 type WorkoutExerciseUpdateRequest struct {
@@ -73,24 +73,28 @@ type WorkoutExerciseMoveRequest struct {
 
 type WorkoutExerciseReplaceRequest struct {
 	IndividualExerciseID uint  `json:"individual_exercise_id" binding:"required"`
-	SetsQt               int64 `json:"sets_qt" binding:"omitempty,min=0"`
+	SetsQt               int64 `json:"sets_qt" binding:"omitempty,min=0,max=20"`
 }
 
 type WorkoutSetCreateRequest struct {
-	Index  int     `json:"index"`
-	Weight float64 `json:"weight"`
-	Reps   int     `json:"reps"`
+	Index          int      `json:"index"`
+	Weight         *float64 `json:"weight" binding:"omitempty,min=0,max=2000"`
+	Reps           *int     `json:"reps" binding:"omitempty,min=1,max=2000"`
+	PreviousWeight *float64 `json:"previous_weight" binding:"omitempty,min=0,max=2000"`
+	PreviousReps   *int     `json:"previous_reps" binding:"omitempty,min=1,max=2000"`
 }
 
 type WorkoutSetUpdateRequest struct {
-	Index     int     `json:"index"`
-	Weight    float64 `json:"weight"`
-	Reps      int     `json:"reps"`
-	Completed bool    `json:"completed"`
+	Index     int      `json:"index"`
+	Weight    *float64 `json:"weight" binding:"omitempty,min=0,max=2000"`
+	Reps      *int     `json:"reps" binding:"omitempty,min=1,max=2000"`
+	Completed bool     `json:"completed"`
+	Skipped   bool     `json:"skipped"`
 }
 
 type WorkoutSetCompleteRequest struct {
 	Completed bool `json:"completed"`
+	Skipped   bool `json:"skipped"`
 }
 
 type WorkoutSetMoveRequest struct {
@@ -98,7 +102,7 @@ type WorkoutSetMoveRequest struct {
 }
 
 type IndividualExerciseCreateOrGetRequest struct {
-	Name          string `json:"name"`
+	Name          string `json:"name" binding:"max=50"`
 	IsBodyweight  bool   `json:"is_bodyweight"`
 	IsTimeBased   bool   `json:"is_time_based"`
 	MuscleGroupID *uint  `json:"muscle_group_id"`
@@ -177,10 +181,11 @@ type WorkoutSetResponse struct {
 	WorkoutExerciseID uint      `json:"workout_exercise_id"`
 	Index             int       `json:"index"`
 	Completed         bool      `json:"completed"`
-	Weight            float64   `json:"weight"`
-	Reps              int       `json:"reps"`
-	PreviousWeight    float64   `json:"previous_weight"`
-	PreviousReps      int       `json:"previous_reps"`
+	Skipped           bool      `json:"skipped"`
+	Weight            *float64  `json:"weight" binding:"omitempty"`
+	Reps              *int      `json:"reps" binding:"omitempty"`
+	PreviousWeight    *float64  `json:"previous_weight" binding:"omitempty"`
+	PreviousReps      *int      `json:"previous_reps" binding:"omitempty"`
 	CreatedAt         time.Time `json:"created_at"`
 	UpdatedAt         time.Time `json:"updated_at"`
 }

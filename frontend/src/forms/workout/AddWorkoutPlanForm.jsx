@@ -243,8 +243,14 @@ const AddWorkoutPlanForm = () => {
     const errors = {};
     if (!planName.trim())
       errors.name = t("add_workout_plan_form.plan_name_required");
+    else if (planName.length > 50)
+      errors.name = t("general.name_too_long", { limit: 50 });
     if (daysPerCycle < 1)
       errors.daysPerCycle = t("add_workout_plan_form.plan_days_more_than_one");
+    else if (daysPerCycle > 14)
+      errors.daysPerCycle = t(
+        "add_workout_plan_form.plan_days_less_than_fifteen"
+      );
     return errors;
   }, [planName, daysPerCycle, t]);
 
@@ -308,9 +314,14 @@ const AddWorkoutPlanForm = () => {
           </div>
           <form onSubmit={onSubmit} className="space-y-5">
             <div>
-              <label className="block text-body font-medium mb-1">
-                {t("add_workout_plan_form.plan_name_label")}
-              </label>
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-body font-medium">
+                  {t("add_workout_plan_form.plan_name_label")}
+                </label>
+                <div className="text-caption">
+                  {planName.length}/50
+                </div>
+              </div>
               <input
                 type="text"
                 value={planName}
@@ -321,9 +332,6 @@ const AddWorkoutPlanForm = () => {
                 onChange={(e) => setPlanName(e.target.value)}
                 className="input-style"
               />
-              <div className="text-right text-caption mt-1">
-                {planName.length}/50
-              </div>
               {formErrors.name && (
                 <p className="text-caption-red mt-1">{formErrors.name}</p>
               )}

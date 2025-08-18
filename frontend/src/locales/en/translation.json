@@ -33,7 +33,6 @@
     "name": "Name",
     "day": "Day",
     "workout": "Workout",
-
     "to": "to",
     "last_updated": "Last updated:",
     "completed": "Completed",
@@ -53,7 +52,8 @@
     "forbidden": "Forbidden",
     "pagination": { "page_of": "Page {{page}} of {{pageCount}}" },
     "no_results_for": "No results for \"{{search}}\"",
-    "version": "Version"
+    "version": "Version",
+    "name_too_long": "Name must be less than {{limit}} characters."
   },
   "measurements": {
     "weight": "kg",
@@ -156,10 +156,19 @@
     "reps_label": "Reps",
     "badge_label": "Badge",
     "done_label": "Done",
-    "please_check_fields": "Please ensure all fields are valid before marking as done.",
     "set_completed": "Set completed",
     "time_label": "Seconds",
-    "bodyweight_exercise": "Bodyweight exercise"
+    "bodyweight_exercise": "Bodyweight exercise",
+    "validation": {
+      "please_check_fields": "Please check the fields before completing the set.",
+      "reps_required": "Reps are required.",
+      "reps_number": "Reps must be a number.",
+      "reps_integer": "Reps must be an integer.",
+      "reps_range": "Reps must be between {{min}} and {{max}}.",
+      "weight_required": "Weight is required.",
+      "weight_number": "Weight must be a number.",
+      "weight_range": "Weight must be between {{min}} and {{max}} {{unit}}."
+    }
   },
   "error_state": {
     "oops_message": "Oops! Something went wrong",
@@ -172,24 +181,31 @@
     "workout_name_required": "Workout name is required.",
     "loading_workout": "Loading workout...",
     "create_workout": "Create Workout",
-    "update_workout": "Update Workout"
+    "update_workout": "Update Workout",
+    "workout_name_too_long": "Workout name must be less than {{limit}} characters."
   },
   "update_workout_plan_form": {
     "loading_workout_plan": "Loading workout plan...",
     "update_workout_plan": "Update Workout Plan",
     "plan_name_label": "Plan Name",
     "plan_name_placeholder": "Enter plan name",
-    "plan_name_required": "Workout plan name is required."
+    "plan_name_required": "Workout plan name is required.",
+    "plan_name_too_long": "Plan name must be less than {{limit}} characters."
   },
   "register_form": {
     "register_title": "Register",
-    "password_min_length": "Password must be at least 8 characters.",
+    "password_min_length": "Password must be at least {{minLength}} characters.",
     "password_placeholder": "Create a password",
     "already_have_account": "Already have an account?",
     "privacy_policy_consent": "I agree to the <0>Privacy Policy</0>.",
     "health_data_consent": "I agree to the <0>Health Data Policy</0>.",
     "privacy_policy_consent_missing": "You must agree to the Privacy Policy.",
-    "health_data_consent_missing": "You must agree to the Health Data Policy."
+    "health_data_consent_missing": "You must agree to the Health Data Policy.",
+    "email_required": "Email is required.",
+    "email_invalid": "Invalid email address.",
+    "email_too_long": "Email must be less than {{limit}} characters.",
+    "password_required": "Password is required.",
+    "password_too_long": "Password must be less than {{limit}} characters."
   },
   "login_form": {
     "login_title": "Login",
@@ -216,7 +232,10 @@
     "sex_label": "Sex",
     "sex_required": "Please select a sex.",
     "sex_male": "Male",
-    "sex_female": "Female"
+    "sex_female": "Female",
+    "age_out_of_range": "Age must be between {{min}} and {{max}} years",
+    "weight_out_of_range": "Weight must be between {{min}} and {{max}} {{unit}}",
+    "height_out_of_range": "Height must be between {{min}} and {{max}} {{unit}}"
   },
   "forgot_password": {
     "title": "Forgot Password",
@@ -233,7 +252,8 @@
     "new_password_placeholder": "Enter new password",
     "confirm_password_placeholder": "Confirm your new password",
     "passwords_mismatch": "Passwords do not match.",
-    "password_min_length": "Password must be at least 8 characters.",
+    "password_min_length": "Password must be at least {{minLength}} characters.",
+    "password_too_long": "Password must be less than {{limit}} characters.",
     "reset_password_button": "Reset",
     "invalid_link": "Invalid or expired reset link.",
     "verifying_link": "Verifying link..."
@@ -257,7 +277,8 @@
     "no_exercises_yet": "No exercises added yet",
     "add_exercise_button": "Add Exercise",
     "go_to_next_day": "Go to Next Day",
-    "skip_to_preview_confirm": "Are you sure you want to skip to preview? Note that you can add exercises later."
+    "skip_to_preview_confirm": "Are you sure you want to skip to preview? Note that you can add exercises later.",
+    "plan_days_less_than_fifteen": "Plan should have no more than 14 workouts."
   },
   "add_workout_exercise_modal": {
     "exercise_title": "Exercise",
@@ -274,7 +295,8 @@
     "sets_required": "Sets are required.",
     "muscle_group_required": "Muscle group is required.",
     "exercise_required": "Exercise is required.",
-    "exercise_already_exists": "This exercise already exists."
+    "exercise_already_exists": "This exercise already exists.",
+    "sets_limit_exceeded": "You can only add up to {{limit}} sets per exercise."
   },
   "days_per_cycle_selector": {
     "more": "More",
@@ -358,7 +380,7 @@
     "ez-bar-curls": "EZ Bar Curls",
     "dumbbell-curls": "Dumbbell Curls",
     "machine-preacher-curls": "Machine Preacher Curls",
-    "pushdowns": "Pushdowns",
+    "tricep-pushdowns": "Pushdowns",
     "overhead-tricep-extensions": "Overhead Tricep Extensions",
     "skullcrusher": "Skullcrusher",
     "dips": "Dips",

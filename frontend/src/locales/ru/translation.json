@@ -52,7 +52,8 @@
     "forbidden": "Доступ запрещён",
     "pagination": { "page_of": "Страница {{page}} из {{pageCount}}" },
     "no_results_for": "Нет результатов для \"{{search}}\"",
-    "version": "Версия"
+    "version": "Версия",
+    "name_too_long": "Имя должно быть короче {{limit}} символов."
   },
   "measurements": {
     "weight": "кг",
@@ -155,10 +156,19 @@
     "reps_label": "Повторы",
     "badge_label": "Значок",
     "done_label": "Выполнено",
-    "please_check_fields": "Пожалуйста, убедитесь, что все поля корректны перед завершением.",
     "set_completed": "Подход завершен",
     "time_label": "Секунды",
-    "bodyweight_exercise": "Упражнение с собственным весом"
+    "bodyweight_exercise": "Упражнение с собственным весом",
+    "validation": {
+      "please_check_fields": "Пожалуйста, убедитесь, что все поля корректны перед завершением.",
+      "reps_required": "Повторы обязательны.",
+      "reps_number": "Повторы должны быть числом.",
+      "reps_integer": "Повторы должны быть целым числом.",
+      "reps_range": "Повторы должны быть от {{min}} до {{max}}.",
+      "weight_required": "Вес обязателен.",
+      "weight_number": "Вес должен быть числом.",
+      "weight_range": "Вес должен быть от {{min}} до {{max}} {{unit}}."
+    }
   },
   "error_state": {
     "oops_message": "Ой! Что-то пошло не так",
@@ -171,24 +181,31 @@
     "workout_name_required": "Название тренировки обязательно.",
     "loading_workout": "Загрузка тренировки...",
     "create_workout": "Создать тренировку",
-    "update_workout": "Обновить тренировку"
+    "update_workout": "Обновить тренировку",
+    "workout_name_too_long": "Название тренировки должно быть короче {{limit}} символов."
   },
   "update_workout_plan_form": {
     "loading_workout_plan": "Загрузка плана тренировок...",
     "update_workout_plan": "Обновить план тренировок",
     "plan_name_label": "Название плана",
     "plan_name_placeholder": "Введите название плана",
-    "plan_name_required": "Название плана обязательно."
+    "plan_name_required": "Название плана обязательно.",
+    "plan_name_too_long": "Название плана должно быть короче {{limit}} символов."
   },
   "register_form": {
     "register_title": "Регистрация",
-    "password_min_length": "Пароль должен содержать не менее 8 символов.",
+    "password_min_length": "Пароль должен содержать не менее {{minLength}} символов.",
     "password_placeholder": "Придумайте пароль",
     "already_have_account": "Уже есть аккаунт?",
     "privacy_policy_consent": "Я согласен с <0>Политикой конфиденциальности</0>.",
     "health_data_consent": "Я согласен с <0>Политикой обработки данных о здоровье</0>.",
     "privacy_policy_consent_missing": "Вы должны согласиться с Политикой конфиденциальности.",
-    "health_data_consent_missing": "Вы должны согласиться с Политикой обработки данных о здоровье."
+    "health_data_consent_missing": "Вы должны согласиться с Политикой обработки данных о здоровье.",
+    "email_required": "Email обязателен.",
+    "email_invalid": "Некорректный адрес электронной почты.",
+    "email_too_long": "Email должен быть короче {{limit}} символов.",
+    "password_required": "Пароль обязателен.",
+    "password_too_long": "Пароль должен быть короче {{limit}} символов."
   },
   "login_form": {
     "login_title": "Вход",
@@ -215,7 +232,10 @@
     "sex_label": "Пол",
     "sex_required": "Пожалуйста, выберите пол.",
     "sex_male": "Мужской",
-    "sex_female": "Женский"
+    "sex_female": "Женский",
+    "age_out_of_range": "Возраст должен быть от {{min}} до {{max}} лет.",
+    "weight_out_of_range": "Вес должен быть от {{min}} до {{max}} {{unit}}.",
+    "height_out_of_range": "Рост должен быть от {{min}} до {{max}} {{unit}}."
   },
   "forgot_password": {
     "title": "Забыли пароль",
@@ -256,7 +276,8 @@
     "no_exercises_yet": "Упражнения пока не добавлены",
     "add_exercise_button": "Добавить упражнение",
     "go_to_next_day": "Перейти к следующему дню",
-    "skip_to_preview_confirm": "Вы уверены, что хотите перейти к предпросмотру? Вы сможете добавить упражнения позже."
+    "skip_to_preview_confirm": "Вы уверены, что хотите перейти к предпросмотру? Вы сможете добавить упражнения позже.",
+    "plan_days_less_than_fifteen": "План должен содержать не более 14 тренировок."
   },
   "add_workout_exercise_modal": {
     "exercise_title": "Упражнение",
@@ -273,7 +294,8 @@
     "sets_required": "Подходы обязательны.",
     "muscle_group_required": "Группа мышц обязательна.",
     "exercise_required": "Упражнение обязательно.",
-    "exercise_already_exists": "Это упражнение уже существует."
+    "exercise_already_exists": "Это упражнение уже существует.",
+    "sets_limit_exceeded": "Вы можете добавить не более {{limit}} подходов на упражнение."
   },
   "days_per_cycle_selector": {
     "more": "Более",
@@ -357,7 +379,7 @@
     "ez-bar-curls": "Сгибания с EZ-грифом",
     "dumbbell-curls": "Сгибания с гантелями",
     "machine-preacher-curls": "Сгибания на скамье Скотта в тренажёре",
-    "pushdowns": "Разгибания на блоке",
+    "tricep-pushdowns": "Разгибания на блоке",
     "overhead-tricep-extensions": "Французский жим стоя",
     "skullcrusher": "Французский жим лёжа (череполом)",
     "dips": "Отжимания на брусьях",

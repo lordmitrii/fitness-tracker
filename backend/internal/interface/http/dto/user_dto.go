@@ -3,8 +3,8 @@ package dto
 import "time"
 
 type RegisterRequest struct {
-	Email                   string `binding:"required,email"`
-	Password                string `binding:"required,min=8"`
+	Email                   string `binding:"required,email,max=256"`
+	Password                string `binding:"required,min=8,max=129"`
 	PrivacyConsent          bool   `json:"privacy_consent" binding:"required"`
 	PrivacyPolicyVersion    string `json:"privacy_policy_version" binding:"required"`
 	HealthDataConsent       bool   `json:"health_data_consent" binding:"required"`
@@ -12,22 +12,22 @@ type RegisterRequest struct {
 }
 
 type LoginRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=8"`
+	Email    string `json:"email" binding:"required,email,max=2000"`
+	Password string `json:"password" binding:"required,min=8,max=2000"`
 }
 
 type ProfileCreateRequest struct {
-	Age      int     `json:"age"`
-	HeightCm float64 `json:"height_cm"`
-	WeightKg float64 `json:"weight_kg"`
+	Age      int     `json:"age" binding:"min=16,max=150"`
+	HeightCm float64 `json:"height_cm" binding:"min=20,max=500"`
+	WeightKg float64 `json:"weight_kg" binding:"min=20,max=500"`
 	Sex      string  `json:"sex"`
 }
 
 type ProfileUpdateRequest struct {
-	Age      int     `json:"age"`
-	HeightCm float64 `json:"height_cm"`
-	WeightKg float64 `json:"weight_kg"`
-	Sex      string  `json:"sex"`
+	Age      int     `json:"age" binding:"omitempty,min=16,max=150"`
+	HeightCm float64 `json:"height_cm" binding:"omitempty,min=20,max=500"`
+	WeightKg float64 `json:"weight_kg" binding:"omitempty,min=20,max=500"`
+	Sex      string  `json:"sex" binding:"omitempty`
 }
 
 type ConsentRequest struct {

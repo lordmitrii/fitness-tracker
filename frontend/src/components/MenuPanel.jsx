@@ -115,7 +115,6 @@ const MenuPanel = () => {
           )}
         </ul>
       </nav>
-
       <MoreSheet open={open} onClose={() => setOpen(false)} />
     </>
   );

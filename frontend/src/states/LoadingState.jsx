@@ -7,7 +7,7 @@ const LoadingState = ({ message, subtitle }) => {
   return (
     <div className="card flex flex-col items-center justify-center">
       <div className="mb-5">
-        <span className="inline-flex items-center justify-center bg-blue-50 rounded-full p-4">
+        <span className="inline-flex items-center justify-center bg-blue-50 rounded-full p-4 animate-pulse">
           <SpinnerIcon />
         </span>
       </div>

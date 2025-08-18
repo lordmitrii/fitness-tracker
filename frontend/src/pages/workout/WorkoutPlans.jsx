@@ -54,16 +54,16 @@ const WorkoutPlans = () => {
   return (
     <>
       <LayoutHeader>
-        <div className="flex justify-between px-4">
+        <div className="flex justify-between items-start px-4">
           <h1 className="text-title font-bold">
             {t("workout_plans.workout_plans")}
           </h1>
           {workoutPlans.length > 0 && (
             <button
-              className="btn btn-primary"
+              className="btn btn-primary h-fit"
               onClick={() => navigate("/create-workout-plan")}
             >
-              + {t("general.create")}
+              <span className="whitespace-nowrap">+ {t("general.create")}</span>
             </button>
           )}
         </div>
@@ -84,9 +84,9 @@ const WorkoutPlans = () => {
                 >
                   <div>
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center justify-center gap-2">
+                      <div className="flex items-center justify-center gap-2 min-w-0">
                         <Link
-                          className="text-body-blue font-semibold hover:underline"
+                          className="text-body-blue font-semibold hover:underline truncate"
                           to={`/workout-plans/${workoutPlan.id}/workout-cycles/${workoutPlan.current_cycle_id}`}
                         >
                           {workoutPlan.name}

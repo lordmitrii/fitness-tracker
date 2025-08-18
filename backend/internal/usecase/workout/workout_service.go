@@ -400,6 +400,10 @@ func (s *workoutServiceImpl) CreateWorkoutExercise(ctx context.Context, e *worko
 		return fmt.Errorf("sets quantity must be greater than 0")
 	}
 
+	if e.SetsQt > 20 {
+		return fmt.Errorf("sets quantity must not exceed 20")
+	}
+
 	prevSets, err := s.GetPreviousSets(ctx, e.IndividualExerciseID, e.SetsQt)
 	if err != nil {
 		return err
@@ -913,9 +917,9 @@ func (s *workoutServiceImpl) GetIndividualExerciseStats(ctx context.Context, use
 
 		for _, we := range last5WorkoutExercises {
 			for _, ws := range we.WorkoutSets {
-				if ws.Weight*float64(ws.Reps) > bestWeight*float64(bestReps) {
-					bestWeight = ws.Weight
-					bestReps = ws.Reps
+				if *ws.Weight*float64(*ws.Reps) > bestWeight*float64(bestReps) {
+					bestWeight = *ws.Weight
+					bestReps = *ws.Reps
 				}
 			}
 		}

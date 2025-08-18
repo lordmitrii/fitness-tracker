@@ -30,7 +30,7 @@ const ResetPassword = () => {
       try {
         const response = await api.post("/email/validate-token", {
           token,
-          token_type: "reset_password"
+          token_type: "reset_password",
         });
 
         if (response.status !== 200) {
@@ -56,7 +56,10 @@ const ResetPassword = () => {
     }
 
     if (password.length < 8) {
-      setError(t("reset_password.password_min_length"));
+      setError(t("reset_password.password_min_length", { minLength: 8 }));
+      return false;
+    } else if (password.length > 128) {
+      setError(t("reset_password.password_too_long", { limit: 128 }));
       return false;
     }
 
@@ -78,6 +81,7 @@ const ResetPassword = () => {
       });
 
       if (response.status === 200) {
+        sessionStorage.setItem("hasLoaded", "1");
         navigate("/login");
       } else {
         setError(t("reset_password.reset_failed"));

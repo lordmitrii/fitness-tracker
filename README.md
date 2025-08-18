@@ -176,3 +176,18 @@ frontend/
 ├── Dockerfile
 └── Dockerfile.prod
 ```
+
+## Constraints
+
+### Wokrout Plan
+
+### Workout Cycle
+
+### Workout 
+
+### Workout Exercise
+
+### Workout Set
+
+- Allowed to be empty and can be sent as empty field to packend on field blur
+- Can be checked only if not null (weight can be 0) and if reps and weight are whithing the limits 

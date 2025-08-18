@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import api from "../../api";
 import { useNavigate, useParams } from "react-router-dom";
 import LoadingState from "../../states/LoadingState";
@@ -26,47 +26,57 @@ const UpdateWorkoutPlanForm = () => {
       })
       .catch((error) => {
         console.error("Error fetching workout plan:", error);
-        setError(error)
+        setError(error);
       })
       .finally(() => {
         setLoading(false);
       });
   }, []);
 
-  const validate = () => {
+  const validate = useCallback(() => {
     const newErrors = {};
     if (!planName.trim()) {
       newErrors.name = t("update_workout_plan_form.plan_name_required");
+    } else if (planName.length > 50) {
+      newErrors.name = t("update_workout_plan_form.plan_name_too_long", {
+        limit: 50,
+      });
     }
     return newErrors;
-  };
+  }, [planName, t]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const validationErrors = validate();
-    if (Object.keys(validationErrors).length > 0) {
-      setFormErrors(validationErrors);
-      return;
-    }
+  const handleUpdate = useCallback(
+    (payload) => {
+      api
+        .patch(`/workout-plans/${planID}`, payload)
+        .then(() => {
+          navigate("/workout-plans");
+        })
+        .catch((error) => {
+          console.error("Error updating workout plan:", error);
+          setError(error);
+        });
+    },
+    [planID, navigate]
+  );
 
-    const payload = {
-      name: planName.trim(),
-    };
+  const handleSubmit = useCallback(
+    (e) => {
+      e.preventDefault();
+      const validationErrors = validate();
+      if (Object.keys(validationErrors).length > 0) {
+        setFormErrors(validationErrors);
+        return;
+      }
 
-    handleUpdate(payload);
-  };
+      const payload = {
+        name: planName.trim(),
+      };
 
-  const handleUpdate = (payload) => {
-    api
-      .patch(`/workout-plans/${planID}`, payload)
-      .then(() => {
-        navigate("/workout-plans");
-      })
-      .catch((error) => {
-        console.error("Error updating workout plan:", error);
-        setError(error)
-      });
-  };
+      handleUpdate(payload);
+    },
+    [planName, t, handleUpdate, validate]
+  );
 
   if (loading)
     return (
@@ -76,10 +86,7 @@ const UpdateWorkoutPlanForm = () => {
     );
   if (error)
     return (
-      <ErrorState
-        error={error}
-        onRetry={() => window.location.reload()}
-      />
+      <ErrorState error={error} onRetry={() => window.location.reload()} />
     );
 
   return (
@@ -89,16 +96,17 @@ const UpdateWorkoutPlanForm = () => {
       </h1>
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label
-            htmlFor="name"
-            className="block text-body font-medium mb-1"
-          >
-            {t("update_workout_plan_form.plan_name_label")}
-          </label>
+          <div className="flex justify-between items-center mb-1">
+            <label htmlFor="name" className="block text-body font-medium">
+              {t("update_workout_plan_form.plan_name_label")}
+            </label>
+            <div className="text-caption">{planName.length}/50</div>
+          </div>
           <input
             type="text"
             name="name"
             id="name"
+            maxLength={50}
             placeholder={t("update_workout_plan_form.plan_name_placeholder")}
             value={planName}
             onChange={(e) => setPlanName(e.target.value)}

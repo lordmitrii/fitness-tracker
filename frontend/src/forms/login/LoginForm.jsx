@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -11,16 +11,19 @@ const LoginForm = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
-    const resp = await login(email, password);
-    if (resp.access_token) {
-      navigate("/");
-    } else {
-      setError(resp.message);
-    }
-  };
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      setError(null);
+      const resp = await login(email, password);
+      if (resp.access_token) {
+        navigate("/");
+      } else {
+        setError(resp.message);
+      }
+    },
+    [email, password, login, navigate]
+  );
 
   return (
     <form onSubmit={handleSubmit} className="card flex flex-col gap-6">
@@ -45,10 +48,7 @@ const LoginForm = () => {
       </div>
       <div>
         <div className="flex justify-between items-center mb-1">
-          <label
-            className="block text-body font-semibold"
-            htmlFor="password"
-          >
+          <label className="block text-body font-semibold" htmlFor="password">
             {t("general.password")}
           </label>
           <Link
