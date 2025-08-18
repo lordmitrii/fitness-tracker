@@ -157,6 +157,13 @@ func (s *workoutServiceImpl) GetWorkoutCycleByID(ctx context.Context, id uint) (
 			}
 			// Copy sets from the previous workout exercise
 			for _, ws := range we.WorkoutSets {
+				// Add previous weight and reps if these are null
+				if ws.Weight == nil {
+					ws.Weight = ws.PreviousWeight
+				}
+				if ws.Reps == nil {
+					ws.Reps = ws.PreviousReps
+				}
 				newSet := &workout.WorkoutSet{
 					WorkoutExerciseID: newExercise.ID,
 					Index:             ws.Index,
@@ -917,6 +924,9 @@ func (s *workoutServiceImpl) GetIndividualExerciseStats(ctx context.Context, use
 
 		for _, we := range last5WorkoutExercises {
 			for _, ws := range we.WorkoutSets {
+				if ws.Weight == nil || ws.Reps == nil {
+					continue
+				}
 				if *ws.Weight*float64(*ws.Reps) > bestWeight*float64(bestReps) {
 					bestWeight = *ws.Weight
 					bestReps = *ws.Reps

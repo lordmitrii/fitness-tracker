@@ -85,8 +85,11 @@ func (r *WorkoutExerciseRepo) GetLast5ByIndividualExerciseID(ctx context.Context
 	var exercises []*workout.WorkoutExercise
 	if err := r.db.WithContext(ctx).
 		Where("individual_exercise_id = ?", individualExerciseID).
-		Order("individual_exercise_id, created_at DESC").
-		Preload("WorkoutSets").Limit(5).
+		Joins("JOIN workout_sets ON workout_sets.workout_exercise_id = workout_exercises.id").
+		Where("workout_sets.reps IS NOT NULL AND workout_sets.weight IS NOT NULL").
+		Order("workout_exercises.created_at DESC").
+		Preload("WorkoutSets").
+		Limit(5).
 		Find(&exercises).Error; err != nil {
 		return nil, err
 	}
