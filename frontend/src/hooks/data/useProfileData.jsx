@@ -1,8 +1,7 @@
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useMemo, useCallback } from "react";
 import api from "../../api";
-
-const PROFILE_QK = ["profile"];
+import { QK } from "../../utils/queryKeys";
 
 async function fetchProfile() {
   try {
@@ -18,7 +17,7 @@ export default function useProfileData({ skipQuery = false } = {}) {
   const queryClient = useQueryClient();
 
   const { data, error, isLoading, isFetched, refetch, isFetching } = useQuery({
-    queryKey: PROFILE_QK,
+    queryKey: QK.profile,
     queryFn: fetchProfile,
     enabled: !skipQuery,
     staleTime: 5 * 60 * 1000, // 5 min
@@ -29,7 +28,7 @@ export default function useProfileData({ skipQuery = false } = {}) {
 
   const setProfileCache = useCallback(
     (next) => {
-      queryClient.setQueryData(PROFILE_QK, (old) =>
+      queryClient.setQueryData(QK.profile, (old) =>
         typeof next === "function" ? next(old ?? {}) : next
       );
     },
@@ -37,15 +36,15 @@ export default function useProfileData({ skipQuery = false } = {}) {
   );
 
   const invalidateProfile = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: PROFILE_QK });
+    queryClient.invalidateQueries({ queryKey: QK.profile });
   }, [queryClient]);
 
   const optimistic = useMemo(
     () => ({
       onMutate: async (payload) => {
-        await queryClient.cancelQueries({ queryKey: PROFILE_QK });
-        const previous = queryClient.getQueryData(PROFILE_QK);
-        queryClient.setQueryData(PROFILE_QK, (old) => ({
+        await queryClient.cancelQueries({ queryKey: QK.profile });
+        const previous = queryClient.getQueryData(QK.profile);
+        queryClient.setQueryData(QK.profile, (old) => ({
           ...(old ?? {}),
           ...payload,
         }));
@@ -53,13 +52,13 @@ export default function useProfileData({ skipQuery = false } = {}) {
       },
       onError: (_e, _p, ctx) => {
         if (ctx?.previous !== undefined)
-          queryClient.setQueryData(PROFILE_QK, ctx.previous);
+          queryClient.setQueryData(QK.profile, ctx.previous);
       },
       onSuccess: (serverData) => {
-        queryClient.setQueryData(PROFILE_QK, serverData ?? {});
+        queryClient.setQueryData(QK.profile, serverData ?? {});
       },
       // onSettled: () => {
-      //   queryClient.invalidateQueries({ queryKey: PROFILE_QK });
+      //   queryClient.invalidateQueries({ queryKey: QK.profile });
       // },
     }),
     [queryClient]

@@ -1,43 +1,30 @@
-import api from "../../api";
 import { useNavigate } from "react-router-dom";
 import FlashIcon from "../../icons/FlashIcon";
 import UpdateIcon from "../../icons/UpdateIcon";
 import DeleteIcon from "../../icons/DeleteIcon";
 import { useTranslation } from "react-i18next";
+import usePlansData from "../../hooks/data/usePlansData";
 
-const WorkoutPlanDetailsMenu = ({
-  closeMenu,
-  plan,
-  onError,
-  setWorkoutPlans,
-}) => {
+const WorkoutPlanDetailsMenu = ({ closeMenu, plan }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const handleActivatePlan = () => {
-    api
-      .patch(`/workout-plans/${plan.id}/set-active`, { active: true })
-      .then(() => {
-        setWorkoutPlans((prevPlans) =>
-          prevPlans.map((p) =>
-            p.id === plan.id ? { ...p, active: true } : { ...p, active: false }
-          )
-        );
-      })
-      .catch((error) => {
-        console.error("Error activating workout plan:", error);
-        onError(error);
-      })
-      .finally(() => {
-        closeMenu();
-      });
+  const { mutations } = usePlansData({ skipQuery: true });
+  const handleActivatePlan = async () => {
+    try {
+      await mutations.activatePlan.mutateAsync({ planID: plan.id });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      closeMenu();
+    }
   };
 
   const handleUpdatePlan = () => {
     navigate(`/update-workout-plan/${plan.id}`);
   };
 
-  const handleDeletePlan = () => {
+  const handleDeletePlan = async () => {
     if (
       !window.confirm(
         t("menus.confirm_delete_workout_plan", {
@@ -47,18 +34,13 @@ const WorkoutPlanDetailsMenu = ({
     ) {
       return;
     }
-    api
-      .delete(`/workout-plans/${plan.id}`)
-      .then(() => {
-        setWorkoutPlans((prev) => prev.filter((wp) => wp.id !== plan.id));
-      })
-      .catch((error) => {
-        console.error("Error deleting plan:", error);
-        onError(error);
-      })
-      .finally(() => {
-        closeMenu();
-      });
+    try {
+      await mutations.deletePlan.mutateAsync({ planID: plan.id });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      closeMenu();
+    }
   };
 
   if (!plan) return null;

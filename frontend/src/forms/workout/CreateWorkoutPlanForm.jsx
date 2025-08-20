@@ -1,5 +1,4 @@
 import { useState, useMemo, useCallback, useEffect, memo } from "react";
-import api from "../../api";
 import { useNavigate } from "react-router-dom";
 import DaysPerCycleSelector from "../../components/DaysPerCycleSelector";
 import QuestionMarkTooltipModal from "../../modals/workout/QuestionMarkTooltipModal";
@@ -12,6 +11,7 @@ import ListIcon from "../../icons/ListIcon";
 import { useTranslation } from "react-i18next";
 import CloseIcon from "../../icons/CloseIcon";
 import useStorageObject from "../../hooks/useStorageObject";
+import usePlansData from "../../hooks/data/usePlansData";
 
 const makeWorkout = (id) => ({
   id,
@@ -147,6 +147,7 @@ const WorkoutDayExercises = memo(
 const AddWorkoutPlanForm = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { mutations } = usePlansData({ skipQuery: true });
 
   const [formErrors, setFormErrors] = useState({});
   const [error, setError] = useState(null);
@@ -318,9 +319,7 @@ const AddWorkoutPlanForm = () => {
                 <label className="block text-body font-medium">
                   {t("add_workout_plan_form.plan_name_label")}
                 </label>
-                <div className="text-caption">
-                  {planName.length}/50
-                </div>
+                <div className="text-caption">{planName.length}/50</div>
               </div>
               <input
                 type="text"
@@ -407,22 +406,15 @@ const AddWorkoutPlanForm = () => {
       if (isCreating) return;
       setIsCreating(true);
       try {
-        const {
-          data: { id: planID, current_cycle_id: currentCycleID },
-        } = await api.post("/workout-plans", {
+        await mutations.createPlanWithWorkouts.mutateAsync({
           name: planName.trim(),
           active: true,
+          workouts,
         });
-
-        await api.post(
-          `/workout-plans/${planID}/workout-cycles/${currentCycleID}/workouts/create-multiple`,
-          workouts
-        );
-
         clear();
         navigate("/workout-plans");
       } catch (error) {
-        console.error("Error creating workout plan:", error);
+        console.error(error);
         setError(error);
       } finally {
         setIsCreating(false);

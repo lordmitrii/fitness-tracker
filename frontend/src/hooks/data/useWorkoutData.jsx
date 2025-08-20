@@ -1,27 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useCallback } from "react";
 import api from "../../api";
-
-const asKeyId = (v) => (v == null ? v : String(v));
-
-const QK = {
-  plan: (planID) => ["workoutPlan", asKeyId(planID)],
-  cycle: (planID, cycleID) => [
-    "workoutCycle",
-    asKeyId(planID),
-    asKeyId(cycleID),
-  ],
-};
-
-async function fetchPlan(planID) {
-  try {
-    const res = await api.get(`/workout-plans/${planID}`);
-    return res?.data ?? {};
-  } catch (err) {
-    // if (err?.response?.status === 404) return {};
-    throw err;
-  }
-}
+import { QK } from "../../utils/queryKeys";
+import useSinglePlanData from "./useSinglePlanData";
 
 async function fetchCycle(planID, cycleID) {
   try {
@@ -113,18 +94,7 @@ export default function useWorkoutData({
   skipQuery = false,
 } = {}) {
   const queryClient = useQueryClient();
-
-  const planQuery = useQuery({
-    queryKey: QK.plan(planID),
-    queryFn: () => fetchPlan(planID),
-    enabled: !!planID && !skipQuery,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
-    // staleTime: 1 * 1000,
-    // gcTime: 1 * 1000,
-    select: (data) => data ?? {},
-    placeholderData: (prev) => prev,
-  });
+  const planQuery = useSinglePlanData(planID, { enabled: !skipQuery });
 
   const cycleQuery = useQuery({
     queryKey: QK.cycle(planID, cycleID),
@@ -169,6 +139,22 @@ export default function useWorkoutData({
       queryClient.invalidateQueries({ queryKey: QK.cycle(planID, cycleID) }),
     ]);
   }, [queryClient, planID, cycleID]);
+
+  const invalidateExerciseStats = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: QK.exerciseStats });
+  }, [queryClient]);
+
+  const withStatsInvalidation = useCallback(
+    (fn) =>
+      (...args) => {
+        try {
+          fn?.(...args);
+        } finally {
+          invalidateExerciseStats();
+        }
+      },
+    [invalidateExerciseStats]
+  );
 
   const optimisticCycle = useMemo(
     () => ({
@@ -278,6 +264,7 @@ export default function useWorkoutData({
       }));
       return ctx;
     },
+    onSuccess: withStatsInvalidation(() => {}),
   });
 
   // 3) Toggle set completed
@@ -357,6 +344,7 @@ export default function useWorkoutData({
 
       return { previous };
     },
+    onSuccess: withStatsInvalidation(() => {}),
     onError(_err, _vars, ctx) {
       if (ctx?.previous !== undefined) {
         queryClient.setQueryData(QK.cycle(planID, cycleID), ctx.previous);
@@ -815,7 +803,6 @@ export default function useWorkoutData({
       });
       return { previous };
     },
-
     onError: (_e, _vars, ctx) => {
       if (ctx?.previous !== undefined) {
         queryClient.setQueryData(QK.cycle(planID, cycleID), ctx.previous);
@@ -861,6 +848,7 @@ export default function useWorkoutData({
 
       return { previous };
     },
+    onSuccess: withStatsInvalidation(() => {}),
     onError: (_e, _vars, ctx) => {
       if (ctx?.previous !== undefined) {
         queryClient.setQueryData(QK.cycle(planID, cycleID), ctx.previous);
@@ -1029,5 +1017,3 @@ export default function useWorkoutData({
     ]
   );
 }
-
-export { QK };

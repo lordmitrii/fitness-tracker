@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import { waitFor } from "@testing-library/react";
 import { renderHookWithClient } from "./utils/renderHookWithClient";
-import useWorkoutData, { QK } from "@/hooks/data/useWorkoutData";
+import useWorkoutData from "@/hooks/data/useWorkoutData";
+import { QK } from "@/utils/queryKeys";
 
 vi.mock("@/api");
 import api from "@/api";

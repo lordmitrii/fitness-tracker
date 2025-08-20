@@ -35,7 +35,7 @@ import {
   UpdateProfileForm,
 } from "./forms/profile/ProfileForm";
 
-import AddWorkoutPlanForm from "./forms/workout/AddWorkoutPlanForm";
+import CreateWorkoutPlanForm from "./forms/workout/CreateWorkoutPlanForm";
 import UpdateWorkoutPlanForm from "./forms/workout/UpdateWorkoutPlanForm";
 import {
   CreateWorkoutForm,
@@ -74,7 +74,7 @@ function App() {
               <Route path="/workout-plans" element={<WorkoutPlans />} />
               <Route
                 path="/create-workout-plan"
-                element={<AddWorkoutPlanForm />}
+                element={<CreateWorkoutPlanForm />}
               />
               <Route
                 path="/update-workout-plan/:planID"

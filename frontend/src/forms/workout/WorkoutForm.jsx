@@ -6,7 +6,7 @@ import LoadingState from "../../states/LoadingState";
 import ErrorState from "../../states/ErrorState";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
-import { QK } from "../../hooks/data/useWorkoutData";
+import { QK } from "../../utils/queryKeys";
 
 const WorkoutForm = memo(function WorkoutForm({
   initialData = {},
