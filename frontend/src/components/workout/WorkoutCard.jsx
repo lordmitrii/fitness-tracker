@@ -8,19 +8,11 @@ const WorkoutCard = ({
   planID,
   cycleID,
   workout,
-  onDeleteWorkout,
   isCurrentCycle,
-  onUpdateWorkouts,
-  onError,
   onOpenAddExercise,
   onOpenReplaceExercise,
 }) => {
   const { t, i18n } = useTranslation();
-
-  const handleUpdateExercises = useCallback(
-    (newExercises) => onUpdateWorkouts(workout.id, newExercises),
-    [onUpdateWorkouts, workout.id]
-  );
 
   const handleOpenReplace = useCallback(
     (exerciseID) =>
@@ -40,20 +32,9 @@ const WorkoutCard = ({
         cycleID={cycleID}
         workoutID={workout.id}
         workoutName={workout.name}
-        updateWorkouts={onUpdateWorkouts}
-        onDeleteWorkout={onDeleteWorkout}
-        onError={onError}
       />
     ),
-    [
-      planID,
-      cycleID,
-      workout.id,
-      workout.name,
-      onUpdateWorkouts,
-      onDeleteWorkout,
-      onError,
-    ]
+    [planID, cycleID, workout.id, workout.name]
   );
 
   return (
@@ -71,7 +52,9 @@ const WorkoutCard = ({
         </div>
         <div className="text-caption mt-1">
           {t("general.last_updated")}{" "}
-          {new Date(workout.updated_at).toLocaleDateString(i18n.language)}
+          {workout.updated_at
+            ? new Date(workout.updated_at).toLocaleDateString(i18n.language)
+            : t("general.n_a")}
           <br />
           {t("general.completed")}:{" "}
           {workout.completed ? (
@@ -94,8 +77,6 @@ const WorkoutCard = ({
             workoutName={workout.name}
             exercises={workout.workout_exercises}
             isCurrentCycle={isCurrentCycle}
-            onUpdateExercises={handleUpdateExercises}
-            onError={onError}
             onOpenReplaceExercise={handleOpenReplace}
           />
         </div>

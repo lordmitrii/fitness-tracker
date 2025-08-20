@@ -1,8 +1,9 @@
-import api from "../../api";
 import { useNavigate } from "react-router-dom";
 import UpdateIcon from "../../icons/UpdateIcon";
 import DeleteIcon from "../../icons/DeleteIcon";
 import { useTranslation } from "react-i18next";
+import { useState } from "react";
+import useWorkoutData from "../../hooks/useWorkoutData";
 
 const WorkoutDetailsMenu = ({
   closeMenu,
@@ -10,20 +11,20 @@ const WorkoutDetailsMenu = ({
   cycleID,
   workoutID,
   workoutName,
-  updateWorkouts,
-  onDeleteWorkout,
-  onError,
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [pending, setPending] = useState(false);
+  const { mutations } = useWorkoutData({ planID, cycleID, skipQuery: true });
+
   const handleUpdateWorkout = () => {
     navigate(
       `/workout-plans/${planID}/workout-cycles/${cycleID}/update-workout/${workoutID}`
     );
-    closeMenu();
+    closeMenu?.();
   };
 
-  const handleDeleteWorkout = () => {
+  const handleDeleteWorkout = async () => {
     if (
       !window.confirm(
         t("menus.confirm_delete_workout", {
@@ -33,19 +34,16 @@ const WorkoutDetailsMenu = ({
     ) {
       return;
     }
-
-    api
-      .delete(
-        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}`
-      )
-      .then(() => {
-        onDeleteWorkout(workoutID);
-      })
-      .catch((error) => {
-        console.error("Error deleting workout:", error);
-        onError(error);
-      });
-    closeMenu();
+    try {
+      if (pending) return;
+      setPending(true);
+      await mutations.deleteWorkout.mutateAsync({ workoutID });
+    } catch (error) {
+      console.error("Error deleting workout:", error);
+    } finally {
+      setPending(false);
+      closeMenu?.();
+    }
   };
 
   if (!workoutID) return null;
@@ -62,9 +60,12 @@ const WorkoutDetailsMenu = ({
         </span>
       </button>
       <button
-        className={`btn btn-danger-light text-left`}
+        className={`btn btn-danger-light text-left ${
+          pending ? "opacity-50 cursor-not-allowed" : ""
+        }`}
         onClick={handleDeleteWorkout}
-        title={"Delete this workout"}
+        title={t("menus.delete_workout")}
+        disabled={pending}
       >
         <span className="flex items-center gap-2">
           <DeleteIcon />

@@ -23,6 +23,7 @@ import (
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/admin"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/ai"
 	email_usecase "github.com/lordmitrii/golang-web-gin/internal/usecase/email"
+	"github.com/lordmitrii/golang-web-gin/internal/usecase/exercise"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/rbac"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/user"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/workout"
@@ -82,7 +83,7 @@ func main() {
 		os.Getenv("NOREPLY_EMAIL_PASSWORD"),
 	)
 
-	var exerciseService usecase.ExerciseService = workout.NewExerciseService(exerciseRepo, muscleGroupRepo)
+	var exerciseService usecase.ExerciseService = exercise.NewExerciseService(exerciseRepo, muscleGroupRepo)
 	var workoutService usecase.WorkoutService = workout.NewWorkoutService(workoutPlanRepo, workoutCycleRepo, workoutRepo, workoutExerciseRepo, workoutSetRepo, individualExerciseRepo, exerciseRepo)
 	var userService usecase.UserService = user.NewUserService(userRepo, profileRepo, userConsentRepo, roleRepo, permissionRepo)
 	var aiService usecase.AIService = ai.NewAIService(workoutService, userService)

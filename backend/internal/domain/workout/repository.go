@@ -37,8 +37,10 @@ type WorkoutRepository interface {
 	Delete(ctx context.Context, id uint) error
 	Complete(ctx context.Context, w *Workout) error
 	GetIncompleteWorkoutsCount(ctx context.Context, workoutCycleID uint) (int64, error)
+	GetSkippedWorkoutsCount(ctx context.Context, workoutCycleID uint) (int64, error)
 	GetMaxWorkoutIndexByWorkoutCycleID(ctx context.Context, workoutCycleID uint) (int, error)
 	DecrementIndexesAfterWorkout(ctx context.Context, workoutCycleID uint, deletedIndex int) error
+	SwapWorkoutsByIndex(ctx context.Context, workoutCycleID uint, index1, index2 int) error
 }
 
 type WorkoutExerciseRepository interface {
@@ -49,6 +51,7 @@ type WorkoutExerciseRepository interface {
 	Complete(ctx context.Context, e *WorkoutExercise) error
 	Delete(ctx context.Context, id uint) error
 	GetIncompleteExercisesCount(ctx context.Context, workoutId uint) (int64, error)
+	GetSkippedExercisesCount(ctx context.Context, workoutId uint) (int64, error)
 	GetLast5ByIndividualExerciseID(ctx context.Context, individualExerciseIDs uint) ([]*WorkoutExercise, error)
 	GetMaxIndexByWorkoutID(ctx context.Context, workoutID uint) (int, error)
 	DecrementIndexesAfter(ctx context.Context, workoutID uint, deletedIndex int) error
@@ -64,6 +67,7 @@ type WorkoutSetRepository interface {
 	Complete(ctx context.Context, ws *WorkoutSet) error
 	Delete(ctx context.Context, id uint) error
 	GetIncompleteSetsCount(ctx context.Context, workoutExerciseID uint) (int64, error)
+	GetSkippedSetsCount(ctx context.Context, workoutExerciseID uint) (int64, error)
 	GetMaxIndexByWorkoutExerciseID(ctx context.Context, workoutExerciseID uint) (int, error)
 	DecrementIndexesAfter(ctx context.Context, workoutExerciseID uint, deletedIndex int) error
 	IncrementIndexesAfter(ctx context.Context, workoutExerciseID uint, index int) error

@@ -32,6 +32,8 @@ type (
 		GetWorkoutsByWorkoutCycleID(ctx context.Context, workoutPlanID uint) ([]*workout.Workout, error)
 		UpdateWorkout(ctx context.Context, w *workout.Workout) error
 		DeleteWorkout(ctx context.Context, id uint) error
+		CompleteWorkout(ctx context.Context, w *workout.Workout) error
+		MoveWorkout(ctx context.Context, workoutID, cycleID uint, direction string) error
 
 		CreateWorkoutExercise(ctx context.Context, e *workout.WorkoutExercise) error
 		GetWorkoutExerciseByID(ctx context.Context, id uint) (*workout.WorkoutExercise, error)

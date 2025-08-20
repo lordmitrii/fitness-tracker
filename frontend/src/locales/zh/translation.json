@@ -53,7 +53,10 @@
     "pagination": { "page_of": "第 {{page}} 页，共 {{pageCount}} 页" },
     "no_results_for": "没有与 \"{{search}}\" 匹配的结果",
     "version": "版本",
-    "name_too_long": "名称必须少于 {{limit}} 个字符。"
+    "name_too_long": "名称必须少于 {{limit}} 个字符。",
+    "refreshing": "正在刷新...",
+    "release_to_refresh": "释放以刷新",
+    "pull_to_refresh": "下拉以刷新"
   },
   "measurements": {
     "weight": "公斤",
@@ -252,7 +255,8 @@
     "new_password_placeholder": "输入新密码",
     "confirm_password_placeholder": "确认新密码",
     "passwords_mismatch": "两次输入的密码不一致。",
-    "password_min_length": "密码长度至少为8个字符。",
+    "password_min_length": "密码长度至少为{{minLength}}个字符。",
+    "password_too_long": "密码长度不能超过{{limit}}个字符。",
     "reset_password_button": "重置",
     "invalid_link": "重置链接无效或已过期。",
     "verifying_link": "正在验证链接..."
@@ -328,7 +332,10 @@
     "cannot_delete_first_cycle": "不能删除计划中的第一个周期。",
     "delete_this_cycle": "删除此锻炼周期",
     "cannot_delete_only_set": "不能删除该练习的唯一组",
-    "delete_this_set": "删除此组"
+    "delete_this_set": "删除此组",
+    "skip_set": "跳过此组",
+    "skip_exercise": "跳过此练习",
+    "skip_cycle": "跳过此周期"
   },
   "exercise": {
     "bench-press": "卧推",

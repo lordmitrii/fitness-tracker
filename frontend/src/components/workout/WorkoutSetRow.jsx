@@ -1,14 +1,13 @@
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useState, useRef, useEffect } from "react";
 import DropdownMenu from "../DropdownMenu";
 import WorkoutSetDetailsMenu from "./WorkoutSetDetailsMenu";
 import CheckBox from "../CheckBox";
 import { getExerciseProgressBadge } from "../../utils/exerciseUtils";
-import api from "../../api";
 import { useTranslation } from "react-i18next";
-import { withOptimisticUpdate } from "../../utils/updates";
 import { toNumberOrEmpty, toNullIfEmpty } from "../../utils/numberUtils";
 import { SET_LIMITS } from "../../config/constants";
 import { ChartEqualIcon } from "../../icons/ChartIcon";
+import useWorkoutData from "../../hooks/useWorkoutData";
 
 const WorkoutSetRow = ({
   planID,
@@ -18,24 +17,35 @@ const WorkoutSetRow = ({
   setItem,
   setOrder,
   isCurrentCycle,
-  onUpdateExercises,
-  onError,
 }) => {
   const { t } = useTranslation();
   const [errors, setErrors] = useState({});
+  const { mutations, ui } = useWorkoutData({
+    planID,
+    cycleID,
+    skipQuery: true,
+  });
+
+  const lastSavedRef = useRef({
+    reps: toNullIfEmpty(setItem?.reps),
+    weight: toNullIfEmpty(setItem?.weight),
+  });
+
+  useEffect(() => {
+    lastSavedRef.current = {
+      reps: toNullIfEmpty(setItem?.reps),
+      weight: toNullIfEmpty(setItem?.weight),
+    };
+  }, [setItem.id]);
 
   const validateSet = useCallback(
-    (setItem, { isOnBlur = false } = {}) => {
+    (setItem, { softCheck = false } = {}) => {
       const errors = {};
+      if (setItem.skipped) return { ok: true, errors };
 
-      if (setItem.skipped) {
-        return;
-      }
-      // reps: required, integer, range
       if (setItem.reps === "" || setItem.reps === null) {
-        if (!isOnBlur) {
+        if (!softCheck)
           errors.reps = t("workout_plan_single.validation.reps_required");
-        }
       } else if (!Number.isFinite(setItem.reps)) {
         errors.reps = t("workout_plan_single.validation.reps_number");
       } else if (!Number.isInteger(setItem.reps)) {
@@ -50,11 +60,9 @@ const WorkoutSetRow = ({
         });
       }
 
-      // weight: required, number, range
       if (setItem.weight === "" || setItem.weight === null) {
-        if (!isOnBlur) {
+        if (!softCheck)
           errors.weight = t("workout_plan_single.validation.weight_required");
-        }
       } else if (!Number.isFinite(setItem.weight)) {
         errors.weight = t("workout_plan_single.validation.weight_number");
       } else if (
@@ -70,65 +78,44 @@ const WorkoutSetRow = ({
 
       return { ok: Object.keys(errors).length === 0, errors };
     },
-    [t, setItem.reps, setItem.weight, setItem.skipped]
+    [t]
   );
 
+  // Send patch request for set fields
   const patchSetFields = useCallback(
     async ({ reps, weight }) => {
-      const optimisticUpdater = (prev) =>
-        prev.map((item) =>
-          item.id === exerciseID
-            ? {
-                ...item,
-                workout_sets: item.workout_sets.map((s) =>
-                  s.id === setItem.id ? { ...s, reps, weight } : s
-                ),
-              }
-            : item
-        );
-
-      await withOptimisticUpdate(
-        onUpdateExercises,
-        optimisticUpdater,
-        async () => {
-          await api.patch(
-            `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exerciseID}/workout-sets/${setItem.id}`,
-            { reps: toNullIfEmpty(reps), weight: toNullIfEmpty(weight) }
-          );
-        }
-      );
+      await mutations.updateSetFields.mutateAsync({
+        workoutID,
+        exerciseID,
+        setID: setItem.id,
+        reps: toNullIfEmpty(reps),
+        weight: toNullIfEmpty(weight),
+        skipped: false,
+        completed: false,
+      });
+      lastSavedRef.current = {
+        reps: toNullIfEmpty(reps),
+        weight: toNullIfEmpty(weight),
+      };
     },
-    [onUpdateExercises, exerciseID, setItem.id, planID, cycleID, workoutID]
+    [exerciseID, setItem.id, workoutID, mutations.updateSetFields]
   );
 
+  // Send patch request for completed status
   const patchCompleted = useCallback(
-    async (completed) => {
-      const optimisticUpdater = (prev) =>
-        prev.map((item) =>
-          item.id === exerciseID
-            ? {
-                ...item,
-                workout_sets: item.workout_sets.map((s) =>
-                  s.id === setItem.id ? { ...s, completed } : s
-                ),
-              }
-            : item
-        );
-
-      await withOptimisticUpdate(
-        onUpdateExercises,
-        optimisticUpdater,
-        async () => {
-          await api.patch(
-            `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exerciseID}/workout-sets/${setItem.id}/update-complete`,
-            { completed }
-          );
-        }
-      );
+    async ({ completed, skipped }) => {
+      await mutations.toggleSetCompleted.mutateAsync({
+        workoutID,
+        exerciseID,
+        setID: setItem.id,
+        completed,
+        skipped,
+      });
     },
-    [onUpdateExercises, exerciseID, setItem.id, planID, cycleID, workoutID]
+    [exerciseID, setItem.id, workoutID, mutations.toggleSetCompleted]
   );
 
+  // This should do soft checks on every change, set exercises as not completed (send request as well) but value change will be handled on blur only
   const onChangeWeight = useCallback(
     async (value) => {
       const clamped =
@@ -139,47 +126,32 @@ const WorkoutSetRow = ({
               Math.min(value, SET_LIMITS.weight.max)
             );
 
-      onUpdateExercises((prev) =>
-        prev.map((item) => {
-          if (item.id !== exerciseID) return item;
-          const newSets = item.workout_sets.map((s) =>
-            s.id === setItem.id
-              ? { ...s, weight: clamped, completed: false, skipped: false }
-              : s
-          );
-
-          return {
-            ...item,
-            workout_sets: newSets,
-            completed: false,
-          };
-        })
-      );
-
       if (setItem.completed || setItem.skipped) {
         try {
-          await patchCompleted(false);
+          await patchCompleted({ completed: false, skipped: false });
         } catch (error) {
           console.error("Error unchecking completed set:", error);
-          onError(error);
         }
       }
 
       validateSet(
         { ...setItem, weight: clamped, completed: false, skipped: false },
-        { isOnBlur: false }
+        { softCheck: true }
       );
+      ui.patchSetFieldsUI({
+        workoutID,
+        exerciseID,
+        setID: setItem.id,
+        weight: clamped,
+        reps: setItem.reps,
+        completed: false,
+        skipped: false,
+      });
     },
-    [
-      onUpdateExercises,
-      exerciseID,
-      setItem,
-      patchCompleted,
-      validateSet,
-      onError,
-    ]
+    [setItem, patchCompleted, validateSet, ui.patchSetFieldsUI]
   );
 
+  // Same here
   const onChangeReps = useCallback(
     async (value) => {
       const clamped =
@@ -187,122 +159,79 @@ const WorkoutSetRow = ({
           ? ""
           : Math.max(SET_LIMITS.reps.min, Math.min(value, SET_LIMITS.reps.max));
 
-      onUpdateExercises((prev) =>
-        prev.map((item) => {
-          if (item.id !== exerciseID) return item;
-          const newSets = item.workout_sets.map((s) =>
-            s.id === setItem.id
-              ? { ...s, reps: clamped, completed: false, skipped: false }
-              : s
-          );
-
-          return {
-            ...item,
-            workout_sets: newSets,
-            completed: false,
-          };
-        })
-      );
-
       if (setItem.completed || setItem.skipped) {
         try {
-          await patchCompleted(false);
+          await patchCompleted({ completed: false, skipped: false });
         } catch (error) {
           console.error("Error unchecking completed set:", error);
-          onError(error);
         }
       }
 
       validateSet(
         { ...setItem, reps: clamped, completed: false, skipped: false },
-        { isOnBlur: false }
+        { softCheck: true }
       );
+      ui.patchSetFieldsUI({
+        workoutID,
+        exerciseID,
+        setID: setItem.id,
+        weight: setItem.weight,
+        reps: clamped,
+        completed: false,
+        skipped: false,
+      });
     },
-    [
-      onUpdateExercises,
-      exerciseID,
-      setItem,
-      patchCompleted,
-      validateSet,
-      onError,
-    ]
+    [setItem, patchCompleted, validateSet, ui.patchSetFieldsUI]
   );
 
-  const handleBlur = useCallback(
-    async ({ reps, weight }) => {
-      const draft = { ...setItem, reps, weight };
-      const { ok } = validateSet(draft, { isOnBlur: true });
-      if (!ok) {
-        return;
-      }
+  // Should do a soft check on errors and send patch to backend with updated fields (this shouldn't toggle completed if value hasn't changed)
+  const handleBlur = useCallback(async () => {
+    const { ok, errors } = validateSet({ ...setItem }, { softCheck: true });
+    if (!ok) {
+      setErrors(errors);
+      return;
+    }
 
-      try {
-        await patchSetFields({ reps: draft.reps, weight: draft.weight });
-      } catch (error) {
-        console.error("Error patching fields on blur:", error);
-        onError(error);
-      }
-    },
-    [setItem, validateSet, patchSetFields, onError]
-  );
+    const next = {
+      reps: toNullIfEmpty(setItem.reps),
+      weight: toNullIfEmpty(setItem.weight),
+    };
+    const prev = lastSavedRef.current;
 
+    const hasChanged = next.reps !== prev.reps || next.weight !== prev.weight;
+
+    if (!hasChanged) return;
+
+    setErrors({});
+
+    try {
+      await patchSetFields({ reps: setItem.reps, weight: setItem.weight });
+    } catch (error) {
+      console.error("Error patching fields on blur:", error);
+    }
+  }, [setItem, validateSet, patchSetFields]);
+
+  // Can be checked only if passes hard checks and sends patch request to backend to complete set
+  // Can also be unchecked without validation and sends patch request to backend to uncomplete set
   const handleToggle = useCallback(
     async (e) => {
       const checked = e.target.checked;
-      const { ok, errors } = validateSet(setItem, { isOnBlur: false });
-      if (!ok) {
-        setErrors(errors);
-        alert(t("workout_plan_single.validation.please_check_fields"));
-        return;
+      if (checked) {
+        const { ok, errors } = validateSet(setItem, { softCheck: false });
+        if (!ok) {
+          setErrors(errors);
+          alert(t("workout_plan_single.validation.please_check_fields"));
+          return;
+        }
       }
-
       setErrors({});
-
-      const optimisticUpdater = (prev) =>
-        prev.map((item) => {
-          if (item.id !== exerciseID) return item;
-          const newSets = item.workout_sets.map((s) =>
-            s.id === setItem.id
-              ? { ...s, completed: checked, skipped: false }
-              : s
-          );
-          const exerciseCompleted = newSets.every(
-            (s) => s.completed || s.skipped
-          );
-          return {
-            ...item,
-            workout_sets: newSets,
-            completed: exerciseCompleted,
-          };
-        });
-
       try {
-        await withOptimisticUpdate(
-          onUpdateExercises,
-          optimisticUpdater,
-          async () => {
-            await api.patch(
-              `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exerciseID}/workout-sets/${setItem.id}/update-complete`,
-              { completed: checked }
-            );
-          }
-        );
+        await patchCompleted({ completed: checked, skipped: false });
       } catch (error) {
         console.error("Error toggling sets:", error);
-        onError(error);
       }
     },
-    [
-      onUpdateExercises,
-      exerciseID,
-      setItem.id,
-      t,
-      planID,
-      cycleID,
-      workoutID,
-      onError,
-      validateSet,
-    ]
+    [t, setItem, patchCompleted, validateSet]
   );
 
   const renderSetDetailsMenu = useCallback(
@@ -323,9 +252,7 @@ const WorkoutSetRow = ({
         setSkipped={setItem.skipped}
         setOrder={setOrder}
         exerciseID={exerciseID}
-        updateExercises={onUpdateExercises}
         closeMenu={close}
-        onError={onError}
       />
     ),
     [
@@ -342,8 +269,6 @@ const WorkoutSetRow = ({
       setItem.skipped,
       setOrder,
       exerciseID,
-      onUpdateExercises,
-      onError,
     ]
   );
 
@@ -367,21 +292,20 @@ const WorkoutSetRow = ({
         max={SET_LIMITS.weight.max}
         inputMode="decimal"
         onFocus={() => setErrors((prev) => ({ ...prev, weight: "" }))}
-        onBlur={() =>
-          handleBlur({ reps: setItem.reps, weight: setItem.weight })
-        }
+        onBlur={handleBlur}
         onChange={(e) => {
           const raw = toNumberOrEmpty(e.target.value);
           const next = raw === "" ? "" : Math.round(raw * 10) / 10;
           onChangeWeight(next);
         }}
         className={`input-style placeholder:italic 
-          ${errors.weight ? "!border-2 !border-red-600" : ""}
-        ${
-          setItem.completed || setItem.skipped || !isCurrentCycle
-            ? "opacity-40 cursor-not-allowed"
-            : ""
-        }`}
+            ${errors.weight ? "!border-2 !border-red-600" : ""}
+            ${
+              setItem.completed || setItem.skipped || !isCurrentCycle
+                ? "opacity-40 cursor-not-allowed"
+                : ""
+            }
+          `}
         disabled={!isCurrentCycle}
       />
 
@@ -394,21 +318,20 @@ const WorkoutSetRow = ({
         inputMode="numeric"
         step={1}
         onFocus={() => setErrors((prev) => ({ ...prev, reps: "" }))}
-        onBlur={() =>
-          handleBlur({ reps: setItem.reps, weight: setItem.weight })
-        }
+        onBlur={handleBlur}
         onChange={(e) => {
           const raw = toNumberOrEmpty(e.target.value);
           const next = raw === "" ? "" : Math.round(raw);
           onChangeReps(next);
         }}
         className={`input-style placeholder:italic
-          ${errors.reps ? "!border-2 !border-red-600" : ""}
-         ${
-           setItem.completed || setItem.skipped || !isCurrentCycle
-             ? "opacity-40 cursor-not-allowed"
-             : ""
-         }`}
+            ${errors.reps ? "!border-2 !border-red-600" : ""}
+            ${
+              setItem.completed || setItem.skipped || !isCurrentCycle
+                ? "opacity-40 cursor-not-allowed"
+                : ""
+            }
+          `}
         disabled={!isCurrentCycle}
       />
 

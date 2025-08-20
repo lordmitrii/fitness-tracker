@@ -112,9 +112,11 @@ const WorkoutPlans = () => {
 
                     <div className="text-caption mt-1">
                       {t("general.last_updated")}{" "}
-                      {new Date(workoutPlan.updated_at).toLocaleDateString(
-                        i18n.language
-                      )}
+                      {workoutPlan.updated_at
+                        ? new Date(workoutPlan.updated_at).toLocaleDateString(
+                            i18n.language
+                          )
+                        : t("general.n_a")}
                     </div>
                   </div>
                 </li>

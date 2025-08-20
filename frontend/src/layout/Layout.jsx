@@ -5,7 +5,9 @@ import MenuPanel from "../components/MenuPanel";
 import MoreAside from "../components/more/MoreAside";
 import { useState, useMemo, useRef } from "react";
 import useScrollToTop from "../hooks/useScrollToTop";
+import usePullToRefresh from "../hooks/usePullToRefresh";
 import { HeaderContext } from "./LayoutHeader";
+import PullToRefreshPill from "../components/PullToRefreshPill";
 
 const Layout = ({ children }) => {
   const [searchParams] = useSearchParams();
@@ -16,6 +18,16 @@ const Layout = ({ children }) => {
 
   const scrollRef = useRef(null);
   useScrollToTop(scrollRef);
+
+  const { offset, status, THRESHOLD } = usePullToRefresh(scrollRef, () => {
+    requestAnimationFrame(() => {
+      window.location.reload(true);
+    });
+  });
+
+  const pulling = status === "pull" || status === "ready";
+  const refreshing = status === "refreshing";
+  const progress = Math.min(1, offset / THRESHOLD);
 
   return (
     <>
@@ -42,7 +54,31 @@ const Layout = ({ children }) => {
                 </div>
               )}
 
-              <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
+              <div
+                ref={scrollRef}
+                className="
+                      flex-1 min-h-0 overflow-y-auto 
+                      overscroll-contain
+                      touch-pan-y
+                      [--webkit-overflow-scrolling:touch]
+                      relative scroll-stable
+                    "
+              >
+                <PullToRefreshPill
+                  className="ptr-pill"
+                  progress={progress}
+                  status={status}
+                />
+
+                <div
+                  style={{
+                    height: offset,
+                    transition:
+                      pulling || refreshing
+                        ? "none"
+                        : "height 420ms cubic-bezier(.22,1,.36,1)",
+                  }}
+                />
                 <div id="main-container" className="min-h-full flex flex-col">
                   {children}
                 </div>

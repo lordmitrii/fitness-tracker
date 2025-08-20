@@ -83,17 +83,31 @@ backend/
 │   └── usecase/                               # Service layer of the app
 │       ├── contracts.go                       # Definition of service structures
 │       ├── user/
-│       │   └── service.go
+│       │   ├── service.go                     # Service initializaion
+│       │   ├── user_service.go                # Service functions
+│       │   ├── consent_service.go
+│       │   └── ...
 │       ├── ai/
-│       │   ├── openai.go
-│       │   └── service.go
+│       │   ├── service.go                     
+│       │   ├── openai.go                       # Callers to openai
+│       │   ├── ai_service.go
+│       │   └── helpers.go                   
 │       ├── email/
-│       │   └── service.go
+│       │   ├── service.go
+│       │   ├── email_service.go
+│       │   └── helpers.go
 │       ├── rbac/
-│       │   └── service.go
+│       │   ├── service.go
+│       │   └── rbac_service.go
+│       ├── exercise/
+│       │   ├── service.go
+│       │   ├── muscle_group_service.go
+│       │   └── exercise_service.go
 │       └── workout/
-│           ├── exercise_service.go
-│           └── workout_service.go
+│           ├── service.go
+│           ├── workout_plan_service.go
+│           ├── workout_cycle_service.go
+│           └── ...
 │
 ├── docs/docs.go                               # Swagger, etc.
 ├── Dockerfile
@@ -189,5 +203,12 @@ frontend/
 
 ### Workout Set
 
-- Allowed to be empty and can be sent as empty field to packend on field blur
+- Allowed to be empty and can be sent as empty field to backend on field blur
 - Can be checked only if not null (weight can be 0) and if reps and weight are whithing the limits 
+
+- When user changes value it should just change cache and do soft checks
+- If its checked send request to uncheck to backend
+- When user blurs, it should send request to backend to change field value (rep or weight) and it should do a soft check 
+- When update happens backend automatically sets it to skipped = false and completed = false
+- When user toggles checkbox it should do a hard check if he's trying to check it 
+- Uncheck should happen anyway and this should be followed by request to backend

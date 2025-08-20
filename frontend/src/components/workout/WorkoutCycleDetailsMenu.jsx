@@ -1,9 +1,9 @@
-import api from "../../api";
 import { useNavigate } from "react-router-dom";
 import DeleteIcon from "../../icons/DeleteIcon";
 import { useTranslation } from "react-i18next";
 import { memo, useCallback } from "react";
 import { ArrowLeftIcon, ArrowRightIcon } from "../../icons/ArrowIcon";
+import useWorkoutData from "../../hooks/useWorkoutData";
 
 const WorkoutCycleDetailsMenu = ({
   closeMenu,
@@ -12,44 +12,39 @@ const WorkoutCycleDetailsMenu = ({
   cycleName,
   previousCycleID,
   nextCycleID,
-  setNextCycleID,
-  onError,
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const handleDeleteCycle = useCallback(() => {
-    if (
-      !window.confirm(
-        t("menus.confirm_delete_cycle", {
-          cycleName,
-        })
-      )
-    ) {
-      return;
-    }
-    api
-      .delete(`/workout-plans/${planID}/workout-cycles/${cycleID}`)
-      .then(() => {
-        navigate(`/workout-plans/${planID}/workout-cycles/${previousCycleID}`);
-        setNextCycleID(null);
-      })
-      .catch((error) => {
-        console.error("Error deleting cycle:", error);
-        onError(error);
-      })
-      .finally(() => {
-        closeMenu();
-      });
-  }, [
+  const { mutations, invalidate } = useWorkoutData({
     planID,
     cycleID,
-    cycleName,
-    previousCycleID,
+    skipQuery: true,
+  });
+  const pending = !!mutations.deleteCycle.isPending;
+
+  const handleDeleteCycle = useCallback(async () => {
+    if (!previousCycleID) return;
+    if (!window.confirm(t("menus.confirm_delete_cycle", { cycleName }))) return;
+
+    navigate(`/workout-plans/${planID}/workout-cycles/${previousCycleID}`, {
+      replace: true,
+    });
+
+    try {
+      await mutations.deleteCycle.mutateAsync({ previousCycleID });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      closeMenu?.();
+    }
+  }, [
     navigate,
-    onError,
-    setNextCycleID,
-    closeMenu,
+    planID,
+    previousCycleID,
+    mutations.deleteCycle,
     t,
+    cycleName,
+    closeMenu,
   ]);
 
   if (!cycleID) return null;
@@ -92,10 +87,10 @@ const WorkoutCycleDetailsMenu = ({
       </div>
       <button
         className={`btn btn-danger-light text-left  ${
-          !previousCycleID ? "opacity-50 cursor-not-allowed" : ""
+          !previousCycleID || pending ? "opacity-50 cursor-not-allowed" : ""
         }`}
         onClick={handleDeleteCycle}
-        disabled={!previousCycleID}
+        disabled={!previousCycleID || pending}
         title={
           !previousCycleID
             ? t("menus.cannot_delete_first_cycle")

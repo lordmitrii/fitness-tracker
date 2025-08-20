@@ -12,15 +12,12 @@ const WorkoutExerciseRow = ({
   exercise,
   allExercises,
   isCurrentCycle,
-  onUpdateExercises,
-  onError,
   onOpenReplaceExercise,
 }) => {
   const { t } = useTranslation();
 
   const sortedSets = useMemo(
-    () =>
-      (exercise.workout_sets || []).slice().sort((a, b) => a.index - b.index),
+    () => exercise.workout_sets ?? [],
     [exercise.workout_sets]
   );
 
@@ -43,9 +40,9 @@ const WorkoutExerciseRow = ({
         workoutName={workoutName}
         exerciseID={exercise.id}
         exerciseOrder={exerciseOrder}
-        updateExercises={onUpdateExercises}
+        exerciseCompleted={exercise.completed}
+        exerciseSkipped={exercise.skipped}
         closeMenu={close}
-        onError={onError}
         onReplace={onOpenReplaceExercise}
       />
     ),
@@ -56,8 +53,8 @@ const WorkoutExerciseRow = ({
       workoutName,
       exercise.id,
       exerciseOrder,
-      onUpdateExercises,
-      onError,
+      exercise.completed,
+      exercise.skipped,
       onOpenReplaceExercise,
     ]
   );
@@ -68,11 +65,11 @@ const WorkoutExerciseRow = ({
         <div className="flex flex-row items-start sm:items-center justify-between gap-1">
           <div className="font-medium text-body-blue">
             {exercise.index}.{" "}
-            {!!exercise.individual_exercise.exercise?.slug
+            {!!exercise.individual_exercise?.exercise?.slug
               ? t(`exercise.${exercise.individual_exercise.exercise.slug}`)
-              : exercise.individual_exercise.name}
+              : exercise.individual_exercise?.name ?? t("general.unknown")}
             <span className="ml-2 text-caption font-bold">
-              {exercise.individual_exercise.muscle_group &&
+              {exercise.individual_exercise?.muscle_group &&
                 `(${t(
                   `muscle_group.${exercise.individual_exercise.muscle_group.slug}`
                 )})`}
@@ -85,7 +82,7 @@ const WorkoutExerciseRow = ({
           />
         </div>
         <div className="flex text-caption">
-          {exercise.individual_exercise.is_bodyweight &&
+          {exercise.individual_exercise?.is_bodyweight &&
             t("workout_plan_single.bodyweight_exercise")}
         </div>
       </div>
@@ -100,7 +97,7 @@ const WorkoutExerciseRow = ({
             {t("workout_plan_single.weight_label")} ({t("measurements.weight")})
           </div>
           <div className="">
-            {exercise.individual_exercise.is_time_based
+            {exercise.individual_exercise?.is_time_based
               ? t("workout_plan_single.time_label")
               : t("workout_plan_single.reps_label")}
           </div>
@@ -122,8 +119,6 @@ const WorkoutExerciseRow = ({
               setItem={set}
               setOrder={setOrder}
               isCurrentCycle={isCurrentCycle}
-              onUpdateExercises={onUpdateExercises}
-              onError={onError}
             />
           ))}
         </div>

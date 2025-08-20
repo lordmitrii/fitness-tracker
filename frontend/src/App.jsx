@@ -7,7 +7,7 @@ import Layout from "./layout/Layout";
 import Home from "./pages/Home";
 
 import WorkoutPlans from "./pages/workout/WorkoutPlans";
-import WorkoutPlanSingle from "./pages/workout/WorkoutPlanSingle";
+import WorkoutCycle from "./pages/workout/WorkoutCycle";
 
 import ExerciseStats from "./pages/ExerciseStats";
 import Profile from "./pages/Profile";
@@ -83,7 +83,7 @@ function App() {
 
               <Route
                 path="/workout-plans/:planID/workout-cycles/:cycleID"
-                element={<WorkoutPlanSingle />}
+                element={<WorkoutCycle />}
               />
               <Route
                 path="/workout-plans/:planID/workout-cycles/:cycleID/create-workout"

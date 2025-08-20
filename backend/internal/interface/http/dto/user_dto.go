@@ -27,7 +27,7 @@ type ProfileUpdateRequest struct {
 	Age      int     `json:"age" binding:"omitempty,min=16,max=150"`
 	HeightCm float64 `json:"height_cm" binding:"omitempty,min=20,max=500"`
 	WeightKg float64 `json:"weight_kg" binding:"omitempty,min=20,max=500"`
-	Sex      string  `json:"sex" binding:"omitempty`
+	Sex      string  `json:"sex" binding:"omitempty"`
 }
 
 type ConsentRequest struct {

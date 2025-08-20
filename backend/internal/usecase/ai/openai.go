@@ -10,7 +10,7 @@ import (
 	"github.com/openai/openai-go/responses"
 )
 
-func CallOpenAIChat(ctx context.Context, input string, previousResponseID string, maxTokens int64) (string, string, error) {
+func callOpenAIChat(ctx context.Context, input string, previousResponseID string, maxTokens int64) (string, string, error) {
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	if apiKey == "" {
 		return "", "", fmt.Errorf("OPENAI_API_KEY not set")

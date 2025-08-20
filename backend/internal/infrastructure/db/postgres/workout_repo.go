@@ -88,7 +88,7 @@ func (r *WorkoutRepo) GetIncompleteWorkoutsCount(ctx context.Context, workoutCyc
 	var count int64
 	if err := r.db.WithContext(ctx).
 		Model(&workout.Workout{}).
-		Where("workout_cycle_id = ? AND completed = ?", workoutCycleID, false).
+		Where("workout_cycle_id = ? AND completed = false", workoutCycleID).
 		Count(&count).
 		Error; err != nil {
 		return 0, err
@@ -110,11 +110,41 @@ func (r *WorkoutRepo) GetMaxWorkoutIndexByWorkoutCycleID(ctx context.Context, wo
 	return max, nil
 }
 
-
-func (r *WorkoutRepo) DecrementIndexesAfterWorkout(ctx context.Context,  workoutCycleID uint, deletedIndex int) error {
+func (r *WorkoutRepo) DecrementIndexesAfterWorkout(ctx context.Context, workoutCycleID uint, deletedIndex int) error {
 	return r.db.WithContext(ctx).
 		Model(&workout.Workout{}).
 		Where("workout_cycle_id = ? AND index > ?", workoutCycleID, deletedIndex).
 		Update("index", gorm.Expr("index - 1")).
 		Error
+}
+
+func (r *WorkoutRepo) SwapWorkoutsByIndex(ctx context.Context, workoutCycleID uint, index1, index2 int) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var w1, w2 workout.Workout
+		if err := tx.Where("workout_cycle_id = ? AND index = ?", workoutCycleID, index1).First(&w1).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("workout_cycle_id = ? AND index = ?", workoutCycleID, index2).First(&w2).Error; err != nil {
+			return err
+		}
+		w1.Index, w2.Index = w2.Index, w1.Index
+		if err := tx.Save(&w1).Error; err != nil {
+			return err
+		}
+		if err := tx.Save(&w2).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
+func (r *WorkoutRepo) GetSkippedWorkoutsCount(ctx context.Context, workoutCycleID uint) (int64, error) {
+	var count int64
+	if err := r.db.WithContext(ctx).Model(&workout.Workout{}).
+		Where("workout_cycle_id = ? AND skipped = true", workoutCycleID).
+		Count(&count).
+		Error; err != nil {
+		return 0, err
+	}
+	return count, nil
 }
