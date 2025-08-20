@@ -1,8 +1,7 @@
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import api from "../api";
+import api from "../../api";
 import { useCallback, useMemo } from "react";
-
-const EXERCISES_BUNDLE_QK = ["exercisesBundle"];
+import { QK } from "../../utils/queryKeys";
 
 async function fetchExercisesBundle() {
   const [res1, res2, res3] = await Promise.all([
@@ -26,7 +25,7 @@ export default function useExercisesData(onError) {
   const queryClient = useQueryClient();
 
   const { data, error, isLoading, isFetched, refetch, isFetching } = useQuery({
-    queryKey: EXERCISES_BUNDLE_QK,
+    queryKey: QK.exercisesBundle,
     queryFn: fetchExercisesBundle,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
@@ -37,7 +36,7 @@ export default function useExercisesData(onError) {
 
   const setExercisesCache = useCallback(
     (next) => {
-      queryClient.setQueryData(EXERCISES_BUNDLE_QK, (old) => {
+      queryClient.setQueryData(QK.exercisesBundle, (old) => {
         const base = old ?? { exercises: [], muscleGroups: [] };
         const result = typeof next === "function" ? next(base) : next;
         return {
@@ -50,7 +49,7 @@ export default function useExercisesData(onError) {
   );
 
   const invalidateExercisesBundle = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: EXERCISES_BUNDLE_QK });
+    queryClient.invalidateQueries({ queryKey: QK.exercisesBundle });
   }, [queryClient]);
 
   const createIndividualExercise = useMutation({
@@ -73,7 +72,7 @@ export default function useExercisesData(onError) {
     onSuccess: (individualExercise) => {
       // add to cache if it's a custom exercise
       if (!individualExercise?.exercise_id) {
-        queryClient.setQueryData(EXERCISES_BUNDLE_QK, (old) => {
+        queryClient.setQueryData(QK.exercisesBundle, (old) => {
           if (!old) return old;
           return {
             ...old,

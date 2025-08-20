@@ -53,7 +53,10 @@
     "pagination": { "page_of": "Страница {{page}} из {{pageCount}}" },
     "no_results_for": "Нет результатов для \"{{search}}\"",
     "version": "Версия",
-    "name_too_long": "Имя должно быть короче {{limit}} символов."
+    "name_too_long": "Имя должно быть короче {{limit}} символов.",
+    "refreshing": "Обновление...",
+    "release_to_refresh": "Отпустите, чтобы обновить",
+    "pull_to_refresh": "Потяните, чтобы обновить"
   },
   "measurements": {
     "weight": "кг",
@@ -252,7 +255,8 @@
     "new_password_placeholder": "Введите новый пароль",
     "confirm_password_placeholder": "Подтвердите новый пароль",
     "passwords_mismatch": "Пароли не совпадают.",
-    "password_min_length": "Пароль должен содержать не менее 8 символов.",
+    "password_min_length": "Пароль должен содержать не менее {{minLength}} символов.",
+    "password_too_long": "Пароль должен содержать менее {{limit}} символов.",
     "reset_password_button": "Сбросить",
     "invalid_link": "Недействительная или просроченная ссылка для сброса.",
     "verifying_link": "Проверка ссылки..."
@@ -328,7 +332,10 @@
     "cannot_delete_first_cycle": "Нельзя удалить первый цикл в плане.",
     "delete_this_cycle": "Удалить этот цикл тренировок",
     "cannot_delete_only_set": "Нельзя удалить единственный подход в упражнении",
-    "delete_this_set": "Удалить этот подход"
+    "delete_this_set": "Удалить этот подход",
+    "skip_set": "Пропустить подход",
+    "skip_exercise": "Пропустить незавершенные подходы",
+    "skip_cycle": "Пропустить цикл"
   },
   "exercise": {
     "bench-press": "Жим штанги лёжа",

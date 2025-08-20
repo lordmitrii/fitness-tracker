@@ -53,7 +53,10 @@
     "pagination": { "page_of": "Page {{page}} of {{pageCount}}" },
     "no_results_for": "No results for \"{{search}}\"",
     "version": "Version",
-    "name_too_long": "Name must be less than {{limit}} characters."
+    "name_too_long": "Name must be less than {{limit}} characters.",
+    "refreshing": "Refreshing...",
+    "release_to_refresh": "Release to refresh",
+    "pull_to_refresh": "Pull to refresh"
   },
   "measurements": {
     "weight": "kg",
@@ -329,7 +332,10 @@
     "cannot_delete_first_cycle": "Cannot delete the first cycle in a workout plan.",
     "delete_this_cycle": "Delete this workout cycle",
     "cannot_delete_only_set": "Cannot delete the only set of an exercise",
-    "delete_this_set": "Delete this set"
+    "delete_this_set": "Delete this set",
+    "skip_set": "Skip Set",
+    "skip_exercise": "Skip Incomplete Sets",
+    "skip_cycle": "Skip Cycle"
   },
   "exercise": {
     "bench-press": "Bench Press",

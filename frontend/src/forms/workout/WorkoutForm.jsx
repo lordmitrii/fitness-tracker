@@ -5,6 +5,8 @@ import { useParams } from "react-router-dom";
 import LoadingState from "../../states/LoadingState";
 import ErrorState from "../../states/ErrorState";
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
+import { QK } from "../../utils/queryKeys";
 
 const WorkoutForm = memo(function WorkoutForm({
   initialData = {},
@@ -71,9 +73,7 @@ const WorkoutForm = memo(function WorkoutForm({
             <label htmlFor="name" className="block text-body font-medium">
               {t("workout_form.workout_name_label")}
             </label>
-            <div className="text-caption">
-              {formData.name.length}/50
-            </div>
+            <div className="text-caption">{formData.name.length}/50</div>
           </div>
           <input
             type="text"
@@ -105,6 +105,7 @@ export const CreateWorkoutForm = () => {
   const { planID, cycleID } = useParams();
   const navigate = useNavigate();
   const [error, setError] = useState(null);
+  const qc = useQueryClient();
 
   const handleCreate = useCallback(
     async (payload) => {
@@ -113,6 +114,7 @@ export const CreateWorkoutForm = () => {
           `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts`,
           payload
         );
+        await qc.invalidateQueries({ queryKey: QK.cycle(planID, cycleID) });
         navigate(`/workout-plans/${planID}/workout-cycles/${cycleID}`);
       } catch (error) {
         console.error("Error creating workout:", error);
@@ -144,6 +146,7 @@ export const UpdateWorkoutForm = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { t } = useTranslation();
+  const qc = useQueryClient();
 
   useEffect(() => {
     setLoading(true);
@@ -172,6 +175,7 @@ export const UpdateWorkoutForm = () => {
           `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}`,
           payload
         );
+        qc.invalidateQueries({ queryKey: QK.cycle(planID, cycleID) });
         navigate(`/workout-plans/${planID}/workout-cycles/${cycleID}`);
       } catch (error) {
         console.error("Error updating workout:", error);

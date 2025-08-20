@@ -26,10 +26,12 @@ type WorkoutCycleUpdateRequest struct {
 	Name       string `json:"name" binding:"max=50"`
 	WeekNumber int    `json:"week_number" binding:"min=1,max=4294967295"`
 	Completed  bool   `json:"completed"`
+	Skipped    bool   `json:"skipped"`
 }
 
 type WorkoutCycleCompleteRequest struct {
 	Completed bool `json:"completed"`
+	Skipped   bool `json:"skipped"`
 }
 
 type WorkoutCreateRequest struct {
@@ -43,6 +45,16 @@ type WorkoutUpdateRequest struct {
 	Date      time.Time `json:"date"`
 	Index     int       `json:"index"`
 	Completed bool      `json:"completed"`
+	Skipped   bool      `json:"skipped"`
+}
+
+type WorkoutCompleteRequest struct {
+	Completed bool `json:"completed"`
+	Skipped   bool `json:"skipped"`
+}
+
+type WorkoutMoveRequest struct {
+	Direction string `json:"direction" binding:"required,oneof=up down"`
 }
 
 type WorkoutBulkCreateRequest struct {
@@ -61,10 +73,12 @@ type WorkoutExerciseCreateRequest struct {
 type WorkoutExerciseUpdateRequest struct {
 	Index     int  `json:"index"`
 	Completed bool `json:"completed"`
+	Skipped   bool `json:"skipped"`
 }
 
 type WorkoutExerciseCompleteRequest struct {
 	Completed bool `json:"completed"`
+	Skipped   bool `json:"skipped"`
 }
 
 type WorkoutExerciseMoveRequest struct {
@@ -88,8 +102,8 @@ type WorkoutSetUpdateRequest struct {
 	Index     int      `json:"index"`
 	Weight    *float64 `json:"weight" binding:"omitempty,min=0,max=2000"`
 	Reps      *int     `json:"reps" binding:"omitempty,min=1,max=2000"`
-	Completed bool     `json:"completed"`
-	Skipped   bool     `json:"skipped"`
+	Completed bool     `json:"completed" binding:"omitempty"`
+	Skipped   bool     `json:"skipped" binding:"omitempty"`
 }
 
 type WorkoutSetCompleteRequest struct {
@@ -121,14 +135,15 @@ type WorkoutPlanResponse struct {
 }
 
 type WorkoutCycleResponse struct {
-	ID              uint              `json:"id"`
-	Name            string            `json:"name"`
-	WorkoutPlanID   uint              `json:"workout_plan_id"`
-	WeekNumber      int               `json:"week_number"`
-	Workouts        []WorkoutResponse `json:"workouts"`
-	Completed       bool              `json:"completed"`
-	PreviousCycleID uint              `json:"previous_cycle_id" binding:"omitempty"`
-	NextCycleID     uint              `json:"next_cycle_id" binding:"omitempty"`
+	ID              uint              `json:"id,omitempty"`
+	Name            string            `json:"name,omitempty"`
+	WorkoutPlanID   uint              `json:"workout_plan_id,omitempty"`
+	WeekNumber      int               `json:"week_number,omitempty"`
+	Workouts        []WorkoutResponse `json:"workouts,omitempty"`
+	Completed       bool              `json:"completed,omitempty"`
+	Skipped         bool              `json:"skipped,omitempty"`
+	PreviousCycleID uint              `json:"previous_cycle_id,omitempty"`
+	NextCycleID     uint              `json:"next_cycle_id,omitempty"`
 	CreatedAt       time.Time         `json:"created_at"`
 	UpdatedAt       time.Time         `json:"updated_at"`
 }
@@ -140,6 +155,7 @@ type WorkoutResponse struct {
 	Date              time.Time                 `json:"date"`
 	Index             int                       `json:"index"`
 	Completed         bool                      `json:"completed"`
+	Skipped           bool                      `json:"skipped"`
 	PreviousWorkoutID uint                      `json:"previous_workout_id"`
 	WorkoutExercises  []WorkoutExerciseResponse `json:"workout_exercises"`
 	CreatedAt         time.Time                 `json:"created_at"`
@@ -171,6 +187,7 @@ type WorkoutExerciseResponse struct {
 	IndividualExercise   *IndividualExerciseResponse `json:"individual_exercise"`
 	WorkoutSets          []WorkoutSetResponse        `json:"workout_sets"`
 	Completed            bool                        `json:"completed"`
+	Skipped              bool                        `json:"skipped"`
 	SetsQt               int64                       `json:"sets_qt"`
 	CreatedAt            time.Time                   `json:"created_at"`
 	UpdatedAt            time.Time                   `json:"updated_at"`

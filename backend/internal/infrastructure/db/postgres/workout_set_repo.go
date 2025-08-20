@@ -131,3 +131,13 @@ func (r *WorkoutSetRepo) SwapWorkoutSetsByIndex(ctx context.Context, workoutExer
 		return nil
 	})
 }
+
+func (r *WorkoutSetRepo) GetSkippedSetsCount(ctx context.Context, workoutExerciseID uint) (int64, error) {
+	var count int64
+	err := r.db.WithContext(ctx).
+		Model(&workout.WorkoutSet{}).
+		Where("workout_exercise_id = ? AND skipped = true", workoutExerciseID).
+		Count(&count).Error
+
+	return count, err
+}

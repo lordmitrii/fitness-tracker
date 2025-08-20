@@ -1,37 +1,27 @@
 import { useState, useEffect, useCallback } from "react";
-import api from "../../api";
 import { useNavigate, useParams } from "react-router-dom";
 import LoadingState from "../../states/LoadingState";
 import ErrorState from "../../states/ErrorState";
 import { useTranslation } from "react-i18next";
+import usePlansData from "../../hooks/data/usePlansData";
+import useSinglePlanData from "../../hooks/data/useSinglePlanData";
 
 // Update workout plan page
 const UpdateWorkoutPlanForm = () => {
   const { planID } = useParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   const [planName, setPlanName] = useState("");
 
   const [formErrors, setFormErrors] = useState({});
 
+  const { data: plan, isLoading: loading, error } = useSinglePlanData(planID);
+  const { mutations } = usePlansData({ skipQuery: true });
+
   useEffect(() => {
-    setLoading(true);
-    api
-      .get(`/workout-plans/${planID}`)
-      .then((response) => {
-        setPlanName(response.data.name);
-      })
-      .catch((error) => {
-        console.error("Error fetching workout plan:", error);
-        setError(error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
+    if (plan?.name != null) setPlanName(plan.name);
+  }, [plan?.name]);
 
   const validate = useCallback(() => {
     const newErrors = {};
@@ -45,37 +35,21 @@ const UpdateWorkoutPlanForm = () => {
     return newErrors;
   }, [planName, t]);
 
-  const handleUpdate = useCallback(
-    (payload) => {
-      api
-        .patch(`/workout-plans/${planID}`, payload)
-        .then(() => {
-          navigate("/workout-plans");
-        })
-        .catch((error) => {
-          console.error("Error updating workout plan:", error);
-          setError(error);
-        });
-    },
-    [planID, navigate]
-  );
-
   const handleSubmit = useCallback(
-    (e) => {
+    async (e) => {
       e.preventDefault();
       const validationErrors = validate();
-      if (Object.keys(validationErrors).length > 0) {
+      if (Object.keys(validationErrors).length) {
         setFormErrors(validationErrors);
         return;
       }
-
-      const payload = {
-        name: planName.trim(),
-      };
-
-      handleUpdate(payload);
+      await mutations.updatePlan.mutateAsync({
+        planID,
+        payload: { name: planName.trim() },
+      });
+      navigate("/workout-plans");
     },
-    [planName, t, handleUpdate, validate]
+    [validate, planID, planName, mutations.updatePlan, navigate]
   );
 
   if (loading)
@@ -86,7 +60,10 @@ const UpdateWorkoutPlanForm = () => {
     );
   if (error)
     return (
-      <ErrorState error={error} onRetry={() => window.location.reload()} />
+      <ErrorState
+        error={error}
+        onRetry={() => mutations.updatePlan.refetch()}
+      />
     );
 
   return (

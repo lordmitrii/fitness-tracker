@@ -91,17 +91,19 @@ func ToWorkoutCycleResponse(wc *workout.WorkoutCycle) WorkoutCycleResponse {
 		WorkoutPlanID:   wc.WorkoutPlanID,
 		WeekNumber:      wc.WeekNumber,
 		Completed:       wc.Completed,
+		Skipped:         wc.Skipped,
 		PreviousCycleID: wc.PreviousCycleID,
 		NextCycleID:     wc.NextCycleID,
 		CreatedAt:       wc.CreatedAt,
 		UpdatedAt:       wc.UpdatedAt,
 	}
-	// if len(wc.Workouts) > 0 {
-	resp.Workouts = make([]WorkoutResponse, 0, len(wc.Workouts))
-	for _, w := range wc.Workouts {
-		resp.Workouts = append(resp.Workouts, ToWorkoutResponse(w))
+	if len(wc.Workouts) > 0 {
+		resp.Workouts = make([]WorkoutResponse, 0, len(wc.Workouts))
+		for _, w := range wc.Workouts {
+			resp.Workouts = append(resp.Workouts, ToWorkoutResponse(w))
+		}
 	}
-	// }
+
 	return resp
 }
 
@@ -113,6 +115,7 @@ func ToWorkoutResponse(w *workout.Workout) WorkoutResponse {
 		Date:              w.Date,
 		Index:             w.Index,
 		Completed:         w.Completed,
+		Skipped:           w.Skipped,
 		PreviousWorkoutID: w.PreviousWorkoutID,
 		CreatedAt:         w.CreatedAt,
 		UpdatedAt:         w.UpdatedAt,
@@ -139,6 +142,7 @@ func ToWorkoutExerciseResponse(we *workout.WorkoutExercise) WorkoutExerciseRespo
 		IndividualExerciseID: we.IndividualExerciseID,
 		IndividualExercise:   ie,
 		Completed:            we.Completed,
+		Skipped:              we.Skipped,
 		SetsQt:               we.SetsQt,
 		CreatedAt:            we.CreatedAt,
 		UpdatedAt:            we.UpdatedAt,

@@ -1,10 +1,10 @@
-import api from "../../api";
 import { MoveDownIcon, MoveUpIcon } from "../../icons/MoveIcon";
 import ReplaceIcon from "../../icons/ReplaceIcon";
 import DeleteIcon from "../../icons/DeleteIcon";
+import SkipIcon from "../../icons/SkipIcon";
 import { useTranslation } from "react-i18next";
-import { withOptimisticUpdate } from "../../utils/updates";
 import { useState } from "react";
+import useWorkoutData from "../../hooks/data/useWorkoutData";
 
 const WorkoutExerciseDetailsMenu = ({
   planID,
@@ -12,13 +12,18 @@ const WorkoutExerciseDetailsMenu = ({
   workoutID,
   exerciseID,
   exerciseOrder,
-  updateExercises,
   closeMenu,
-  onError,
   onReplace,
+  exerciseCompleted,
+  exerciseSkipped,
 }) => {
   const { t } = useTranslation();
   const [pending, setPending] = useState(false);
+  const { mutations } = useWorkoutData({
+    planID,
+    cycleID,
+    skipQuery: true,
+  });
 
   const indices = exerciseOrder?.map((e) => e.index) ?? [];
   const maxIndex = indices.length ? Math.max(...indices) : 1;
@@ -28,99 +33,71 @@ const WorkoutExerciseDetailsMenu = ({
   const isTop = currentIndex === 1;
   const isBottom = currentIndex === maxIndex;
 
-  const postMove = async (direction) => {
-    await api.post(
-      `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exerciseID}/move`,
-      { direction }
-    );
-  };
-
   const handleMoveUp = async () => {
-    if (pending) return;
+    if (pending || isTop) return;
     setPending(true);
-
     try {
-      await withOptimisticUpdate(
-        updateExercises,
-        (prev) => {
-          const me = prev.find((e) => e.id === exerciseID);
-          if (!me || me.index === 1) return prev;
-          const above = prev.find((e) => e.index === me.index - 1);
-          if (!above) return prev;
-          return prev.map((e) =>
-            e.id === me.id
-              ? { ...e, index: e.index - 1 }
-              : e.id === above.id
-              ? { ...e, index: e.index + 1 }
-              : e
-          );
-        },
-        () => postMove("up")
-      );
+      await mutations.moveExercise.mutateAsync({
+        workoutID,
+        exerciseID,
+        direction: "up",
+      });
     } catch (error) {
-      onError(error);
+      console.error("Move exercise up error:", error);
     } finally {
       setPending(false);
-      closeMenu();
+      closeMenu?.();
     }
   };
 
   const handleMoveDown = async () => {
-    if (pending) return;
+    if (pending || isOnlyExercise || isBottom) return;
     setPending(true);
-
     try {
-      await withOptimisticUpdate(
-        updateExercises,
-        (prev) => {
-          const me = prev.find((e) => e.id === exerciseID);
-          if (!me) return prev;
-          const maxIndex = Math.max(...prev.map((e) => e.index));
-          if (me.index === maxIndex) return prev;
-          const below = prev.find((e) => e.index === me.index + 1);
-          if (!below) return prev;
-          return prev.map((e) =>
-            e.id === me.id
-              ? { ...e, index: e.index + 1 }
-              : e.id === below.id
-              ? { ...e, index: e.index - 1 }
-              : e
-          );
-        },
-        () => postMove("down")
-      );
+      await mutations.moveExercise.mutateAsync({
+        workoutID,
+        exerciseID,
+        direction: "down",
+      });
     } catch (error) {
-      onError(error);
+      console.error("Move exercise down error:", error);
     } finally {
       setPending(false);
-      closeMenu();
+      closeMenu?.();
+    }
+  };
+
+  const handleSkipExercise = async () => {
+    if (pending) return;
+    setPending(true);
+    try {
+      await mutations.skipExercise.mutateAsync({ workoutID, exerciseID });
+    } catch (error) {
+      console.error("Skip exercise error:", error);
+    } finally {
+      setPending(false);
+      closeMenu?.();
     }
   };
 
   const handleDeleteExercise = async () => {
+    if (pending) return;
     if (!confirm(t("menus.confirm_delete_exercise"))) return;
+    setPending(true);
     try {
-      await api.delete(
-        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/workout-exercises/${exerciseID}`
-      );
-      updateExercises((prev) => {
-        const me = prev.find((e) => e.id === exerciseID);
-        if (!me) return prev;
-        return prev
-          .filter((e) => e.id !== exerciseID)
-          .map((e) => (e.index > me.index ? { ...e, index: e.index - 1 } : e));
-      });
+      await mutations.deleteExercise.mutateAsync({ workoutID, exerciseID });
     } catch (error) {
-      onError(error);
+      console.error("Delete exercise error:", error);
     } finally {
-      closeMenu();
+      setPending(false);
+      closeMenu?.();
     }
   };
 
   if (!exerciseID) return null;
 
   return (
-    <div className="flex flex-col space-y-2 mt-2">
+    <div className="flex flex-col space-y-2">
       <button
         className={`btn btn-secondary-light text-left ${
           isTop || pending ? "opacity-50 cursor-not-allowed" : ""
@@ -133,6 +110,7 @@ const WorkoutExerciseDetailsMenu = ({
           {t("menus.move_up")}
         </span>
       </button>
+
       <button
         className={`btn btn-secondary-light text-left ${
           isOnlyExercise || isBottom || pending
@@ -147,6 +125,7 @@ const WorkoutExerciseDetailsMenu = ({
           {t("menus.move_down")}
         </span>
       </button>
+
       <button
         className="btn btn-secondary-light text-left"
         onClick={() => {
@@ -159,9 +138,28 @@ const WorkoutExerciseDetailsMenu = ({
           {t("menus.replace_exercise")}
         </span>
       </button>
+
+      {!(exerciseCompleted || exerciseSkipped) && (
+        <button
+          className={`btn btn-secondary-light text-left ${
+            pending ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+          onClick={handleSkipExercise}
+          disabled={pending}
+        >
+          <span className="flex items-center gap-2">
+            <SkipIcon />
+            {t("menus.skip_exercise")}
+          </span>
+        </button>
+      )}
+
       <button
-        className="btn btn-danger-light text-left"
+        className={`btn btn-danger-light text-left ${
+          pending ? "opacity-50 cursor-not-allowed" : ""
+        }`}
         onClick={handleDeleteExercise}
+        disabled={pending}
       >
         <span className="flex items-center gap-2">
           <DeleteIcon />

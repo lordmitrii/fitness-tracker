@@ -7,7 +7,7 @@ import Layout from "./layout/Layout";
 import Home from "./pages/Home";
 
 import WorkoutPlans from "./pages/workout/WorkoutPlans";
-import WorkoutPlanSingle from "./pages/workout/WorkoutPlanSingle";
+import WorkoutCycle from "./pages/workout/WorkoutCycle";
 
 import ExerciseStats from "./pages/ExerciseStats";
 import Profile from "./pages/Profile";
@@ -35,7 +35,7 @@ import {
   UpdateProfileForm,
 } from "./forms/profile/ProfileForm";
 
-import AddWorkoutPlanForm from "./forms/workout/AddWorkoutPlanForm";
+import CreateWorkoutPlanForm from "./forms/workout/CreateWorkoutPlanForm";
 import UpdateWorkoutPlanForm from "./forms/workout/UpdateWorkoutPlanForm";
 import {
   CreateWorkoutForm,
@@ -74,7 +74,7 @@ function App() {
               <Route path="/workout-plans" element={<WorkoutPlans />} />
               <Route
                 path="/create-workout-plan"
-                element={<AddWorkoutPlanForm />}
+                element={<CreateWorkoutPlanForm />}
               />
               <Route
                 path="/update-workout-plan/:planID"
@@ -83,7 +83,7 @@ function App() {
 
               <Route
                 path="/workout-plans/:planID/workout-cycles/:cycleID"
-                element={<WorkoutPlanSingle />}
+                element={<WorkoutCycle />}
               />
               <Route
                 path="/workout-plans/:planID/workout-cycles/:cycleID/create-workout"

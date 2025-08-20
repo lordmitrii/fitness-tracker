@@ -5,4 +5,6 @@ export const toNumberOrEmpty = (v) => {
   return Number.isFinite(n) ? n : "";
 };
 
-export const toNullIfEmpty = (v) => (v === "" || v == null ? null : v);
+export const toNullIfEmpty = (v) =>
+  v === "" || v === undefined || v === null ? null : v;
+

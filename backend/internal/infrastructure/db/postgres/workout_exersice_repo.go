@@ -46,7 +46,7 @@ func (r *WorkoutExerciseRepo) Update(ctx context.Context, e *workout.WorkoutExer
 }
 
 func (r *WorkoutExerciseRepo) Complete(ctx context.Context, e *workout.WorkoutExercise) error {
-	return r.db.WithContext(ctx).Model(&workout.WorkoutExercise{}).Where("id = ?", e.ID).Select("completed").Updates(e).Error
+	return r.db.WithContext(ctx).Model(&workout.WorkoutExercise{}).Where("id = ?", e.ID).Select("completed", "skipped").Updates(e).Error
 }
 
 func (r *WorkoutExerciseRepo) Delete(ctx context.Context, id uint) error {
@@ -63,7 +63,7 @@ func (r *WorkoutExerciseRepo) Delete(ctx context.Context, id uint) error {
 func (r *WorkoutExerciseRepo) GetIncompleteExercisesCount(ctx context.Context, workoutId uint) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).Model(&workout.WorkoutExercise{}).
-		Where("workout_id = ? AND completed = ?", workoutId, false).
+		Where("workout_id = ? AND completed = false", workoutId).
 		Count(&count).
 		Error; err != nil {
 		return 0, err
@@ -85,8 +85,11 @@ func (r *WorkoutExerciseRepo) GetLast5ByIndividualExerciseID(ctx context.Context
 	var exercises []*workout.WorkoutExercise
 	if err := r.db.WithContext(ctx).
 		Where("individual_exercise_id = ?", individualExerciseID).
-		Order("individual_exercise_id, created_at DESC").
-		Preload("WorkoutSets").Limit(5).
+		Joins("JOIN workout_sets ON workout_sets.workout_exercise_id = workout_exercises.id").
+		Where("workout_sets.reps IS NOT NULL AND workout_sets.weight IS NOT NULL").
+		Order("workout_exercises.created_at DESC").
+		Preload("WorkoutSets").
+		Limit(5).
 		Find(&exercises).Error; err != nil {
 		return nil, err
 	}
@@ -142,4 +145,15 @@ func (r *WorkoutExerciseRepo) SwapWorkoutExercisesByIndex(ctx context.Context, w
 
 		return nil
 	})
+}
+
+func (r *WorkoutExerciseRepo) GetSkippedExercisesCount(ctx context.Context, workoutId uint) (int64, error) {
+	var count int64
+	if err := r.db.WithContext(ctx).Model(&workout.WorkoutExercise{}).
+		Where("workout_id = ? AND skipped = true", workoutId).
+		Count(&count).
+		Error; err != nil {
+		return 0, err
+	}
+	return count, nil
 }

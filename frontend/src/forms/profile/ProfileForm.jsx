@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import LoadingState from "../../states/LoadingState";
 import ErrorState from "../../states/ErrorState";
 import { useTranslation } from "react-i18next";
-import useProfileData from "../../hooks/useProfileData";
+import useProfileData from "../../hooks/data/useProfileData";
 import { PROFILE_LIMITS } from "../../config/constants";
 import { toNumberOrEmpty } from "../../utils/numberUtils";
 

@@ -168,7 +168,11 @@ const Users = () => {
                       {u.created_at && (
                         <span className="text-caption">
                           {t("admin.table.joined_at")}:{" "}
-                          {new Date(u.created_at).toLocaleString(i18n.language)}
+                          {u.created_at
+                            ? new Date(u.created_at).toLocaleString(
+                                i18n.language
+                              )
+                            : t("general.n_a")}
                         </span>
                       )}
                     </div>
