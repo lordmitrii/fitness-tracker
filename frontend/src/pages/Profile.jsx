@@ -3,7 +3,7 @@ import LoadingState from "../states/LoadingState";
 import ErrorState from "../states/ErrorState";
 import { useTranslation } from "react-i18next";
 import { LayoutHeader } from "../layout/LayoutHeader";
-import useProfileData from "../hooks/useProfileData";
+import useProfileData from "../hooks/data/useProfileData";
 
 const Profile = () => {
   const navigate = useNavigate();

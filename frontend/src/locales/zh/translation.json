@@ -334,7 +334,7 @@
     "cannot_delete_only_set": "不能删除该练习的唯一组",
     "delete_this_set": "删除此组",
     "skip_set": "跳过此组",
-    "skip_exercise": "跳过此练习",
+    "skip_exercise": "跳过未完成的组",
     "skip_cycle": "跳过此周期"
   },
   "exercise": {

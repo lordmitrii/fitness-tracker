@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { toNumberOrEmpty, toNullIfEmpty } from "../../utils/numberUtils";
 import { SET_LIMITS } from "../../config/constants";
 import { ChartEqualIcon } from "../../icons/ChartIcon";
-import useWorkoutData from "../../hooks/useWorkoutData";
+import useWorkoutData from "../../hooks/data/useWorkoutData";
 
 const WorkoutSetRow = ({
   planID,

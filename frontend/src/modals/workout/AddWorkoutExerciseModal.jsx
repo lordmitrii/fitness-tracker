@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import SpinnerIcon from "../../icons/SpinnerIcon";
 import { useTranslation } from "react-i18next";
 import CheckBox from "../../components/CheckBox";
-import useExercisesData from "../../hooks/useExercisesData";
+import useExercisesData from "../../hooks/data/useExercisesData";
 import Modal from "../Modal";
 import MuscleGroupSelect from "../../components/workout/MuscleGroupSelect";
 import ExerciseSelect from "../../components/workout/ExerciseSelect";

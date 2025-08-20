@@ -3,7 +3,7 @@ import DeleteIcon from "../../icons/DeleteIcon";
 import { useTranslation } from "react-i18next";
 import { memo, useCallback } from "react";
 import { ArrowLeftIcon, ArrowRightIcon } from "../../icons/ArrowIcon";
-import useWorkoutData from "../../hooks/useWorkoutData";
+import useWorkoutData from "../../hooks/data/useWorkoutData";
 
 const WorkoutCycleDetailsMenu = ({
   closeMenu,
@@ -50,7 +50,7 @@ const WorkoutCycleDetailsMenu = ({
   if (!cycleID) return null;
 
   return (
-    <div className="flex flex-col space-y-2 mt-2">
+    <div className="flex flex-col space-y-2">
       <div className="flex gap-2 items-center justify-between">
         <div className="w-1/2">
           {!!previousCycleID && (

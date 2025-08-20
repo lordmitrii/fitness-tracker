@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useCallback } from "react";
-import api from "../api";
+import api from "../../api";
 
 const asKeyId = (v) => (v == null ? v : String(v));
 

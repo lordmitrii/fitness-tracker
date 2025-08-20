@@ -9,7 +9,7 @@ import ProgressBar from "../../components/ProgressBar";
 import { useTranslation } from "react-i18next";
 import AddWorkoutExerciseModal from "../../modals/workout/AddWorkoutExerciseModal";
 import { LayoutHeader } from "../../layout/LayoutHeader";
-import useWorkoutData from "../../hooks/useWorkoutData";
+import useWorkoutData from "../../hooks/data/useWorkoutData";
 
 const WorkoutCycle = () => {
   const navigate = useNavigate();
@@ -109,7 +109,7 @@ const WorkoutCycle = () => {
             {t("workout_plan_single.plan_label")} {plan?.name}
           </h1>
 
-          <div className="flex justify-between items-center min-w-0">
+          <div className="flex justify-between items-center min-w-0 relative">
             <h2 className="text-caption min-w-0">
               {t("workout_plan_single.cycle_label")}{" "}
               <span className="font-semibold truncate">{cycle?.name}</span>

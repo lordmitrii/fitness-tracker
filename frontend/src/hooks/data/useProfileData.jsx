@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useMemo, useCallback } from "react";
-import api from "../api";
+import api from "../../api";
 
 const PROFILE_QK = ["profile"];
 

@@ -3,7 +3,7 @@ import UpdateIcon from "../../icons/UpdateIcon";
 import DeleteIcon from "../../icons/DeleteIcon";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
-import useWorkoutData from "../../hooks/useWorkoutData";
+import useWorkoutData from "../../hooks/data/useWorkoutData";
 
 const WorkoutDetailsMenu = ({
   closeMenu,
@@ -49,7 +49,7 @@ const WorkoutDetailsMenu = ({
   if (!workoutID) return null;
 
   return (
-    <div className="flex flex-col space-y-2 mt-2">
+    <div className="flex flex-col space-y-2">
       <button
         className={`btn btn-secondary-light text-left`}
         onClick={handleUpdateWorkout}

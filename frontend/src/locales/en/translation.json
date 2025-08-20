@@ -334,7 +334,7 @@
     "cannot_delete_only_set": "Cannot delete the only set of an exercise",
     "delete_this_set": "Delete this set",
     "skip_set": "Skip Set",
-    "skip_exercise": "Skip Exercise",
+    "skip_exercise": "Skip Incomplete Sets",
     "skip_cycle": "Skip Cycle"
   },
   "exercise": {

@@ -64,7 +64,7 @@ const WorkoutPlanDetailsMenu = ({
   if (!plan) return null;
 
   return (
-    <div className="flex flex-col space-y-2 mt-2">
+    <div className="flex flex-col space-y-2">
       <button
         className={`btn text-left ${
           plan.active
