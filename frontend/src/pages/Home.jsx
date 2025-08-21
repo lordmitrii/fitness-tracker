@@ -5,6 +5,7 @@ import ErrorState from "../states/ErrorState";
 import { Link } from "react-router-dom";
 import InstallIcon from "../icons/InstallIcon";
 import { useTranslation } from "react-i18next";
+import { LayoutHeader } from "../layout/LayoutHeader";
 
 const Home = () => {
   const { isAuth } = useAuth();
@@ -23,25 +24,32 @@ const Home = () => {
     );
 
   return (
-    <div className="card flex flex-col items-center">
-      <h1 className="text-title font-bold mb-8 text-center">
-        {isAuth ? t("home.welcome_back") : t("home.welcome")}
-      </h1>
-      <p className="text-body mb-8 text-center">
-        {isAuth ? t("home.logged_in") : t("home.please_login_or_register")}
-      </p>
-      <p className="text-caption mb-6 text-center">
-        {t("home.no_purpose_yet")}
-      </p>
+    <>
+      <LayoutHeader>
+        <h1 className="text-title-blue-gradient font-bold via-blue-500 px-4 font-extrabold py-1">
+          Fitness Tracker
+        </h1>
+      </LayoutHeader>
+      <div className="card flex flex-col items-center">
+        <h1 className="text-title font-bold mb-8 text-center">
+          {isAuth ? t("home.welcome_back") : t("home.welcome")}
+        </h1>
+        <p className="text-body mb-8 text-center">
+          {isAuth ? t("home.logged_in") : t("home.please_login_or_register")}
+        </p>
+        <p className="text-caption mb-6 text-center">
+          {t("home.no_purpose_yet")}
+        </p>
 
-      {/* Install App Guide Link */}
-      <Link to="/installation-guide" className="btn btn-primary">
-        <span className="flex items-center gap-2">
-          <InstallIcon />
-          {t("home.install_app")}
-        </span>
-      </Link>
-    </div>
+        {/* Install App Guide Link */}
+        <Link to="/installation-guide" className="btn btn-primary">
+          <span className="flex items-center gap-2">
+            <InstallIcon />
+            {t("home.install_app")}
+          </span>
+        </Link>
+      </div>
+    </>
   );
 };
 

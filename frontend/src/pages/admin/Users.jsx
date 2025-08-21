@@ -3,10 +3,11 @@ import { useState, useEffect, useCallback } from "react";
 import api from "../../api";
 import LoadingState from "../../states/LoadingState";
 import ErrorState from "../../states/ErrorState";
-
+import { highlightMatches } from "../../utils/highlightMatches";
 import Pagination from "../../components/Pagination";
 import EditRolesModal from "../../modals/admin/EditRolesModal";
 import DangerMenu from "../../components/admin/AdminDangerMenu";
+import { usePullToRefreshOverride } from "../../context/PullToRefreshContext";
 
 const PAGE_SIZE = 20;
 
@@ -29,7 +30,7 @@ const Users = () => {
   const [actionError, setActionError] = useState(null);
 
   useEffect(() => {
-    const id = setTimeout(() => setSearch(query.trim()), 350);
+    const id = setTimeout(() => setSearch(query.trim()), 500);
     return () => clearTimeout(id);
   }, [query]);
 
@@ -96,6 +97,12 @@ const Users = () => {
     loadUsers();
   }, [loadUsers]);
 
+  usePullToRefreshOverride(
+    useCallback(() => {
+      loadUsers();
+    }, [loadUsers])
+  );
+
   if (loading) return <LoadingState />;
 
   if (fetchError) {
@@ -142,7 +149,7 @@ const Users = () => {
             <tr>
               <th className="px-4 py-3">{t("admin.table.email")}</th>
               <th className="px-4 py-3">{t("admin.table.roles")}</th>
-              <th className="px-4 py-3 w-40 text-right">
+              <th className="px-4 py-3 w-auto sm:w-40 text-right">
                 {t("general.actions")}
               </th>
             </tr>
@@ -150,7 +157,7 @@ const Users = () => {
           <tbody>
             {users.length === 0 ? (
               <tr>
-                <td colSpan={3} className="p-6 text-center text-body">
+                <td colSpan={3} className="px-6 py-2 text-center text-caption">
                   {search
                     ? t("general.no_results_for", { search })
                     : t("admin.no_users")}
@@ -165,7 +172,7 @@ const Users = () => {
                   <td className="px-4 py-3 align-center">
                     <div className="flex flex-col">
                       <span className="text-body max-w-[30dvh] overflow-x-auto">
-                        {u.email}
+                        {highlightMatches(u.email, query, "bg-blue-600 text-white")}
                       </span>
                       {u.created_at && (
                         // <span className="text-caption">

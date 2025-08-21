@@ -1,36 +1,30 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import api from "../../api";
 import LoadingState from "../../states/LoadingState";
 import ErrorState from "../../states/ErrorState";
+import useExercisesData from "../../hooks/data/useExercisesData";
+import { usePullToRefreshOverride } from "../../context/PullToRefreshContext";
+import { highlightMatches } from "../../utils/highlightMatches";
 
 const ExercisesAndMuscles = () => {
   const { t } = useTranslation();
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  const [exercises, setExercises] = useState([]);
-  const [muscles, setMuscles] = useState([]);
-
   const [query, setQuery] = useState("");
   const [muscleFilter, setMuscleFilter] = useState("all");
 
-  const reload = () => {
-    setLoading(true);
-    setError(null);
-    Promise.all([api.get("/exercises"), api.get("/muscle-groups")])
-      .then(([exRes, muRes]) => {
-        setExercises(exRes.data || []);
-        setMuscles(muRes.data || []);
-      })
-      .catch((e) => setError(e))
-      .finally(() => setLoading(false));
-  };
+  const {
+    poolOnlyExercises: exercises,
+    muscleGroups,
+    error,
+    isLoading: loading,
+    refetch,
+  } = useExercisesData();
 
-  useEffect(() => {
-    reload();
-  }, []);
+  usePullToRefreshOverride(
+    useCallback(async () => {
+      await refetch();
+    }, [refetch])
+  );
 
   const matchesQuery = (ex, q) => {
     if (!q) return true;
@@ -47,21 +41,21 @@ const ExercisesAndMuscles = () => {
         return ex.muscle_group_id === muscleFilter;
       })
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [exercises, query, muscleFilter, muscles]);
+  }, [exercises, query, muscleFilter, muscleGroups]);
 
   const exerciseCountByMuscle = useMemo(() => {
     const counts = new Map();
-    muscles.forEach((m) => counts.set(m.id, 0));
+    muscleGroups.forEach((m) => counts.set(m.id, 0));
     exercises.forEach((ex) => {
       counts.set(ex.muscle_group_id, (counts.get(ex.muscle_group_id) || 0) + 1);
     });
     return counts;
-  }, [exercises, muscles]);
+  }, [exercises, muscleGroups]);
 
   if (loading) return <LoadingState />;
 
   if (error) {
-    return <ErrorState error={error} onRetry={reload} />;
+    return <ErrorState error={error} onRetry={refetch} />;
   }
 
   return (
@@ -107,7 +101,10 @@ const ExercisesAndMuscles = () => {
             <tbody>
               {filteredExercises.length === 0 ? (
                 <tr>
-                  <td colSpan={1} className="p-6 text-center text-caption">
+                  <td
+                    colSpan={1}
+                    className="px-6 py-2 text-center text-caption"
+                  >
                     {t("admin.no_exercises")}
                   </td>
                 </tr>
@@ -118,7 +115,13 @@ const ExercisesAndMuscles = () => {
                       key={ex.id}
                       className="text-center border-t hover:bg-gray-50 transition-colors"
                     >
-                      <td className="font-medium">{ex.name}</td>
+                      <td className="font-medium">
+                        {highlightMatches(
+                          ex.name,
+                          query,
+                          "bg-blue-600 text-white"
+                        )}
+                      </td>
                     </tr>
                   );
                 })
@@ -133,7 +136,7 @@ const ExercisesAndMuscles = () => {
             <p className="text-caption">{t("admin.exercises.muscles_hint")}</p>
           </div>
           <ul className="divide-y">
-            {muscles
+            {muscleGroups
               .slice()
               .sort((a, b) => a.name.localeCompare(b.name))
               .map((m, index) => {
@@ -144,7 +147,9 @@ const ExercisesAndMuscles = () => {
                   <li
                     key={m.id}
                     className={`p-3 ${
-                      muscles.length - 1 === index ? "rounded-b-xl border-b-0" : ""
+                      muscleGroups.length - 1 === index
+                        ? "rounded-b-xl border-b-0"
+                        : ""
                     } flex items-center justify-between cursor-pointer border-b border-gray-600 hover:bg-gray-50 ${
                       active ? "bg-gray-300" : ""
                     }`}

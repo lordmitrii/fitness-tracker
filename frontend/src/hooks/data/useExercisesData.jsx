@@ -18,6 +18,7 @@ async function fetchExercisesBundle() {
   return {
     exercises: [...pool, ...customs],
     muscleGroups: res3?.data ?? [],
+    poolOnlyExercises: pool,
   };
 }
 
@@ -30,7 +31,7 @@ export default function useExercisesData(onError) {
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     onError,
-    select: (data) => data ?? { exercises: [], muscleGroups: [] },
+    select: (data) => data ?? { exercises: [], muscleGroups: [], poolOnlyExercises: [] },
     placeholderData: (prev) => prev,
   });
 
@@ -42,6 +43,7 @@ export default function useExercisesData(onError) {
         return {
           exercises: result?.exercises ?? base.exercises,
           muscleGroups: result?.muscleGroups ?? base.muscleGroups,
+          poolOnlyExercises: result?.poolOnlyExercises ?? base.poolOnlyExercises,
         };
       });
     },
@@ -117,6 +119,7 @@ export default function useExercisesData(onError) {
     () => ({
       exercises: data?.exercises ?? [],
       muscleGroups: data?.muscleGroups ?? [],
+      poolOnlyExercises: data?.poolOnlyExercises ?? [],
       error,
       loading: isLoading,
       fetchedOnce: isFetched,

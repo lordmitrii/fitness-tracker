@@ -28,39 +28,44 @@ function ScrollAreaWithPTR({ children }) {
   const progress = Math.min(1, offset / THRESHOLD);
 
   return (
-    <main
-      className="flex-1 basis-0 min-w-0 min-h-0 flex flex-col overflow-hidden focus:outline-none bg-gray-200"
-      tabIndex={-1}
-    >
-      <div
-        ref={scrollRef}
-        className="
+    <>
+      <main
+        className="flex-1 basis-0 min-w-0 min-h-0 flex flex-col overflow-hidden focus:outline-none bg-gray-200"
+        tabIndex={-1}
+      >
+        <div
+          ref={scrollRef}
+          className="
           flex-1 min-h-0 overflow-y-auto 
           overscroll-contain
           touch-pan-y
           [--webkit-overflow-scrolling:touch]
           relative scroll-stable
         "
-      >
-        <PullToRefreshPill
-          className="ptr-pill"
-          progress={progress}
-          status={status}
-        />
-        <div
-          style={{
-            height: offset,
-            transition:
-              pulling || refreshing
-                ? "height 120ms cubic-bezier(.22,1,.36,1)"
-                : "height 420ms cubic-bezier(.22,1,.36,1)",
-          }}
-        />
-        <div id="main-container" className="min-h-full flex flex-col">
-          {children}
+        >
+          <PullToRefreshPill
+            className="ptr-pill"
+            progress={progress}
+            status={status}
+          />
+          <div
+            style={{
+              height: offset,
+              transition:
+                pulling || refreshing
+                  ? "none"
+                  : "height 420ms cubic-bezier(.22,1,.36,1)",
+            }}
+          />
+          <div id="main-container" className="min-h-full flex flex-col">
+            {children}
+          </div>
         </div>
+      </main>
+      <div className="relative">
+        <div className="pointer-events-none absolute left-0 right-0 top-0 h-px origin-top scale-y-50 bg-gray-300" />
       </div>
-    </main>
+    </>
   );
 }
 
@@ -102,10 +107,6 @@ const Layout = ({ children }) => {
           </div>
         </div>
       </HeaderContext.Provider>
-
-      <div className="relative">
-        <div className="pointer-events-none absolute left-0 right-0 top-0 h-px origin-top scale-y-50 bg-gray-300" />
-      </div>
     </PullToRefreshProvider>
   );
 };

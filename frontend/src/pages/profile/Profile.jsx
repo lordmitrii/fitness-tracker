@@ -14,7 +14,7 @@ const Profile = () => {
       </LayoutHeader>
 
       <div className="grow flex min-h-0 overflow-hidden flex-row">
-        <main className="flex-1 min-w-0 min-h-0 overflow-y-auto p-4">
+        <main className="flex-1 min-w-0 min-h-0 overflow-y-auto">
           <Outlet />
         </main>
       </div>

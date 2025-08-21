@@ -5,7 +5,7 @@ const NewIcon = ({ className = "" }) => {
 
   return (
     <span
-      className={`flex items-center justify-center gap-1 px-1 border rounded-xl sm:py-1 ${className}`}
+      className={`flex items-center justify-center gap-1 px-1 border-1 rounded-xl sm:py-1 ${className}`}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
