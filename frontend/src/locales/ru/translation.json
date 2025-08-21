@@ -117,7 +117,11 @@
     "weight_label": "Вес:",
     "height_label": "Рост:",
     "sex_label": "Пол:",
-    "no_profile_found": "Профиль не найден. Начните:"
+    "no_profile_found": "Профиль не найден. Начните:",
+    "nav": {
+      "health": "Здоровье",
+      "stats": "Статистика"
+    }
   },
   "workout_plans": {
     "loading_plans": "Загрузка ваших планов...",

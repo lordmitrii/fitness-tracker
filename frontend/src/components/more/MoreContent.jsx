@@ -34,7 +34,6 @@ const MoreContent = ({ onDone, variant = "sheet" }) => {
       roles: ["admin", "member"],
       icon: <NewIcon className="border-green-500 text-green-500 font-medium" />,
     },
-    { to: "/exercise-stats", label: t("general.stats"), auth: true, roles: [] },
     { to: "/profile", label: t("general.profile"), auth: true, roles: [] },
     { to: "/login", label: t("general.login"), auth: false, roles: [] },
     {

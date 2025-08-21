@@ -208,7 +208,7 @@ const AIChat = () => {
 
   return (
     <>
-      <LayoutHeader>
+      <LayoutHeader disablePaddingBottom>
         <h1 className="text-title font-bold px-4">{t("general.ai_chat")}</h1>
         <div className="px-4 pb-2">
           <div className="flex items-center justify-between gap-3 flex-wrap">

@@ -117,7 +117,11 @@
     "weight_label": "Weight:",
     "height_label": "Height:",
     "sex_label": "Sex:",
-    "no_profile_found": "No profile found. Get started:"
+    "no_profile_found": "No profile found. Get started:",
+    "nav": {
+      "health": "Health",
+      "stats": "Stats"
+    }
   },
   "workout_plans": {
     "loading_plans": "Loading your plans...",

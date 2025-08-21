@@ -117,7 +117,11 @@
     "weight_label": "体重：",
     "height_label": "身高：",
     "sex_label": "性别：",
-    "no_profile_found": "未找到资料。请开始："
+    "no_profile_found": "未找到资料。请开始：",
+    "nav": {
+      "health": "健康",
+      "stats": "统计"
+    }
   },
   "workout_plans": {
     "loading_plans": "正在加载您的计划...",

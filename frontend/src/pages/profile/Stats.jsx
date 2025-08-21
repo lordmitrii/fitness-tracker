@@ -1,14 +1,13 @@
-import LoadingState from "../states/LoadingState";
-import ErrorState from "../states/ErrorState";
+import LoadingState from "../../states/LoadingState";
+import ErrorState from "../../states/ErrorState";
 import { useTranslation } from "react-i18next";
-import MuscleGroupRadar from "../components/MuscleGroupRadar";
-import { e1RM } from "../utils/exerciseStatsUtils";
-import { LayoutHeader } from "../layout/LayoutHeader";
-import useStatsHook from "../hooks/data/useStatsHook";
-import { usePullToRefreshOverride } from "../context/PullToRefreshContext";
+import MuscleGroupRadar from "../../components/MuscleGroupRadar";
+import { e1RM } from "../../utils/exerciseStatsUtils";
+import useStatsHook from "../../hooks/data/useStatsHook";
+import { usePullToRefreshOverride } from "../../context/PullToRefreshContext";
 import { useCallback } from "react";
 
-const ExerciseStats = () => {
+const Stats = () => {
   const { t } = useTranslation();
   const { stats, bestPerformances, loading, error, refetch } = useStatsHook();
 
@@ -21,15 +20,9 @@ const ExerciseStats = () => {
   if (loading)
     return <LoadingState message={t("exercise_stats.loading_stats")} />;
   if (error) return <ErrorState error={error} onRetry={refetch} />;
-
   return (
     <>
-      <LayoutHeader>
-        <h1 className="text-title font-bold px-4">
-          {t("general.exercise_stats")}
-        </h1>
-      </LayoutHeader>
-      <div className="card mb-6">
+      <div className="card">
         <MuscleGroupRadar stats={stats} />
       </div>
       {stats && stats.length > 0 ? (
@@ -122,4 +115,4 @@ const ExerciseStats = () => {
   );
 };
 
-export default ExerciseStats;
+export default Stats;
