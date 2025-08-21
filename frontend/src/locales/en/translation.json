@@ -594,6 +594,7 @@
       "email": "Email",
       "roles": "Roles",
       "joined_at": "Joined",
+      "last_seen_at": "Last Seen",
       "exercise": "Exercise"
     },
     "no_users": "No users yet.",

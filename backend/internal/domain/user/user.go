@@ -15,7 +15,8 @@ type User struct {
 
 	IsVerified bool `gorm:"default:false" json:"is_verified"`
 
-	UpdatedAt time.Time      `json:"updated_at"`
-	CreatedAt time.Time      `json:"created_at"`
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+	LastSeenAt time.Time      `json:"last_seen_at"`
+	UpdatedAt  time.Time      `json:"updated_at"`
+	CreatedAt  time.Time      `json:"created_at"`
+	DeletedAt  gorm.DeletedAt `gorm:"index" json:"-"`
 }

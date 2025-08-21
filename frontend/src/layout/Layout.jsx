@@ -82,17 +82,19 @@ const Layout = ({ children }) => {
           <div className="flex-1 min-h-0 flex flex-col sm:flex-row">
             <MoreAside />
 
-            {headerConfig && (
-              <div
-                className={`bg-white ${
-                  !headerConfig.disablePaddingBottom && "pb-[1rem]"
-                } pt-[max(calc(1rem-env(safe-area-inset-top)),_0px)] sm:pt-4`}
-              >
-                {headerConfig.node}
-              </div>
-            )}
+            <div className="flex-1 min-h-0 min-w-0 flex flex-col">
+              {headerConfig && (
+                <div
+                  className={`bg-white ${
+                    !headerConfig.disablePaddingBottom && "pb-[1rem]"
+                  } pt-[max(calc(1rem-env(safe-area-inset-top)),_0px)] sm:pt-4`}
+                >
+                  {headerConfig.node}
+                </div>
+              )}
 
-            <ScrollAreaWithPTR>{children}</ScrollAreaWithPTR>
+              <ScrollAreaWithPTR>{children}</ScrollAreaWithPTR>
+            </div>
           </div>
 
           <div className="sm:hidden">

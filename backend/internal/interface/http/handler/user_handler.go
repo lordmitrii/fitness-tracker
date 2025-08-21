@@ -304,6 +304,8 @@ func (h *UserHandler) Me(c *gin.Context) {
 		return
 	}
 
+	h.svc.TouchLastSeen(c.Request.Context(), userID)
+
 	resp := dto.MeResponse{
 		Email:      user.Email,
 		Roles:      dto.ToRoleResponses(user.Roles),

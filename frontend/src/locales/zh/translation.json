@@ -594,6 +594,7 @@
       "email": "邮箱",
       "roles": "角色",
       "joined_at": "加入时间",
+      "last_seen_at": "最后在线时间",
       "exercises": "锻炼"
     },
     "no_users": "暂无用户。",

@@ -162,14 +162,25 @@ const Users = () => {
                   key={u.id}
                   className="border-t border-gray-600 hover:bg-gray-300 transition-colors"
                 >
-                  <td className="px-4 py-3 align-top">
+                  <td className="px-4 py-3 align-center">
                     <div className="flex flex-col">
-                      <span className="text-body">{u.email}</span>
+                      <span className="text-body max-w-[30dvh] overflow-x-auto">
+                        {u.email}
+                      </span>
                       {u.created_at && (
+                        // <span className="text-caption">
+                        //   {t("admin.table.joined_at")}:{" "}
+                        //   {u.created_at
+                        //     ? new Date(u.created_at).toLocaleString(
+                        //         i18n.language
+                        //       )
+                        //     : t("general.n_a")}
+                        // </span>
                         <span className="text-caption">
-                          {t("admin.table.joined_at")}:{" "}
-                          {u.created_at
-                            ? new Date(u.created_at).toLocaleString(
+                          {t("admin.table.last_seen_at")}:{" "}
+                          {u.last_seen_at &&
+                          u.last_seen_at !== "0001-01-01T00:00:00Z"
+                            ? new Date(u.last_seen_at).toLocaleString(
                                 i18n.language
                               )
                             : t("general.n_a")}
@@ -178,7 +189,7 @@ const Users = () => {
                     </div>
                   </td>
                   <td>
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-1 my-1">
                       {u.roles?.length ? (
                         u.roles.map((r) => (
                           <span
@@ -195,7 +206,7 @@ const Users = () => {
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3 align-top text-right">
+                  <td className="px-4 py-3 align-center text-right">
                     <div className="flex justify-center items-center gap-2">
                       <button
                         className="btn btn-primary whitespace-nowrap"

@@ -47,6 +47,8 @@ func (h *AdminHandler) GetUsers(c *gin.Context) {
 		respUsers = append(respUsers, dto.UserResponse{
 			ID:        user.ID,
 			Email:     user.Email,
+			IsVerified: user.IsVerified,
+			LastSeenAt: user.LastSeenAt,
 			CreatedAt: user.CreatedAt,
 			Roles:     dto.ToRoleResponses(user.Roles),
 		})

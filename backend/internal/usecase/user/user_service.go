@@ -113,3 +113,7 @@ func (s *userServiceImpl) ResetPassword(ctx context.Context, email, newPassword 
 	user.PasswordHash = string(hash)
 	return s.authRepo.Update(ctx, user)
 }
+
+func (s *userServiceImpl) TouchLastSeen(ctx context.Context, userID uint) error {
+	return s.authRepo.TouchLastSeen(ctx, userID)
+}

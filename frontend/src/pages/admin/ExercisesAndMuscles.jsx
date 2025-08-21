@@ -127,8 +127,8 @@ const ExercisesAndMuscles = () => {
           </table>
         </div>
 
-        <div className="rounded-xl border shadow-sm">
-          <div className="p-3 border-b bg-gray-50 rounded-t-xl">
+        <div className="rounded-xl border border-gray-600 shadow-sm">
+          <div className="p-3 border-b border-gray-600 bg-gray-50 rounded-t-xl">
             <h3 className="text-title">{t("admin.exercises.muscles_title")}</h3>
             <p className="text-caption">{t("admin.exercises.muscles_hint")}</p>
           </div>
@@ -144,8 +144,8 @@ const ExercisesAndMuscles = () => {
                   <li
                     key={m.id}
                     className={`p-3 ${
-                      muscles.length - 1 === index ? "rounded-b-xl" : ""
-                    } flex items-center justify-between cursor-pointer hover:bg-gray-50 ${
+                      muscles.length - 1 === index ? "rounded-b-xl border-b-0" : ""
+                    } flex items-center justify-between cursor-pointer border-b border-gray-600 hover:bg-gray-50 ${
                       active ? "bg-gray-300" : ""
                     }`}
                     onClick={() => setMuscleFilter(active ? "all" : m.id)}

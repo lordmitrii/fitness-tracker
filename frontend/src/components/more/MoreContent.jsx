@@ -151,7 +151,7 @@ const MoreContent = ({ onDone, variant = "sheet" }) => {
         </div>
 
         {isSheet && (
-          <div className="mt-3">
+          <div className="mt-3 mb-[max(calc(1rem-env(safe-area-inset-bottom)),0px)]">
             <button
               className="btn border-2 w-full text-lg text-gray-600"
               onClick={() => onDone?.()}

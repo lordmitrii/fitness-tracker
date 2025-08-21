@@ -82,6 +82,7 @@ type (
 		CreateProfile(ctx context.Context, p *user.Profile) error
 		// DeleteUser(ctx context.Context, id uint) error
 		GetProfile(ctx context.Context, userID uint) (*user.Profile, error)
+		TouchLastSeen(ctx context.Context, userID uint) error
 		UpdateProfile(ctx context.Context, p *user.Profile) error
 		DeleteProfile(ctx context.Context, id uint) error
 
