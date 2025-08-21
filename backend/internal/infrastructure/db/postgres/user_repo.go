@@ -5,8 +5,8 @@ import (
 	"errors"
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
-
 	"gorm.io/gorm"
+	"time"
 )
 
 type UserRepo struct {
@@ -97,9 +97,13 @@ func (r *UserRepo) GetUsers(ctx context.Context, q string, page, pageSize int64)
 		return nil, 0, err
 	}
 
-	if err := db.Offset(int((page - 1) * pageSize)).Limit(int(pageSize)).Preload("Roles.Permissions").Order("created_at").Find(&users).Error; err != nil {
+	if err := db.Offset(int((page - 1) * pageSize)).Limit(int(pageSize)).Preload("Roles.Permissions").Order("last_seen_at, created_at").Find(&users).Error; err != nil {
 		return nil, 0, err
 	}
 
 	return users, total, nil
+}
+
+func (r *UserRepo) TouchLastSeen(ctx context.Context, userID uint) error {
+	return r.db.WithContext(ctx).Model(&user.User{}).Where("id = ?", userID).Update("last_seen_at", time.Now()).Error
 }

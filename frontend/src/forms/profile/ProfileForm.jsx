@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import useProfileData from "../../hooks/data/useProfileData";
 import { PROFILE_LIMITS } from "../../config/constants";
 import { toNumberOrEmpty } from "../../utils/numberUtils";
+import { usePullToRefreshOverride } from "../../context/PullToRefreshContext";
 
 const NUMBER_FIELDS = new Set(["age", "weight_kg", "height_cm"]);
 
@@ -268,6 +269,12 @@ export const CreateProfileForm = () => {
   const { t } = useTranslation();
   const { refetch, mutations } = useProfileData({ skipQuery: true });
 
+  usePullToRefreshOverride(
+    useCallback(async () => {
+      await refetch();
+    }, [refetch])
+  );
+
   const handleCreate = (payload) => {
     mutations.create.mutate(payload, {
       onSuccess: () => navigate("/profile"),
@@ -305,6 +312,12 @@ export const UpdateProfileForm = () => {
   const { t } = useTranslation();
 
   const { profile, loading, error, refetch, mutations } = useProfileData();
+
+  usePullToRefreshOverride(
+    useCallback(async () => {
+      await refetch();
+    }, [refetch])
+  );
 
   const initialData = useMemo(
     () => ({

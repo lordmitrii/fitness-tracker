@@ -13,6 +13,7 @@ type UserRepository interface {
 	SetVerified(ctx context.Context, email string) error
 	CheckEmail(ctx context.Context, email string) (bool, error)
 	GetUsers(ctx context.Context, q string, page, pageSize int64) ([]*User, int64, error)
+	TouchLastSeen(ctx context.Context, userID uint) error
 }
 
 type ProfileRepository interface {

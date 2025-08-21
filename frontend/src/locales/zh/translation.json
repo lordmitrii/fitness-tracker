@@ -15,7 +15,7 @@
     "register": "注册",
     "logout": "退出登录",
     "home": "主页",
-    "workout_plans": "锻炼",
+    "workout_plans": "锻炼计划",
     "plans": "计划",
     "more": "更多",
     "close": "关闭",
@@ -117,7 +117,11 @@
     "weight_label": "体重：",
     "height_label": "身高：",
     "sex_label": "性别：",
-    "no_profile_found": "未找到资料。请开始："
+    "no_profile_found": "未找到资料。请开始：",
+    "nav": {
+      "health": "健康",
+      "stats": "统计"
+    }
   },
   "workout_plans": {
     "loading_plans": "正在加载您的计划...",
@@ -594,6 +598,7 @@
       "email": "邮箱",
       "roles": "角色",
       "joined_at": "加入时间",
+      "last_seen_at": "最后在线时间",
       "exercises": "锻炼"
     },
     "no_users": "暂无用户。",

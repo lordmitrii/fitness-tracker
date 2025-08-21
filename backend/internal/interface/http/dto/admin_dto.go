@@ -7,10 +7,12 @@ type SetRolesRequest struct {
 }
 
 type UserResponse struct {
-	ID        uint           `json:"id"`
-	Email     string         `json:"email"`
-	CreatedAt time.Time      `json:"created_at"`
-	Roles     []RoleResponse `json:"roles"`
+	ID         uint           `json:"id"`
+	Email      string         `json:"email"`
+	IsVerified bool           `json:"is_verified"`
+	LastSeenAt time.Time      `json:"last_seen_at"`
+	CreatedAt  time.Time      `json:"created_at"`
+	Roles      []RoleResponse `json:"roles"`
 }
 
 type ListUserResponse struct {

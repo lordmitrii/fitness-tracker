@@ -6,6 +6,7 @@ import { useTranslation, Trans } from "react-i18next";
 import { Link } from "react-router-dom";
 import GitHubIcon from "../../icons/GitHubIcon";
 import { APP_VERSION } from "../../config/versions";
+import NewIcon from "../../icons/NewIcon";
 
 const MoreContent = ({ onDone, variant = "sheet" }) => {
   const { isAuth, hasAnyRole, logout } = useAuth();
@@ -31,8 +32,8 @@ const MoreContent = ({ onDone, variant = "sheet" }) => {
       label: t("general.ai_chat"),
       auth: true,
       roles: ["admin", "member"],
+      icon: <NewIcon className="border-green-500 text-green-500 font-medium" />,
     },
-    { to: "/exercise-stats", label: t("general.stats"), auth: true, roles: [] },
     { to: "/profile", label: t("general.profile"), auth: true, roles: [] },
     { to: "/login", label: t("general.login"), auth: false, roles: [] },
     {
@@ -74,7 +75,7 @@ const MoreContent = ({ onDone, variant = "sheet" }) => {
           {links
             .filter((l) => l.auth === null || l.auth === isAuth)
             .filter((l) => !l.roles.length || hasAnyRole(l.roles))
-            .map(({ to, label, className }) => (
+            .map(({ to, label, className, icon }) => (
               <NavLink
                 key={to}
                 to={to}
@@ -93,7 +94,10 @@ const MoreContent = ({ onDone, variant = "sheet" }) => {
                       ].join(" ")
                 }
               >
-                {label}
+                <span className="flex items-center justify-between">
+                  {label}
+                  {icon}
+                </span>
               </NavLink>
             ))}
         </div>
@@ -151,7 +155,7 @@ const MoreContent = ({ onDone, variant = "sheet" }) => {
         </div>
 
         {isSheet && (
-          <div className="mt-3">
+          <div className="mt-3 mb-[max(calc(1rem-env(safe-area-inset-bottom)),0px)]">
             <button
               className="btn border-2 w-full text-lg text-gray-600"
               onClick={() => onDone?.()}

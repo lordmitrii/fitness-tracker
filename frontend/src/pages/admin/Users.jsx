@@ -3,10 +3,11 @@ import { useState, useEffect, useCallback } from "react";
 import api from "../../api";
 import LoadingState from "../../states/LoadingState";
 import ErrorState from "../../states/ErrorState";
-
+import { highlightMatches } from "../../utils/highlightMatches";
 import Pagination from "../../components/Pagination";
 import EditRolesModal from "../../modals/admin/EditRolesModal";
 import DangerMenu from "../../components/admin/AdminDangerMenu";
+import { usePullToRefreshOverride } from "../../context/PullToRefreshContext";
 
 const PAGE_SIZE = 20;
 
@@ -29,7 +30,7 @@ const Users = () => {
   const [actionError, setActionError] = useState(null);
 
   useEffect(() => {
-    const id = setTimeout(() => setSearch(query.trim()), 350);
+    const id = setTimeout(() => setSearch(query.trim()), 500);
     return () => clearTimeout(id);
   }, [query]);
 
@@ -96,6 +97,12 @@ const Users = () => {
     loadUsers();
   }, [loadUsers]);
 
+  usePullToRefreshOverride(
+    useCallback(() => {
+      loadUsers();
+    }, [loadUsers])
+  );
+
   if (loading) return <LoadingState />;
 
   if (fetchError) {
@@ -142,7 +149,7 @@ const Users = () => {
             <tr>
               <th className="px-4 py-3">{t("admin.table.email")}</th>
               <th className="px-4 py-3">{t("admin.table.roles")}</th>
-              <th className="px-4 py-3 w-40 text-right">
+              <th className="px-4 py-3 w-auto sm:w-40 text-right">
                 {t("general.actions")}
               </th>
             </tr>
@@ -150,7 +157,7 @@ const Users = () => {
           <tbody>
             {users.length === 0 ? (
               <tr>
-                <td colSpan={3} className="p-6 text-center text-body">
+                <td colSpan={3} className="px-6 py-2 text-center text-caption">
                   {search
                     ? t("general.no_results_for", { search })
                     : t("admin.no_users")}
@@ -162,14 +169,25 @@ const Users = () => {
                   key={u.id}
                   className="border-t border-gray-600 hover:bg-gray-300 transition-colors"
                 >
-                  <td className="px-4 py-3 align-top">
+                  <td className="px-4 py-3 align-center">
                     <div className="flex flex-col">
-                      <span className="text-body">{u.email}</span>
+                      <span className="text-body max-w-[30dvh] overflow-x-auto">
+                        {highlightMatches(u.email, query, "bg-blue-600 text-white")}
+                      </span>
                       {u.created_at && (
+                        // <span className="text-caption">
+                        //   {t("admin.table.joined_at")}:{" "}
+                        //   {u.created_at
+                        //     ? new Date(u.created_at).toLocaleString(
+                        //         i18n.language
+                        //       )
+                        //     : t("general.n_a")}
+                        // </span>
                         <span className="text-caption">
-                          {t("admin.table.joined_at")}:{" "}
-                          {u.created_at
-                            ? new Date(u.created_at).toLocaleString(
+                          {t("admin.table.last_seen_at")}:{" "}
+                          {u.last_seen_at &&
+                          u.last_seen_at !== "0001-01-01T00:00:00Z"
+                            ? new Date(u.last_seen_at).toLocaleString(
                                 i18n.language
                               )
                             : t("general.n_a")}
@@ -178,7 +196,7 @@ const Users = () => {
                     </div>
                   </td>
                   <td>
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-1 my-1">
                       {u.roles?.length ? (
                         u.roles.map((r) => (
                           <span
@@ -195,7 +213,7 @@ const Users = () => {
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3 align-top text-right">
+                  <td className="px-4 py-3 align-center text-right">
                     <div className="flex justify-center items-center gap-2">
                       <button
                         className="btn btn-primary whitespace-nowrap"

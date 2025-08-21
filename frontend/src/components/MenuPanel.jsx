@@ -4,7 +4,8 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import WorkoutIcon from "../icons/WorkoutIcon";
 import PlanIcon from "../icons/PlanIcon";
-import ChatIcon from "../icons/ChatIcon";
+// import ChatIcon from "../icons/ChatIcon";
+import HomeIcon from "../icons/HomeIcon";
 import ProfileIcon from "../icons/ProfileIcon";
 import MoreIcon from "../icons/MoreIcon";
 import MoreSheet from "./more/MoreSheet";
@@ -22,12 +23,11 @@ const MenuPanel = () => {
   const tabs = useMemo(
     () => [
       {
-        to: "/workout-plans/?showCurrent=true",
-        label: t("general.workout"),
-        isActiveOverride: workoutPathRe.test(pathname),
-        auth: true,
+        to: "/",
+        label: t("general.home"),
+        auth: null,
         roles: [],
-        icon: <WorkoutIcon />,
+        icon: <HomeIcon />,
         kind: "link",
       },
       {
@@ -39,12 +39,21 @@ const MenuPanel = () => {
         icon: <PlanIcon />,
         kind: "link",
       },
+      // {
+      //   to: "/ai-chat",
+      //   label: t("general.ai_chat"),
+      //   auth: true,
+      //   roles: ["admin", "member"],
+      //   icon: <ChatIcon />,
+      //   kind: "link",
+      // },
       {
-        to: "/ai-chat",
-        label: t("general.ai_chat"),
+        to: "/workout-plans/?showCurrent=true",
+        label: t("general.workout"),
+        isActiveOverride: workoutPathRe.test(pathname),
         auth: true,
-        roles: ["admin", "member"],
-        icon: <ChatIcon />,
+        roles: [],
+        icon: <WorkoutIcon />,
         kind: "link",
       },
       {

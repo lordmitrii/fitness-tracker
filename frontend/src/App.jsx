@@ -9,8 +9,7 @@ import Home from "./pages/Home";
 import WorkoutPlans from "./pages/workout/WorkoutPlans";
 import WorkoutCycle from "./pages/workout/WorkoutCycle";
 
-import ExerciseStats from "./pages/ExerciseStats";
-import Profile from "./pages/Profile";
+import Profile from "./pages/profile/Profile";
 import NotFound from "./pages/NotFound";
 
 import Admin from "./pages/admin/Admin";
@@ -46,6 +45,8 @@ import PrivateRoute from "./routes/PrivateRoute";
 import AdminRoute from "./routes/AdminRoute";
 
 import "./i18n";
+import Health from "./pages/profile/Health";
+import Stats from "./pages/profile/Stats";
 
 function App() {
   return (
@@ -65,12 +66,8 @@ function App() {
             {/* Private Route */}
             <Route element={<PrivateRoute />}>
               <Route path="/ai-chat" element={<AIChat />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/create-profile" element={<CreateProfileForm />} />
-              <Route path="/update-profile" element={<UpdateProfileForm />} />
 
-              <Route path="/exercise-stats" element={<ExerciseStats />} />
-
+              {/* Workout Routes */}
               <Route path="/workout-plans" element={<WorkoutPlans />} />
               <Route
                 path="/create-workout-plan"
@@ -94,12 +91,19 @@ function App() {
                 element={<UpdateWorkoutForm />}
               />
 
+              {/* Profile Routes */}
+              <Route path="/profile/*" element={<Profile />}>
+                <Route index element={<Navigate to="health" replace />} />
+                <Route path="health" element={<Health />} />
+                <Route path="stats" element={<Stats />} />
+                <Route path="health/create-profile" element={<CreateProfileForm />} />
+                <Route path="health/update-profile" element={<UpdateProfileForm />} />
+              </Route>
+
+              {/* Admin Routes */}
               <Route element={<AdminRoute />}>
                 <Route path="/admin-panel/*" element={<Admin />}>
-                  <Route
-                    index
-                    element={<Navigate to="users?footer=false" replace />}
-                  />
+                  <Route index element={<Navigate to="users" replace />} />
                   <Route path="users" element={<Users />} />
                   <Route path="roles" element={<Roles />} />
                   <Route path="audit" element={<Audit />} />

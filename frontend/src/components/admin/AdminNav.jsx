@@ -14,13 +14,13 @@ const AdminNav = () => {
     // { to: "/admin-panel/settings", label: t("admin.nav.settings") },
   ];
   return (
-    <nav className="flex flex-col p-4 gap-2 sm:flex-row">
+    <nav className="flex flex-col sm:flex-row p-4 gap-2">
       {items.map((it) => (
         <NavLink
           key={it.to}
           to={it.to}
           className={({ isActive }) =>
-            `block text-center btn w-full ${
+            `block text-center btn w-full  ${
               isActive ? "btn-primary" : "btn-secondary"
             } whitespace-nowrap`
           }
