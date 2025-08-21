@@ -1,5 +1,3 @@
-import { useEffect, useState } from "react";
-import api from "../api";
 import LoadingState from "../states/LoadingState";
 import ErrorState from "../states/ErrorState";
 import { useTranslation } from "react-i18next";
@@ -7,10 +5,18 @@ import MuscleGroupRadar from "../components/MuscleGroupRadar";
 import { e1RM } from "../utils/exerciseStatsUtils";
 import { LayoutHeader } from "../layout/LayoutHeader";
 import useStatsHook from "../hooks/data/useStatsHook";
+import { usePullToRefreshOverride } from "../context/PullToRefreshContext";
+import { useCallback } from "react";
 
 const ExerciseStats = () => {
   const { t } = useTranslation();
   const { stats, bestPerformances, loading, error, refetch } = useStatsHook();
+
+  usePullToRefreshOverride(
+    useCallback(async () => {
+      await refetch();
+    }, [refetch])
+  );
 
   if (loading)
     return <LoadingState message={t("exercise_stats.loading_stats")} />;

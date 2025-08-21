@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import CloseIcon from "../../icons/CloseIcon";
 import useStorageObject from "../../hooks/useStorageObject";
 import usePlansData from "../../hooks/data/usePlansData";
+import { usePullToRefreshOverride } from "../../context/PullToRefreshContext";
 
 const makeWorkout = (id) => ({
   id,
@@ -147,7 +148,13 @@ const WorkoutDayExercises = memo(
 const AddWorkoutPlanForm = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { mutations } = usePlansData({ skipQuery: true });
+  const { mutations, refetch } = usePlansData({ skipQuery: true });
+
+  usePullToRefreshOverride(
+    useCallback(async () => {
+      await refetch();
+    }, [refetch])
+  );
 
   const [formErrors, setFormErrors] = useState({});
   const [error, setError] = useState(null);

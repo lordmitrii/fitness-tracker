@@ -19,10 +19,7 @@ const Home = () => {
   if (loading) return <LoadingState message={t("home.loading_home_page")} />;
   if (error)
     return (
-      <ErrorState
-        error={error}
-        onRetry={() => window.location.reload()}
-      />
+      <ErrorState error={error} onRetry={() => window.location.reload()} />
     );
 
   return (

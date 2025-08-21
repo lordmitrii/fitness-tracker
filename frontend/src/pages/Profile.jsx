@@ -4,14 +4,22 @@ import ErrorState from "../states/ErrorState";
 import { useTranslation } from "react-i18next";
 import { LayoutHeader } from "../layout/LayoutHeader";
 import useProfileData from "../hooks/data/useProfileData";
+import { usePullToRefreshOverride } from "../context/PullToRefreshContext";
+import { useCallback } from "react";
 
 const Profile = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const { profile, loading, error, isFetching, refetch } = useProfileData();
+  const { profile, loading, error, refetch } = useProfileData();
 
   const isEmpty = !profile || Object.keys(profile).length === 0;
+
+  usePullToRefreshOverride(
+    useCallback(async () => {
+      await refetch();
+    }, [refetch])
+  );
 
   if (loading && isEmpty) {
     return <LoadingState message={t("profile.loading_profile")} />;
@@ -25,9 +33,6 @@ const Profile = () => {
     <>
       <LayoutHeader>
         <h1 className="text-title font-bold px-4">{t("general.profile")}</h1>
-        {isFetching && !isEmpty && (
-          <div className="text-caption px-4">{t("general.refreshing")}…</div>
-        )}
       </LayoutHeader>
 
       <div className="card">

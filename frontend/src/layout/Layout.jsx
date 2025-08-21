@@ -8,6 +8,61 @@ import useScrollToTop from "../hooks/useScrollToTop";
 import usePullToRefresh from "../hooks/usePullToRefresh";
 import { HeaderContext } from "./LayoutHeader";
 import PullToRefreshPill from "../components/PullToRefreshPill";
+import {
+  PullToRefreshProvider,
+  usePullToRefreshContext,
+} from "../context/PullToRefreshContext";
+
+function ScrollAreaWithPTR({ children }) {
+  const scrollRef = useRef(null);
+  useScrollToTop(scrollRef);
+
+  const { _activeHandlerRef } = usePullToRefreshContext();
+
+  const { offset, status, THRESHOLD } = usePullToRefresh(scrollRef, () => {
+    _activeHandlerRef.current?.();
+  });
+
+  const pulling = status === "pull" || status === "ready";
+  const refreshing = status === "refreshing";
+  const progress = Math.min(1, offset / THRESHOLD);
+
+  return (
+    <main
+      className="flex-1 basis-0 min-w-0 min-h-0 flex flex-col overflow-hidden focus:outline-none bg-gray-200"
+      tabIndex={-1}
+    >
+      <div
+        ref={scrollRef}
+        className="
+          flex-1 min-h-0 overflow-y-auto 
+          overscroll-contain
+          touch-pan-y
+          [--webkit-overflow-scrolling:touch]
+          relative scroll-stable
+        "
+      >
+        <PullToRefreshPill
+          className="ptr-pill"
+          progress={progress}
+          status={status}
+        />
+        <div
+          style={{
+            height: offset,
+            transition:
+              pulling || refreshing
+                ? "height 120ms cubic-bezier(.22,1,.36,1)"
+                : "height 420ms cubic-bezier(.22,1,.36,1)",
+          }}
+        />
+        <div id="main-container" className="min-h-full flex flex-col">
+          {children}
+        </div>
+      </div>
+    </main>
+  );
+}
 
 const Layout = ({ children }) => {
   const [searchParams] = useSearchParams();
@@ -16,21 +71,8 @@ const Layout = ({ children }) => {
   const [headerConfig, setHeaderNode] = useState(null);
   const ctxValue = useMemo(() => ({ setHeader: setHeaderNode }), []);
 
-  const scrollRef = useRef(null);
-  useScrollToTop(scrollRef);
-
-  const { offset, status, THRESHOLD } = usePullToRefresh(scrollRef, () => {
-    requestAnimationFrame(() => {
-      window.location.reload(true);
-    });
-  });
-
-  const pulling = status === "pull" || status === "ready";
-  const refreshing = status === "refreshing";
-  const progress = Math.min(1, offset / THRESHOLD);
-
   return (
-    <>
+    <PullToRefreshProvider>
       {spinnerEnabled && <GlobalLoadingState />}
 
       <HeaderContext.Provider value={ctxValue}>
@@ -40,50 +82,17 @@ const Layout = ({ children }) => {
           <div className="flex-1 min-h-0 flex flex-col sm:flex-row">
             <MoreAside />
 
-            <main
-              className="flex-1 basis-0 min-w-0 min-h-0 flex flex-col overflow-hidden focus:outline-none bg-gray-200"
-              tabIndex={-1}
-            >
-              {headerConfig && (
-                <div
-                  className={`bg-white ${
-                    !headerConfig.disablePaddingBottom && "pb-[1rem]"
-                  } pt-[max(calc(1rem-env(safe-area-inset-top)),_0px)] sm:pt-4`}
-                >
-                  {headerConfig.node}
-                </div>
-              )}
-
+            {headerConfig && (
               <div
-                ref={scrollRef}
-                className="
-                      flex-1 min-h-0 overflow-y-auto 
-                      overscroll-contain
-                      touch-pan-y
-                      [--webkit-overflow-scrolling:touch]
-                      relative scroll-stable
-                    "
+                className={`bg-white ${
+                  !headerConfig.disablePaddingBottom && "pb-[1rem]"
+                } pt-[max(calc(1rem-env(safe-area-inset-top)),_0px)] sm:pt-4`}
               >
-                <PullToRefreshPill
-                  className="ptr-pill"
-                  progress={progress}
-                  status={status}
-                />
-
-                <div
-                  style={{
-                    height: offset,
-                    transition:
-                      pulling || refreshing
-                        ? "none"
-                        : "height 420ms cubic-bezier(.22,1,.36,1)",
-                  }}
-                />
-                <div id="main-container" className="min-h-full flex flex-col">
-                  {children}
-                </div>
+                {headerConfig.node}
               </div>
-            </main>
+            )}
+
+            <ScrollAreaWithPTR>{children}</ScrollAreaWithPTR>
           </div>
 
           <div className="sm:hidden">
@@ -91,10 +100,11 @@ const Layout = ({ children }) => {
           </div>
         </div>
       </HeaderContext.Provider>
+
       <div className="relative">
         <div className="pointer-events-none absolute left-0 right-0 top-0 h-px origin-top scale-y-50 bg-gray-300" />
       </div>
-    </>
+    </PullToRefreshProvider>
   );
 };
 

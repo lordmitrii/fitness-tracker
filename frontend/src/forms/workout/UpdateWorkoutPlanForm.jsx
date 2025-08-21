@@ -5,6 +5,7 @@ import ErrorState from "../../states/ErrorState";
 import { useTranslation } from "react-i18next";
 import usePlansData from "../../hooks/data/usePlansData";
 import useSinglePlanData from "../../hooks/data/useSinglePlanData";
+import { usePullToRefreshOverride } from "../../context/PullToRefreshContext";
 
 // Update workout plan page
 const UpdateWorkoutPlanForm = () => {
@@ -16,8 +17,19 @@ const UpdateWorkoutPlanForm = () => {
 
   const [formErrors, setFormErrors] = useState({});
 
-  const { data: plan, isLoading: loading, error } = useSinglePlanData(planID);
+  const {
+    data: plan,
+    isLoading: loading,
+    error,
+    refetch,
+  } = useSinglePlanData(planID);
   const { mutations } = usePlansData({ skipQuery: true });
+
+  usePullToRefreshOverride(
+    useCallback(async () => {
+      await refetch();
+    }, [refetch])
+  );
 
   useEffect(() => {
     if (plan?.name != null) setPlanName(plan.name);

@@ -59,7 +59,9 @@ const AIChat = () => {
   const [error, setError] = useState(null);
   const chatWindowRef = useRef(null);
 
-  const { consentGiven, giveConsent } = useConsent("ai_chat");
+  const { consentGiven, giveConsent, ready } = useConsent("ai_chat");
+  const [showConsent, setShowConsent] = useState(false);
+
   const { cooldown, start: startCooldown } = useCooldown();
 
   const activeTopicMeta = useMemo(
@@ -68,6 +70,19 @@ const AIChat = () => {
   );
 
   const messages = selectedTopic ? messagesByTopic[selectedTopic] || [] : [];
+
+  useEffect(() => {
+    if (!ready) {
+      setShowConsent(false);
+      return;
+    }
+    if (consentGiven) {
+      setShowConsent(false);
+      return;
+    }
+    const id = setTimeout(() => setShowConsent(true), 250);
+    return () => clearTimeout(id);
+  }, [ready, consentGiven]);
 
   useEffect(() => {
     if (restoring || !selectedTopic) return;
@@ -315,7 +330,7 @@ const AIChat = () => {
           </div>
         </form>
       </div>
-      {!consentGiven && (
+      {ready && !consentGiven && (
         <ConsentModal onAccept={giveConsent} onDecline={() => navigate("/")} />
       )}
     </>

@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import AddWorkoutExerciseModal from "../../modals/workout/AddWorkoutExerciseModal";
 import { LayoutHeader } from "../../layout/LayoutHeader";
 import useWorkoutData from "../../hooks/data/useWorkoutData";
+import { usePullToRefreshOverride } from "../../context/PullToRefreshContext";
 
 const WorkoutCycle = () => {
   const navigate = useNavigate();
@@ -33,6 +34,12 @@ const WorkoutCycle = () => {
     mutations,
     ui,
   } = useWorkoutData({ planID, cycleID });
+
+  usePullToRefreshOverride(
+    useCallback(async () => {
+      await refetchAll();
+    }, [refetchAll])
+  );
 
   useEffect(() => {
     if (hasScrolled.current || workouts.length === 0) return;

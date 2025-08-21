@@ -1,4 +1,4 @@
-import { useLayoutEffect } from "react";
+import { useLayoutEffect, useCallback } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import LoadingState from "../../states/LoadingState";
 import ErrorState from "../../states/ErrorState";
@@ -8,6 +8,7 @@ import FireIcon from "../../icons/FireIcon";
 import { useTranslation } from "react-i18next";
 import { LayoutHeader } from "../../layout/LayoutHeader";
 import usePlansData from "../../hooks/data/usePlansData";
+import { usePullToRefreshOverride } from "../../context/PullToRefreshContext";
 
 const WorkoutPlans = () => {
   const [searchParams] = useSearchParams();
@@ -19,8 +20,8 @@ const WorkoutPlans = () => {
     sortedPlans,
     loading,
     error,
+    refetch,
     setPlansCache, // pass to menu to mimic old setState-based updates
-    invalidate, // or let the menu call this after it mutates
   } = usePlansData();
 
   useLayoutEffect(() => {
@@ -34,9 +35,15 @@ const WorkoutPlans = () => {
     }
   }, [searchParams, plans, navigate]);
 
+  usePullToRefreshOverride(
+    useCallback(async () => {
+      await refetch();
+    }, [refetch])
+  );
+
   if (loading)
     return <LoadingState message={t("workout_plans.loading_plans")} />;
-  if (error) return <ErrorState error={error} onRetry={invalidate} />;
+  if (error) return <ErrorState error={error} onRetry={refetch} />;
 
   return (
     <>

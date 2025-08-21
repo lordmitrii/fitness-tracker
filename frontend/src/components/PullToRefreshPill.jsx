@@ -57,33 +57,35 @@ export default function PullToRefreshPill({
 
   return (
     <div
-      className={`pointer-events-none absolute left-1/2 z-40 ${className}`}
+      className={`pointer-events-none absolute inset-x-0 z-40 ${className}`}
       style={{
-        transform: `translateX(-50%) translateY(10px) scale(${scale})`,
+        transform: `translateY(10px) scale(${scale})`,
         opacity,
         transition: refreshing
           ? "none"
           : "transform 360ms cubic-bezier(.22,1,.36,1), opacity 280ms ease",
       }}
     >
-      <div
-        className="
+      <div className="mx-auto w-fit">
+        <div
+          className="
         inline-flex items-center gap-2 px-3 py-1.5
         rounded-full shadow-lg ring-1 ring-black/10
         bg-white/70 backdrop-blur
         text-caption
       "
-      >
-        <div className="h-4 w-4 flex items-center justify-center">
-          {refreshing ? <Spinner /> : <Chevron rotation={chevronRotation} />}
+        >
+          <div className="h-4 w-4 flex items-center justify-center">
+            {refreshing ? <Spinner /> : <Chevron rotation={chevronRotation} />}
+          </div>
+          <span className="whitespace-nowrap">
+            {refreshing
+              ? t("general.refreshing")
+              : armed
+              ? t("general.release_to_refresh")
+              : t("general.pull_to_refresh")}
+          </span>
         </div>
-        <span className="whitespace-nowrap">
-          {refreshing
-            ? t("general.refreshing")
-            : armed
-            ? t("general.release_to_refresh")
-            : t("general.pull_to_refresh")}
-        </span>
       </div>
     </div>
   );
