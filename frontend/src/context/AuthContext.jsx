@@ -1,4 +1,11 @@
-import { createContext, useState, useContext, useEffect } from "react";
+import {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
 import api, {
   loginRequest,
   registerRequest,
@@ -16,52 +23,72 @@ export const AuthProvider = ({ children }) => {
   const [roles, setRoles] = useState([]);
   const [user, setUser] = useState(null);
 
-  const loadMe = async () => {
+  const refreshInFlightRef = useRef(null);
+
+  const loadMe = useCallback(async () => {
     const res = await api.get("/users/me");
     setUser(res.data);
     setRoles(res.data.roles || []);
-  };
+  }, []);
 
-  useEffect(() => {
-    const tryRefresh = async () => {
-      setLoading(true);
+  const refresh = useCallback(async () => {
+    if (refreshInFlightRef.current) return refreshInFlightRef.current;
+
+    setLoading(true);
+    const p = (async () => {
       try {
         const res = await api.post("/users/refresh");
-        if (res.data.access_token) {
-          setIsAuth(true);
+        if (res.data?.access_token) {
           setAccessToken(res.data.access_token);
+          setIsAuth(true);
           await loadMe();
+          return "authenticated";
         }
+        setIsAuth(false);
+        clearAccessToken();
+        setRoles([]);
+        setUser(null);
+        return "unauthenticated";
       } catch (err) {
         console.error("Refresh error:", err);
         setIsAuth(false);
         clearAccessToken();
         setRoles([]);
         setUser(null);
+        return "unauthenticated";
       } finally {
         setLoading(false);
       }
-    };
-    tryRefresh();
-  }, []);
+    })();
+
+    refreshInFlightRef.current = p;
+
+    p.finally(() => {
+      if (refreshInFlightRef.current === p) {
+        refreshInFlightRef.current = null;
+      }
+    });
+
+    return p;
+  }, [loadMe]);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
   const login = async (email, password) => {
     try {
-      const response = await loginRequest(email, password);
-      const data = response.data;
-      if (data.access_token) {
-        setIsAuth(true);
+      const { data } = await loginRequest(email, password);
+      if (data && data.access_token) {
         setAccessToken(data.access_token);
+        setIsAuth(true);
         await loadMe();
       }
       return data;
     } catch (error) {
       if (!error.response) return { message: t("errors.network_error") };
-
       console.error("Login error:", error);
-      return {
-        message: t("errors.login_error"),
-      };
+      return { message: t("errors.login_error") };
     }
   };
 
@@ -85,11 +112,8 @@ export const AuthProvider = ({ children }) => {
       return response;
     } catch (error) {
       if (!error.response) return { message: t("errors.network_error") };
-
       console.error("Registration error:", error);
-      return {
-        message: t("errors.registration_error"),
-      };
+      return { message: t("errors.registration_error") };
     }
   };
 
@@ -106,10 +130,16 @@ export const AuthProvider = ({ children }) => {
     // Optionally, send a logout endpoint to clear cookie on backend
   };
 
-  const hasRole = (roleName) => roles.some((role) => role.name === roleName);
+  const hasRole = (roleName) => roles.some((r) => r.name === roleName);
+  const hasAnyRole = (list) =>
+    list.some((role) => roles.some((r) => r.name === role));
 
-  const hasAnyRole = (roleList) =>
-    roleList.some((role) => roles.some((r) => r.name === role));
+  const status = loading
+    ? "loading"
+    : isAuth
+    ? "authenticated"
+    : "unauthenticated";
+  const isRefreshing = !!refreshInFlightRef.current;
 
   return (
     <AuthContext.Provider
@@ -118,11 +148,14 @@ export const AuthProvider = ({ children }) => {
         user,
         roles,
         loading,
+        isRefreshing,
+        status,
         login,
         register,
         logout,
         hasRole,
         hasAnyRole,
+        refresh,
       }}
     >
       {children}

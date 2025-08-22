@@ -4,7 +4,7 @@ import api from "../../api";
 import { QK } from "../../utils/queryKeys";
 import useSinglePlanData from "./useSinglePlanData";
 
-async function fetchCycle(planID, cycleID) {
+export async function fetchCycle(planID, cycleID) {
   try {
     const res = await api.get(
       `/workout-plans/${planID}/workout-cycles/${cycleID}`

@@ -204,3 +204,33 @@ func (s *workoutServiceImpl) DeleteWorkoutCycle(ctx context.Context, id uint) er
 	return s.workoutCycleRepo.Delete(ctx, id)
 
 }
+
+func (s *workoutServiceImpl) GetCurrentWorkoutCycle(ctx context.Context, userID uint) (*workout.WorkoutCycle, error) {
+	plans, err := s.workoutPlanRepo.GetByUserID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	var activePlan *workout.WorkoutPlan
+	for _, p := range plans {
+		if p.Active {
+			activePlan = p
+			break
+		}
+	}
+
+	if activePlan == nil {
+		return nil, fmt.Errorf("no active workout plan found")
+	}
+
+	if activePlan.CurrentCycleID == 0 {
+		return nil, fmt.Errorf("active workout plan has no current cycle")
+	}
+
+	cycle, err := s.workoutCycleRepo.GetByID(ctx, activePlan.CurrentCycleID)
+	if err != nil {
+		return nil, err
+	}
+
+	return cycle, nil
+}

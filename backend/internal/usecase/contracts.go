@@ -25,6 +25,7 @@ type (
 		UpdateWorkoutCycle(ctx context.Context, wc *workout.WorkoutCycle) error
 		DeleteWorkoutCycle(ctx context.Context, id uint) error
 		CompleteWorkoutCycle(ctx context.Context, wc *workout.WorkoutCycle) (uint, error)
+		GetCurrentWorkoutCycle(ctx context.Context, userID uint) (*workout.WorkoutCycle, error)
 
 		CreateWorkout(ctx context.Context, w *workout.Workout) error
 		CreateMultipleWorkouts(ctx context.Context, cycleID uint, workouts []*workout.Workout) error

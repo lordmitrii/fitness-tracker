@@ -9,7 +9,7 @@ import { LayoutHeader } from "../layout/LayoutHeader";
 
 const Home = () => {
   const { isAuth } = useAuth();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { t } = useTranslation();
 
@@ -26,9 +26,10 @@ const Home = () => {
   return (
     <>
       <LayoutHeader>
-        <h1 className="text-title-blue-gradient font-bold via-blue-500 px-4 font-extrabold py-1">
+        <h1 className="sm:hidden text-title-blue-gradient via-blue-500 px-4 font-extrabold pb-2">
           Fitness Tracker
         </h1>
+        <h1 className="hidden sm:block text-title font-bold px-4 pb-2">{t("general.home")}</h1>
       </LayoutHeader>
       <div className="card flex flex-col items-center">
         <h1 className="text-title font-bold mb-8 text-center">

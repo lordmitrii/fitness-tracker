@@ -225,3 +225,7 @@ func ToIndividualExerciseStatsResponse(e *workout.IndividualExercise) Individual
 
 	return resp
 }
+
+func ToCurrentCycleResponse(cycle *workout.WorkoutCycle) CurrentCycleResponse {
+	return CurrentCycleResponse{ID: cycle.ID, WorkoutPlanID: cycle.WorkoutPlanID}
+}

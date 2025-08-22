@@ -12,6 +12,7 @@ func SeedRBAC(db *gorm.DB) error {
 	return db.Transaction(func(tx *gorm.DB) error {
 		permKeys := []string{
 			rbac.PermAdmin,
+			rbac.PermTester,
 			rbac.PermUserReadSelf,
 			rbac.PermUserWriteSelf,
 			rbac.PermUserReadOthers,
@@ -47,6 +48,9 @@ func SeedRBAC(db *gorm.DB) error {
 				rbac.PermUserReadOthers, rbac.PermUserWriteOthers,
 				rbac.PermWorkoutReadOthers, rbac.PermWorkoutWriteOthers,
 				rbac.PermAiQuestions,
+			},
+			rbac.RoleTester: {
+				rbac.PermTester,
 			},
 			rbac.RoleMember: {
 				rbac.PermUserReadSelf, rbac.PermUserWriteSelf,

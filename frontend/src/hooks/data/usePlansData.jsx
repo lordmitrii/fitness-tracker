@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../api";
 import { QK } from "../../utils/queryKeys";
 
-const fetchPlans = async () => {
+export const fetchPlans = async () => {
   const { data } = await api.get("/workout-plans");
   return Array.isArray(data) ? data : [];
 };

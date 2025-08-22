@@ -224,3 +224,8 @@ type IndividualExerciseStatsResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+type CurrentCycleResponse struct {
+	ID uint `json:"id"`
+	WorkoutPlanID uint `json:"workout_plan_id"`
+}

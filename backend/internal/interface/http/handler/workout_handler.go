@@ -74,6 +74,7 @@ func NewWorkoutHandler(r *gin.RouterGroup, svc usecase.WorkoutService) {
 		wp.POST(":id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:weID/workout-sets/:setID/move", h.MoveWorkoutSet)
 	}
 
+	auth.GET("/current-cycle", h.GetCurrentWorkoutCycle)
 }
 
 func (h *WorkoutHandler) CreateWorkoutPlan(c *gin.Context) {
@@ -981,4 +982,19 @@ func (h *WorkoutHandler) GetIndividualExercisesStats(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, resp)
+}
+
+func (h *WorkoutHandler) GetCurrentWorkoutCycle(c *gin.Context) {
+	userID, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+
+	cycle, err := h.svc.GetCurrentWorkoutCycle(c.Request.Context(), userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.ToCurrentCycleResponse(cycle))
 }

@@ -80,7 +80,6 @@ export default function usePullToRefresh(ref, onRefresh) {
       armCancelTimer();
     };
 
-
     const onDown = (e) => {
       if (e.pointerType === "mouse" && !isTouchEnv()) return;
 
@@ -93,9 +92,21 @@ export default function usePullToRefresh(ref, onRefresh) {
       startedAtTop.current = el.scrollTop <= TOP_EPSILON;
       dragging.current = false;
       tookOver.current = false;
-      pointerIdRef.current = e.pointerId ?? null;
-      // capture pointer so we keep receiving move/up
-      el.setPointerCapture?.(e.pointerId);
+      pointerIdRef.current =
+        "pointerId" in e && typeof e.pointerId === "number"
+          ? e.pointerId
+          : null;
+
+      if (
+        pointerIdRef.current != null &&
+        typeof el.setPointerCapture === "function"
+      ) {
+        try {
+          el.setPointerCapture(pointerIdRef.current);
+        } catch (error) {
+          console.warn("Failed to capture pointer:", error);
+        }
+      }
     };
 
     const onMove = (e) => {

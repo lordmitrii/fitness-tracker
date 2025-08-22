@@ -52,54 +52,38 @@ export class ErrorBoundary extends Component {
         className="
           fixed inset-0 z-[9999]
           backdrop-blur-sm
-          flex items-center justify-center
-          p-4 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]
+          flex items-center justify-center min-w-0
+          py-4 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]
         "
       >
-        <div
-          className="
-            w-full max-w-md
-            rounded-2xl border border-gray-500
-            shadow-2xl
-            p-5
-          "
-        >
-          <div className="flex items-start gap-2">
-            <div
-              className="
-                h-10 w-10 shrink-0 rounded-xl
-                text-red-500
-                grid place-items-center
-              "
-            >
-              <ErrorIcon color="text-red-500" />
-            </div>
-            <div className="min-w-0">
-              <h1 className="text-title">
-                <Trans i18nKey="error_state.oops_message" />
-              </h1>
-              <p className="mt-1 text-caption">
-                <Trans i18nKey="error_state.description" />
-              </p>
-            </div>
+        <div className="card flex flex-col items-center justify-center border border-gray-300 min-w-0">
+          <div className="mb-5">
+            <span className="inline-flex items-center justify-center bg-red-50 rounded-full p-4">
+              <ErrorIcon />
+            </span>
           </div>
 
-          <div className="mt-4 flex flex-col items-center gap-2">
-            <button onClick={this.reload} className="btn btn-danger w-full">
-              <Trans i18nKey="error_state.reload" />
-            </button>
+          <h1 className="text-title-red-gradient font-bold mb-2 text-center">
+            <Trans i18nKey="error_state.oops_message" />
+          </h1>
+          <p className="text-caption mb-4 text-center">
+            <Trans i18nKey="error_state.description" />
+          </p>
 
-            <button
-              onClick={this.copy}
-              className="btn btn-secondary w-full"
-              title={<Trans i18nKey="error_state.copy_report" />}
-            >
-              {this.state.copied ? (
-                <Trans i18nKey="error_state.copied_success" />
-              ) : (
-                <Trans i18nKey="error_state.copy_report" />
-              )}
-            </button>
+          <div className="flex flex-col gap-2 w-full">
+            <div className="flex flex-col sm:flex-row items-center gap-2 w-full">
+              <button onClick={this.reload} className="btn btn-danger w-full">
+                <Trans i18nKey="error_state.reload" />
+              </button>
+
+              <button onClick={this.copy} className="btn btn-secondary w-full">
+                {this.state.copied ? (
+                  <Trans i18nKey="error_state.copied_success" />
+                ) : (
+                  <Trans i18nKey="error_state.copy_report" />
+                )}
+              </button>
+            </div>
 
             <button
               onClick={() =>
@@ -116,7 +100,7 @@ export class ErrorBoundary extends Component {
           </div>
 
           {this.state.showDetails && (
-            <div className="mt-4 rounded-lg border border-gray-400 p-3">
+            <div className="mt-4 rounded-lg border border-gray-300 p-3 select-auto w-full bg-gray-200">
               <pre className="max-h-60 overflow-auto whitespace-pre-wrap text-xs text-black m-0">
                 {String(this.state.error?.stack || this.state.error)}
               </pre>

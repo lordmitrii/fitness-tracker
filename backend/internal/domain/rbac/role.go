@@ -2,6 +2,7 @@ package rbac
 
 const (
 	RoleAdmin      = "admin"
+	RoleTester     = "tester"
 	RoleMember     = "member"
 	RoleVerified   = "verified"
 	RoleRestricted = "restricted"

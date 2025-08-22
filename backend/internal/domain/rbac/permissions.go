@@ -2,6 +2,7 @@ package rbac
 
 const (
 	PermAdmin              = "admin"
+	PermTester             = "tester"
 	PermWorkoutReadSelf    = "workout:read:self"
 	PermWorkoutWriteSelf   = "workout:write:self"
 	PermWorkoutWriteOthers = "workout:write:others"
