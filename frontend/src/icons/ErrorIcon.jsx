@@ -1,6 +1,6 @@
-const ErrorIcon = () => (
+const ErrorIcon = ({color="text-pink-400"}) => (
   <svg
-    className="h-10 w-10 text-pink-400 animate-shake"
+    className={`h-10 w-10 ${color} animate-shake`}
     fill="none"
     viewBox="0 0 24 24"
     stroke="currentColor"

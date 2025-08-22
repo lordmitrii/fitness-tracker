@@ -80,6 +80,7 @@ export default function usePullToRefresh(ref, onRefresh) {
       armCancelTimer();
     };
 
+
     const onDown = (e) => {
       if (e.pointerType === "mouse" && !isTouchEnv()) return;
 
@@ -93,7 +94,6 @@ export default function usePullToRefresh(ref, onRefresh) {
       dragging.current = false;
       tookOver.current = false;
       pointerIdRef.current = e.pointerId ?? null;
-
       // capture pointer so we keep receiving move/up
       el.setPointerCapture?.(e.pointerId);
     };

@@ -79,7 +79,7 @@ export default function usePlansData({ skipQuery = false } = {}) {
       });
       qc.setQueryData(QK.plan(plan.id), plan);
     },
-    onSettled: () => invalidate(),
+    // onSettled: () => invalidate(),
   });
 
   const updatePlan = useMutation({
@@ -92,12 +92,13 @@ export default function usePlansData({ skipQuery = false } = {}) {
       await qc.cancelQueries({ queryKey: QK.plans });
       const previous = qc.getQueryData(QK.plans);
       // optimistic list update
-      setPlansCache((list) =>
-        list.map((p) => (p.id === planID ? { ...p, ...payload } : p))
+      setPlansCache(
+        (list) =>
+          list.map((p) => (p.id === planID ? { ...p, name: payload.name } : p)) // Only updating name here because update is only used for it
       );
       qc.setQueryData(QK.plan(planID), (old) => ({
         ...(old ?? {}),
-        ...payload,
+        name: payload.name,
       }));
       return { previous, planID };
     },
@@ -105,12 +106,17 @@ export default function usePlansData({ skipQuery = false } = {}) {
       if (ctx?.previous) qc.setQueryData(QK.plans, ctx.previous);
     },
     onSuccess: (updated) => {
-      qc.setQueryData(QK.plan(updated.id), (old) => ({ ...old, ...updated }));
+      qc.setQueryData(QK.plan(updated.id), (old) => ({
+        ...old,
+        name: updated.name,
+      }));
       setPlansCache((list) =>
-        list.map((p) => (p.id === updated.id ? { ...p, ...updated } : p))
+        list.map((p) =>
+          p.id === updated.id ? { ...p, name: updated.name } : p
+        )
       );
     },
-    onSettled: () => invalidate(),
+    // onSettled: () => invalidate(),
   });
 
   const activatePlan = useMutation({
@@ -138,7 +144,7 @@ export default function usePlansData({ skipQuery = false } = {}) {
     onError: (_e, _v, ctx) => {
       if (ctx?.previous) qc.setQueryData(QK.plans, ctx.previous);
     },
-    onSettled: () => invalidate(),
+    // onSettled: () => invalidate(),
   });
 
   const deletePlan = useMutation({
@@ -157,7 +163,7 @@ export default function usePlansData({ skipQuery = false } = {}) {
     onError: (_e, _v, ctx) => {
       if (ctx?.previous) qc.setQueryData(QK.plans, ctx.previous);
     },
-    onSettled: () => invalidate(),
+    // onSettled: () => invalidate(),
   });
 
   return {

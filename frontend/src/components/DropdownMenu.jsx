@@ -60,7 +60,6 @@ const DropdownMenu = ({ dotsHorizontal = false, dotsHidden = false, menu }) => {
 
     let cssBottomSafe = readPxVar("--menubar-height", 0);
     let cssLeftSafe = readPxVar("--menubar-width", 0);
-    console.log(cssBottomSafe);
 
     const bottomVisibleYViewport = viewportH - cssBottomSafe - MARGIN;
     const bottomVisibleYPage = scrollY + viewportH - cssBottomSafe - MARGIN;
@@ -190,7 +189,6 @@ const DropdownMenu = ({ dotsHorizontal = false, dotsHidden = false, menu }) => {
             <button
               className={`absolute ${cornerClass} text-gray-700 hover:text-gray-900 transition`}
               onClick={() => setOpen(false)}
-              aria-label="Close menu"
             >
               <CloseIcon />
             </button>

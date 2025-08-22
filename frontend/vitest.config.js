@@ -1,16 +1,29 @@
 import { defineConfig } from "vitest/config";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default defineConfig({
-  test: {
-    environment: "jsdom",
-    setupFiles: ["./tests/setupTests.js"],
-    include: ["tests/**/*.test.{ts,tsx,js,jsx}"],
-    globals: true,
-  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
     },
+  },
+  test: {
+    environment: "jsdom",
+    setupFiles: ["tests/setupTests.js"],
+    globals: true,
+    css: false,
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "html"],
+      include: ["src/**/*.{js,jsx,ts,tsx}"],
+    },
+  },
+  esbuild: {
+    jsx: "automatic",
+    jsxImportSource: "react",
   },
 });
