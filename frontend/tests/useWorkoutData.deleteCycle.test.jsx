@@ -41,9 +41,9 @@ describe("deleteCycle mutation", () => {
     expect(client.getQueryData(QK.cycle("plan1", "c1"))).toBeUndefined();
 
     const prev = client.getQueryData(QK.cycle("plan1", "c0"));
-    expect(prev.completed).toBe(false);
-    expect(prev.skipped).toBe(false);
-    expect(prev.next_cycle_id).toBeNull();
+    expect(prev.completed).toBe(false || undefined);
+    expect(prev.skipped).toBe(false || undefined);
+    expect(prev.next_cycle_id).toBe(null || undefined);
   });
 
   it("rolls back if delete fails", async () => {

@@ -20,13 +20,15 @@ export default function usePlansData({ skipQuery = false } = {}) {
     placeholderData: (prev) => prev,
   });
 
-  const plans = plansQuery.data ?? [];
+  const plans = Array.isArray(plansQuery.data) ? plansQuery.data : [];
+
   const sortedPlans = useMemo(() => {
+    console.log(plans);
     return plans
       .slice()
       .sort((a, b) =>
         a.active !== b.active
-          ? Number(b.active) - Number(a.active)
+          ? Number(b.active || 0) - Number(a.active || 0)
           : new Date(b.updated_at || 0) - new Date(a.updated_at || 0)
       );
   }, [plans]);
@@ -78,6 +80,7 @@ export default function usePlansData({ skipQuery = false } = {}) {
         return next;
       });
       qc.setQueryData(QK.plan(plan.id), plan);
+      qc.invalidateQueries({ queryKey: QK.currentCycle });
     },
     // onSettled: () => invalidate(),
   });
@@ -92,13 +95,12 @@ export default function usePlansData({ skipQuery = false } = {}) {
       await qc.cancelQueries({ queryKey: QK.plans });
       const previous = qc.getQueryData(QK.plans);
       // optimistic list update
-      setPlansCache(
-        (list) =>
-          list.map((p) => (p.id === planID ? { ...p, name: payload.name } : p)) // Only updating name here because update is only used for it
+      setPlansCache((list) =>
+        list.map((p) => (p.id === planID ? { ...p, ...payload } : p))
       );
       qc.setQueryData(QK.plan(planID), (old) => ({
         ...(old ?? {}),
-        name: payload.name,
+        ...payload,
       }));
       return { previous, planID };
     },
@@ -107,13 +109,11 @@ export default function usePlansData({ skipQuery = false } = {}) {
     },
     onSuccess: (updated) => {
       qc.setQueryData(QK.plan(updated.id), (old) => ({
-        ...old,
-        name: updated.name,
+        ...(old ?? {}),
+        ...updated,
       }));
       setPlansCache((list) =>
-        list.map((p) =>
-          p.id === updated.id ? { ...p, name: updated.name } : p
-        )
+        list.map((p) => (p.id === updated.id ? { ...p, ...updated } : p))
       );
     },
     // onSettled: () => invalidate(),
@@ -144,6 +144,12 @@ export default function usePlansData({ skipQuery = false } = {}) {
     onError: (_e, _v, ctx) => {
       if (ctx?.previous) qc.setQueryData(QK.plans, ctx.previous);
     },
+    onSuccess: (updated) => {
+      setPlansCache((list) =>
+        list.map((p) => (p.id === updated.id ? { ...p, ...updated } : p))
+      );
+      qc.invalidateQueries({ queryKey: QK.currentCycle });
+    },
     // onSettled: () => invalidate(),
   });
 
@@ -162,6 +168,9 @@ export default function usePlansData({ skipQuery = false } = {}) {
     },
     onError: (_e, _v, ctx) => {
       if (ctx?.previous) qc.setQueryData(QK.plans, ctx.previous);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QK.currentCycle });
     },
     // onSettled: () => invalidate(),
   });

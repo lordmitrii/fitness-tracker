@@ -3,8 +3,15 @@ import api from "../../api";
 import { QK } from "../../utils/queryKeys";
 import { useMemo } from "react";
 
-export const fetchCurrentCycle = async () =>
-  (await api.get(`/current-cycle`))?.data ?? {};
+export const fetchCurrentCycle = async () => {
+  try {
+    const res = await api.get(`/current-cycle`);
+    return res?.data ?? {};
+  } catch (err) {
+    if (err?.response?.status === 404) return {};
+    throw err;
+  }
+};
 
 export default function useCurrentCycleData() {
   const { data, error, isLoading, refetch } = useQuery({

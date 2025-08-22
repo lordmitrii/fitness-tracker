@@ -124,12 +124,12 @@ type IndividualExerciseCreateOrGetRequest struct {
 }
 
 type WorkoutPlanResponse struct {
-	ID             uint                   `json:"id"`
-	Name           string                 `json:"name"`
-	Active         bool                   `json:"active"`
-	UserID         uint                   `json:"user_id"`
-	CurrentCycleID uint                   `json:"current_cycle_id"`
-	WorkoutCycles  []WorkoutCycleResponse `json:"workout_cycle"`
+	ID             uint                   `json:"id,omitempty"`
+	Name           string                 `json:"name,omitempty"`
+	Active         bool                   `json:"active,omitempty"`
+	UserID         uint                   `json:"user_id,omitempty"`
+	CurrentCycleID uint                   `json:"current_cycle_id,omitempty"`
+	WorkoutCycles  []WorkoutCycleResponse `json:"workout_cycles,omitempty"`
 	CreatedAt      time.Time              `json:"created_at"`
 	UpdatedAt      time.Time              `json:"updated_at"`
 }
@@ -149,83 +149,83 @@ type WorkoutCycleResponse struct {
 }
 
 type WorkoutResponse struct {
-	ID                uint                      `json:"id"`
-	Name              string                    `json:"name"`
-	WorkoutCycleID    uint                      `json:"workout_cycle_id"`
-	Date              time.Time                 `json:"date"`
-	Index             int                       `json:"index"`
-	Completed         bool                      `json:"completed"`
-	Skipped           bool                      `json:"skipped"`
-	PreviousWorkoutID uint                      `json:"previous_workout_id"`
-	WorkoutExercises  []WorkoutExerciseResponse `json:"workout_exercises"`
+	ID                uint                      `json:"id,omitempty"`
+	Name              string                    `json:"name,omitempty"`
+	WorkoutCycleID    uint                      `json:"workout_cycle_id,omitempty"`
+	Date              time.Time                 `json:"date,omitempty"`
+	Index             int                       `json:"index,omitempty"`
+	Completed         bool                      `json:"completed,omitempty"`
+	Skipped           bool                      `json:"skipped,omitempty"`
+	PreviousWorkoutID uint                      `json:"previous_workout_id,omitempty"`
+	WorkoutExercises  []WorkoutExerciseResponse `json:"workout_exercises,omitempty"`
 	CreatedAt         time.Time                 `json:"created_at"`
 	UpdatedAt         time.Time                 `json:"updated_at"`
 }
 
 type IndividualExerciseResponse struct {
-	ID                             uint                    `json:"id"`
-	Name                           string                  `json:"name"`
-	IsBodyweight                   bool                    `json:"is_bodyweight"`
-	IsTimeBased                    bool                    `json:"is_time_based"`
-	MuscleGroupID                  *uint                   `json:"muscle_group_id"`
-	MuscleGroup                    MuscleGroupResponse     `json:"muscle_group"`
-	ExerciseID                     *uint                   `json:"exercise_id"`
-	Exercise                       ExerciseResponse        `json:"exercise"`
-	LastCompletedWorkoutExerciseID *uint                   `json:"last_completed_workout_exercise_id"`
-	LastCompletedWorkoutExercise   WorkoutExerciseResponse `json:"last_completed_workout_exercise"`
-	CurrentWeight                  float64                 `json:"current_weight"`
-	CurrentReps                    int                     `json:"current_reps"`
-	CreatedAt                      time.Time               `json:"created_at"`
-	UpdatedAt                      time.Time               `json:"updated_at"`
+	ID                             uint                     `json:"id,omitempty"`
+	Name                           string                   `json:"name,omitempty"`
+	IsBodyweight                   bool                     `json:"is_bodyweight,omitempty"`
+	IsTimeBased                    bool                     `json:"is_time_based,omitempty"`
+	MuscleGroupID                  *uint                    `json:"muscle_group_id,omitempty"`
+	MuscleGroup                    MuscleGroupResponse      `json:"muscle_group"`
+	ExerciseID                     *uint                    `json:"exercise_id,omitempty"`
+	Exercise                       ExerciseResponse         `json:"exercise"`
+	LastCompletedWorkoutExerciseID *uint                    `json:"last_completed_workout_exercise_id,omitempty"`
+	LastCompletedWorkoutExercise   *WorkoutExerciseResponse `json:"last_completed_workout_exercise,omitempty"`
+	CurrentWeight                  float64                  `json:"current_weight,omitempty"`
+	CurrentReps                    int                      `json:"current_reps,omitempty"`
+	CreatedAt                      time.Time                `json:"created_at"`
+	UpdatedAt                      time.Time                `json:"updated_at"`
 }
 
 type WorkoutExerciseResponse struct {
-	ID                   uint                        `json:"id"`
-	WorkoutID            uint                        `json:"workout_id"`
-	Index                int                         `json:"index"`
-	IndividualExerciseID uint                        `json:"individual_exercise_id"`
-	IndividualExercise   *IndividualExerciseResponse `json:"individual_exercise"`
-	WorkoutSets          []WorkoutSetResponse        `json:"workout_sets"`
-	Completed            bool                        `json:"completed"`
-	Skipped              bool                        `json:"skipped"`
-	SetsQt               int64                       `json:"sets_qt"`
+	ID                   uint                        `json:"id,omitempty"`
+	WorkoutID            uint                        `json:"workout_id,omitempty"`
+	Index                int                         `json:"index,omitempty"`
+	IndividualExerciseID uint                        `json:"individual_exercise_id,omitempty"`
+	IndividualExercise   *IndividualExerciseResponse `json:"individual_exercise,omitempty"`
+	WorkoutSets          []WorkoutSetResponse        `json:"workout_sets,omitempty"`
+	Completed            bool                        `json:"completed,omitempty"`
+	Skipped              bool                        `json:"skipped,omitempty"`
+	SetsQt               int64                       `json:"sets_qt,omitempty"`
 	CreatedAt            time.Time                   `json:"created_at"`
 	UpdatedAt            time.Time                   `json:"updated_at"`
 }
 
 type WorkoutSetResponse struct {
-	ID                uint      `json:"id"`
-	WorkoutExerciseID uint      `json:"workout_exercise_id"`
-	Index             int       `json:"index"`
-	Completed         bool      `json:"completed"`
-	Skipped           bool      `json:"skipped"`
-	Weight            *float64  `json:"weight" binding:"omitempty"`
-	Reps              *int      `json:"reps" binding:"omitempty"`
-	PreviousWeight    *float64  `json:"previous_weight" binding:"omitempty"`
-	PreviousReps      *int      `json:"previous_reps" binding:"omitempty"`
+	ID                uint      `json:"id,omitempty"`
+	WorkoutExerciseID uint      `json:"workout_exercise_id,omitempty"`
+	Index             int       `json:"index,omitempty"`
+	Completed         bool      `json:"completed,omitempty"`
+	Skipped           bool      `json:"skipped,omitempty"`
+	Weight            *float64  `json:"weight,omitempty"`
+	Reps              *int      `json:"reps,omitempty"`
+	PreviousWeight    *float64  `json:"previous_weight,omitempty"`
+	PreviousReps      *int      `json:"previous_reps,omitempty"`
 	CreatedAt         time.Time `json:"created_at"`
 	UpdatedAt         time.Time `json:"updated_at"`
 }
 
 type IndividualExerciseStatsResponse struct {
-	ID           uint   `json:"id"`
-	Name         string `json:"name"`
-	IsBodyweight bool   `json:"is_bodyweight"`
-	IsTimeBased  bool   `json:"is_time_based"`
+	ID           uint   `json:"id,omitempty"`
+	Name         string `json:"name,omitempty"`
+	IsBodyweight bool   `json:"is_bodyweight,omitempty"`
+	IsTimeBased  bool   `json:"is_time_based,omitempty"`
 
-	MuscleGroupID *uint               `json:"muscle_group_id"`
+	MuscleGroupID *uint               `json:"muscle_group_id,omitempty"`
 	MuscleGroup   MuscleGroupResponse `json:"muscle_group"`
-	ExerciseID    *uint               `json:"exercise_id"`
+	ExerciseID    *uint               `json:"exercise_id,omitempty"`
 	Exercise      ExerciseResponse    `json:"exercise"`
 
-	CurrentWeight float64 `json:"current_weight"`
-	CurrentReps   int     `json:"current_reps"`
+	CurrentWeight float64 `json:"current_weight,omitempty"`
+	CurrentReps   int     `json:"current_reps,omitempty"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type CurrentCycleResponse struct {
-	ID uint `json:"id"`
-	WorkoutPlanID uint `json:"workout_plan_id"`
+	ID            uint `json:"id,omitempty"`
+	WorkoutPlanID uint `json:"workout_plan_id,omitempty"`
 }

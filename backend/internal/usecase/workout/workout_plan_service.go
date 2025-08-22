@@ -16,7 +16,7 @@ func (s *workoutServiceImpl) CreateWorkoutPlan(ctx context.Context, wp *workout.
 		for _, plan := range plans {
 			if plan.Active {
 				plan.Active = false
-				if err := s.workoutPlanRepo.SetActive(ctx, plan); err != nil {
+				if _, err := s.workoutPlanRepo.SetActive(ctx, plan); err != nil {
 					return err
 				}
 			}
@@ -55,18 +55,27 @@ func (s *workoutServiceImpl) GetWorkoutPlansByUserID(ctx context.Context, userID
 	return s.workoutPlanRepo.GetByUserID(ctx, userID)
 }
 
-func (s *workoutServiceImpl) UpdateWorkoutPlan(ctx context.Context, wp *workout.WorkoutPlan) error {
-	return s.workoutPlanRepo.Update(ctx, wp)
+func (s *workoutServiceImpl) UpdateWorkoutPlan(ctx context.Context, wp *workout.WorkoutPlan) (*workout.WorkoutPlan, error) {
+	if err := s.workoutPlanRepo.Update(ctx, wp); err != nil {
+		return nil, err
+	}
+
+	wp, err := s.workoutPlanRepo.GetByID(ctx, wp.ID) // Just to fetch updated_at. maybe its not very efficient :(
+	if err != nil {
+		return nil, err
+	}
+
+	return wp, nil
 }
 
 func (s *workoutServiceImpl) DeleteWorkoutPlan(ctx context.Context, id uint) error {
 	return s.workoutPlanRepo.Delete(ctx, id)
 }
 
-func (s *workoutServiceImpl) SetActiveWorkoutPlan(ctx context.Context, id uint, active bool) error {
+func (s *workoutServiceImpl) SetActiveWorkoutPlan(ctx context.Context, id uint, active bool) (*workout.WorkoutPlan, error) {
 	wp, err := s.workoutPlanRepo.GetByID(ctx, id)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	wp.Active = active
 
@@ -74,17 +83,18 @@ func (s *workoutServiceImpl) SetActiveWorkoutPlan(ctx context.Context, id uint, 
 		// If the workout plan is active, we need to set other plans to inactive
 		plans, err := s.workoutPlanRepo.GetByUserID(ctx, wp.UserID)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		for _, plan := range plans {
 			if plan.Active && plan.ID != wp.ID {
 				plan.Active = false
-				if err := s.workoutPlanRepo.SetActive(ctx, plan); err != nil {
-					return err
+				if _, err := s.workoutPlanRepo.SetActive(ctx, plan); err != nil {
+					return nil, err
 				}
 			}
 		}
 	}
+
 	return s.workoutPlanRepo.SetActive(ctx, wp)
 }
 

@@ -14,9 +14,9 @@ type (
 		CreateWorkoutPlan(ctx context.Context, wp *workout.WorkoutPlan) error
 		GetWorkoutPlanByID(ctx context.Context, id uint) (*workout.WorkoutPlan, error)
 		GetWorkoutPlansByUserID(ctx context.Context, userID uint) ([]*workout.WorkoutPlan, error)
-		UpdateWorkoutPlan(ctx context.Context, wp *workout.WorkoutPlan) error
+		UpdateWorkoutPlan(ctx context.Context, wp *workout.WorkoutPlan) (*workout.WorkoutPlan, error)
 		DeleteWorkoutPlan(ctx context.Context, id uint) error
-		SetActiveWorkoutPlan(ctx context.Context, id uint, active bool) error
+		SetActiveWorkoutPlan(ctx context.Context, id uint, active bool) (*workout.WorkoutPlan, error)
 		GetActivePlanByUserID(ctx context.Context, userID uint) (*workout.WorkoutPlan, error)
 
 		CreateWorkoutCycle(ctx context.Context, wc *workout.WorkoutCycle) error

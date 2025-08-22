@@ -15,7 +15,7 @@ const WorkoutCycleDetailsMenu = ({
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { mutations, invalidate } = useWorkoutData({
+  const { mutations } = useWorkoutData({
     planID,
     cycleID,
     skipQuery: true,

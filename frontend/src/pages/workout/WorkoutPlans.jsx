@@ -1,4 +1,4 @@
-import { useLayoutEffect, useCallback } from "react";
+import { useLayoutEffect, useCallback, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import LoadingState from "../../states/LoadingState";
 import ErrorState from "../../states/ErrorState";
@@ -9,11 +9,14 @@ import { useTranslation } from "react-i18next";
 import { LayoutHeader } from "../../layout/LayoutHeader";
 import usePlansData from "../../hooks/data/usePlansData";
 import { usePullToRefreshOverride } from "../../context/PullToRefreshContext";
+import useCurrentCycleData from "../../hooks/data/useCurrentCycleData";
 
 const WorkoutPlans = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+
+  const { currentCycle } = useCurrentCycleData();
 
   const {
     plans,
@@ -26,14 +29,13 @@ const WorkoutPlans = () => {
 
   useLayoutEffect(() => {
     if (searchParams.get("showCurrent") === "true" && plans.length) {
-      const active = plans.find((p) => p.active);
-      if (active) {
+      if (currentCycle) {
         navigate(
-          `/workout-plans/${active.id}/workout-cycles/${active.current_cycle_id}`
+          `/workout-plans/${currentCycle.workout_plan_id}/workout-cycles/${currentCycle.id}`
         );
       }
     }
-  }, [searchParams, plans, navigate]);
+  }, [searchParams, plans, navigate, currentCycle]);
 
   usePullToRefreshOverride(
     useCallback(async () => {
