@@ -32,11 +32,12 @@ func (s *workoutServiceImpl) GetWorkoutCycleByID(ctx context.Context, id uint) (
 
 	var newWorkouts []*workout.Workout
 	for _, w := range prevCycle.Workouts {
+		t := time.Now().AddDate(0, 0, w.Index)
 		newWorkout := &workout.Workout{
 			Name:              w.Name,
 			WorkoutCycleID:    cycle.ID,
 			Index:             w.Index,
-			Date:              time.Now().AddDate(0, 0, w.Index),
+			Date:              &t,
 			Completed:         false,
 			PreviousWorkoutID: w.ID,
 		}

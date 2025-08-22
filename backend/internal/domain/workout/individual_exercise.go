@@ -1,8 +1,9 @@
 package workout
 
 import (
-	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 	"time"
+
+	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 )
 
 type IndividualExercise struct {
@@ -26,6 +27,6 @@ type IndividualExercise struct {
 	ExerciseID *uint     `json:"exercise_id"`
 	Exercise   *Exercise `json:"exercise"       gorm:"foreignKey:ExerciseID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE;"`
 
-	CreatedAt time.Time `json:"created_at"      example:"2010-10-01T10:00:00Z"`
-	UpdatedAt time.Time `json:"updated_at"      example:"2010-10-01T10:00:00Z"`
+	CreatedAt *time.Time `json:"created_at"      example:"2010-10-01T10:00:00Z"`
+	UpdatedAt *time.Time `json:"updated_at"      example:"2010-10-01T10:00:00Z"`
 }

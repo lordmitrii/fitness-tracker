@@ -16,6 +16,6 @@ type WorkoutSet struct {
 	PreviousWeight *float64 `json:"previous_weight"`
 	PreviousReps   *int     `json:"previous_reps"`
 
-	CreatedAt time.Time `json:"created_at"   example:"2010-10-01T10:00:00Z"`
-	UpdatedAt time.Time `json:"updated_at"   example:"2010-10-01T10:00:00Z"`
+	CreatedAt *time.Time `json:"created_at"   example:"2010-10-01T10:00:00Z"`
+	UpdatedAt *time.Time `json:"updated_at"   example:"2010-10-01T10:00:00Z"`
 }

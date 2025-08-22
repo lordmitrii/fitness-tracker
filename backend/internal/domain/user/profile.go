@@ -15,6 +15,6 @@ type Profile struct {
 	WeightKg float64 `json:"weight_kg"`
 	Sex      string  `json:"sex"`
 
-	UpdatedAt time.Time `json:"updated_at"`
-	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt *time.Time `json:"updated_at"`
+	CreatedAt *time.Time `json:"created_at"`
 }

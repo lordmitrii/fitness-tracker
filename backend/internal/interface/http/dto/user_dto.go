@@ -42,22 +42,22 @@ type DeleteConsentRequest struct {
 }
 
 type ProfileResponse struct {
-	Age       int       `json:"age"`
-	HeightCm  float64   `json:"height_cm"`
-	WeightKg  float64   `json:"weight_kg"`
-	Sex       string    `json:"sex"`
-	UpdatedAt time.Time `json:"updated_at"`
-	CreatedAt time.Time `json:"created_at"`
+	Age       int        `json:"age"`
+	HeightCm  float64    `json:"height_cm"`
+	WeightKg  float64    `json:"weight_kg"`
+	Sex       string     `json:"sex"`
+	UpdatedAt *time.Time `json:"updated_at"`
+	CreatedAt *time.Time `json:"created_at"`
 }
 
 type ConsentResponse struct {
-	ID        uint      `json:"id"`
-	UserID    uint      `json:"user_id"`
-	Type      string    `json:"type"`
-	Version   string    `json:"version"`
-	Given     bool      `json:"given"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        uint       `json:"id"`
+	UserID    uint       `json:"user_id"`
+	Type      string     `json:"type"`
+	Version   string     `json:"version"`
+	Given     bool       `json:"given"`
+	CreatedAt *time.Time `json:"created_at"`
+	UpdatedAt *time.Time `json:"updated_at"`
 }
 
 type TokenResponse struct {

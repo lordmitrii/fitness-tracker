@@ -28,7 +28,8 @@ func (r *WorkoutRepo) Create(ctx context.Context, w *workout.Workout) error {
 	defer r.mu.Unlock()
 
 	w.ID = r.nextID
-	w.CreatedAt = time.Now()
+	t := time.Now()
+	w.CreatedAt = &t
 	r.nextID++
 	r.workouts = append(r.workouts, w)
 	return nil
