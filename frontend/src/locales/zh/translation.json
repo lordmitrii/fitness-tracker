@@ -56,7 +56,10 @@
     "name_too_long": "名称必须少于 {{limit}} 个字符。",
     "refreshing": "正在刷新...",
     "release_to_refresh": "释放以刷新",
-    "pull_to_refresh": "下拉以刷新"
+    "pull_to_refresh": "下拉以刷新",
+    "diagnostics": "诊断",
+    "share": "分享",
+    "download": "下载"
   },
   "measurements": {
     "weight": "公斤",
@@ -179,7 +182,13 @@
   },
   "error_state": {
     "oops_message": "抱歉！发生了错误",
+    "description": "应用程序遇到错误。您可以重新加载或与支持团队分享详细信息。",
     "try_again": "重试",
+    "reload": "重新加载",
+    "copy_report": "复制报告",
+    "copied_success": "复制成功！",
+    "show_details": "显示详细信息",
+    "hide_details": "隐藏详细信息",
     "unknown_error": "发生未知错误。"
   },
   "workout_form": {

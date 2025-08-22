@@ -56,7 +56,10 @@
     "name_too_long": "Name must be less than {{limit}} characters.",
     "refreshing": "Refreshing...",
     "release_to_refresh": "Release to refresh",
-    "pull_to_refresh": "Pull to refresh"
+    "pull_to_refresh": "Pull to refresh",
+    "diagnostics": "Diagnostics",
+    "share": "Share",
+    "download": "Download"
   },
   "measurements": {
     "weight": "kg",
@@ -179,7 +182,13 @@
   },
   "error_state": {
     "oops_message": "Oops! Something went wrong",
+    "description": "The app hit an error. You can reload, or share details with support.",
     "try_again": "Try Again",
+    "reload": "Reload",
+    "copy_report": "Copy Report",
+    "copied_success": "Copied successfully!",
+    "show_details": "Show Details",
+    "hide_details": "Hide Details",
     "unknown_error": "Unknown error occured."
   },
   "workout_form": {

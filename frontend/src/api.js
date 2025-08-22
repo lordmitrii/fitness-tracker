@@ -1,5 +1,5 @@
 import axios from "axios";
-
+import { logStore } from "./diagnostics/LogStore";
 let accessToken = null;
 
 const api = axios.create({
@@ -47,6 +47,28 @@ api.interceptors.response.use(
         return Promise.reject(refreshErr);
       }
     }
+    return Promise.reject(error);
+  }
+);
+
+api.interceptors.response.use(
+  (res) => res,
+  (error) => {
+    try {
+      const isAuth = /\/users\/(login|register|refresh|logout)/.test(
+        error.config?.url || ""
+      );
+      logStore.push({
+        level: "error",
+        msg: `Axios error: ${error.message}`,
+        meta: {
+          url: error.config && error.config.url,
+          method: error.config && error.config.method,
+          status: error.response && error.response.status,
+          data: isAuth ? undefined : error.response?.data,
+        },
+      });
+    } catch {}
     return Promise.reject(error);
   }
 );

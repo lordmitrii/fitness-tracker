@@ -43,44 +43,38 @@ const manifest = {
   start_url: "/workout-plans?showCurrent=true",
 };
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
     VitePWA({
+      strategies: "injectManifest",
+      srcDir: "src",
+      filename: "sw.js",
+
       registerType: "autoUpdate",
+      injectRegister: "auto",
       devOptions: {
         enabled: true,
+        type: "module",
+        navigateFallback: "index.html",
       },
-      workbox: {
-        globPatterns: ["**/*.{js,css,html,png,jpg,svg}"],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/ftrackerapp\.co\.uk\/api\//,
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "api-cache",
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60,
-              },
-              cacheableResponse: {
-                statuses: [0, 200],
-              },
-            },
-          },
-        ],
-      },
-      manifest: manifest,
+
+      includeAssets: [
+        "favicon.ico",
+        "robots.txt",
+        "icon512_maskable.png",
+        "icon512_rounded.png",
+        "screenshots/desktop.png",
+        "screenshots/mobile.png",
+      ],
+
+      manifest,
     }),
   ],
   server: {
     proxy: {
-      "/api": {
-        target: "http://backend:8080",
-        changeOrigin: true,
-      },
+      "/api": { target: "http://backend:8080", changeOrigin: true },
     },
   },
 });

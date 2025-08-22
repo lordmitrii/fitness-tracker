@@ -88,6 +88,8 @@ backend/
 │       │   ├── consent_service.go
 │       │   └── ...
 │       ├── ai/
+│       │   ├── ai_service_test.go             # golang tests          
+│       │   ├── helpers_test.go                     
 │       │   ├── service.go                     
 │       │   ├── openai.go                       # Callers to openai
 │       │   ├── ai_service.go
@@ -179,13 +181,21 @@ frontend/
 │   ├── api.js                            # Axios interceptors, etc.
 │   ├── App.jsx                           # Routes, etc.
 │   ├── i18n.js
+│   ├── sw.js                             # Service worker (Vite PWA)
 │   └── main.jsx
+│
+├── tests/
+│   ├── __mocks__/
+│   ├── utils/
+│   ├── useWorkoutData.basic.test.jsx
+│   └── ...                               # Other tests
 │
 ├── index.html
 ├── nginx.conf
 ├── package.json
 ├── package-lock.json
 ├── vite.config.js
+├── vitest.config.js
 ├── .dockerignore
 ├── Dockerfile
 └── Dockerfile.prod
