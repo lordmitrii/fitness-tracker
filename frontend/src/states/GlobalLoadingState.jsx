@@ -30,7 +30,7 @@ const GlobalLoadingState = ({ blocking }) => {
   if (!appLoading) return null;
 
   return (
-    <div className="fixed inset-0 z-9999 h-full w-full flex flex-col items-center justify-center gap-10 bg-white">
+    <div className="fixed inset-0 z-500 h-full w-full flex flex-col items-center justify-center gap-10 bg-white">
       <p className="text-title-blue-gradient font-extrabold text-center via-sky-600 mx-10">
         {t("global_loading.welcome")}
       </p>

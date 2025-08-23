@@ -30,7 +30,14 @@ export function useCacheWarmup({
     const run = async () => {
       let finalStatus = status;
       if (status === "loading" && typeof refresh === "function") {
-        finalStatus = await refresh(); // "authenticated" | "unauthenticated"
+        try {
+          finalStatus = await Promise.race([
+            refresh(),
+            guard.then(() => "timeout"),
+          ]);
+        } catch {
+          finalStatus = "unauthenticated";
+        }
       }
 
       if (finalStatus !== "authenticated" || !isAuth) {

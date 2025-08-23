@@ -14,7 +14,7 @@ export default function TouchHotspot({ tapsNeeded, onOpen }) {
   return (
     <div
       onClick={() => setTaps((t) => t + 1)}
-      className="fixed top-[env(safe-area-inset-top)] left-0 w-16 h-16 z-1"
+      className="fixed top-[env(safe-area-inset-top)] left-0 w-16 h-16 z-9999"
     />
   );
 }

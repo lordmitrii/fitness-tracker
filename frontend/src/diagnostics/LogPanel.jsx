@@ -88,7 +88,7 @@ export default function LogPanel({ onClose }) {
         fixed inset-x-0 bottom-0 h-[65dvh]
         backdrop-blur
         rounded-t-2xl shadow-2xl border-t border-gray-500
-        flex flex-col z-[9999]
+        flex flex-col z-9999
         font-mono text-xs
         pb-[env(safe-area-inset-bottom)]
       "
