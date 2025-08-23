@@ -3,12 +3,12 @@ package email
 import "time"
 
 type EmailToken struct {
-	ID        uint       `json:"id" gorm:"primaryKey"`
-	Email     string     `json:"email"`
-	Token     string     `json:"token"`
-	Type      string     `json:"type"`
-	ExpiresAt *time.Time  `json:"expires_at"`
-	CreatedAt *time.Time `json:"created_at"`
+	ID        uint       
+	Email     string    
+	Token     string     
+	Type      string     
+	ExpiresAt *time.Time  
+	CreatedAt *time.Time 
 }
 
 func (et *EmailToken) IsExpired() bool {

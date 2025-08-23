@@ -38,7 +38,7 @@ func (s *workoutServiceImpl) CreateWorkoutPlan(ctx context.Context, wp *workout.
 		return err
 	}
 
-	wp.CurrentCycleID = firstCycle.ID
+	wp.CurrentCycleID = &firstCycle.ID
 	if err := s.workoutPlanRepo.Update(ctx, wp); err != nil {
 		return err
 	}

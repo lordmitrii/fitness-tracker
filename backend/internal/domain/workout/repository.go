@@ -27,7 +27,6 @@ type WorkoutCycleRepository interface {
 	ClearData(ctx context.Context, id uint) error
 }
 
-
 type WorkoutRepository interface {
 	Create(ctx context.Context, w *Workout) error
 	BulkCreate(ctx context.Context, workouts []*Workout) error

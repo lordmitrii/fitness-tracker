@@ -6,9 +6,9 @@ import (
 )
 
 type MuscleGroup struct {
-	ID   uint   `json:"id" gorm:"primaryKey"`
-	Name string `json:"name" gorm:"uniqueIndex;not null"`
-	Slug string `json:"slug" gorm:"uniqueIndex;not null"`
+	ID   uint   `gorm:"primaryKey"`
+	Name string `gorm:"uniqueIndex;not null"`
+	Slug string `gorm:"uniqueIndex;not null"`
 }
 
 func (m *MuscleGroup) BeforeCreate(tx *gorm.DB) (err error) {

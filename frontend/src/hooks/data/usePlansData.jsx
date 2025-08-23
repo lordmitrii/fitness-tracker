@@ -23,7 +23,6 @@ export default function usePlansData({ skipQuery = false } = {}) {
   const plans = Array.isArray(plansQuery.data) ? plansQuery.data : [];
 
   const sortedPlans = useMemo(() => {
-    console.log(plans);
     return plans
       .slice()
       .sort((a, b) =>
@@ -135,11 +134,15 @@ export default function usePlansData({ skipQuery = false } = {}) {
           p.id === planID ? { ...p, active: true } : { ...p, active: false }
         )
       );
-      qc.setQueryData(QK.plan(planID), (old) => ({
-        ...(old ?? {}),
-        active: true,
-      }));
-      return { previous };
+
+      const hadDetail = qc.getQueryData(QK.plan(planID)) != null;
+      if (hadDetail) {
+        qc.setQueryData(QK.plan(planID), (old) => ({
+          ...(old ?? {}),
+          active: true,
+        }));
+      }
+      return { previous, planID, hadDetail };
     },
     onError: (_e, _v, ctx) => {
       if (ctx?.previous) qc.setQueryData(QK.plans, ctx.previous);
@@ -148,8 +151,24 @@ export default function usePlansData({ skipQuery = false } = {}) {
       setPlansCache((list) =>
         list.map((p) => (p.id === updated.id ? { ...p, ...updated } : p))
       );
-      qc.invalidateQueries({ queryKey: QK.currentCycle });
+
+      qc.setQueryData(QK.plan(updated.id), (old) => ({
+        ...(old ?? {}),
+        ...updated,
+      }));
+
+      qc.fetchQuery({
+        queryKey: QK.plan(updated.id),
+        queryFn: () =>
+          api.get(`/workout-plans/${updated.id}`).then((r) => r?.data ?? {}),
+      });
+
+      qc.invalidateQueries({
+        queryKey: QK.currentCycle,
+        refetchType: "inactive",
+      });
     },
+
     // onSettled: () => invalidate(),
   });
 

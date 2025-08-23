@@ -316,7 +316,7 @@ const AIChat = () => {
                 cooldown > 0 || !selectedTopic ? "btn-secondary" : "btn-primary"
               }`}
               disabled={
-                sending || !input.trim() || cooldown > 0 || !selectedTopic
+                sending || !input.trim() || cooldown > 0 || !selectedTopic || !consentGiven
               }
             >
               <span className="whitespace-nowrap">
@@ -330,7 +330,7 @@ const AIChat = () => {
           </div>
         </form>
       </div>
-      {ready && !consentGiven && (
+      {showConsent && (
         <ConsentModal onAccept={giveConsent} onDecline={() => navigate("/")} />
       )}
     </>

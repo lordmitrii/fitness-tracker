@@ -6,15 +6,15 @@ import (
 )
 
 type Exercise struct {
-	ID           uint   `gorm:"primaryKey" json:"id"`
-	Name         string `json:"name" gorm:"uniqueIndex;not null"`
-	IsBodyweight bool   `json:"is_bodyweight" gorm:"default:false"`
-	IsTimeBased  bool   `json:"is_time_based" gorm:"default:false"`
+	ID           uint   `gorm:"primaryKey"`
+	Name         string `gorm:"uniqueIndex;not null"`
+	IsBodyweight bool   `gorm:"default:false"`
+	IsTimeBased  bool   `gorm:"default:false"`
 
-	MuscleGroupID *uint        `json:"muscle_group_id"`
-	MuscleGroup   *MuscleGroup `json:"muscle_group" gorm:"foreignKey:MuscleGroupID;constraint:OnDelete:SET NULL,OnUpdate:CASCADE;"`
+	MuscleGroupID *uint
+	MuscleGroup   *MuscleGroup `gorm:"foreignKey:MuscleGroupID;constraint:OnDelete:SET NULL,OnUpdate:CASCADE;"`
 
-	Slug string `json:"slug" gorm:"uniqueIndex;not null"`
+	Slug string `gorm:"uniqueIndex;not null"`
 }
 
 func (e *Exercise) BeforeCreate(tx *gorm.DB) (err error) {

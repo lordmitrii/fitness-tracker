@@ -11,7 +11,7 @@ type WorkoutPlanCreateRequest struct {
 type WorkoutPlanUpdateRequest struct {
 	Name           string `json:"name" binding:"max=50"`
 	Active         bool   `json:"active"`
-	CurrentCycleID uint   `json:"current_cycle_id" binding:"omitempty"`
+	CurrentCycleID *uint   `json:"current_cycle_id" binding:"omitempty"`
 }
 
 type SetActiveWorkoutPlanRequest struct {
@@ -126,9 +126,9 @@ type IndividualExerciseCreateOrGetRequest struct {
 type WorkoutPlanResponse struct {
 	ID             uint                   `json:"id,omitempty"`
 	Name           string                 `json:"name,omitempty"`
-	Active         bool                   `json:"active,omitempty"`
+	Active         bool                   `json:"active"`
 	UserID         uint                   `json:"user_id,omitempty"`
-	CurrentCycleID uint                   `json:"current_cycle_id,omitempty"`
+	CurrentCycleID *uint                  `json:"current_cycle_id,omitempty"`
 	WorkoutCycles  []WorkoutCycleResponse `json:"workout_cycles,omitempty"`
 	CreatedAt      *time.Time             `json:"created_at"`
 	UpdatedAt      *time.Time             `json:"updated_at"`
@@ -140,10 +140,10 @@ type WorkoutCycleResponse struct {
 	WorkoutPlanID   uint              `json:"workout_plan_id,omitempty"`
 	WeekNumber      int               `json:"week_number,omitempty"`
 	Workouts        []WorkoutResponse `json:"workouts,omitempty"`
-	Completed       bool              `json:"completed,omitempty"`
-	Skipped         bool              `json:"skipped,omitempty"`
-	PreviousCycleID uint              `json:"previous_cycle_id,omitempty"`
-	NextCycleID     uint              `json:"next_cycle_id,omitempty"`
+	Completed       bool              `json:"completed"`
+	Skipped         bool              `json:"skipped"`
+	PreviousCycleID *uint             `json:"previous_cycle_id,omitempty"`
+	NextCycleID     *uint             `json:"next_cycle_id,omitempty"`
 	CreatedAt       *time.Time        `json:"created_at"`
 	UpdatedAt       *time.Time        `json:"updated_at"`
 }
@@ -156,7 +156,7 @@ type WorkoutResponse struct {
 	Index             int                       `json:"index,omitempty"`
 	Completed         bool                      `json:"completed,omitempty"`
 	Skipped           bool                      `json:"skipped,omitempty"`
-	PreviousWorkoutID uint                      `json:"previous_workout_id,omitempty"`
+	PreviousWorkoutID *uint                     `json:"previous_workout_id,omitempty"`
 	WorkoutExercises  []WorkoutExerciseResponse `json:"workout_exercises,omitempty"`
 	CreatedAt         *time.Time                `json:"created_at"`
 	UpdatedAt         *time.Time                `json:"updated_at"`

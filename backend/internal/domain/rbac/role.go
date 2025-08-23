@@ -9,9 +9,9 @@ const (
 )
 
 type Role struct {
-	ID          uint         `gorm:"primaryKey" json:"id"`
-	Name        string       `gorm:"not null;uniqueIndex:idx_role_name" json:"name"`
-	Permissions []Permission `gorm:"many2many:role_permissions" json:"permissions"`
+	ID          uint         `gorm:"primaryKey"`
+	Name        string       `gorm:"not null;uniqueIndex:idx_role_name"`
+	Permissions []Permission `gorm:"many2many:role_permissions"`
 }
 
 type UserRole struct {

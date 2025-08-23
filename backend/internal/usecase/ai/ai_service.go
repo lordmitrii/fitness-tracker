@@ -37,7 +37,7 @@ func (s *aiServiceImpl) AskWorkoutsQuestion(ctx context.Context, userID uint, qu
 		return "", "", err
 	}
 
-	if activePlan == nil || activePlan.CurrentCycleID == 0 {
+	if activePlan == nil || activePlan.CurrentCycleID == nil {
 		var fullPrompt string
 		if previousResponseID == "" {
 			fullPrompt = fmt.Sprintf(
@@ -50,7 +50,7 @@ func (s *aiServiceImpl) AskWorkoutsQuestion(ctx context.Context, userID uint, qu
 		return callOpenAIChat(ctx, fullPrompt, previousResponseID, 256)
 	}
 
-	currentCycle, _ := s.workoutService.GetWorkoutCycleByID(ctx, activePlan.CurrentCycleID)
+	currentCycle, _ := s.workoutService.GetWorkoutCycleByID(ctx, *activePlan.CurrentCycleID)
 
 	processedCycle := BuildProcessedCycle(currentCycle)
 	cycleJson, _ := json.Marshal(processedCycle)

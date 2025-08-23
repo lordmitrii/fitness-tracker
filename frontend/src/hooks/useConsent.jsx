@@ -15,7 +15,7 @@ const useConsent = (type) => {
   useEffect(() => {
     let isMounted = true;
 
-    // if (ready) return;
+    if (ready) return;
 
     (async () => {
       try {

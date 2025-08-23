@@ -3,19 +3,19 @@ package workout
 import "time"
 
 type WorkoutSet struct {
-	ID                uint `gorm:"primaryKey" json:"id"`
-	WorkoutExerciseID uint `json:"workout_exercise_id"`
-	Index             int  `json:"index"`
+	ID                uint `gorm:"primaryKey"`
+	WorkoutExerciseID uint
+	Index             int
 
-	Completed bool `json:"completed" gorm:"default:false"`
-	Skipped   bool `json:"skipped" gorm:"default:false"`
+	Completed bool `gorm:"default:false"`
+	Skipped   bool `gorm:"default:false"`
 
-	Weight *float64 `json:"weight"`
-	Reps   *int     `json:"reps"`
+	Weight *float64
+	Reps   *int
 
-	PreviousWeight *float64 `json:"previous_weight"`
-	PreviousReps   *int     `json:"previous_reps"`
+	PreviousWeight *float64
+	PreviousReps   *int
 
-	CreatedAt *time.Time `json:"created_at"   example:"2010-10-01T10:00:00Z"`
-	UpdatedAt *time.Time `json:"updated_at"   example:"2010-10-01T10:00:00Z"`
+	CreatedAt *time.Time `example:"2010-10-01T10:00:00Z"`
+	UpdatedAt *time.Time `example:"2010-10-01T10:00:00Z"`
 }

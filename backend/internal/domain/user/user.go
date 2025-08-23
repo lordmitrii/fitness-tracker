@@ -7,16 +7,16 @@ import (
 )
 
 type User struct {
-	ID           uint   `gorm:"primaryKey" json:"-"`
-	Email        string `gorm:"not null;uniqueIndex" json:"email"`
-	PasswordHash string `gorm:"not null" json:"-"`
+	ID           uint   `gorm:"primaryKey"`
+	Email        string `gorm:"not null;uniqueIndex"`
+	PasswordHash string `gorm:"not null"`
 
-	Roles []rbac.Role `gorm:"many2many:user_roles" json:"roles"`
+	Roles []rbac.Role `gorm:"many2many:user_roles"`
 
-	IsVerified bool `gorm:"default:false" json:"is_verified"`
+	IsVerified bool `gorm:"default:false"`
 
-	LastSeenAt time.Time      `json:"last_seen_at"`
-	UpdatedAt  time.Time      `json:"updated_at"`
-	CreatedAt  time.Time      `json:"created_at"`
-	DeletedAt  gorm.DeletedAt `gorm:"index" json:"-"`
+	LastSeenAt time.Time
+	UpdatedAt  time.Time
+	CreatedAt  time.Time
+	DeletedAt  gorm.DeletedAt `gorm:"index"`
 }

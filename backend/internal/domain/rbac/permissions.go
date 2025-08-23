@@ -15,8 +15,8 @@ const (
 )
 
 type Permission struct {
-	ID  uint   `gorm:"primaryKey" json:"id"`
-	Key string `gorm:"not null;uniqueIndex:idx_permission_key" json:"key"`
+	ID  uint   `gorm:"primaryKey"`
+	Key string `gorm:"not null;uniqueIndex:idx_permission_key"`
 }
 
 type RolePermission struct {

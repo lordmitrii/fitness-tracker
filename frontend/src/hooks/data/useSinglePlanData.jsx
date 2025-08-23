@@ -16,6 +16,7 @@ export default function useSinglePlanData(planID, { enabled = true } = {}) {
       const list = qc.getQueryData(QK.plans);
       return list?.find((p) => String(p.id) === String(planID));
     },
+    keepPreviousData: true,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     select: (d) => d ?? {},

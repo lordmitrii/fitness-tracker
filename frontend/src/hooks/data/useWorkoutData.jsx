@@ -458,11 +458,11 @@ export default function useWorkoutData({
   // 6) Delete cycle
   const deleteCycle = useMutation({
     mutationKey: ["deleteCycle", planID, cycleID],
-    mutationFn: async ({ previousCycleID }) => {
+    mutationFn: async ({ previousCycleID, nextCycleID }) => {
       const res = await api.delete(
         `/workout-plans/${planID}/workout-cycles/${cycleID}`
       );
-      return { ...(res?.data ?? {}), previousCycleID };
+      return { ...(res?.data ?? {}), previousCycleID, nextCycleID };
     },
     onMutate: async (vars) => {
       await queryClient.cancelQueries({ queryKey: QK.cycle(planID, cycleID) });
@@ -471,6 +471,9 @@ export default function useWorkoutData({
       const prevPrev = vars?.previousCycleID
         ? queryClient.getQueryData(QK.cycle(planID, vars.previousCycleID))
         : undefined;
+      const prevNext = vars?.nextCycleID
+        ? queryClient.getQueryData(QK.cycle(planID, vars.nextCycleID))
+        : undefined;
 
       const prevPlan = queryClient.getQueryData(QK.plan(planID));
       const prevPlans = queryClient.getQueryData(QK.plans);
@@ -478,21 +481,32 @@ export default function useWorkoutData({
       if (vars?.previousCycleID) {
         queryClient.setQueryData(
           QK.cycle(planID, vars.previousCycleID),
-          (old) =>
-            old
-              ? {
-                  ...old,
-                  next_cycle_id: null,
-                  completed: false,
-                  skipped: false,
-                }
-              : old
+          (old) => ({
+            ...(old ?? { id: vars.previousCycleID, workouts: [] }),
+            next_cycle_id: vars?.nextCycleID ?? null,
+            completed: false,
+            skipped: false,
+          })
         );
       }
 
+      if (vars?.nextCycleID) {
+        queryClient.setQueryData(QK.cycle(planID, vars.nextCycleID), (old) => ({
+          ...(old ?? { id: vars.nextCycleID, workouts: [] }),
+          previous_cycle_id: vars?.previousCycleID ?? null,
+          completed: false,
+          skipped: false,
+        }));
+      }
+
+      const isTailDeletion = !vars?.nextCycleID;
+      const preservedCurrent =
+        prevPlan?.current_cycle_id ?? plan?.current_cycle_id ?? null;
       setPlanCaches((p) => ({
         ...p,
-        current_cycle_id: vars?.previousCycleID ?? null,
+        current_cycle_id: isTailDeletion
+          ? vars?.previousCycleID ?? null
+          : p.current_cycle_id ?? preservedCurrent,
         updated_at: new Date().toISOString(),
       }));
 
@@ -504,7 +518,9 @@ export default function useWorkoutData({
       return {
         prevCurrent,
         prevPrev,
+        prevNext,
         previousCycleID: vars?.previousCycleID,
+        nextCycleID: vars?.nextCycleID,
         prevPlan,
         prevPlans,
       };
@@ -517,6 +533,11 @@ export default function useWorkoutData({
           QK.cycle(planID, ctx.previousCycleID),
           ctx.prevPrev
         );
+      if (ctx?.nextCycleID && ctx?.prevNext)
+        queryClient.setQueryData(
+          QK.cycle(planID, ctx.nextCycleID),
+          ctx.prevNext
+        );
       if (ctx?.prevPlan !== undefined) {
         queryClient.setQueryData(QK.plan(planID), ctx.prevPlan);
       }
@@ -524,23 +545,25 @@ export default function useWorkoutData({
         queryClient.setQueryData(QK.plans, ctx.prevPlans);
       }
     },
-    onSuccess: (_server, _vars, ctx) => {
-      queryClient.invalidateQueries({ queryKey: QK.plan(planID) });
-      queryClient.invalidateQueries({ queryKey: QK.currentCycle });
+    onSuccess: async (_server, _vars, ctx) => {
+      queryClient.invalidateQueries({
+        queryKey: QK.plan(planID),
+        refetchType: "inactive",
+      });
+      queryClient.invalidateQueries({ queryKey: QK.currentCycle, refetchType: "inactive" });
 
-      if (ctx?.previousCycleID) {
-        queryClient.prefetchQuery({
-          queryKey: QK.cycle(planID, ctx.previousCycleID),
-          queryFn: () => fetchCycle(planID, ctx.previousCycleID),
-        });
-      }
-
-      // for extra safety
-      if (ctx?.previousCycleID) {
-        queryClient.invalidateQueries({
-          queryKey: QK.cycle(planID, ctx.previousCycleID),
-        });
-      }
+  if (ctx?.previousCycleID) {
+    await queryClient.prefetchQuery({
+      queryKey: QK.cycle(planID, ctx.previousCycleID),
+      queryFn: () => fetchCycle(planID, ctx.previousCycleID),
+    });
+  }
+  if (ctx?.nextCycleID) {
+    await queryClient.prefetchQuery({
+      queryKey: QK.cycle(planID, ctx.nextCycleID),
+      queryFn: () => fetchCycle(planID, ctx.nextCycleID),
+    });
+  }
     },
   });
 
