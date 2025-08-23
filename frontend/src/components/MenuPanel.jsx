@@ -48,7 +48,7 @@ const MenuPanel = () => {
       //   kind: "link",
       // },
       {
-        to: "/workout-plans/?showCurrent=true",
+        to: "/current-workout",
         label: t("general.workout"),
         isActiveOverride: workoutPathRe.test(pathname),
         auth: true,

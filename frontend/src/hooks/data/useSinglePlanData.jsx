@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "../../api";
 import { QK } from "../../utils/queryKeys";
 
-const fetchPlan = async (id) =>
+export const fetchPlan = async (id) =>
   (await api.get(`/workout-plans/${id}`))?.data ?? {};
 
 export default function useSinglePlanData(planID, { enabled = true } = {}) {
