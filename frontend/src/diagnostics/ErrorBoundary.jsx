@@ -50,7 +50,7 @@ export class ErrorBoundary extends Component {
     return (
       <div
         className="
-          fixed inset-0 z-[9999]
+          fixed inset-0 z-9999
           backdrop-blur-sm
           flex items-center justify-center min-w-0
           py-4 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]
