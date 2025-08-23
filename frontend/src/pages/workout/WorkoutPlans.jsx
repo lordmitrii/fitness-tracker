@@ -27,6 +27,7 @@ const WorkoutPlans = () => {
     setPlansCache, // pass to menu to mimic old setState-based updates
   } = usePlansData();
 
+  // To be removed, but for now its here for backward compatibility
   useLayoutEffect(() => {
     if (searchParams.get("showCurrent") === "true" && plans.length) {
       if (currentCycle) {
