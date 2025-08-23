@@ -10,7 +10,7 @@ type WorkoutPlanRepository interface {
 	GetByUserID(ctx context.Context, userID uint) ([]*WorkoutPlan, error)
 	Update(ctx context.Context, wp *WorkoutPlan) error
 	Delete(ctx context.Context, id uint) error
-	SetActive(ctx context.Context, wp *WorkoutPlan) error
+	SetActive(ctx context.Context, wp *WorkoutPlan) (*WorkoutPlan, error)
 }
 
 type WorkoutCycleRepository interface {
@@ -26,7 +26,6 @@ type WorkoutCycleRepository interface {
 	Delete(ctx context.Context, id uint) error
 	ClearData(ctx context.Context, id uint) error
 }
-
 
 type WorkoutRepository interface {
 	Create(ctx context.Context, w *Workout) error

@@ -12,6 +12,7 @@ import {
   PullToRefreshProvider,
   usePullToRefreshContext,
 } from "../context/PullToRefreshContext";
+import { useCacheWarmup } from "../hooks/useCacheWarmup";
 
 function ScrollAreaWithPTR({ children }) {
   const scrollRef = useRef(null);
@@ -71,14 +72,21 @@ function ScrollAreaWithPTR({ children }) {
 
 const Layout = ({ children }) => {
   const [searchParams] = useSearchParams();
+
   const spinnerEnabled = searchParams.get("spinner") !== "false";
+  const isNewSession = sessionStorage.getItem("hasLoaded") !== "1";
+  const warmupDone = useCacheWarmup({
+    enable: spinnerEnabled && isNewSession,
+    minDelayMs: 1500,
+    timeoutMs: 3000,
+  });
 
   const [headerConfig, setHeaderNode] = useState(null);
   const ctxValue = useMemo(() => ({ setHeader: setHeaderNode }), []);
 
   return (
     <PullToRefreshProvider>
-      {spinnerEnabled && <GlobalLoadingState />}
+      {spinnerEnabled && <GlobalLoadingState blocking={!warmupDone} />}
 
       <HeaderContext.Provider value={ctxValue}>
         <div className="flex h-dvh min-h-screen flex-col overflow-hidden pt-[env(safe-area-inset-top)] bg-white">

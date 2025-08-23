@@ -48,7 +48,7 @@ const MenuPanel = () => {
       //   kind: "link",
       // },
       {
-        to: "/workout-plans/?showCurrent=true",
+        to: "/current-workout",
         label: t("general.workout"),
         isActiveOverride: workoutPathRe.test(pathname),
         auth: true,
@@ -85,7 +85,7 @@ const MenuPanel = () => {
 
   return (
     <>
-      <nav className="h-[var(--menubar-height)] overflow-y-auto bg-gradient-to-r from-blue-500 to-blue-700 text-white pb-[max(env(safe-area-inset-bottom),_1rem)]">
+      <nav className="h-[var(--menubar-height)] bg-gradient-to-r from-blue-500 to-blue-700 text-white pb-[max(env(safe-area-inset-bottom),_1rem)]">
         <ul className="flex px-1 space-x-1">
           {visibleTabs.map((link) =>
             link.kind === "link" ? (

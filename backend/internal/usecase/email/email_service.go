@@ -35,11 +35,12 @@ func (s *emailServiceImpl) SendVerificationEmail(ctx context.Context, to string)
 		return err
 	}
 
+	t := time.Now().Add(15 * time.Minute)
 	err = s.emailTokenRepo.Create(ctx, &email.EmailToken{
 		Email:     to,
 		Token:     code,
 		Type:      "verification",
-		ExpiresAt: time.Now().Add(15 * time.Minute),
+		ExpiresAt: &t,
 	})
 
 	if err != nil {
@@ -63,11 +64,12 @@ func (s *emailServiceImpl) SendResetPasswordEmail(ctx context.Context, to string
 		return err
 	}
 
+	t := time.Now().Add(15 * time.Minute)
 	err = s.emailTokenRepo.Create(ctx, &email.EmailToken{
 		Email:     to,
 		Token:     token,
 		Type:      "reset_password",
-		ExpiresAt: time.Now().Add(15 * time.Minute),
+		ExpiresAt: &t,
 	})
 
 	if err != nil {

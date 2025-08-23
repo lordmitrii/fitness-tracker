@@ -75,12 +75,12 @@ func ToWorkoutPlanResponse(wp *workout.WorkoutPlan) WorkoutPlanResponse {
 		CreatedAt:      wp.CreatedAt,
 		UpdatedAt:      wp.UpdatedAt,
 	}
-	// if len(wp.WorkoutCycles) > 0 {
-	resp.WorkoutCycles = make([]WorkoutCycleResponse, 0, len(wp.WorkoutCycles))
-	for _, wc := range wp.WorkoutCycles {
-		resp.WorkoutCycles = append(resp.WorkoutCycles, ToWorkoutCycleResponse(wc))
+	if len(wp.WorkoutCycles) > 0 {
+		resp.WorkoutCycles = make([]WorkoutCycleResponse, 0, len(wp.WorkoutCycles))
+		for _, wc := range wp.WorkoutCycles {
+			resp.WorkoutCycles = append(resp.WorkoutCycles, ToWorkoutCycleResponse(wc))
+		}
 	}
-	// }
 	return resp
 }
 
@@ -120,12 +120,12 @@ func ToWorkoutResponse(w *workout.Workout) WorkoutResponse {
 		CreatedAt:         w.CreatedAt,
 		UpdatedAt:         w.UpdatedAt,
 	}
-	// if len(w.WorkoutExercises) > 0 {
-	resp.WorkoutExercises = make([]WorkoutExerciseResponse, 0, len(w.WorkoutExercises))
-	for _, we := range w.WorkoutExercises {
-		resp.WorkoutExercises = append(resp.WorkoutExercises, ToWorkoutExerciseResponse(we))
+	if len(w.WorkoutExercises) > 0 {
+		resp.WorkoutExercises = make([]WorkoutExerciseResponse, 0, len(w.WorkoutExercises))
+		for _, we := range w.WorkoutExercises {
+			resp.WorkoutExercises = append(resp.WorkoutExercises, ToWorkoutExerciseResponse(we))
+		}
 	}
-	// }
 	return resp
 }
 
@@ -148,12 +148,12 @@ func ToWorkoutExerciseResponse(we *workout.WorkoutExercise) WorkoutExerciseRespo
 		UpdatedAt:            we.UpdatedAt,
 	}
 
-	// if len(we.WorkoutSets) > 0 {
-	resp.WorkoutSets = make([]WorkoutSetResponse, 0, len(we.WorkoutSets))
-	for _, s := range we.WorkoutSets {
-		resp.WorkoutSets = append(resp.WorkoutSets, ToWorkoutSetResponse(s))
+	if len(we.WorkoutSets) > 0 {
+		resp.WorkoutSets = make([]WorkoutSetResponse, 0, len(we.WorkoutSets))
+		for _, s := range we.WorkoutSets {
+			resp.WorkoutSets = append(resp.WorkoutSets, ToWorkoutSetResponse(s))
+		}
 	}
-	// }
 	return resp
 }
 
@@ -195,9 +195,12 @@ func ToIndividualExerciseResponse(e *workout.IndividualExercise) IndividualExerc
 		resp.Exercise = ToExerciseResponse(e.Exercise)
 	}
 
+	var lastCompletedWorkoutExercise *WorkoutExerciseResponse
 	if e.LastCompletedWorkoutExercise != nil {
-		resp.LastCompletedWorkoutExercise = ToWorkoutExerciseResponse(e.LastCompletedWorkoutExercise)
+		tmp := ToWorkoutExerciseResponse(e.LastCompletedWorkoutExercise)
+		lastCompletedWorkoutExercise = &tmp
 	}
+	resp.LastCompletedWorkoutExercise = lastCompletedWorkoutExercise
 
 	return resp
 }
@@ -224,4 +227,8 @@ func ToIndividualExerciseStatsResponse(e *workout.IndividualExercise) Individual
 	}
 
 	return resp
+}
+
+func ToCurrentCycleResponse(cycle *workout.WorkoutCycle) CurrentCycleResponse {
+	return CurrentCycleResponse{ID: cycle.ID, WorkoutPlanID: cycle.WorkoutPlanID}
 }

@@ -40,7 +40,7 @@ const manifest = {
   lang: "en",
   name: "Fitness Tracker",
   short_name: "FTracker",
-  start_url: "/workout-plans?showCurrent=true",
+  start_url: "/current-workout",
 };
 
 export default defineConfig({

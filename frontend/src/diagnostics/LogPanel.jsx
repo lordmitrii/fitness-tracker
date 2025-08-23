@@ -8,7 +8,7 @@ export default function LogPanel({ onClose }) {
   const { hasAnyRole } = useAuth();
 
   const allowed = useMemo(
-    () => (hasAnyRole ? hasAnyRole(["member", "admin"]) : false),
+    () => (hasAnyRole ? hasAnyRole(["tester", "admin"]) : false),
     [hasAnyRole]
   );
 
@@ -113,7 +113,7 @@ export default function LogPanel({ onClose }) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-3">
+      <div className="flex-1 overflow-auto p-3 select-auto">
         {logs.map((l, i) => (
           <div key={i} className="mb-2">
             <span className="opacity-60 mr-2">

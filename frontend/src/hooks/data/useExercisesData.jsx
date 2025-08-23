@@ -38,7 +38,7 @@ export default function useExercisesData(onError) {
   const setExercisesCache = useCallback(
     (next) => {
       queryClient.setQueryData(QK.exercisesBundle, (old) => {
-        const base = old ?? { exercises: [], muscleGroups: [] };
+        const base = old ?? { exercises: [], muscleGroups: [], poolOnlyExercises: [] };
         const result = typeof next === "function" ? next(base) : next;
         return {
           exercises: result?.exercises ?? base.exercises,

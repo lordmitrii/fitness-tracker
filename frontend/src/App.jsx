@@ -50,6 +50,7 @@ import {
 
 import PrivateRoute from "./routes/PrivateRoute";
 import AdminRoute from "./routes/AdminRoute";
+import WorkoutRedirect from "./routes/WorkoutRedirect";
 
 import "./i18n";
 
@@ -91,6 +92,7 @@ function App() {
                 <Route path="/ai-chat" element={<AIChat />} />
 
                 {/* Workout Routes */}
+                <Route path="/current-workout" element={<WorkoutRedirect />} />
                 <Route path="/workout-plans" element={<WorkoutPlans />} />
                 <Route
                   path="/create-workout-plan"

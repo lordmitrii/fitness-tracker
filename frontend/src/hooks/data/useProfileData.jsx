@@ -3,7 +3,7 @@ import { useMemo, useCallback } from "react";
 import api from "../../api";
 import { QK } from "../../utils/queryKeys";
 
-async function fetchProfile() {
+export async function fetchProfile() {
   try {
     const res = await api.get("/users/profile");
     return res?.data ?? {};

@@ -5,16 +5,16 @@ import (
 )
 
 type Profile struct {
-	ID uint `gorm:"primaryKey" json:"-"`
+	ID uint `gorm:"primaryKey"`
 
-	UserID uint `gorm:"uniqueIndex;not null" json:"-"`
-	User   User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"-"`
+	UserID uint `gorm:"uniqueIndex;not null"`
+	User   User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 
-	Age      int     `json:"age"`
-	HeightCm float64 `json:"height_cm"`
-	WeightKg float64 `json:"weight_kg"`
-	Sex      string  `json:"sex"`
+	Age      int     
+	HeightCm float64 
+	WeightKg float64 
+	Sex      string  
 
-	UpdatedAt time.Time `json:"updated_at"`
-	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt *time.Time 
+	CreatedAt *time.Time 
 }

@@ -12,6 +12,14 @@ html {
   background-color: var(--color-white);
 }
 
+a,
+a:link,
+a:visited {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 :root {
   --custom-header-size: 3rem;
   --menubar-height: 5rem;

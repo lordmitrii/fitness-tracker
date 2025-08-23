@@ -203,7 +203,7 @@ frontend/
 
 ## Constraints
 
-### Wokrout Plan
+### Workout Plan
 
 ### Workout Cycle
 

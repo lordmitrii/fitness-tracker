@@ -15,7 +15,7 @@ const WorkoutCycleDetailsMenu = ({
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { mutations, invalidate } = useWorkoutData({
+  const { mutations } = useWorkoutData({
     planID,
     cycleID,
     skipQuery: true,
@@ -26,12 +26,17 @@ const WorkoutCycleDetailsMenu = ({
     if (!previousCycleID) return;
     if (!window.confirm(t("menus.confirm_delete_cycle", { cycleName }))) return;
 
-    navigate(`/workout-plans/${planID}/workout-cycles/${previousCycleID}`, {
-      replace: true,
-    });
+    navigate(
+      `/workout-plans/${planID}/workout-cycles/${
+        nextCycleID ?? previousCycleID
+      }`,
+      {
+        replace: true,
+      }
+    );
 
     try {
-      await mutations.deleteCycle.mutateAsync({ previousCycleID });
+      await mutations.deleteCycle.mutateAsync({ previousCycleID, nextCycleID });
     } catch (e) {
       console.error(e);
     } finally {
@@ -41,6 +46,7 @@ const WorkoutCycleDetailsMenu = ({
     navigate,
     planID,
     previousCycleID,
+    nextCycleID,
     mutations.deleteCycle,
     t,
     cycleName,

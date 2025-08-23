@@ -8,17 +8,17 @@ import (
 )
 
 type WorkoutPlan struct {
-	ID     uint   `gorm:"primaryKey" json:"id"`
-	Name   string `json:"name"`
-	Active bool   `json:"active" gorm:"default:false"`
+	ID     uint   `gorm:"primaryKey"`
+	Name   string `gorm:"not null"`
+	Active bool   `gorm:"default:false"`
 
-	UserID uint      `json:"user_id"`
-	User   user.User `json:"-" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	UserID uint      `gorm:"not null"`
+	User   user.User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
-	WorkoutCycles  []*WorkoutCycle `json:"workout_cycles" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	CurrentCycleID uint            `json:"current_cycle_id,omitempty"`
+	WorkoutCycles  []*WorkoutCycle `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	CurrentCycleID *uint  
 
-	CreatedAt time.Time      `json:"created_at"   example:"2010-10-01T10:00:00Z"`
-	UpdatedAt time.Time      `json:"updated_at"   example:"2010-10-01T10:00:00Z"`
-	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
+	CreatedAt *time.Time     `example:"2010-10-01T10:00:00Z"`
+	UpdatedAt *time.Time     `example:"2010-10-01T10:00:00Z"`
+	DeletedAt gorm.DeletedAt `gorm:"index"`
 }

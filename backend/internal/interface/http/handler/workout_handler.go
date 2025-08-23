@@ -1,12 +1,13 @@
 package handler
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 	"github.com/lordmitrii/golang-web-gin/internal/interface/http/dto"
 	"github.com/lordmitrii/golang-web-gin/internal/interface/http/middleware"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
-	"net/http"
 )
 
 type WorkoutHandler struct {
@@ -74,6 +75,7 @@ func NewWorkoutHandler(r *gin.RouterGroup, svc usecase.WorkoutService) {
 		wp.POST(":id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:weID/workout-sets/:setID/move", h.MoveWorkoutSet)
 	}
 
+	auth.GET("/current-cycle", h.GetCurrentWorkoutCycle)
 }
 
 func (h *WorkoutHandler) CreateWorkoutPlan(c *gin.Context) {
@@ -154,7 +156,8 @@ func (h *WorkoutHandler) UpdateWorkoutPlan(c *gin.Context) {
 		CurrentCycleID: req.CurrentCycleID,
 	}
 
-	if err := h.svc.UpdateWorkoutPlan(c.Request.Context(), wp); err != nil {
+	wp, err := h.svc.UpdateWorkoutPlan(c.Request.Context(), wp)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -185,11 +188,12 @@ func (h *WorkoutHandler) SetActiveWorkoutPlan(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := h.svc.SetActiveWorkoutPlan(c.Request.Context(), uint(id), req.Active); err != nil {
+	wp, err := h.svc.SetActiveWorkoutPlan(c.Request.Context(), uint(id), req.Active)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, dto.MessageResponse{Message: "Workout plan set as active"})
+	c.JSON(http.StatusOK, dto.ToWorkoutPlanResponse(wp))
 }
 
 func (h *WorkoutHandler) AddWorkoutCycleToWorkoutPlan(c *gin.Context) {
@@ -981,4 +985,19 @@ func (h *WorkoutHandler) GetIndividualExercisesStats(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, resp)
+}
+
+func (h *WorkoutHandler) GetCurrentWorkoutCycle(c *gin.Context) {
+	userID, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+
+	cycle, err := h.svc.GetCurrentWorkoutCycle(c.Request.Context(), userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.ToCurrentCycleResponse(cycle))
 }
