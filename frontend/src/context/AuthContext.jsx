@@ -24,11 +24,21 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
   const refreshInFlightRef = useRef(null);
+  const lastAuthRef = useRef({
+    user: null,
+    roles: [],
+    isAuth: false,
+  });
 
   const loadMe = useCallback(async () => {
     const res = await api.get("/users/me");
     setUser(res.data);
     setRoles(res.data.roles || []);
+    lastAuthRef.current = {
+      user: res.data,
+      roles: res.data.roles || [],
+      isAuth: true,
+    };
   }, []);
 
   const refresh = useCallback(async () => {
@@ -44,17 +54,33 @@ export const AuthProvider = ({ children }) => {
           await loadMe();
           return "authenticated";
         }
-        setIsAuth(false);
         clearAccessToken();
+        setIsAuth(false);
         setRoles([]);
         setUser(null);
+        lastAuthRef.current = {
+          user: null,
+          roles: [],
+          isAuth: false,
+        };
         return "unauthenticated";
-      } catch (err) {
-        console.error("Refresh error:", err);
-        setIsAuth(false);
+      } catch (error) {
+        console.error("Refresh error:", error);
+        if (error?.isOffline) {
+          setIsAuth(lastAuthRef.current.isAuth);
+          setRoles(lastAuthRef.current.roles);
+          setUser(lastAuthRef.current.user);
+          return "offline";
+        }
         clearAccessToken();
+        setIsAuth(false);
         setRoles([]);
         setUser(null);
+        lastAuthRef.current = {
+          user: null,
+          roles: [],
+          isAuth: false,
+        };
         return "unauthenticated";
       } finally {
         setLoading(false);
@@ -76,6 +102,12 @@ export const AuthProvider = ({ children }) => {
     refresh();
   }, [refresh]);
 
+  useEffect(() => {
+    const onOnline = () => refresh();
+    window.addEventListener("online", onOnline);
+    return () => window.removeEventListener("online", onOnline);
+  }, [refresh]);
+
   const login = async (email, password) => {
     try {
       const { data } = await loginRequest(email, password);
@@ -86,7 +118,8 @@ export const AuthProvider = ({ children }) => {
       }
       return data;
     } catch (error) {
-      if (!error.response) return { message: t("errors.network_error") };
+      if (!error.response || error.isOffline)
+        return { message: t("errors.network_error") };
       console.error("Login error:", error);
       return { message: t("errors.login_error") };
     }
@@ -111,7 +144,8 @@ export const AuthProvider = ({ children }) => {
       );
       return response;
     } catch (error) {
-      if (!error.response) return { message: t("errors.network_error") };
+      if (!error.response || error.isOffline)
+        return { message: t("errors.network_error") };
       console.error("Registration error:", error);
       return { message: t("errors.registration_error") };
     }
@@ -127,6 +161,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error("Logout error:", error);
     }
+    lastAuthRef.current = { user: null, roles: [], isAuth: false };
     // Optionally, send a logout endpoint to clear cookie on backend
   };
 
