@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../context/AuthContext";
 import { QK } from "../utils/queryKeys";
@@ -13,39 +13,63 @@ export function useCacheWarmup({
 } = {}) {
   const { status, refresh, isAuth } = useAuth();
   const qc = useQueryClient();
-  const [done, setDone] = useState(!enable);
+  const [done, setDone] = useState(
+    () => !enable || sessionStorage.getItem("hasLoaded") === "1"
+  );
+
+  const mountedRef = useRef(true);
+  const startedRef = useRef(false);
 
   useEffect(() => {
-    if (!enable) return;
-    let cancelled = false;
-
-    const finish = () => {
-      sessionStorage.setItem("hasLoaded", "1");
-      if (!cancelled) setDone(true);
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
     };
+  }, []);
+
+  useEffect(() => {
+    if (!enable || done || startedRef.current) return;
+    startedRef.current = true;
+
+    const finish = (label = "finish") => {
+      console.log("[warmup] finish called", { label });
+      if (!mountedRef.current) return;
+      sessionStorage.setItem("hasLoaded", "1");
+      setDone(true);
+    };
+
 
     const minDelay = new Promise((r) => setTimeout(r, minDelayMs));
     const guard = new Promise((r) => setTimeout(r, timeoutMs));
 
-    const run = async () => {
+    (async () => {
+      console.log("[warmup] start", { status, isAuth, enable });
+
       let finalStatus = status;
-      if (status === "loading" && typeof refresh === "function") {
+      if (finalStatus === "loading" && typeof refresh === "function") {
         try {
+          console.log("[warmup] awaiting refresh");
           finalStatus = await Promise.race([
             refresh(),
             guard.then(() => "timeout"),
           ]);
-        } catch {
+          console.log("[warmup] refresh resolved", { finalStatus });
+        } catch (e) {
+          console.log("[warmup] refresh threw", e);
           finalStatus = "unauthenticated";
         }
       }
 
-      if (finalStatus !== "authenticated" || !isAuth) {
+      const authed = finalStatus === "authenticated" || isAuth;
+
+      if (!authed) {
+        console.log("[warmup] not authenticated, finishing");
         await minDelay;
-        finish();
+        finish("unauth");
         return;
       }
 
+      console.log("[warmup] authenticated, prefetching...");
       const tasks = Promise.allSettled([
         qc.prefetchQuery({
           queryKey: QK.profile,
@@ -65,13 +89,8 @@ export function useCacheWarmup({
       ]);
 
       await Promise.all([minDelay, Promise.race([tasks, guard])]);
-      finish();
-    };
-
-    run();
-    return () => {
-      cancelled = true;
-    };
+      finish("done");
+    })();
   }, [enable, minDelayMs, timeoutMs, status, isAuth, refresh, qc]);
 
   return done;

@@ -11,6 +11,7 @@ export default function WorkoutRedirect() {
   const navigate = useNavigate();
 
   useLayoutEffect(() => {
+    console.log("[redirect] mount");
     let cancelled = false;
 
     (async () => {
@@ -19,9 +20,11 @@ export default function WorkoutRedirect() {
           queryKey: QK.currentCycle,
           queryFn: fetchCurrentCycle,
         });
+        console.log("[redirect] fetched currentCycle", cur);
         if (cancelled) return;
 
         if (cur?.workout_plan_id && cur?.id) {
+          console.log("[redirect] navigating to cycle", cur);
           const pid = String(cur.workout_plan_id);
           const cid = String(cur.id);
 
@@ -34,14 +37,17 @@ export default function WorkoutRedirect() {
             replace: true,
           });
         } else {
+          console.log("[redirect] navigating to /workout-plans");
           navigate("/workout-plans", { replace: true });
         }
-      } catch {
+      } catch (err) {
+        console.log("[redirect] fetch failed", err);
         navigate("/workout-plans", { replace: true });
       }
     })();
 
     return () => {
+      console.log("[redirect] cleanup");
       cancelled = true;
     };
   }, [qc, navigate]);
