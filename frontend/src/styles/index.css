@@ -224,9 +224,18 @@ a:visited {
   }
 }
 
-@keyframes slide-up {
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-down-in {
   0% {
-    transform: translateY(100%);
+    transform: translateY(-100%);
     opacity: 0;
   }
   100% {
@@ -235,7 +244,7 @@ a:visited {
   }
 }
 
-@keyframes slide-down {
+@keyframes slide-up-out {
   0% {
     transform: translateY(0);
     opacity: 1;
@@ -249,17 +258,8 @@ a:visited {
     opacity: 1;
   }
   100% {
-    transform: translateY(100%);
+    transform: translateY(-100%);
     opacity: 0;
-  }
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
   }
 }
 
@@ -271,18 +271,18 @@ a:visited {
   animation: spin 1.2s linear infinite;
 }
 
-.animate-slide-up {
-  animation: slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
-}
-
-.animate-slide-down {
-  animation: slide-down 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
 .recharts-wrapper * {
   @apply focus:outline-none sm:focus:ring-2 sm:focus:ring-blue-400 sm:transition sm:rounded-lg;
 }
 
 .animate-fade-in {
   animation: fade-in 0.2s ease-out;
+}
+
+.animate-slide-down-in {
+  animation: slide-down-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-up-out {
+  animation: slide-up-out 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

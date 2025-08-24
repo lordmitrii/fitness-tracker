@@ -3,7 +3,7 @@ import GlobalLoadingState from "../states/GlobalLoadingState";
 import { useSearchParams } from "react-router-dom";
 import MenuPanel from "../components/MenuPanel";
 import MoreAside from "../components/more/MoreAside";
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import useScrollToTop from "../hooks/useScrollToTop";
 import usePullToRefresh from "../hooks/usePullToRefresh";
 import { HeaderContext } from "./LayoutHeader";
@@ -81,12 +81,23 @@ const Layout = ({ children }) => {
     timeoutMs: 3000,
   });
 
+  useEffect(() => {
+    console.log(
+      "[layout] warmupDone",
+      warmupDone,
+      "spinnerEnabled",
+      spinnerEnabled
+    );
+  }, [warmupDone, spinnerEnabled]);
+
   const [headerConfig, setHeaderNode] = useState(null);
   const ctxValue = useMemo(() => ({ setHeader: setHeaderNode }), []);
 
   return (
     <PullToRefreshProvider>
-      {spinnerEnabled && <GlobalLoadingState blocking={!warmupDone} />}
+      {spinnerEnabled && isNewSession && (
+        <GlobalLoadingState blocking={!warmupDone} />
+      )}
 
       <HeaderContext.Provider value={ctxValue}>
         <div className="flex h-dvh min-h-screen flex-col overflow-hidden pt-[env(safe-area-inset-top)] bg-white">

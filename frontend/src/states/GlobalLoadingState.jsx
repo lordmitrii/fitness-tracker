@@ -1,7 +1,9 @@
-import {useTranslation} from "react-i18next";
+import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import SpinnerIcon from "../icons/SpinnerIcon";
 import useScrollLock from "../hooks/useScrollLock";
+
+const HARDCAP_TIMEOUT = 6000;
 
 const GlobalLoadingState = ({ blocking }) => {
   const { t } = useTranslation();
@@ -11,6 +13,19 @@ const GlobalLoadingState = ({ blocking }) => {
   });
 
   useEffect(() => {
+    const failsafe = setTimeout(() => {
+      setAppLoading(false);
+      sessionStorage.setItem("hasLoaded", "1");
+      console.log("[globalLoading] failsafe timeout");
+    }, HARDCAP_TIMEOUT);
+    return () => clearTimeout(failsafe);
+  }, []);
+
+  useEffect(() => {
+    console.log("[globalLoading] blocking/appLoading change", {
+      blocking,
+      appLoading,
+    });
     if (blocking === undefined) {
       if (!appLoading) return;
       const timeout = setTimeout(() => {
