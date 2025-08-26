@@ -11,7 +11,7 @@ type WorkoutPlanCreateRequest struct {
 type WorkoutPlanUpdateRequest struct {
 	Name           string `json:"name" binding:"max=50"`
 	Active         bool   `json:"active"`
-	CurrentCycleID *uint   `json:"current_cycle_id" binding:"omitempty"`
+	CurrentCycleID *uint  `json:"current_cycle_id" binding:"omitempty"`
 }
 
 type SetActiveWorkoutPlanRequest struct {
@@ -186,6 +186,7 @@ type WorkoutExerciseResponse struct {
 	IndividualExerciseID uint                        `json:"individual_exercise_id,omitempty"`
 	IndividualExercise   *IndividualExerciseResponse `json:"individual_exercise,omitempty"`
 	WorkoutSets          []WorkoutSetResponse        `json:"workout_sets,omitempty"`
+	PreviousExerciseID   *uint                       `json:"previous_exercise_id,omitempty"`
 	Completed            bool                        `json:"completed,omitempty"`
 	Skipped              bool                        `json:"skipped,omitempty"`
 	SetsQt               int64                       `json:"sets_qt,omitempty"`

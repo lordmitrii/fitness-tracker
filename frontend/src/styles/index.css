@@ -40,9 +40,9 @@ a:visited {
   --color-gray-50: rgb(100, 109, 129);
   --color-gray-100: #383d49;
   --color-gray-200: rgb(68, 73, 86);
-  --color-gray-300: rgb(81, 87, 106);
-  --color-gray-400: rgb(95, 102, 121);
-  --color-gray-500: rgb(117, 126, 146);
+  --color-gray-300: rgb(95, 102, 124);
+  --color-gray-400: rgb(112, 120, 143);
+  --color-gray-500: rgb(159, 174, 202);
   --color-gray-600: rgb(152, 160, 179);
   --color-gray-700: rgb(187, 192, 206);
   --color-gray-800: rgb(227, 230, 238);
@@ -191,7 +191,7 @@ a:visited {
 
 .btn-success-light {
   @apply font-semibold bg-gradient-to-r from-green-400 to-green-500 text-transparent bg-clip-text;
-  @apply border-2 border-green-400/70 backdrop-blur bg-white;
+  @apply border-2 border-green-500/70 backdrop-blur bg-white;
 }
 
 .modal-content {

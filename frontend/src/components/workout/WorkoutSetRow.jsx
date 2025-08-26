@@ -42,8 +42,11 @@ const WorkoutSetRow = ({
     (setItem, { softCheck = false } = {}) => {
       const errors = {};
       if (setItem.skipped) return { ok: true, errors };
-
-      if (setItem.reps === "" || setItem.reps === null) {
+      if (
+        setItem.reps === "" ||
+        setItem.reps === null ||
+        setItem.reps === undefined
+      ) {
         if (!softCheck)
           errors.reps = t("workout_plan_single.validation.reps_required");
       } else if (!Number.isFinite(setItem.reps)) {
@@ -60,7 +63,11 @@ const WorkoutSetRow = ({
         });
       }
 
-      if (setItem.weight === "" || setItem.weight === null) {
+      if (
+        setItem.weight === "" ||
+        setItem.weight === null ||
+        setItem.weight === undefined
+      ) {
         if (!softCheck)
           errors.weight = t("workout_plan_single.validation.weight_required");
       } else if (!Number.isFinite(setItem.weight)) {

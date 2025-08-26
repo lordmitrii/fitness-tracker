@@ -98,33 +98,33 @@ const WorkoutExerciseDetailsMenu = ({
 
   return (
     <div className="flex flex-col space-y-2">
-      <button
-        className={`btn btn-secondary-light text-left ${
-          isTop || pending ? "opacity-50 cursor-not-allowed" : ""
-        }`}
-        onClick={handleMoveUp}
-        disabled={isTop || pending}
-      >
-        <span className="flex items-center gap-2">
-          <MoveUpIcon />
-          {t("menus.move_up")}
-        </span>
-      </button>
+      {!isTop && (
+        <button
+          className={`btn btn-secondary-light text-left
+          ${pending ? "opacity-50 cursor-not-allowed" : ""}`}
+          onClick={handleMoveUp}
+          disabled={isTop || pending}
+        >
+          <span className="flex items-center gap-2">
+            <MoveUpIcon />
+            {t("menus.move_up")}
+          </span>
+        </button>
+      )}
 
-      <button
-        className={`btn btn-secondary-light text-left ${
-          isOnlyExercise || isBottom || pending
-            ? "opacity-50 cursor-not-allowed"
-            : ""
-        }`}
-        onClick={handleMoveDown}
-        disabled={isOnlyExercise || isBottom || pending}
-      >
-        <span className="flex items-center gap-2">
-          <MoveDownIcon />
-          {t("menus.move_down")}
-        </span>
-      </button>
+      {!(isOnlyExercise || isBottom) && (
+        <button
+          className={`btn btn-secondary-light text-left 
+          ${pending ? "opacity-50 cursor-not-allowed" : ""}`}
+          onClick={handleMoveDown}
+          disabled={isOnlyExercise || isBottom || pending}
+        >
+          <span className="flex items-center gap-2">
+            <MoveDownIcon />
+            {t("menus.move_down")}
+          </span>
+        </button>
+      )}
 
       <button
         className="btn btn-secondary-light text-left"

@@ -70,10 +70,15 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config || {};
 
+    if (error.code === "ECONNABORTED") {
+      const err = new Error("Request timed out, please try again.");
+      err.isTimeout = true;
+      err.config = originalRequest;
+      throw err;
+    }
+
     const netDown =
-      error.isOffline ||
-      (!error.response &&
-        (error.code === "ECONNABORTED" || error.message === "Network Error"));
+      error.isOffline || (!error.response && error.message === "Network Error");
 
     if (netDown) {
       const err = new Error("Offline");

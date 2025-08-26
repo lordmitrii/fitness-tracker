@@ -31,19 +31,25 @@ export default function useExercisesData(onError) {
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     onError,
-    select: (data) => data ?? { exercises: [], muscleGroups: [], poolOnlyExercises: [] },
+    select: (data) =>
+      data ?? { exercises: [], muscleGroups: [], poolOnlyExercises: [] },
     placeholderData: (prev) => prev,
   });
 
   const setExercisesCache = useCallback(
     (next) => {
       queryClient.setQueryData(QK.exercisesBundle, (old) => {
-        const base = old ?? { exercises: [], muscleGroups: [], poolOnlyExercises: [] };
+        const base = old ?? {
+          exercises: [],
+          muscleGroups: [],
+          poolOnlyExercises: [],
+        };
         const result = typeof next === "function" ? next(base) : next;
         return {
           exercises: result?.exercises ?? base.exercises,
           muscleGroups: result?.muscleGroups ?? base.muscleGroups,
-          poolOnlyExercises: result?.poolOnlyExercises ?? base.poolOnlyExercises,
+          poolOnlyExercises:
+            result?.poolOnlyExercises ?? base.poolOnlyExercises,
         };
       });
     },
@@ -76,6 +82,17 @@ export default function useExercisesData(onError) {
       if (!individualExercise?.exercise_id) {
         queryClient.setQueryData(QK.exercisesBundle, (old) => {
           if (!old) return old;
+          const alreadyExists = old.exercises.some((ex) => {
+            if (ex.source === "custom") {
+              return (
+                ex.name === individualExercise.name &&
+                String(ex.muscle_group_id ?? "") ===
+                  String(individualExercise.muscle_group_id ?? "")
+              );
+            }
+            return false;
+          });
+          if (alreadyExists) return old;
           return {
             ...old,
             exercises: [

@@ -56,47 +56,49 @@ const MuscleGroupRadar = ({
   if (!data.length) return null;
 
   return (
-    <div className={`flex flex-col items-center gap-2 ${className}`}>
-      <h2 className="text-title">
-        {title ? title : t("exercise_stats.muscle_groups_strength")}
-      </h2>
-      <ResponsiveContainer width="100%" height={size}>
-        <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data}>
-          <PolarGrid radialLines strokeDasharray="3 3" />
-          <PolarAngleAxis
-            dataKey="group"
-            tick={tickStyle}
-            tickFormatter={(value) => t(`muscle_group.${value}`) || value}
-          />
-          <PolarRadiusAxis tick={false} axisLine={false} domain={[0, 100]} />
+    <div className="card">
+      <div className={`flex flex-col items-center gap-2 ${className}`}>
+        <h2 className="text-title">
+          {title ? title : t("exercise_stats.muscle_groups_strength")}
+        </h2>
+        <ResponsiveContainer width="100%" height={size}>
+          <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data}>
+            <PolarGrid radialLines strokeDasharray="3 3" />
+            <PolarAngleAxis
+              dataKey="group"
+              tick={tickStyle}
+              tickFormatter={(value) => t(`muscle_group.${value}`) || value}
+            />
+            <PolarRadiusAxis tick={false} axisLine={false} domain={[0, 100]} />
 
-          <defs>
-            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-              <stop
-                offset="0%"
-                stopColor="var(--color-blue-400)"
-                stopOpacity="0.8"
-              />
-              <stop
-                offset="100%"
-                stopColor="var(--color-blue-300)"
-                stopOpacity="0.3"
-              />
-            </linearGradient>
-          </defs>
+            <defs>
+              <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                <stop
+                  offset="0%"
+                  stopColor="var(--color-blue-400)"
+                  stopOpacity="0.8"
+                />
+                <stop
+                  offset="100%"
+                  stopColor="var(--color-blue-300)"
+                  stopOpacity="0.3"
+                />
+              </linearGradient>
+            </defs>
 
-          <Radar
-            dataKey="norm"
-            stroke="var(--color-blue-400)"
-            fill={`url(#${gradientId})`}
-            fillOpacity={0.7}
-            strokeWidth={2}
-            dot={{ r: 3, fill: "var(--color-white)", strokeWidth: 1 }}
-            isAnimationActive
-          />
-          <RechartsTooltip content={renderTooltip} isAnimationActive />
-        </RadarChart>
-      </ResponsiveContainer>
+            <Radar
+              dataKey="norm"
+              stroke="var(--color-blue-400)"
+              fill={`url(#${gradientId})`}
+              fillOpacity={0.7}
+              strokeWidth={2}
+              dot={{ r: 3, fill: "var(--color-white)", strokeWidth: 1 }}
+              isAnimationActive
+            />
+            <RechartsTooltip content={renderTooltip} isAnimationActive />
+          </RadarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 };

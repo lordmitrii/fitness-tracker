@@ -227,6 +227,18 @@ func (s *workoutServiceImpl) DeleteWorkoutExercise(ctx context.Context, id uint)
 		return err
 	}
 
+	ie, err := s.individualExerciseRepo.GetByID(ctx, workoutExercise.IndividualExerciseID)
+	if err != nil {
+		return err
+	}
+
+	if ie != nil && workoutExercise.PreviousExerciseID != nil {
+		ie.LastCompletedWorkoutExerciseID = workoutExercise.PreviousExerciseID
+		if err := s.individualExerciseRepo.Update(ctx, ie); err != nil {
+			return err
+		}
+	}
+
 	workoutID := workoutExercise.WorkoutID
 	deletedIndex := workoutExercise.Index
 
