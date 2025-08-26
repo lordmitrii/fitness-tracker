@@ -141,6 +141,7 @@ func ToWorkoutExerciseResponse(we *workout.WorkoutExercise) WorkoutExerciseRespo
 		Index:                we.Index,
 		IndividualExerciseID: we.IndividualExerciseID,
 		IndividualExercise:   ie,
+		PreviousExerciseID:   we.PreviousExerciseID,
 		Completed:            we.Completed,
 		Skipped:              we.Skipped,
 		SetsQt:               we.SetsQt,

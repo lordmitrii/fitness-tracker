@@ -10,7 +10,8 @@ type WorkoutExercise struct {
 	IndividualExerciseID uint                `gorm:"not null"`
 	IndividualExercise   *IndividualExercise `gorm:"foreignKey:IndividualExerciseID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE;"`
 
-	WorkoutSets []*WorkoutSet `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	WorkoutSets        []*WorkoutSet `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	PreviousExerciseID *uint
 
 	Completed bool `gorm:"default:false"`
 	Skipped   bool `gorm:"default:false"`

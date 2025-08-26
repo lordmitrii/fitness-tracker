@@ -57,16 +57,6 @@ func (s *workoutServiceImpl) UpdateWorkoutSet(ctx context.Context, ws *workout.W
 		return err
 	}
 
-	ie, err := s.individualExerciseRepo.GetByID(ctx, we.IndividualExerciseID)
-	if err != nil {
-		return err
-	}
-
-	ie.LastCompletedWorkoutExerciseID = &we.ID
-	if err := s.individualExerciseRepo.Update(ctx, ie); err != nil {
-		return err
-	}
-
 	// Set workout and exercise to incomplete and unskipped if changing values of sets
 	if we.Completed || we.Skipped {
 		we.Completed = false
@@ -86,6 +76,7 @@ func (s *workoutServiceImpl) UpdateWorkoutSet(ctx context.Context, ws *workout.W
 
 	return s.workoutSetRepo.Update(ctx, ws)
 }
+
 func (s *workoutServiceImpl) CompleteWorkoutSet(ctx context.Context, ws *workout.WorkoutSet) error {
 	err := s.workoutSetRepo.Complete(ctx, ws)
 	if err != nil {
@@ -132,6 +123,25 @@ func (s *workoutServiceImpl) CompleteWorkoutSet(ctx context.Context, ws *workout
 
 	w.Skipped = skippedExercisesCount == 0
 	// set skipped if all are skipped
+
+	ie, err := s.individualExerciseRepo.GetByID(ctx, we.IndividualExerciseID)
+	if err != nil {
+		return err
+	}
+
+	if ie.LastCompletedWorkoutExerciseID != nil {
+		we.PreviousExerciseID = ie.LastCompletedWorkoutExerciseID
+		if err := s.workoutExerciseRepo.Update(ctx, we); err != nil {
+			return err
+		}
+	}
+
+	if ws.Completed {
+		ie.LastCompletedWorkoutExerciseID = &we.ID
+		if err := s.individualExerciseRepo.Update(ctx, ie); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
