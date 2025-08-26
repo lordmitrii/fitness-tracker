@@ -11,6 +11,7 @@ import AddWorkoutExerciseModal from "../../modals/workout/AddWorkoutExerciseModa
 import { LayoutHeader } from "../../layout/LayoutHeader";
 import useWorkoutData from "../../hooks/data/useWorkoutData";
 import { usePullToRefreshOverride } from "../../context/PullToRefreshContext";
+import { useSwipeable } from "react-swipeable";
 
 const WorkoutCycle = () => {
   const navigate = useNavigate();
@@ -34,6 +35,23 @@ const WorkoutCycle = () => {
     mutations,
     ui,
   } = useWorkoutData({ planID, cycleID });
+
+  const handlers = useSwipeable({
+    onSwipedLeft: () => {
+      cycle?.next_cycle_id &&
+        navigate(
+          `/workout-plans/${planID}/workout-cycles/${cycle.next_cycle_id}`
+        );
+    },
+    onSwipedRight: () => {
+      cycle?.previous_cycle_id &&
+        navigate(
+          `/workout-plans/${planID}/workout-cycles/${cycle.previous_cycle_id}`
+        );
+    },
+    preventDefaultTouchmoveEvent: true,
+    trackMouse: true,
+  });
 
   usePullToRefreshOverride(
     useCallback(async () => {
@@ -132,7 +150,7 @@ const WorkoutCycle = () => {
           <ProgressBar completed={completedSets} total={totalSets} />
         </div>
       </LayoutHeader>
-      <div className="flex-1 flex flex-col sm:p-4">
+      <div {...handlers} className="flex-1 flex flex-col sm:p-4">
         {cycle && (
           <div className="flex-1 flex flex-col">
             <div className="flex-1 sm:flex-0">
