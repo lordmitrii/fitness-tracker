@@ -36,7 +36,7 @@ const normalizeWorkouts = (daysPerCycle, prevWorkouts = []) => {
 
 const ExerciseChip = memo(({ t, ex, onDelete }) => {
   return (
-    <div className="w-35 min-h-10 inline-flex items-center justify-center py-1 px-2 rounded-lg bg-blue-50 text-caption-blue font-medium border border-blue-200 mr-2 mb-2">
+    <div className="w-35 min-h-10 inline-flex items-center justify-center py-1 px-2 rounded-lg bg-gradient-to-r from-blue-200/80 to-blue-300/30 text-caption-blue font-medium border border-blue-200 mr-2 mb-2">
       <span className="flex items-center justify-between gap-2">
         {ex.individual_exercise?.name || ex}
         {ex.sets_qt
@@ -348,7 +348,7 @@ const AddWorkoutPlanForm = () => {
                   {t("add_workout_plan_form.days_per_cycle_label")}
                   <button
                     type="button"
-                    className="flex items-center justify-center w-6 h-6 rounded-lg bg-blue-100 text-blue-700 font-bold shadow-sm hover:bg-blue-200 transition outline-none"
+                    className="flex items-center justify-center w-6 h-6 rounded-lg bg-gradient-to-r from-blue-400/60 to-blue-300/70 text-blue-700 font-bold shadow-sm hover:bg-blue-200 transition outline-none"
                     onClick={() => setIsTooltipOpen(true)}
                   >
                     ?

@@ -22,9 +22,8 @@ const Stats = () => {
   if (error) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <>
-      <div className="card">
         <MuscleGroupRadar stats={stats} />
-      </div>
+
       {stats && stats.length > 0 ? (
         <div className="card flex flex-col gap-6">
           <h2 className="text-title text-center">
@@ -58,7 +57,7 @@ const Stats = () => {
                   <div className="relative inline-block">
                     <label
                       htmlFor={`toggle-e1rm-${exercise.id}`}
-                      className="inline-block rounded-lg bg-blue-100 text-body-blue px-4 py-2 font-semibold cursor-pointer"
+                      className="inline-block rounded-lg bg-gradient-to-r from-blue-200/90 to-blue-300/70 text-body-blue px-4 py-2 font-semibold cursor-pointer"
                       title="Click to toggle view"
                       tabIndex={0}
                     >

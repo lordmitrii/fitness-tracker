@@ -51,6 +51,7 @@ const WorkoutCycle = () => {
     },
     preventDefaultTouchmoveEvent: true,
     trackMouse: true,
+    delta: 160,
   });
 
   usePullToRefreshOverride(

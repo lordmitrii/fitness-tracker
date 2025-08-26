@@ -47,25 +47,23 @@ const WorkoutPlanDetailsMenu = ({ closeMenu, plan }) => {
 
   return (
     <div className="flex flex-col space-y-2">
-      <button
-        className={`btn text-left ${
-          plan.active
-            ? "btn-secondary-light opacity-50 cursor-not-allowed"
-            : "btn-success-light"
-        }`}
-        disabled={plan.active}
-        onClick={handleActivatePlan}
-        title={
-          plan.active
-            ? t("menus.plan_already_active")
-            : t("menus.activate_plan")
-        }
-      >
-        <span className="flex items-center gap-2">
-          <FlashIcon success={plan.active} />
-          {t("menus.activate_plan")}
-        </span>
-      </button>
+      {!plan.active && (
+        <button
+          className={`btn text-left btn-success-light`}
+          disabled={plan.active}
+          onClick={handleActivatePlan}
+          title={
+            plan.active
+              ? t("menus.plan_already_active")
+              : t("menus.activate_plan")
+          }
+        >
+          <span className="flex items-center gap-2">
+            <FlashIcon success={plan.active} />
+            {t("menus.activate_plan")}
+          </span>
+        </button>
+      )}
       <button
         className="btn btn-secondary-light text-left"
         onClick={handleUpdatePlan}
