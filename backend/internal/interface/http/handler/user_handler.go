@@ -37,6 +37,11 @@ func NewUserHandler(r *gin.RouterGroup, svc usecase.UserService) {
 			protected.GET("/consents", h.GetConsents)
 			protected.POST("/consents", h.CreateConsent)
 			protected.DELETE("/consents", h.DeleteConsent)
+
+			protected.GET("/settings", h.GetUserSettings)
+			protected.PATCH("/settings", h.UpdateUserSettings)
+			protected.POST("/settings", h.CreateUserSettings)
+			protected.DELETE("/settings", h.DeleteUserSettings)
 		}
 	}
 }
@@ -313,4 +318,84 @@ func (h *UserHandler) Me(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, resp)
+}
+
+func (h *UserHandler) GetUserSettings(c *gin.Context) {
+	userID, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+
+	settings, err := h.svc.GetUserSettings(c.Request.Context(), userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.ToUserSettingsResponse(settings))
+}
+
+func (h *UserHandler) UpdateUserSettings(c *gin.Context) {
+	userID, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+
+	var req dto.UserSettingsUpdateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	updates := dto.BuildUpdatesFromPatchDTO(&req)
+	if len(updates) == 0 {
+		c.Status(http.StatusNoContent)
+		return
+	}
+
+	if err := h.svc.UpdateUserSettings(c.Request.Context(), userID, updates); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
+
+func (h *UserHandler) CreateUserSettings(c *gin.Context) {
+	userID, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+
+	var req dto.UserSettingsCreateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	settings := &user.UserSettings{
+		UserID:             userID,
+		UnitSystem:         req.UnitSystem,
+		BetaOptIn:          req.BetaOptIn,
+		EmailNotifications: req.EmailNotifications,
+	}
+
+	if err := h.svc.CreateUserSettings(c.Request.Context(), settings); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, dto.ToUserSettingsResponse(settings))
+}
+
+func (h *UserHandler) DeleteUserSettings(c *gin.Context) {
+	userID, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+
+	if err := h.svc.DeleteUserSettings(c.Request.Context(), userID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.Status(http.StatusNoContent)
 }

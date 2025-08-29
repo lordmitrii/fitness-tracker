@@ -59,7 +59,8 @@
     "pull_to_refresh": "Потяните, чтобы обновить",
     "diagnostics": "Диагностика",
     "share": "Поделиться",
-    "download": "Скачать"
+    "download": "Скачать",
+    "settings": "Настройки"
   },
   "measurements": {
     "weight": "кг",

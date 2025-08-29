@@ -11,6 +11,7 @@ type userServiceImpl struct {
 	userConsentRepo user.UserConsentRepository
 	roleRepo        rbac.RoleRepository
 	permissionRepo  rbac.PermissionRepository
+	settingsRepo    user.UserSettingsRepository
 }
 
 func NewUserService(
@@ -19,6 +20,7 @@ func NewUserService(
 	ucr user.UserConsentRepository,
 	roleRepo rbac.RoleRepository,
 	permissionRepo rbac.PermissionRepository,
+	settingsRepo user.UserSettingsRepository,
 ) *userServiceImpl {
 	return &userServiceImpl{
 		authRepo:        ur,
@@ -26,5 +28,6 @@ func NewUserService(
 		userConsentRepo: ucr,
 		roleRepo:        roleRepo,
 		permissionRepo:  permissionRepo,
+		settingsRepo:    settingsRepo,
 	}
 }

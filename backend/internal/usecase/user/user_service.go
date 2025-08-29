@@ -48,6 +48,11 @@ func (s *userServiceImpl) Register(ctx context.Context, email, password string, 
 		return err
 	}
 
+	err = s.settingsRepo.Create(ctx, &user.UserSettings{UserID: u.ID})
+	if err != nil {
+		return err
+	}
+
 	err = s.roleRepo.AssignRoleToUser(ctx, u.ID, rbac.RoleRestricted)
 	if err != nil {
 		return err

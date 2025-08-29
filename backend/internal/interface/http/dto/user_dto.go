@@ -41,6 +41,18 @@ type DeleteConsentRequest struct {
 	Version string `json:"version" binding:"required"`
 }
 
+type UserSettingsCreateRequest struct {
+	UnitSystem         string `json:"unit_system" binding:"oneof=metric imperial"`
+	BetaOptIn          bool   `json:"beta_opt_in"`
+	EmailNotifications bool   `json:"email_notifications"`
+}
+
+type UserSettingsUpdateRequest struct {
+	UnitSystem         *string `json:"unit_system" binding:"omitempty,oneof=metric imperial"`
+	BetaOptIn          *bool   `json:"beta_opt_in" binding:"omitempty"`
+	EmailNotifications *bool   `json:"email_notifications" binding:"omitempty"`
+}
+
 type ProfileResponse struct {
 	Age       int        `json:"age"`
 	HeightCm  float64    `json:"height_cm"`
@@ -68,4 +80,10 @@ type MeResponse struct {
 	Email      string         `json:"email"`
 	Roles      []RoleResponse `json:"roles"`
 	IsVerified bool           `json:"is_verified"`
+}
+
+type UserSettingsResponse struct {
+	UnitSystem         string `json:"unit_system"`
+	BetaOptIn          bool   `json:"beta_opt_in"`
+	EmailNotifications bool   `json:"email_notifications"`
 }

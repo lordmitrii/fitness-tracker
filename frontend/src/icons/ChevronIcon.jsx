@@ -1,4 +1,4 @@
-const ChevronIcon = ({ direction = "up" }) => {
+const ChevronIcon = ({ className, direction = "up" }) => {
   const rotation = direction === "up" ? "rotate-180" : "";
 
   return (
@@ -8,7 +8,7 @@ const ChevronIcon = ({ direction = "up" }) => {
       viewBox="0 0 24 24"
       strokeWidth={1.5}
       stroke="currentColor"
-      className={`size-4 transform transition-transform ${rotation}`}
+      className={`size-4 transform transition-transform ${rotation} ${className}`}
     >
       <path
         strokeLinecap="round"

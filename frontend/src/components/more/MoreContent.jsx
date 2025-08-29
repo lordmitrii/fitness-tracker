@@ -35,6 +35,7 @@ const MoreContent = ({ onDone, variant = "sheet" }) => {
       icon: <NewIcon className="border-green-500 text-green-500 font-medium" />,
     },
     { to: "/profile", label: t("general.profile"), auth: true, roles: [] },
+    { to: "/settings", label: t("general.settings"), auth: true, roles: [] },
     { to: "/login", label: t("general.login"), auth: false, roles: [] },
     {
       to: "/register",

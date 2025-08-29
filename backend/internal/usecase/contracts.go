@@ -95,6 +95,11 @@ type (
 		SetVerified(ctx context.Context, email string) error
 		CheckEmail(ctx context.Context, email string) (bool, error)
 		ResetPassword(ctx context.Context, email, newPassword string) error
+
+		GetUserSettings(ctx context.Context, userID uint) (*user.UserSettings, error)
+		UpdateUserSettings(ctx context.Context, userID uint, updates map[string]any) error
+		CreateUserSettings(ctx context.Context, settings *user.UserSettings) error
+		DeleteUserSettings(ctx context.Context, userID uint) error
 	}
 
 	AdminService interface {

@@ -29,3 +29,10 @@ type UserConsentRepository interface {
 	Update(ctx context.Context, uc *UserConsent) error
 	DeleteByUserIDAndType(ctx context.Context, userID uint, consentType, version string) error
 }
+
+type UserSettingsRepository interface {
+	Create(ctx context.Context, us *UserSettings) error
+	GetByUserID(ctx context.Context, userID uint) (*UserSettings, error)
+	Update(ctx context.Context, userID uint, updates map[string]any) error
+	Delete(ctx context.Context, id uint) error
+}
