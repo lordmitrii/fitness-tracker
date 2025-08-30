@@ -11,10 +11,10 @@ import (
 
 type (
 	WorkoutService interface {
-		CreateWorkoutPlan(ctx context.Context, wp *workout.WorkoutPlan) error
+		CreateWorkoutPlan(ctx context.Context, wp *workout.WorkoutPlan) (uint, error)
 		GetWorkoutPlanByID(ctx context.Context, id uint) (*workout.WorkoutPlan, error)
 		GetWorkoutPlansByUserID(ctx context.Context, userID uint) ([]*workout.WorkoutPlan, error)
-		UpdateWorkoutPlan(ctx context.Context, wp *workout.WorkoutPlan) (*workout.WorkoutPlan, error)
+		UpdateWorkoutPlan(ctx context.Context, id uint, updates map[string]any) (*workout.WorkoutPlan, error)
 		DeleteWorkoutPlan(ctx context.Context, id uint) error
 		SetActiveWorkoutPlan(ctx context.Context, id uint, active bool) (*workout.WorkoutPlan, error)
 		GetActivePlanByUserID(ctx context.Context, userID uint) (*workout.WorkoutPlan, error)

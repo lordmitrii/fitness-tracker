@@ -96,10 +96,14 @@ func (h *WorkoutHandler) CreateWorkoutPlan(c *gin.Context) {
 		Active: req.Active,
 	}
 
-	if err := h.svc.CreateWorkoutPlan(c.Request.Context(), wp); err != nil {
+	cycleID, err := h.svc.CreateWorkoutPlan(c.Request.Context(), wp)
+	if err != nil || cycleID == 0 {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	
+
+	wp.CurrentCycleID = &cycleID
 
 	c.JSON(http.StatusCreated, dto.ToWorkoutPlanResponse(wp))
 }
@@ -149,14 +153,9 @@ func (h *WorkoutHandler) UpdateWorkoutPlan(c *gin.Context) {
 		return
 	}
 
-	wp := &workout.WorkoutPlan{
-		ID:             uint(id),
-		Name:           req.Name,
-		Active:         req.Active,
-		CurrentCycleID: req.CurrentCycleID,
-	}
+	updates := dto.BuildUpdatesFromPatchDTO(&req)
 
-	wp, err := h.svc.UpdateWorkoutPlan(c.Request.Context(), wp)
+	wp, err := h.svc.UpdateWorkoutPlan(c.Request.Context(), id, updates)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

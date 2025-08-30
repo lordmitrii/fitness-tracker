@@ -62,11 +62,11 @@ func (r *WorkoutCycleRepo) Update(ctx context.Context, wc *workout.WorkoutCycle)
 	return r.db.WithContext(ctx).Model(&workout.WorkoutCycle{ID: wc.ID}).Updates(wc).Error
 }
 
-func (r *WorkoutCycleRepo) UpdateNextCycleID(ctx context.Context, id, nextID uint) error {
+func (r *WorkoutCycleRepo) UpdateNextCycleID(ctx context.Context, id uint, nextID *uint) error {
 	return r.db.WithContext(ctx).Model(&workout.WorkoutCycle{}).Where("id = ?", id).Update("next_cycle_id", nextID).Error
 }
 
-func (r *WorkoutCycleRepo) UpdatePrevCycleID(ctx context.Context, id, previousID uint) error {
+func (r *WorkoutCycleRepo) UpdatePrevCycleID(ctx context.Context, id uint, previousID *uint) error {
 	return r.db.WithContext(ctx).Model(&workout.WorkoutCycle{}).Where("id = ?", id).Update("previous_cycle_id", previousID).Error
 }
 

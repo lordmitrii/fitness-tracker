@@ -9,13 +9,13 @@ type WorkoutPlanCreateRequest struct {
 	Active bool   `json:"active"`
 }
 type WorkoutPlanUpdateRequest struct {
-	Name           string `json:"name" binding:"max=50"`
-	Active         bool   `json:"active"`
-	CurrentCycleID *uint  `json:"current_cycle_id" binding:"omitempty"`
+	Name           *string `json:"name" binding:"omitempty,max=50"`
+	Active         *bool   `json:"active,omitempty"`
+	CurrentCycleID *uint   `json:"current_cycle_id" binding:"omitempty"`
 }
 
 type SetActiveWorkoutPlanRequest struct {
-	Active bool `json:"active"`
+	Active bool `json:"active" binding:"required"`
 }
 
 type WorkoutCycleCreateRequest struct {

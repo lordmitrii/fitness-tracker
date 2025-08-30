@@ -8,7 +8,8 @@ type WorkoutPlanRepository interface {
 	Create(ctx context.Context, wp *WorkoutPlan) error
 	GetByID(ctx context.Context, id uint) (*WorkoutPlan, error)
 	GetByUserID(ctx context.Context, userID uint) ([]*WorkoutPlan, error)
-	Update(ctx context.Context, wp *WorkoutPlan) error
+	Update(ctx context.Context, id uint, updates map[string]any) error
+	UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*WorkoutPlan, error)
 	Delete(ctx context.Context, id uint) error
 	SetActive(ctx context.Context, wp *WorkoutPlan) (*WorkoutPlan, error)
 }
@@ -20,8 +21,8 @@ type WorkoutCycleRepository interface {
 	GetByPlanIDAndWeek(ctx context.Context, planID uint, week int) (*WorkoutCycle, error)
 	GetMaxWeekNumberByPlanID(ctx context.Context, workoutPlanID uint) (int, error)
 	Update(ctx context.Context, wc *WorkoutCycle) error
-	UpdateNextCycleID(ctx context.Context, id, nextID uint) error
-	UpdatePrevCycleID(ctx context.Context, id, previousID uint) error
+	UpdateNextCycleID(ctx context.Context, id uint, nextID *uint) error
+	UpdatePrevCycleID(ctx context.Context, id uint, previousID *uint) error
 	Complete(ctx context.Context, wc *WorkoutCycle) error
 	Delete(ctx context.Context, id uint) error
 	ClearData(ctx context.Context, id uint) error

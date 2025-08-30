@@ -130,8 +130,8 @@ func (s *workoutServiceImpl) CompleteWorkoutCycle(ctx context.Context, wc *worko
 				return nil, err
 			}
 
-			wp.CurrentCycleID = &newCycle.ID
-			if err := s.workoutPlanRepo.Update(ctx, wp); err != nil {
+			// wp.CurrentCycleID = &newCycle.ID
+			if err := s.workoutPlanRepo.Update(ctx, wp.ID, map[string]any{"current_cycle_id": newCycle.ID}); err != nil {
 				return nil, err
 			}
 		}
@@ -145,64 +145,66 @@ func (s *workoutServiceImpl) DeleteWorkoutCycle(ctx context.Context, id uint) er
 	if err != nil {
 		return err
 	}
+	if cycle.PreviousCycleID == nil {
+		return fmt.Errorf("cannot delete the first cycle of a workout plan")
+	}
 
 	plan, err := s.workoutPlanRepo.GetByID(ctx, cycle.WorkoutPlanID)
 	if err != nil {
 		return err
 	}
 
-	if cycle.PreviousCycleID == nil {
-		return fmt.Errorf("cannot delete the first cycle of a workout plan")
+	prevID := *cycle.PreviousCycleID
+	var nextID uint
+	hasNext := cycle.NextCycleID != nil
+	if hasNext {
+		nextID = *cycle.NextCycleID
 	}
 
-	if cycle.NextCycleID != nil {
-		// Move pointer from the previous cycle to the next cycle
-
-		if err := s.workoutCycleRepo.UpdateNextCycleID(ctx, *cycle.PreviousCycleID, *cycle.NextCycleID); err != nil {
+	if hasNext {
+		// Bridge prev <--> next around the node being deleted.
+		if err := s.workoutCycleRepo.UpdateNextCycleID(ctx, prevID, &nextID); err != nil {
+			return err
+		}
+		if err := s.workoutCycleRepo.UpdatePrevCycleID(ctx, nextID, &prevID); err != nil {
 			return err
 		}
 
-		if err := s.workoutCycleRepo.UpdatePrevCycleID(ctx, *cycle.NextCycleID, *cycle.PreviousCycleID); err != nil {
-			return err
-		}
-
+		// If deleting the current cycle, then current -> next.
 		if plan.CurrentCycleID != nil && *plan.CurrentCycleID == cycle.ID {
-			plan.CurrentCycleID = cycle.NextCycleID
-			if err := s.workoutPlanRepo.Update(ctx, plan); err != nil {
+			if err := s.workoutPlanRepo.Update(ctx, plan.ID, map[string]any{
+				"current_cycle_id": nextID,
+			}); err != nil {
 				return err
 			}
 		}
 	} else {
-		// prevCycleIncompleteWorkoutsCounts, err := s.workoutRepo.GetIncompleteWorkoutsCount(ctx, cycle.PreviousCycleID)
-		// if err != nil {
-		// 	return err
-		// }
-
-		// // If there is no next cycle and all previous workouts are completed, we just clear the current cycle data and dont change anything
-		// if prevCycleIncompleteWorkoutsCounts == 0 {
-		// 	if err := s.workoutCycleRepo.ClearData(ctx, id); err != nil {
-		// 		return err
-		// 	}
-		// 	return nil
-		// }
-
-		if err := s.workoutCycleRepo.Complete(ctx, &workout.WorkoutCycle{ID: *cycle.PreviousCycleID, Completed: false}); err != nil {
+		// Tail deletion:
+		// Mark previous cycle incomplete
+		if err := s.workoutCycleRepo.Complete(ctx, &workout.WorkoutCycle{
+			ID:        prevID,
+			Completed: false,
+		}); err != nil {
 			return err
 		}
 
-		if err := s.workoutCycleRepo.UpdateNextCycleID(ctx, *cycle.PreviousCycleID, 0); err != nil {
+		// Detach prev.next
+		if err := s.workoutCycleRepo.UpdateNextCycleID(ctx, prevID, nil); err != nil {
 			return err
 		}
 
+		// If current == deleted tail, move current back to prev.
 		if plan.CurrentCycleID != nil && *plan.CurrentCycleID == cycle.ID {
-			plan.CurrentCycleID = cycle.PreviousCycleID
-			if err := s.workoutPlanRepo.Update(ctx, plan); err != nil {
+			if err := s.workoutPlanRepo.Update(ctx, plan.ID, map[string]any{
+				"current_cycle_id": prevID,
+			}); err != nil {
 				return err
 			}
 		}
 	}
-	return s.workoutCycleRepo.Delete(ctx, id)
 
+	// Delete the node.
+	return s.workoutCycleRepo.Delete(ctx, id)
 }
 
 func (s *workoutServiceImpl) GetCurrentWorkoutCycle(ctx context.Context, userID uint) (*workout.WorkoutCycle, error) {

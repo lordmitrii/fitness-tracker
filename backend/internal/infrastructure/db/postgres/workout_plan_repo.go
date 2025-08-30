@@ -2,9 +2,11 @@ package postgres
 
 import (
 	"context"
+
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type WorkoutPlanRepo struct {
@@ -35,8 +37,10 @@ func (r *WorkoutPlanRepo) GetByUserID(ctx context.Context, userID uint) ([]*work
 	return workoutPlans, nil
 }
 
-func (r *WorkoutPlanRepo) Update(ctx context.Context, wp *workout.WorkoutPlan) error {
-	res := r.db.WithContext(ctx).Model(&workout.WorkoutPlan{}).Where("id = ?", wp.ID).Updates(wp)
+func (r *WorkoutPlanRepo) Update(ctx context.Context, id uint, updates map[string]any) error {
+	res := r.db.WithContext(ctx).Model(&workout.WorkoutPlan{}).
+		Where("id = ?", id).
+		Updates(updates)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -45,6 +49,22 @@ func (r *WorkoutPlanRepo) Update(ctx context.Context, wp *workout.WorkoutPlan) e
 	}
 	return nil
 }
+
+func (r *WorkoutPlanRepo) UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*workout.WorkoutPlan, error) {
+	var wp workout.WorkoutPlan
+	res := r.db.WithContext(ctx).Model(&wp).
+		Where("id = ?", id).
+		Clauses(clause.Returning{}).
+		Updates(updates)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RowsAffected == 0 {
+		return nil, custom_err.ErrNotFound
+	}
+	return &wp, nil
+}
+
 
 func (r *WorkoutPlanRepo) Delete(ctx context.Context, id uint) error {
 	res := r.db.WithContext(ctx).Delete(&workout.WorkoutPlan{}, id)
