@@ -5,28 +5,14 @@ import (
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 )
 
-// Returns id of the first cycle
-func (s *workoutServiceImpl) CreateWorkoutPlan(ctx context.Context, wp *workout.WorkoutPlan) (uint, error) {
-	if wp.Active {
-		// If the workout plan is active, we need to set other plans to inactive
-		plans, err := s.workoutPlanRepo.GetByUserID(ctx, wp.UserID)
-		if err != nil {
-			return 0, err
-		}
-
-		for _, plan := range plans {
-			if plan.Active {
-				plan.Active = false
-				if _, err := s.workoutPlanRepo.SetActive(ctx, plan); err != nil {
-					return 0, err
-				}
-			}
-		}
-	}
-
-	// Create the workout plan with the initial cycle
-	if err := s.workoutPlanRepo.Create(ctx, wp); err != nil {
-		return 0, err
+func (s *workoutServiceImpl) CreateWorkoutPlan(ctx context.Context, in *workout.WorkoutPlan) (*workout.WorkoutPlan, error) {
+	wp, err := s.workoutPlanRepo.CreateReturning(ctx, &workout.WorkoutPlan{
+		Name:   in.Name,
+		UserID: in.UserID,
+		Active: false,
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	firstCycle := &workout.WorkoutCycle{
@@ -36,14 +22,28 @@ func (s *workoutServiceImpl) CreateWorkoutPlan(ctx context.Context, wp *workout.
 	}
 
 	if err := s.workoutCycleRepo.Create(ctx, firstCycle); err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	if err := s.workoutPlanRepo.Update(ctx, wp.ID, map[string]any{"current_cycle_id": firstCycle.ID}); err != nil {
-		return 0, err
+	wp, err = s.workoutPlanRepo.UpdateReturning(ctx, wp.ID, map[string]any{
+		"current_cycle_id": firstCycle.ID,
+	})
+	if err != nil {
+		return nil, err
 	}
 
-	return firstCycle.ID, nil
+	if in.Active {
+		if err := s.workoutPlanRepo.DeactivateOthers(ctx, wp.UserID, wp.ID); err != nil {
+			return nil, err
+		}
+		wp, err = s.workoutPlanRepo.UpdateReturning(ctx, wp.ID, map[string]any{
+			"active": true,
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
+	return wp, nil
 }
 
 func (s *workoutServiceImpl) GetWorkoutPlanByID(ctx context.Context, id uint) (*workout.WorkoutPlan, error) {
@@ -57,7 +57,6 @@ func (s *workoutServiceImpl) GetWorkoutPlansByUserID(ctx context.Context, userID
 
 func (s *workoutServiceImpl) UpdateWorkoutPlan(ctx context.Context, id uint, updates map[string]any) (*workout.WorkoutPlan, error) {
 	return s.workoutPlanRepo.UpdateReturning(ctx, id, updates)
-
 }
 
 func (s *workoutServiceImpl) DeleteWorkoutPlan(ctx context.Context, id uint) error {
@@ -69,25 +68,17 @@ func (s *workoutServiceImpl) SetActiveWorkoutPlan(ctx context.Context, id uint, 
 	if err != nil {
 		return nil, err
 	}
-	wp.Active = active
 
-	if wp.Active {
-		// If the workout plan is active, we need to set other plans to inactive
-		plans, err := s.workoutPlanRepo.GetByUserID(ctx, wp.UserID)
-		if err != nil {
+	if wp.Active == active {
+		return wp, nil
+	}
+	if active {
+		if err := s.workoutPlanRepo.DeactivateOthers(ctx, wp.UserID, wp.ID); err != nil {
 			return nil, err
-		}
-		for _, plan := range plans {
-			if plan.Active && plan.ID != wp.ID {
-				plan.Active = false
-				if _, err := s.workoutPlanRepo.SetActive(ctx, plan); err != nil {
-					return nil, err
-				}
-			}
 		}
 	}
 
-	return s.workoutPlanRepo.SetActive(ctx, wp)
+	return s.workoutPlanRepo.UpdateReturning(ctx, wp.ID, map[string]any{"active": active})
 }
 
 func (s *workoutServiceImpl) GetActivePlanByUserID(ctx context.Context, userID uint) (*workout.WorkoutPlan, error) {

@@ -72,9 +72,19 @@ export default function usePlansData({ skipQuery = false } = {}) {
       setPlansCache((list) => {
         const next = [plan, ...list.filter((p) => p.id !== plan.id)];
         if (plan.active) {
-          return next.map((p) =>
-            p.id === plan.id ? { ...p, active: true } : { ...p, active: false }
-          );
+          return next.map((p) => {
+            if (p.id === plan.id) {
+              return { ...p, active: true };
+            }
+            // update active state in single plan cache
+            if (qc.getQueryData(QK.plan(p.id)) != null) {
+              qc.setQueryData(QK.plan(p.id), (old) => ({
+                ...(old ?? {}),
+                active: false,
+              }));
+            }
+            return { ...p, active: false };
+          });
         }
         return next;
       });
@@ -129,11 +139,24 @@ export default function usePlansData({ skipQuery = false } = {}) {
     onMutate: async ({ planID }) => {
       await qc.cancelQueries({ queryKey: QK.plans });
       const previous = qc.getQueryData(QK.plans);
-      setPlansCache((list) =>
-        list.map((p) =>
-          p.id === planID ? { ...p, active: true } : { ...p, active: false }
-        )
-      );
+      setPlansCache((list) => {
+        const next = list.map((p) => {
+          if (p.id === planID) {
+            return { ...p, active: true };
+          }
+          // update active state in single plan cache
+          if (p.active) {
+            if (qc.getQueryData(QK.plan(p.id)) != null) {
+              qc.setQueryData(QK.plan(p.id), (old) => ({
+                ...(old ?? {}),
+                active: false,
+              }));
+            }
+          }
+          return { ...p, active: false };
+        });
+        return next;
+      });
 
       const hadDetail = qc.getQueryData(QK.plan(planID)) != null;
       if (hadDetail) {
@@ -157,16 +180,12 @@ export default function usePlansData({ skipQuery = false } = {}) {
         ...updated,
       }));
 
-      qc.fetchQuery({
-        queryKey: QK.plan(updated.id),
-        queryFn: () =>
-          api.get(`/workout-plans/${updated.id}`).then((r) => r?.data ?? {}),
-      });
-
-      qc.invalidateQueries({
-        queryKey: QK.currentCycle,
-        refetchType: "inactive",
-      });
+      if (updated?.current_cycle_id && updated?.id) {
+        qc.setQueryData(QK.currentCycle, {
+          id: updated.current_cycle_id,
+          workout_plan_id: updated.id,
+        });
+      }
     },
 
     // onSettled: () => invalidate(),

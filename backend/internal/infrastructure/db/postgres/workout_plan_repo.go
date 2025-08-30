@@ -21,6 +21,16 @@ func (r *WorkoutPlanRepo) Create(ctx context.Context, wp *workout.WorkoutPlan) e
 	return r.db.WithContext(ctx).Create(wp).Error
 }
 
+func (r *WorkoutPlanRepo) CreateReturning(ctx context.Context, wp *workout.WorkoutPlan) (*workout.WorkoutPlan, error) {
+	res := r.db.WithContext(ctx).
+		Clauses(clause.Returning{}).
+		Create(wp)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return wp, nil
+}
+
 func (r *WorkoutPlanRepo) GetByID(ctx context.Context, id uint) (*workout.WorkoutPlan, error) {
 	var wp workout.WorkoutPlan
 	if err := r.db.WithContext(ctx).Order("updated_at DESC").First(&wp, id).Error; err != nil {
@@ -65,7 +75,6 @@ func (r *WorkoutPlanRepo) UpdateReturning(ctx context.Context, id uint, updates 
 	return &wp, nil
 }
 
-
 func (r *WorkoutPlanRepo) Delete(ctx context.Context, id uint) error {
 	res := r.db.WithContext(ctx).Delete(&workout.WorkoutPlan{}, id)
 	if res.Error != nil {
@@ -77,9 +86,9 @@ func (r *WorkoutPlanRepo) Delete(ctx context.Context, id uint) error {
 	return nil
 }
 
-func (r *WorkoutPlanRepo) SetActive(ctx context.Context, wp *workout.WorkoutPlan) (*workout.WorkoutPlan, error) {
-	if err := r.db.WithContext(ctx).Model(&workout.WorkoutPlan{}).Where("id = ?", wp.ID).Select("active").Updates(wp).Error; err != nil {
-		return nil, err
-	}
-	return wp, nil
+func (r *WorkoutPlanRepo) DeactivateOthers(ctx context.Context, userID, keepID uint) error {
+	return r.db.WithContext(ctx).
+		Model(&workout.WorkoutPlan{}).
+		Where("user_id = ? AND active = TRUE AND id <> ?", userID, keepID).
+		Update("active", false).Error
 }

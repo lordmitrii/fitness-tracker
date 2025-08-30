@@ -96,14 +96,11 @@ func (h *WorkoutHandler) CreateWorkoutPlan(c *gin.Context) {
 		Active: req.Active,
 	}
 
-	cycleID, err := h.svc.CreateWorkoutPlan(c.Request.Context(), wp)
-	if err != nil || cycleID == 0 {
+	wp, err := h.svc.CreateWorkoutPlan(c.Request.Context(), wp)
+	if err != nil || wp == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	
-
-	wp.CurrentCycleID = &cycleID
 
 	c.JSON(http.StatusCreated, dto.ToWorkoutPlanResponse(wp))
 }

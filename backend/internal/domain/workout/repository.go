@@ -6,12 +6,13 @@ import (
 
 type WorkoutPlanRepository interface {
 	Create(ctx context.Context, wp *WorkoutPlan) error
+	CreateReturning(ctx context.Context, wp *WorkoutPlan) (*WorkoutPlan, error)
 	GetByID(ctx context.Context, id uint) (*WorkoutPlan, error)
 	GetByUserID(ctx context.Context, userID uint) ([]*WorkoutPlan, error)
 	Update(ctx context.Context, id uint, updates map[string]any) error
 	UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*WorkoutPlan, error)
 	Delete(ctx context.Context, id uint) error
-	SetActive(ctx context.Context, wp *WorkoutPlan) (*WorkoutPlan, error)
+	DeactivateOthers(ctx context.Context, userID uint, exceptID uint) error
 }
 
 type WorkoutCycleRepository interface {
