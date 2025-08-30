@@ -1,19 +1,19 @@
 # Fitness Tracker
-A lightweight fitness tracking app with a Go backend (Gin + GORM), Postgres & Redis, and a React (Vite + Tailwind) frontend.
+A lightweight fitness-tracking app with a Go backend (Gin + GORM), Postgres & Redis, and a React (Vite + Tailwind) frontend.
 
 ## Overview
-Track workouts, exercises, and progress. The backend exposes a REST API with JWT auth, Postgres persists core data, and Redis powers caching/sessions/rate‑limiting. The frontend is a responsive SPA built with React, Vite, and Tailwind.
+Track workouts, exercises, and progress. The backend exposes a REST API with JWT auth; Postgres persists core data, and Redis powers caching, sessions, and rate limiting. The frontend is a responsive SPA built with React, Vite, and Tailwind.
 
 ## Tech Stack
 - **Backend:** Go, Gin, GORM, JWT
 - **Databases:** Postgres, Redis
 - **Frontend:** React, Vite, Tailwind CSS
 - **Tooling:** Docker Compose
-- **External** APIs: OpenAI
+- **External APIs:** OpenAI
 
 ## Project Structure
 
-General Structure
+General structure
 
 ```markdown
 .
@@ -44,7 +44,7 @@ backend/
 │   │   │   ├── profile.go                     # Domain definition of entity
 │   │   │   ├── repository.go                  # Domain definition of repository
 │   │   │   └── user.go
-|   |   ├── rbac/                             
+│   │   ├── rbac/
 │   │   └── workout/
 │
 │   ├── infrastructure/
@@ -83,17 +83,17 @@ backend/
 │   └── usecase/                               # Service layer of the app
 │       ├── contracts.go                       # Definition of service structures
 │       ├── user/
-│       │   ├── service.go                     # Service initializaion
+│       │   ├── service.go                     # Service initialization
 │       │   ├── user_service.go                # Service functions
 │       │   ├── consent_service.go
 │       │   └── ...
 │       ├── ai/
-│       │   ├── ai_service_test.go             # golang tests          
-│       │   ├── helpers_test.go                     
-│       │   ├── service.go                     
-│       │   ├── openai.go                       # Callers to openai
+│       │   ├── ai_service_test.go             # Go tests
+│       │   ├── helpers_test.go
+│       │   ├── service.go
+│       │   ├── openai.go                      # Callers to OpenAI
 │       │   ├── ai_service.go
-│       │   └── helpers.go                   
+│       │   └── helpers.go
 │       ├── email/
 │       │   ├── service.go
 │       │   ├── email_service.go
@@ -204,21 +204,28 @@ frontend/
 ## Constraints
 
 ### Workout Plan
+- Only one active workout plan per user.
+- When a user creates a new plan, it becomes active and other plans are deactivated.
 
 ### Workout Cycle
+- Structure is essentially a linked list.
+- A cycle is considered current if next_cycle_id is nil.
+- The first cycle cannot be deleted.
+- When a cycle is between two cycles, the service layer bridges prev <-> next.
+- If a cycle is the last one, detach next from prev and delete the node.
 
-### Workout 
+### Workout
+- If the opened cycle has no workouts but the previous cycle does, copy the workouts from the previous cycle into the opened (subject for change - better to move copying to the new cycle creation)
 
 ### Workout Exercise
 
+
 ### Workout Set
-
-- Allowed to be empty and can be sent as empty field to backend on field blur
-- Can be checked only if not null (weight can be 0) and if reps and weight are whithing the limits 
-
-- When user changes value it should just change cache and do soft checks
-- If its checked send request to uncheck to backend
-- When user blurs, it should send request to backend to change field value (rep or weight) and it should do a soft check 
-- When update happens backend automatically sets it to skipped = false and completed = false
-- When user toggles checkbox it should do a hard check if he's trying to check it 
-- Uncheck should happen anyway and this should be followed by request to backend
+- Allowed to be empty and may be sent as an empty field to the backend on blur.
+- Can be checked only if not null (weight can be 0) and if reps and weight are within the limits.
+- When the user changes a value, it should only update the cache and perform soft checks.
+- If it's currently checked, send a request to the backend to uncheck it.
+- When the user blurs the field, send a request to the backend to update the value (reps or weight); the backend should perform a soft check.
+- When an update happens, the backend automatically sets skipped = false and completed = false.
+- When the user toggles the checkbox to check it, perform a hard validation.
+- Unchecking should happen regardless and be followed by a request to the backend.

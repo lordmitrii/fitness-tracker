@@ -620,5 +620,23 @@
     "edit_roles_hint": "Select the roles this user should have.",
     "reset_password": "Reset password",
     "type_delete_to_confirm": "Type DELETE to confirm deleting this user"
+  },
+  "settings": {
+    "title": "Settings",
+    "loading": "Loading your settings...",
+    "unit_system": {
+      "title": "Unit System",
+      "hint": "Select your preferred unit system.",
+      "metric": "Metric (kg, cm)",
+      "imperial": "Imperial (lbs, ft)"
+    },
+    "beta_opt_in": {
+      "title": "Beta Features",
+      "hint": "Opt-in to access new features before they are officially released."
+    },
+    "email_notifications": {
+      "title": "Email Notifications",
+      "hint": "Allow email notifications for important updates and news."
+    }
   }
 }
