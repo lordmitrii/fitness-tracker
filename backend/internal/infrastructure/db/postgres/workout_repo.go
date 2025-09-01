@@ -3,9 +3,11 @@ package postgres
 import (
 	"context"
 	"errors"
+
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // WorkoutRepo implements workout.Repository using PostgreSQL.
@@ -54,11 +56,11 @@ func (r *WorkoutRepo) GetByWorkoutCycleID(ctx context.Context, workoutCycleID ui
 	return workouts, nil
 }
 
-func (r *WorkoutRepo) Update(ctx context.Context, w *workout.Workout) error {
+func (r *WorkoutRepo) Update(ctx context.Context, id uint, updates map[string]any) error {
 	res := r.db.WithContext(ctx).
 		Model(&workout.Workout{}).
-		Where("id = ?", w.ID).
-		Updates(w)
+		Where("id = ?", id).
+		Updates(updates)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -68,8 +70,29 @@ func (r *WorkoutRepo) Update(ctx context.Context, w *workout.Workout) error {
 	return nil
 }
 
-func (r *WorkoutRepo) Complete(ctx context.Context, w *workout.Workout) error {
-	return r.db.WithContext(ctx).Model(&workout.Workout{}).Where("id = ?", w.ID).Select("completed").Updates(w).Error
+func (r *WorkoutRepo) UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*workout.Workout, error) {
+	var w workout.Workout
+	tx := r.db.WithContext(ctx)
+
+	res := tx.Model(&w).
+		Where("id = ?", id).
+		Clauses(clause.Returning{}).
+		Updates(updates)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RowsAffected == 0 {
+		return nil, custom_err.ErrNotFound
+	}
+
+	if err := tx.
+		Model(&workout.WorkoutExercise{}).
+		Where("workout_id = ?", id).
+		Order("index ASC").
+		Find(&w.WorkoutExercises).Error; err != nil {
+		return nil, err
+	}
+	return &w, nil
 }
 
 func (r *WorkoutRepo) Delete(ctx context.Context, id uint) error {

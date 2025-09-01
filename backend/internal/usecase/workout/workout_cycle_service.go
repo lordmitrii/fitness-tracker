@@ -90,54 +90,51 @@ func (s *workoutServiceImpl) GetWorkoutCyclesByWorkoutPlanID(ctx context.Context
 	return s.workoutCycleRepo.GetByWorkoutPlanID(ctx, workoutPlanID)
 }
 
-func (s *workoutServiceImpl) UpdateWorkoutCycle(ctx context.Context, wc *workout.WorkoutCycle) error {
-	return s.workoutCycleRepo.Update(ctx, wc)
+func (s *workoutServiceImpl) UpdateWorkoutCycle(ctx context.Context, id uint, updates map[string]any) (*workout.WorkoutCycle, error) {
+	return s.workoutCycleRepo.UpdateReturning(ctx, id, updates)
 }
 
-func (s *workoutServiceImpl) CompleteWorkoutCycle(ctx context.Context, wc *workout.WorkoutCycle) (*uint, error) {
-	if err := s.workoutCycleRepo.Complete(ctx, wc); err != nil {
-		return nil, err
-	}
-
-	wc, err := s.workoutCycleRepo.GetByID(ctx, wc.ID)
+func (s *workoutServiceImpl) CompleteWorkoutCycle(ctx context.Context, id uint, completed, skipped bool) (*workout.WorkoutCycle, error) {
+	wc, err := s.workoutCycleRepo.UpdateReturning(ctx, id, map[string]any{"completed": completed, "skipped": skipped})
 	if err != nil {
 		return nil, err
 	}
 
+	if !wc.Completed {
+		return wc, nil
+	}
+
 	// If the cycle is completed, we need to create a new cycle for the next week if it is not already created
-	if wc.Completed {
-		wp, err := s.workoutPlanRepo.GetByID(ctx, wc.WorkoutPlanID)
-		if err != nil {
+	wp, err := s.workoutPlanRepo.GetByID(ctx, wc.WorkoutPlanID)
+	if err != nil {
+		return nil, err
+	}
+	if wp.CurrentCycleID != nil && *wp.CurrentCycleID == wc.ID {
+		// Create a new cycle for the next week
+
+		newCycle := &workout.WorkoutCycle{
+			WorkoutPlanID:   wp.ID,
+			WeekNumber:      wc.WeekNumber + 1,
+			Name:            fmt.Sprintf("Week #%d", wc.WeekNumber+1),
+			PreviousCycleID: &wc.ID,
+		}
+
+		if err := s.workoutCycleRepo.Create(ctx, newCycle); err != nil {
 			return nil, err
 		}
-		if wp.CurrentCycleID != nil && *wp.CurrentCycleID == wc.ID {
-			// Create a new cycle for the next week
-			nextWeek := wc.WeekNumber + 1
 
-			newCycle := &workout.WorkoutCycle{
-				WorkoutPlanID:   wp.ID,
-				WeekNumber:      nextWeek,
-				Name:            fmt.Sprintf("Week #%d", nextWeek),
-				PreviousCycleID: &wc.ID,
-			}
+		if err := s.workoutCycleRepo.Update(ctx, wc.ID, map[string]any{"next_cycle_id": newCycle.ID}); err != nil {
+			return nil, err
+		}
 
-			if err := s.workoutCycleRepo.Create(ctx, newCycle); err != nil {
-				return nil, err
-			}
+		wc.NextCycleID = &newCycle.ID
 
-			wc.NextCycleID = &newCycle.ID
-			if err := s.workoutCycleRepo.Update(ctx, wc); err != nil {
-				return nil, err
-			}
-
-			// wp.CurrentCycleID = &newCycle.ID
-			if err := s.workoutPlanRepo.Update(ctx, wp.ID, map[string]any{"current_cycle_id": newCycle.ID}); err != nil {
-				return nil, err
-			}
+		if err := s.workoutPlanRepo.Update(ctx, wp.ID, map[string]any{"current_cycle_id": newCycle.ID}); err != nil {
+			return nil, err
 		}
 	}
 
-	return wc.NextCycleID, nil
+	return wc, nil
 }
 
 func (s *workoutServiceImpl) DeleteWorkoutCycle(ctx context.Context, id uint) error {
@@ -163,10 +160,10 @@ func (s *workoutServiceImpl) DeleteWorkoutCycle(ctx context.Context, id uint) er
 
 	if hasNext {
 		// Bridge prev <--> next around the node being deleted.
-		if err := s.workoutCycleRepo.UpdateNextCycleID(ctx, prevID, &nextID); err != nil {
+		if err := s.workoutCycleRepo.Update(ctx, prevID, map[string]any{"next_cycle_id": nextID}); err != nil {
 			return err
 		}
-		if err := s.workoutCycleRepo.UpdatePrevCycleID(ctx, nextID, &prevID); err != nil {
+		if err := s.workoutCycleRepo.Update(ctx, nextID, map[string]any{"previous_cycle_id": &prevID}); err != nil {
 			return err
 		}
 
@@ -181,15 +178,12 @@ func (s *workoutServiceImpl) DeleteWorkoutCycle(ctx context.Context, id uint) er
 	} else {
 		// Tail deletion:
 		// Mark previous cycle incomplete
-		if err := s.workoutCycleRepo.Complete(ctx, &workout.WorkoutCycle{
-			ID:        prevID,
-			Completed: false,
-		}); err != nil {
+		if err := s.workoutCycleRepo.Update(ctx, prevID, map[string]any{"completed": false}); err != nil {
 			return err
 		}
 
 		// Detach prev.next
-		if err := s.workoutCycleRepo.UpdateNextCycleID(ctx, prevID, nil); err != nil {
+		if err := s.workoutCycleRepo.Update(ctx, prevID, map[string]any{"next_cycle_id": nil}); err != nil {
 			return err
 		}
 

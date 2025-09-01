@@ -21,8 +21,8 @@ func (s *exerciseServiceImpl) GetAllExercises(ctx context.Context) ([]*workout.E
 	return s.exerciseRepo.GetAll(ctx)
 }
 
-func (s *exerciseServiceImpl) UpdateExercise(ctx context.Context, e *workout.Exercise) error {
-	return s.exerciseRepo.Update(ctx, e)
+func (s *exerciseServiceImpl) UpdateExercise(ctx context.Context, id uint, updates map[string]any) (*workout.Exercise, error) {
+	return s.exerciseRepo.UpdateReturning(ctx, id, updates)
 }
 
 func (s *exerciseServiceImpl) DeleteExercise(ctx context.Context, id uint) error {

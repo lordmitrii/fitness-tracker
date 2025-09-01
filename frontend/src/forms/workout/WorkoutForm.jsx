@@ -7,6 +7,7 @@ import ErrorState from "../../states/ErrorState";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import { QK } from "../../utils/queryKeys";
+import useWorkoutData from "../../hooks/data/useWorkoutData";
 
 const WorkoutForm = memo(function WorkoutForm({
   initialData = {},
@@ -146,7 +147,8 @@ export const UpdateWorkoutForm = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { t } = useTranslation();
-  const qc = useQueryClient();
+
+  const { mutations } = useWorkoutData({ planID, cycleID, skipQuery: true });
 
   useEffect(() => {
     setLoading(true);
@@ -156,12 +158,10 @@ export const UpdateWorkoutForm = () => {
           `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}`
         );
         const data = res.data;
-        setInitialData({
-          name: data.name || "",
-        });
-      } catch (error) {
-        console.error("Error fetching workout:", error);
-        setError(error);
+        setInitialData({ name: data.name || "" });
+      } catch (err) {
+        console.error("Error fetching workout:", err);
+        setError(err);
       } finally {
         setLoading(false);
       }
@@ -171,18 +171,17 @@ export const UpdateWorkoutForm = () => {
   const handleUpdate = useCallback(
     async (payload) => {
       try {
-        await api.patch(
-          `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}`,
-          payload
-        );
-        qc.invalidateQueries({ queryKey: QK.cycle(planID, cycleID) });
+        await mutations.updateWorkout.mutateAsync({
+          workoutID: Number(workoutID),
+          payload,
+        });
         navigate(`/workout-plans/${planID}/workout-cycles/${cycleID}`);
       } catch (error) {
         console.error("Error updating workout:", error);
         setError(error);
       }
     },
-    [planID, cycleID, workoutID, navigate]
+    [mutations.updateWorkout, workoutID, planID, cycleID, navigate]
   );
 
   if (loading)

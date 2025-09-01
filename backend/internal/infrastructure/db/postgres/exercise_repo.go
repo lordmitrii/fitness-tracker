@@ -2,9 +2,11 @@ package postgres
 
 import (
 	"context"
+
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type ExerciseRepo struct {
@@ -43,8 +45,8 @@ func (r *ExerciseRepo) GetAll(ctx context.Context) ([]*workout.Exercise, error) 
 	return exercises, nil
 }
 
-func (r *ExerciseRepo) Update(ctx context.Context, e *workout.Exercise) error {
-	res := r.db.WithContext(ctx).Model(&workout.Exercise{}).Where("id = ?", e.ID).Updates(e)
+func (r *ExerciseRepo) Update(ctx context.Context, id uint, updates map[string]any) error {
+	res := r.db.WithContext(ctx).Model(&workout.Exercise{}).Where("id = ?", id).Updates(updates)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -52,6 +54,18 @@ func (r *ExerciseRepo) Update(ctx context.Context, e *workout.Exercise) error {
 		return custom_err.ErrNotFound
 	}
 	return nil
+}
+
+func (r *ExerciseRepo) UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*workout.Exercise, error) {
+	var e workout.Exercise
+	res := r.db.WithContext(ctx).Model(&e).Where("id = ?", id).Clauses(clause.Returning{}).Updates(updates)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RowsAffected == 0 {
+		return nil, custom_err.ErrNotFound
+	}
+	return &e, nil
 }
 
 func (r *ExerciseRepo) Delete(ctx context.Context, id uint) error {

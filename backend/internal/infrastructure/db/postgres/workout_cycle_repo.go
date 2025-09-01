@@ -2,8 +2,11 @@ package postgres
 
 import (
 	"context"
+
+	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type WorkoutCycleRepo struct {
@@ -25,7 +28,7 @@ func (r *WorkoutCycleRepo) GetByID(ctx context.Context, id uint) (*workout.Worko
 	}).First(&wc, id).Error; err != nil {
 		return nil, err
 	}
-	return &wc, nil	
+	return &wc, nil
 }
 
 func (r *WorkoutCycleRepo) GetByPlanIDAndWeek(ctx context.Context, planID uint, week int) (*workout.WorkoutCycle, error) {
@@ -58,20 +61,43 @@ func (r *WorkoutCycleRepo) GetMaxWeekNumberByPlanID(ctx context.Context, planID 
 	return max, err
 }
 
-func (r *WorkoutCycleRepo) Update(ctx context.Context, wc *workout.WorkoutCycle) error {
-	return r.db.WithContext(ctx).Model(&workout.WorkoutCycle{ID: wc.ID}).Updates(wc).Error
+func (r *WorkoutCycleRepo) Update(ctx context.Context, id uint, updates map[string]any) error {
+	res := r.db.WithContext(ctx).
+		Model(&workout.WorkoutCycle{}).
+		Where("id = ?", id).
+		Updates(updates)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return custom_err.ErrNotFound
+	}
+	return nil
 }
 
-func (r *WorkoutCycleRepo) UpdateNextCycleID(ctx context.Context, id uint, nextID *uint) error {
-	return r.db.WithContext(ctx).Model(&workout.WorkoutCycle{}).Where("id = ?", id).Update("next_cycle_id", nextID).Error
-}
+func (r *WorkoutCycleRepo) UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*workout.WorkoutCycle, error) {
+	var wc workout.WorkoutCycle
+	tx := r.db.WithContext(ctx)
 
-func (r *WorkoutCycleRepo) UpdatePrevCycleID(ctx context.Context, id uint, previousID *uint) error {
-	return r.db.WithContext(ctx).Model(&workout.WorkoutCycle{}).Where("id = ?", id).Update("previous_cycle_id", previousID).Error
-}
+	res := tx.Model(&wc).
+		Where("id = ?", id).
+		Clauses(clause.Returning{}).
+		Updates(updates)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RowsAffected == 0 {
+		return nil, custom_err.ErrNotFound
+	}
 
-func (r *WorkoutCycleRepo) Complete(ctx context.Context, wc *workout.WorkoutCycle) error {
-	return r.db.WithContext(ctx).Model(&workout.WorkoutCycle{}).Where("id = ?", wc.ID).Select("completed").Updates(wc).Error
+	if err := tx.
+		Model(&workout.Workout{}).
+		Where("workout_cycle_id = ?", id).
+		Order("index ASC").
+		Find(&wc.Workouts).Error; err != nil {
+		return nil, err
+	}
+	return &wc, nil
 }
 
 func (r *WorkoutCycleRepo) Delete(ctx context.Context, id uint) error {

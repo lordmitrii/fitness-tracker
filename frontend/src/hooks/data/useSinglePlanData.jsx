@@ -19,6 +19,11 @@ export default function useSinglePlanData(planID, { enabled = true } = {}) {
     keepPreviousData: true,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
-    select: (d) => d ?? {},
+    select: (data) => {
+      if (!data) return data;
+      const { __partial, ...rest } = data;
+      return rest;
+    },
+    refetchOnMount: (q) => !!(q.state.data && q.state.data.__partial),
   });
 }

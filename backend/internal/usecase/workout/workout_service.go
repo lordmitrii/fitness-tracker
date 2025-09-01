@@ -63,9 +63,10 @@ func (s *workoutServiceImpl) GetWorkoutByID(ctx context.Context, id uint) (*work
 func (s *workoutServiceImpl) GetWorkoutsByWorkoutCycleID(ctx context.Context, workoutPlanID uint) ([]*workout.Workout, error) {
 	return s.workoutRepo.GetByWorkoutCycleID(ctx, workoutPlanID)
 }
-func (s *workoutServiceImpl) UpdateWorkout(ctx context.Context, w *workout.Workout) error {
-	return s.workoutRepo.Update(ctx, w)
+func (s *workoutServiceImpl) UpdateWorkout(ctx context.Context, id uint, updates map[string]any) (*workout.Workout, error) {
+	return s.workoutRepo.UpdateReturning(ctx, id, updates)
 }
+
 func (s *workoutServiceImpl) DeleteWorkout(ctx context.Context, id uint) error {
 	workout, err := s.workoutRepo.GetByID(ctx, id)
 	if err != nil {
@@ -85,28 +86,24 @@ func (s *workoutServiceImpl) DeleteWorkout(ctx context.Context, id uint) error {
 	return nil
 }
 
-func (s *workoutServiceImpl) CompleteWorkout(ctx context.Context, w *workout.Workout) error {
-	if err := s.workoutRepo.Complete(ctx, w); err != nil {
-		return err
-	}
-
-	w, err := s.workoutRepo.GetByID(ctx, w.ID)
+func (s *workoutServiceImpl) CompleteWorkout(ctx context.Context, id uint, completed, skipped bool) (*workout.Workout, error) {
+	w, err := s.workoutRepo.UpdateReturning(ctx, id, map[string]any{"completed": completed, "skipped": skipped})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Update incompleted exercises to skipped
 	if w.Skipped {
 		for _, we := range w.WorkoutExercises {
 			if !we.Completed {
-				we.Skipped = true
-				s.workoutExerciseRepo.Complete(ctx, we)
-
+				if err := s.workoutExerciseRepo.Update(ctx, we.ID, map[string]any{"skipped": true}); err != nil {
+					return nil, err
+				}
 			}
 		}
 	}
 
-	return nil
+	return w, nil
 }
 
 func (s *workoutServiceImpl) MoveWorkout(ctx context.Context, workoutID, cycleID uint, direction string) error {

@@ -112,19 +112,15 @@ func (h *ExerciseHandler) UpdateExercise(c *gin.Context) {
 		return
 	}
 
-	ex := workout.Exercise{
-		ID:            uint(id),
-		Name:          req.Name,
-		IsBodyweight:  req.IsBodyweight,
-		IsTimeBased:   req.IsTimeBased,
-		MuscleGroupID: req.MuscleGroupID,
-	}
+	updates := dto.BuildUpdatesFromPatchDTO(&req)
 
-	if err := h.svc.UpdateExercise(c.Request.Context(), &ex); err != nil {
+	ex, err := h.svc.UpdateExercise(c.Request.Context(), id, updates)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, dto.ToExerciseResponse(&ex))
+
+	c.JSON(http.StatusOK, dto.ToExerciseResponse(ex))
 }
 
 func (h *ExerciseHandler) DeleteExercise(c *gin.Context) {
@@ -200,16 +196,15 @@ func (h *ExerciseHandler) UpdateMuscleGroup(c *gin.Context) {
 		return
 	}
 
-	muscleGroup := workout.MuscleGroup{
-		ID:   uint(id),
-		Name: req.Name,
-	}
+	updates := dto.BuildUpdatesFromPatchDTO(&req)
 
-	if err := h.svc.UpdateMuscleGroup(c.Request.Context(), &muscleGroup); err != nil {
+	mg, err := h.svc.UpdateMuscleGroup(c.Request.Context(), id, updates)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, dto.ToMuscleGroupResponse(&muscleGroup))
+	
+	c.JSON(http.StatusOK, dto.ToMuscleGroupResponse(mg))
 }
 
 func (h *ExerciseHandler) DeleteMuscleGroup(c *gin.Context) {

@@ -20,23 +20,12 @@ func (s *workoutServiceImpl) CreateWorkoutSet(ctx context.Context, ws *workout.W
 		}
 	}
 
-	we, err := s.workoutExerciseRepo.GetByID(ctx, ws.WorkoutExerciseID)
+	we, err := s.workoutExerciseRepo.UpdateReturning(ctx, ws.WorkoutExerciseID, map[string]any{"completed": false})
 	if err != nil {
 		return err
 	}
 
-	we.Completed = false
-	if err := s.workoutExerciseRepo.Complete(ctx, we); err != nil {
-		return err
-	}
-
-	w, err := s.workoutRepo.GetByID(ctx, we.WorkoutID)
-	if err != nil {
-		return err
-	}
-
-	w.Completed = false
-	if err := s.workoutRepo.Complete(ctx, w); err != nil {
+	if err := s.workoutRepo.Update(ctx, we.WorkoutID, map[string]any{"completed": false}); err != nil {
 		return err
 	}
 
@@ -51,99 +40,75 @@ func (s *workoutServiceImpl) GetWorkoutSetsByWorkoutExerciseID(ctx context.Conte
 	return s.workoutSetRepo.GetByWorkoutExerciseID(ctx, workoutExerciseID)
 }
 
-func (s *workoutServiceImpl) UpdateWorkoutSet(ctx context.Context, ws *workout.WorkoutSet) error {
-	we, err := s.workoutExerciseRepo.GetByID(ctx, ws.WorkoutExerciseID)
+func (s *workoutServiceImpl) UpdateWorkoutSet(ctx context.Context, id uint, updates map[string]any) (*workout.WorkoutSet, error) {
+	// Set skipped and completed to false if updating workout set
+	updates["skipped"] = false
+	updates["completed"] = false
+
+	ws, err := s.workoutSetRepo.UpdateReturning(ctx, id, updates)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	we, err := s.workoutExerciseRepo.UpdateReturning(ctx, ws.WorkoutExerciseID, map[string]any{"completed": false, "skipped": false})
+	if err != nil {
+		return nil, err
 	}
 
-	// Set workout and exercise to incomplete and unskipped if changing values of sets
-	if we.Completed || we.Skipped {
-		we.Completed = false
-		we.Skipped = false
-		s.workoutExerciseRepo.Complete(ctx, we)
-
-		w, err := s.workoutRepo.GetByID(ctx, we.WorkoutID)
-		if err != nil {
-			return err
-		}
-		if w.Completed || w.Skipped {
-			w.Completed = false
-			w.Skipped = false
-			s.workoutRepo.Complete(ctx, w)
-		}
+	if err := s.workoutRepo.Update(ctx, we.WorkoutID, map[string]any{"completed": false, "skipped": false}); err != nil {
+		return nil, err
 	}
 
-	return s.workoutSetRepo.Update(ctx, ws)
+	return ws, nil
 }
 
-func (s *workoutServiceImpl) CompleteWorkoutSet(ctx context.Context, ws *workout.WorkoutSet) error {
-	err := s.workoutSetRepo.Complete(ctx, ws)
+func (s *workoutServiceImpl) CompleteWorkoutSet(ctx context.Context, id uint, completed, skipped bool) (*workout.WorkoutSet, error) {
+	ws, err := s.workoutSetRepo.UpdateReturning(ctx, id, map[string]any{"completed": completed, "skipped": skipped})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	we, err := s.workoutExerciseRepo.GetByID(ctx, ws.WorkoutExerciseID)
+	incompletedSetsCount, err := s.workoutSetRepo.GetIncompleteSetsCount(ctx, ws.WorkoutExerciseID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	incompletedSetsCount, err := s.workoutSetRepo.GetIncompleteSetsCount(ctx, we.ID)
+	we, err := s.workoutExerciseRepo.UpdateReturning(ctx, ws.WorkoutExerciseID, map[string]any{"completed": incompletedSetsCount == 0})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	we.Completed = incompletedSetsCount == 0
-	err = s.workoutExerciseRepo.Complete(ctx, we)
+	incompletedExercisesCount, err := s.workoutExerciseRepo.GetIncompleteExercisesCount(ctx, we.WorkoutID)
 	if err != nil {
-		return err
-	}
-	//same here
-
-	w, err := s.workoutRepo.GetByID(ctx, we.WorkoutID)
-	if err != nil {
-		return err
+		return nil, err
 	}
 
-	incompletedExercisesCount, err := s.workoutExerciseRepo.GetIncompleteExercisesCount(ctx, w.ID)
+	skippedExercisesCount, err := s.workoutExerciseRepo.GetSkippedExercisesCount(ctx, we.WorkoutID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	skippedExercisesCount, err := s.workoutExerciseRepo.GetSkippedExercisesCount(ctx, w.ID)
-	if err != nil {
-		return err
+	if err := s.workoutRepo.Update(ctx, we.WorkoutID, map[string]any{"completed": incompletedExercisesCount-skippedExercisesCount == 0}); err != nil {
+		return nil, err
 	}
-
-	w.Completed = incompletedExercisesCount-skippedExercisesCount == 0
-	err = s.workoutRepo.Complete(ctx, w)
-	if err != nil {
-		return err
-	}
-
-	w.Skipped = skippedExercisesCount == 0
-	// set skipped if all are skipped
 
 	ie, err := s.individualExerciseRepo.GetByID(ctx, we.IndividualExerciseID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if ie.LastCompletedWorkoutExerciseID != nil {
-		we.PreviousExerciseID = ie.LastCompletedWorkoutExerciseID
-		if err := s.workoutExerciseRepo.Update(ctx, we); err != nil {
-			return err
+		if err := s.workoutExerciseRepo.Update(ctx, we.ID, map[string]any{"previous_exercise_id": ie.LastCompletedWorkoutExerciseID}); err != nil {
+			return nil, err
 		}
 	}
 
 	if ws.Completed {
-		ie.LastCompletedWorkoutExerciseID = &we.ID
-		if err := s.individualExerciseRepo.Update(ctx, ie); err != nil {
-			return err
+		if err := s.individualExerciseRepo.Update(ctx, ie.ID, map[string]any{"last_completed_workout_exercise_id": we.ID}); err != nil {
+			return nil, err
 		}
 	}
 
-	return nil
+	return ws, nil
 }
 
 func (s *workoutServiceImpl) MoveWorkoutSet(ctx context.Context, exerciseID, setID uint, direction string) error {
@@ -178,60 +143,35 @@ func (s *workoutServiceImpl) MoveWorkoutSet(ctx context.Context, exerciseID, set
 }
 
 func (s *workoutServiceImpl) DeleteWorkoutSet(ctx context.Context, id uint) error {
-	workoutSet, err := s.workoutSetRepo.GetByID(ctx, id)
+	ws, err := s.workoutSetRepo.GetByID(ctx, id)
 	if err != nil {
 		return err
 	}
-
-	workoutExerciseID := workoutSet.WorkoutExerciseID
-	deletedIndex := workoutSet.Index
 
 	if err := s.workoutSetRepo.Delete(ctx, id); err != nil {
 		return err
 	}
 
-	if err := s.workoutSetRepo.DecrementIndexesAfter(ctx, workoutExerciseID, deletedIndex); err != nil {
+	if err := s.workoutSetRepo.DecrementIndexesAfter(ctx, ws.WorkoutExerciseID, ws.Index); err != nil {
 		return err
 	}
 
-	we, err := s.workoutExerciseRepo.GetByID(ctx, workoutExerciseID)
+	incompletedSetsCount, err := s.workoutSetRepo.GetIncompleteSetsCount(ctx, ws.WorkoutExerciseID)
 	if err != nil {
 		return err
 	}
 
-	var completed bool
-	if len(we.WorkoutSets) == 0 {
-		completed = false
-	} else {
-		incompletedSetsCount, err := s.workoutSetRepo.GetIncompleteSetsCount(ctx, workoutExerciseID)
-		if err != nil {
-			return err
-		}
-		completed = incompletedSetsCount == 0
-	}
-	we.Completed = completed
-	if err := s.workoutExerciseRepo.Complete(ctx, we); err != nil {
-		return err
-	}
-
-	w, err := s.workoutRepo.GetByID(ctx, we.WorkoutID)
+	we, err := s.workoutExerciseRepo.UpdateReturning(ctx, ws.WorkoutExerciseID, map[string]any{"completed": incompletedSetsCount == 0})
 	if err != nil {
 		return err
 	}
 
-	var workoutCompleted bool
-	if len(w.WorkoutExercises) == 0 {
-		workoutCompleted = false
-	} else {
-		incompletedExercisesCount, err := s.workoutExerciseRepo.GetIncompleteExercisesCount(ctx,
-			w.ID)
-		if err != nil {
-			return err
-		}
-		workoutCompleted = incompletedExercisesCount == 0
+	incompletedExercisesCount, err := s.workoutExerciseRepo.GetIncompleteExercisesCount(ctx, we.WorkoutID)
+	if err != nil {
+		return err
 	}
-	w.Completed = workoutCompleted
-	if err := s.workoutRepo.Complete(ctx, w); err != nil {
+
+	if err := s.workoutRepo.Update(ctx, we.WorkoutID, map[string]any{"completed": incompletedExercisesCount == 0}); err != nil {
 		return err
 	}
 

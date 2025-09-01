@@ -56,7 +56,7 @@ const UpdateWorkoutPlanForm = () => {
         return;
       }
       await mutations.updatePlan.mutateAsync({
-        planID,
+        planID: Number(planID),
         payload: { name: planName.trim() },
       });
       navigate("/workout-plans");

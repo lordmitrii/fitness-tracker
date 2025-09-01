@@ -2,9 +2,11 @@ package postgres
 
 import (
 	"context"
+
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type WorkoutExerciseRepo struct {
@@ -34,8 +36,11 @@ func (r *WorkoutExerciseRepo) GetByWorkoutID(ctx context.Context, workoutID uint
 	return exercises, nil
 }
 
-func (r *WorkoutExerciseRepo) Update(ctx context.Context, e *workout.WorkoutExercise) error {
-	res := r.db.WithContext(ctx).Model(&workout.WorkoutExercise{}).Where("id = ?", e.ID).Updates(e)
+func (r *WorkoutExerciseRepo) Update(ctx context.Context, id uint, updates map[string]any) error {
+	res := r.db.WithContext(ctx).
+		Model(&workout.WorkoutExercise{}).
+		Where("id = ?", id).
+		Updates(updates)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -45,8 +50,43 @@ func (r *WorkoutExerciseRepo) Update(ctx context.Context, e *workout.WorkoutExer
 	return nil
 }
 
-func (r *WorkoutExerciseRepo) Complete(ctx context.Context, e *workout.WorkoutExercise) error {
-	return r.db.WithContext(ctx).Model(&workout.WorkoutExercise{}).Where("id = ?", e.ID).Select("completed", "skipped").Updates(e).Error
+func (r *WorkoutExerciseRepo) UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*workout.WorkoutExercise, error) {
+	var we workout.WorkoutExercise
+	tx := r.db.WithContext(ctx)
+
+	res := tx.Model(&we).
+		Where("id = ?", id).
+		Clauses(clause.Returning{}).
+		Updates(updates)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RowsAffected == 0 {
+		return nil, custom_err.ErrNotFound
+	}
+
+	if err := tx.
+		Model(&workout.WorkoutSet{}).
+		Where("workout_exercise_id = ?", id).
+		Order("index ASC").
+		Find(&we.WorkoutSets).Error; err != nil {
+		return nil, err
+	}
+
+	if we.IndividualExerciseID != 0 {
+		var ie workout.IndividualExercise
+		if err := tx.
+			// Preload("MuscleGroup").
+			// Preload("Exercise").
+			First(&ie, we.IndividualExerciseID).Error; err != nil {
+			return nil, err
+		}
+		we.IndividualExercise = &ie
+	} else {
+		we.IndividualExercise = nil
+	}
+
+	return &we, nil
 }
 
 func (r *WorkoutExerciseRepo) Delete(ctx context.Context, id uint) error {

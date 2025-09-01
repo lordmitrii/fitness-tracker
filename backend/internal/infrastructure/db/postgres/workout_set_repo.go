@@ -2,9 +2,11 @@ package postgres
 
 import (
 	"context"
+
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type WorkoutSetRepo struct {
@@ -34,15 +36,8 @@ func (r *WorkoutSetRepo) GetByWorkoutExerciseID(ctx context.Context, workoutExer
 	return sets, nil
 }
 
-func (r *WorkoutSetRepo) Update(ctx context.Context, ws *workout.WorkoutSet) error {
-	updates := map[string]any{
-		"weight":    ws.Weight,
-		"reps":      ws.Reps,
-		"completed": ws.Completed,
-		"skipped":   ws.Skipped,
-	}
-
-	res := r.db.WithContext(ctx).Model(&workout.WorkoutSet{}).Where("id = ?", ws.ID).Updates(updates)
+func (r *WorkoutSetRepo) Update(ctx context.Context, id uint, updates map[string]any) error {
+	res := r.db.WithContext(ctx).Model(&workout.WorkoutSet{}).Where("id = ?", id).Updates(updates)
 
 	if res.Error != nil {
 		return res.Error
@@ -53,8 +48,19 @@ func (r *WorkoutSetRepo) Update(ctx context.Context, ws *workout.WorkoutSet) err
 	return nil
 }
 
-func (r *WorkoutSetRepo) Complete(ctx context.Context, ws *workout.WorkoutSet) error {
-	return r.db.WithContext(ctx).Model(&workout.WorkoutSet{}).Where("id = ?", ws.ID).Select("completed", "skipped").Updates(ws).Error
+func (r *WorkoutSetRepo) UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*workout.WorkoutSet, error) {
+	var ws workout.WorkoutSet
+	res := r.db.WithContext(ctx).
+		Model(&ws).Where("id = ?", id).
+		Clauses(clause.Returning{}).
+		Updates(updates)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RowsAffected == 0 {
+		return nil, custom_err.ErrNotFound
+	}
+	return &ws, nil
 }
 
 func (r *WorkoutSetRepo) Delete(ctx context.Context, id uint) error {

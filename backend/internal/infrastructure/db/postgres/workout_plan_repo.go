@@ -48,7 +48,8 @@ func (r *WorkoutPlanRepo) GetByUserID(ctx context.Context, userID uint) ([]*work
 }
 
 func (r *WorkoutPlanRepo) Update(ctx context.Context, id uint, updates map[string]any) error {
-	res := r.db.WithContext(ctx).Model(&workout.WorkoutPlan{}).
+	res := r.db.WithContext(ctx).
+		Model(&workout.WorkoutPlan{}).
 		Where("id = ?", id).
 		Updates(updates)
 	if res.Error != nil {
@@ -62,7 +63,9 @@ func (r *WorkoutPlanRepo) Update(ctx context.Context, id uint, updates map[strin
 
 func (r *WorkoutPlanRepo) UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*workout.WorkoutPlan, error) {
 	var wp workout.WorkoutPlan
-	res := r.db.WithContext(ctx).Model(&wp).
+	tx := r.db.WithContext(ctx)
+
+	res := tx.Model(&wp).
 		Where("id = ?", id).
 		Clauses(clause.Returning{}).
 		Updates(updates)
@@ -71,6 +74,14 @@ func (r *WorkoutPlanRepo) UpdateReturning(ctx context.Context, id uint, updates 
 	}
 	if res.RowsAffected == 0 {
 		return nil, custom_err.ErrNotFound
+	}
+
+	if err := tx.
+		Model(&workout.WorkoutCycle{}).
+		Where("workout_plan_id = ?", id).
+		Order("index ASC").
+		Find(&wp.WorkoutCycles).Error; err != nil {
+		return nil, err
 	}
 	return &wp, nil
 }

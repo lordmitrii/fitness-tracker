@@ -18,6 +18,24 @@ export default function usePlansData({ skipQuery = false } = {}) {
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     placeholderData: (prev) => prev,
+    refetchOnMount: (q) => {
+      const d = q?.state?.data;
+      if (!d) return false;
+      if (Array.isArray(d)) return d.some((p) => p && p.__partial);
+      return !!d.__partial;
+    },
+    select: (data) => {
+      if (!data) return data;
+      if (Array.isArray(data)) {
+        return data.map((p) => {
+          if (!p) return p;
+          const { __partial, ...rest } = p;
+          return rest;
+        });
+      }
+      const { __partial, ...rest } = data;
+      return rest;
+    },
   });
 
   const plans = Array.isArray(plansQuery.data) ? plansQuery.data : [];
@@ -69,26 +87,39 @@ export default function usePlansData({ skipQuery = false } = {}) {
       return plan; // expect { id, name, active, current_cycle_id, ... }
     },
     onSuccess: (plan) => {
+      const newId = plan.id;
+
+      const prevList = qc.getQueryData(QK.plans);
+      const prevActiveId = Array.isArray(prevList)
+        ? prevList.find((p) => p.active)?.id
+        : undefined;
+
       setPlansCache((list) => {
-        const next = [plan, ...list.filter((p) => p.id !== plan.id)];
-        if (plan.active) {
-          return next.map((p) => {
-            if (p.id === plan.id) {
-              return { ...p, active: true };
-            }
-            // update active state in single plan cache
-            if (qc.getQueryData(QK.plan(p.id)) != null) {
-              qc.setQueryData(QK.plan(p.id), (old) => ({
-                ...(old ?? {}),
-                active: false,
-              }));
-            }
-            return { ...p, active: false };
-          });
+        const withoutDup = list.filter((p) => p.id !== newId);
+        if (!plan.active) {
+          return [plan, ...withoutDup];
         }
-        return next;
+        return [
+          plan,
+          ...withoutDup.map((p) =>
+            p.id === prevActiveId ? { ...p, active: false } : p
+          ),
+        ];
       });
-      qc.setQueryData(QK.plan(plan.id), plan);
+
+      qc.setQueryData(QK.plan(newId), plan);
+      if (
+        plan.active &&
+        prevActiveId &&
+        prevActiveId !== newId &&
+        qc.getQueryData(QK.plan(prevActiveId)) != null
+      ) {
+        qc.setQueryData(QK.plan(prevActiveId), (old) => ({
+          ...(old ?? {}),
+          active: false,
+        }));
+      }
+
       qc.invalidateQueries({ queryKey: QK.currentCycle });
     },
     // onSettled: () => invalidate(),
@@ -138,37 +169,61 @@ export default function usePlansData({ skipQuery = false } = {}) {
     },
     onMutate: async ({ planID }) => {
       await qc.cancelQueries({ queryKey: QK.plans });
-      const previous = qc.getQueryData(QK.plans);
-      setPlansCache((list) => {
-        const next = list.map((p) => {
-          if (p.id === planID) {
-            return { ...p, active: true };
-          }
-          // update active state in single plan cache
-          if (p.active) {
-            if (qc.getQueryData(QK.plan(p.id)) != null) {
-              qc.setQueryData(QK.plan(p.id), (old) => ({
-                ...(old ?? {}),
-                active: false,
-              }));
-            }
-          }
-          return { ...p, active: false };
-        });
-        return next;
-      });
 
-      const hadDetail = qc.getQueryData(QK.plan(planID)) != null;
-      if (hadDetail) {
+      const previous = qc.getQueryData(QK.plans);
+      const prevActiveId = Array.isArray(previous)
+        ? previous.find((p) => p.active)?.id
+        : undefined;
+
+      setPlansCache((list) =>
+        list.map((p) => {
+          if (p.id === planID) {
+            return p.active ? p : { ...p, active: true };
+          }
+          if (p.id === prevActiveId && prevActiveId !== planID) {
+            return p.active ? { ...p, active: false } : p;
+          }
+          return p;
+        })
+      );
+
+      if (
+        prevActiveId &&
+        prevActiveId !== planID &&
+        qc.getQueryData(QK.plan(prevActiveId)) != null
+      ) {
+        qc.setQueryData(QK.plan(prevActiveId), (old) => ({
+          ...(old ?? {}),
+          active: false,
+        }));
+      }
+      if (qc.getQueryData(QK.plan(planID)) != null) {
         qc.setQueryData(QK.plan(planID), (old) => ({
           ...(old ?? {}),
           active: true,
         }));
       }
-      return { previous, planID, hadDetail };
+
+      return { previous, prevActiveId, planID };
     },
-    onError: (_e, _v, ctx) => {
+    onError: (_err, vars, ctx) => {
       if (ctx?.previous) qc.setQueryData(QK.plans, ctx.previous);
+
+      if (
+        ctx?.prevActiveId &&
+        qc.getQueryData(QK.plan(ctx.prevActiveId)) != null
+      ) {
+        qc.setQueryData(QK.plan(ctx.prevActiveId), (old) => ({
+          ...(old ?? {}),
+          active: true,
+        }));
+      }
+      if (vars?.planID && qc.getQueryData(QK.plan(vars.planID)) != null) {
+        qc.setQueryData(QK.plan(vars.planID), (old) => ({
+          ...(old ?? {}),
+          active: false,
+        }));
+      }
     },
     onSuccess: (updated) => {
       setPlansCache((list) =>

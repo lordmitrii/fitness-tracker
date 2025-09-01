@@ -90,13 +90,13 @@ func (h *WorkoutHandler) CreateWorkoutPlan(c *gin.Context) {
 		return
 	}
 
-	wp := &workout.WorkoutPlan{
+	in := &workout.WorkoutPlan{
 		Name:   req.Name,
 		UserID: userID,
 		Active: req.Active,
 	}
 
-	wp, err := h.svc.CreateWorkoutPlan(c.Request.Context(), wp)
+	wp, err := h.svc.CreateWorkoutPlan(c.Request.Context(), in)
 	if err != nil || wp == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -267,15 +267,10 @@ func (h *WorkoutHandler) UpdateWorkoutCycle(c *gin.Context) {
 		return
 	}
 
-	wc := &workout.WorkoutCycle{
-		ID:         uint(id),
-		Name:       req.Name,
-		WeekNumber: req.WeekNumber,
-		Completed:  req.Completed,
-		Skipped:    req.Skipped,
-	}
+	updates := dto.BuildUpdatesFromPatchDTO(&req)
 
-	if err := h.svc.UpdateWorkoutCycle(c.Request.Context(), wc); err != nil {
+	wc, err := h.svc.UpdateWorkoutCycle(c.Request.Context(), id, updates)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -314,20 +309,12 @@ func (h *WorkoutHandler) CompleteWorkoutCycle(c *gin.Context) {
 		return
 	}
 
-	wc := &workout.WorkoutCycle{
-		ID:            uint(cycleID),
-		WorkoutPlanID: uint(id),
-		Completed:     req.Completed,
-		Skipped:       req.Skipped,
-	}
-
-	nextCycleID, err := h.svc.CompleteWorkoutCycle(c.Request.Context(), wc)
+	wc, err := h.svc.CompleteWorkoutCycle(c.Request.Context(), cycleID, req.Completed, req.Skipped)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	wc.NextCycleID = nextCycleID
 
 	c.JSON(http.StatusOK, dto.ToWorkoutCycleResponse(wc))
 }
@@ -451,16 +438,10 @@ func (h *WorkoutHandler) UpdateWorkout(c *gin.Context) {
 		return
 	}
 
-	w := &workout.Workout{
-		ID:        uint(id),
-		Name:      req.Name,
-		Date:      req.Date,
-		Index:     req.Index,
-		Completed: req.Completed,
-		Skipped:   req.Skipped,
-	}
+	updates := dto.BuildUpdatesFromPatchDTO(&req)
 
-	if err := h.svc.UpdateWorkout(c.Request.Context(), w); err != nil {
+	w, err := h.svc.UpdateWorkout(c.Request.Context(), id, updates)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -500,14 +481,8 @@ func (h *WorkoutHandler) CompleteWorkout(c *gin.Context) {
 		return
 	}
 
-	w := &workout.Workout{
-		ID:             uint(id),
-		WorkoutCycleID: uint(cycleID),
-		Completed:      req.Completed,
-		Skipped:        req.Skipped,
-	}
-
-	if err := h.svc.CompleteWorkout(c.Request.Context(), w); err != nil {
+	w, err := h.svc.CompleteWorkout(c.Request.Context(), id, req.Completed, req.Skipped)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -612,11 +587,6 @@ func (h *WorkoutHandler) UpdateWorkoutExercise(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
 		return
 	}
-	workoutID := parseUint(c.Param("workoutID"), 0)
-	if workoutID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout ID is required"})
-		return
-	}
 
 	var req dto.WorkoutExerciseUpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -624,15 +594,10 @@ func (h *WorkoutHandler) UpdateWorkoutExercise(c *gin.Context) {
 		return
 	}
 
-	we := &workout.WorkoutExercise{
-		ID:        uint(id),
-		WorkoutID: uint(workoutID),
-		Index:     req.Index,
-		Completed: req.Completed,
-		Skipped:   req.Skipped,
-	}
+	updates := dto.BuildUpdatesFromPatchDTO(&req)
 
-	if err := h.svc.UpdateWorkoutExercise(c.Request.Context(), we); err != nil {
+	we, err := h.svc.UpdateWorkoutExercise(c.Request.Context(), id, updates)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -646,26 +611,14 @@ func (h *WorkoutHandler) CompleteWorkoutExercise(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
 		return
 	}
-	workoutID := parseUint(c.Param("workoutID"), 0)
-	if workoutID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout ID is required"})
-		return
-	}
-
 	var req dto.WorkoutExerciseCompleteRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	we := &workout.WorkoutExercise{
-		ID:        uint(id),
-		WorkoutID: uint(workoutID),
-		Completed: req.Completed,
-		Skipped:   req.Skipped,
-	}
-
-	if err := h.svc.CompleteWorkoutExercise(c.Request.Context(), we); err != nil {
+	we, err := h.svc.CompleteWorkoutExercise(c.Request.Context(), id, req.Completed, req.Skipped)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -820,14 +773,9 @@ func (h *WorkoutHandler) GetWorkoutSetByID(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) UpdateWorkoutSet(c *gin.Context) {
-	setID := parseUint(c.Param("setID"), 0)
-	if setID == 0 {
+	id := parseUint(c.Param("setID"), 0)
+	if id == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Set ID is required"})
-		return
-	}
-	weID := parseUint(c.Param("weID"), 0)
-	if weID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
 		return
 	}
 
@@ -837,17 +785,10 @@ func (h *WorkoutHandler) UpdateWorkoutSet(c *gin.Context) {
 		return
 	}
 
-	ws := &workout.WorkoutSet{
-		ID:                uint(setID),
-		WorkoutExerciseID: uint(weID),
-		Index:             req.Index,
-		Weight:            req.Weight,
-		Reps:              req.Reps,
-		Completed:         req.Completed,
-		Skipped:           req.Skipped,
-	}
+	updates := dto.BuildUpdatesFromPatchDTO(&req)
 
-	if err := h.svc.UpdateWorkoutSet(c.Request.Context(), ws); err != nil {
+	ws, err := h.svc.UpdateWorkoutSet(c.Request.Context(), id, updates)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -856,14 +797,9 @@ func (h *WorkoutHandler) UpdateWorkoutSet(c *gin.Context) {
 }
 
 func (h *WorkoutHandler) CompleteWorkoutSet(c *gin.Context) {
-	setID := parseUint(c.Param("setID"), 0)
-	if setID == 0 {
+	id := parseUint(c.Param("setID"), 0)
+	if id == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Set ID is required"})
-		return
-	}
-	weID := parseUint(c.Param("weID"), 0)
-	if weID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
 		return
 	}
 
@@ -873,14 +809,8 @@ func (h *WorkoutHandler) CompleteWorkoutSet(c *gin.Context) {
 		return
 	}
 
-	ws := &workout.WorkoutSet{
-		ID:                uint(setID),
-		WorkoutExerciseID: uint(weID),
-		Completed:         req.Completed,
-		Skipped:           req.Skipped,
-	}
-
-	if err := h.svc.CompleteWorkoutSet(c.Request.Context(), ws); err != nil {
+	ws, err := h.svc.CompleteWorkoutSet(c.Request.Context(), id, req.Completed, req.Skipped)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
