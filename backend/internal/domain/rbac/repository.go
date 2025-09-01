@@ -7,7 +7,8 @@ import (
 type RoleRepository interface {
 	Create(ctx context.Context, role *Role) error
 	GetByName(ctx context.Context, roleName string) (*Role, error)
-	Update(ctx context.Context, role *Role) error
+	Update(ctx context.Context, id uint, updates map[string]any) error
+	UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*Role, error)
 	Delete(ctx context.Context, roleName string) error
 	GetAll(ctx context.Context) ([]*Role, error)
 
@@ -20,7 +21,8 @@ type RoleRepository interface {
 type PermissionRepository interface {
 	Create(ctx context.Context, permission *Permission) error
 	GetByKey(ctx context.Context, permKey string) (*Permission, error)
-	Update(ctx context.Context, permission *Permission) error
+	Update(ctx context.Context, id uint, updates map[string]any) error
+	UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*Permission, error)
 	Delete(ctx context.Context, permKey string) error
 	GetAll(ctx context.Context) ([]*Permission, error)
 
