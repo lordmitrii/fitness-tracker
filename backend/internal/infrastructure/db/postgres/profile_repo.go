@@ -3,9 +3,11 @@ package postgres
 import (
 	"context"
 	"errors"
+
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type ProfileRepo struct {
@@ -31,8 +33,8 @@ func (r *ProfileRepo) GetByUserID(ctx context.Context, userID uint) (*user.Profi
 	return &p, nil
 }
 
-func (r *ProfileRepo) Update(ctx context.Context, p *user.Profile) error {
-	res := r.db.WithContext(ctx).Model(&user.Profile{}).Where("user_id = ?", p.UserID).Updates(p)
+func (r *ProfileRepo) Update(ctx context.Context, id uint, updates map[string]any) error {
+	res := r.db.WithContext(ctx).Model(&user.Profile{}).Where("user_id = ?", id).Updates(updates)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -41,6 +43,19 @@ func (r *ProfileRepo) Update(ctx context.Context, p *user.Profile) error {
 	}
 	return nil
 }
+
+func (r *ProfileRepo) UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*user.Profile, error) {
+	var p user.Profile
+	res := r.db.WithContext(ctx).Model(&p).Where("user_id = ?", id).Clauses(clause.Returning{}).Updates(updates)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RowsAffected == 0 {
+		return nil, custom_err.ErrProfileNotFound
+	}
+	return &p, nil
+}
+
 func (r *ProfileRepo) Delete(ctx context.Context, id uint) error {
 	res := r.db.WithContext(ctx).Delete(&user.Profile{}, id)
 	if res.Error != nil {

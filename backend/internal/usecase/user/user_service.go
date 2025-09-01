@@ -6,6 +6,7 @@ import (
 	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 	"golang.org/x/crypto/bcrypt"
+	"time"
 )
 
 func (s *userServiceImpl) Register(ctx context.Context, email, password string, privacyConsent, healthDataConsent bool, privacyPolicyVersion, healthDataPolicyVersion string) error {
@@ -93,7 +94,7 @@ func (s *userServiceImpl) SetVerified(ctx context.Context, email string) error {
 		return err
 	}
 
-	return s.authRepo.SetVerified(ctx, email)
+	return s.authRepo.Update(ctx, user.ID, map[string]any{"is_verified": true})
 }
 
 func (s *userServiceImpl) CheckEmail(ctx context.Context, email string) (bool, error) {
@@ -109,16 +110,9 @@ func (s *userServiceImpl) ResetPassword(ctx context.Context, email, newPassword 
 	if err != nil {
 		return err
 	}
-
-	user, err := s.authRepo.GetByEmail(ctx, email)
-	if err != nil {
-		return err
-	}
-
-	user.PasswordHash = string(hash)
-	return s.authRepo.Update(ctx, user)
+	return s.authRepo.UpdateByEmail(ctx, email, map[string]any{"password_hash": string(hash)})
 }
 
 func (s *userServiceImpl) TouchLastSeen(ctx context.Context, userID uint) error {
-	return s.authRepo.TouchLastSeen(ctx, userID)
+	return s.authRepo.Update(ctx, userID, map[string]any{"last_seen_at": time.Now()})
 }

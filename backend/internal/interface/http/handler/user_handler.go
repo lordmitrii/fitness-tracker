@@ -167,7 +167,7 @@ func (h *UserHandler) CreateProfile(c *gin.Context) {
 }
 
 func (h *UserHandler) UpdateProfile(c *gin.Context) {
-	userID, exists := currentUserID(c)
+	id, exists := currentUserID(c)
 	if !exists {
 		return
 	}
@@ -178,15 +178,10 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	p := &user.Profile{
-		UserID:   userID,
-		Age:      req.Age,
-		HeightCm: req.HeightCm,
-		WeightKg: req.WeightKg,
-		Sex:      req.Sex,
-	}
+	updates := dto.BuildUpdatesFromPatchDTO(&req)
 
-	if err := h.svc.UpdateProfile(c.Request.Context(), p); err != nil {
+	p, err := h.svc.UpdateProfile(c.Request.Context(), id, updates)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -253,7 +248,7 @@ func (h *UserHandler) CreateConsent(c *gin.Context) {
 }
 
 func (h *UserHandler) UpdateConsent(c *gin.Context) {
-	userID, exists := currentUserID(c)
+	id, exists := currentUserID(c)
 	if !exists {
 		return
 	}
@@ -264,18 +259,14 @@ func (h *UserHandler) UpdateConsent(c *gin.Context) {
 		return
 	}
 
-	cns := &user.UserConsent{
-		UserID:  userID,
-		Type:    req.Type,
-		Version: req.Version,
-		Given:   req.Given,
-	}
+	updates := dto.BuildUpdatesFromPatchDTO(&req)
 
-	if err := h.svc.UpdateConsent(c.Request.Context(), cns); err != nil {
+	consent, err := h.svc.UpdateConsent(c.Request.Context(), id, updates)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, dto.ToConsentResponse(cns))
+	c.JSON(http.StatusOK, dto.ToConsentResponse(consent))
 }
 
 func (h *UserHandler) DeleteConsent(c *gin.Context) {
@@ -359,7 +350,6 @@ func (h *UserHandler) UpdateUserSettings(c *gin.Context) {
 	}
 	c.Status(http.StatusNoContent)
 }
-
 
 func (h *UserHandler) CreateUserSettings(c *gin.Context) {
 	userID, exists := currentUserID(c)

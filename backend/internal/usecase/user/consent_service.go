@@ -13,8 +13,8 @@ func (s *userServiceImpl) CreateConsent(ctx context.Context, consent *user.UserC
 	return s.userConsentRepo.Create(ctx, consent)
 }
 
-func (s *userServiceImpl) UpdateConsent(ctx context.Context, consent *user.UserConsent) error {
-	return s.userConsentRepo.Update(ctx, consent)
+func (s *userServiceImpl) UpdateConsent(ctx context.Context, id uint, updates map[string]any) (*user.UserConsent, error) {
+	return s.userConsentRepo.UpdateReturning(ctx, id, updates)
 }
 
 func (s *userServiceImpl) DeleteConsent(ctx context.Context, userID uint, consentType, version string) error {
