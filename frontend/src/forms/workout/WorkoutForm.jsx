@@ -1,34 +1,25 @@
-import { useState, useEffect, useCallback, useRef, memo } from "react";
+import { useState, useCallback, memo } from "react";
 import api from "../../api";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import LoadingState from "../../states/LoadingState";
 import ErrorState from "../../states/ErrorState";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import { QK } from "../../utils/queryKeys";
-import useWorkoutData from "../../hooks/data/useWorkoutData";
+import useCycleData from "../../hooks/data/useCycleData";
 
 const WorkoutForm = memo(function WorkoutForm({
-  initialData = {},
+  initialData,
   onSubmit,
   label,
   submitLabel,
 }) {
   const { t } = useTranslation();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState(initialData || {
     name: "",
   });
   const [formErrors, setFormErrors] = useState({});
-
-  const loaded = useRef(false);
-
-  useEffect(() => {
-    if (loaded.current || !initialData || !Object.keys(initialData).length)
-      return;
-    setFormData((prev) => ({ ...prev, ...initialData }));
-    loaded.current = true;
-  }, [initialData]);
 
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
@@ -142,31 +133,11 @@ export const CreateWorkoutForm = () => {
 // Update workout page
 export const UpdateWorkoutForm = () => {
   const { planID, cycleID, workoutID } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
-  const [initialData, setInitialData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const { t } = useTranslation();
 
-  const { mutations } = useWorkoutData({ planID, cycleID, skipQuery: true });
-
-  useEffect(() => {
-    setLoading(true);
-    (async () => {
-      try {
-        const res = await api.get(
-          `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}`
-        );
-        const data = res.data;
-        setInitialData({ name: data.name || "" });
-      } catch (err) {
-        console.error("Error fetching workout:", err);
-        setError(err);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [planID, cycleID, workoutID]);
+  const { mutations, loading, error, refetchAll } = useCycleData({ planID, cycleID, skipQuery: true });
 
   const handleUpdate = useCallback(
     async (payload) => {
@@ -178,7 +149,6 @@ export const UpdateWorkoutForm = () => {
         navigate(`/workout-plans/${planID}/workout-cycles/${cycleID}`);
       } catch (error) {
         console.error("Error updating workout:", error);
-        setError(error);
       }
     },
     [mutations.updateWorkout, workoutID, planID, cycleID, navigate]
@@ -188,13 +158,13 @@ export const UpdateWorkoutForm = () => {
     return <LoadingState message={t("workout_form.loading_workout")} />;
   if (error)
     return (
-      <ErrorState error={error} onRetry={() => window.location.reload()} />
+      <ErrorState error={error} onRetry={refetchAll} />
     );
 
   return (
     <WorkoutForm
       key={workoutID}
-      initialData={initialData}
+      initialData={location.state || {}}
       onSubmit={handleUpdate}
       label={t("workout_form.update_workout")}
       submitLabel={t("general.update")}

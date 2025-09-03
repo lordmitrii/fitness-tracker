@@ -79,7 +79,7 @@ func (r *WorkoutPlanRepo) UpdateReturning(ctx context.Context, id uint, updates 
 	if err := tx.
 		Model(&workout.WorkoutCycle{}).
 		Where("workout_plan_id = ?", id).
-		Order("index ASC").
+		Order("week_number ASC").
 		Find(&wp.WorkoutCycles).Error; err != nil {
 		return nil, err
 	}

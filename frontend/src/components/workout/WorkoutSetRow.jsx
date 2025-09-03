@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { toNumberOrEmpty, toNullIfEmpty } from "../../utils/numberUtils";
 import { SET_LIMITS } from "../../config/constants";
 import { ChartEqualIcon } from "../../icons/ChartIcon";
-import useWorkoutData from "../../hooks/data/useWorkoutData";
+import useCycleData from "../../hooks/data/useCycleData";
 
 const WorkoutSetRow = ({
   planID,
@@ -20,7 +20,7 @@ const WorkoutSetRow = ({
 }) => {
   const { t } = useTranslation();
   const [errors, setErrors] = useState({});
-  const { mutations, ui } = useWorkoutData({
+  const { mutations, ui } = useCycleData({
     planID,
     cycleID,
     skipQuery: true,

@@ -144,6 +144,9 @@ frontend/
 │   │   ├── admin/
 │   │   └── ...
 │   ├── hooks/
+│   │   ├── data/
+│   │   │   ├── useCycleData.jsx
+│   │   │   └── ...
 │   │   ├── useConsent.jsx
 │   │   ├── useNetworkBanner.jsx
 │   │   └── ...
@@ -187,7 +190,7 @@ frontend/
 ├── tests/
 │   ├── __mocks__/
 │   ├── utils/
-│   ├── useWorkoutData.basic.test.jsx
+│   ├── useCycleData.basic.test.jsx
 │   └── ...                               # Other tests
 │
 ├── index.html

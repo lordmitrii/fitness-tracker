@@ -21,7 +21,7 @@ const WorkoutPlanDetailsMenu = ({ closeMenu, plan }) => {
   };
 
   const handleUpdatePlan = () => {
-    navigate(`/update-workout-plan/${plan.id}`);
+    navigate(`/update-workout-plan/${plan.id}`, { state: { plan } });
   };
 
   const handleDeletePlan = async () => {

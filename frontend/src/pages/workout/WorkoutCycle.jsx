@@ -9,7 +9,7 @@ import ProgressBar from "../../components/ProgressBar";
 import { useTranslation } from "react-i18next";
 import AddWorkoutExerciseModal from "../../modals/workout/AddWorkoutExerciseModal";
 import { LayoutHeader } from "../../layout/LayoutHeader";
-import useWorkoutData from "../../hooks/data/useWorkoutData";
+import useCycleData from "../../hooks/data/useCycleData";
 import { usePullToRefreshOverride } from "../../context/PullToRefreshContext";
 import { useSwipeable } from "react-swipeable";
 
@@ -34,7 +34,7 @@ const WorkoutCycle = () => {
     refetchAll,
     mutations,
     ui,
-  } = useWorkoutData({ planID, cycleID });
+  } = useCycleData({ planID, cycleID });
 
   const handlers = useSwipeable({
     onSwipedLeft: () => {

@@ -216,11 +216,11 @@ func (s *workoutServiceImpl) GetCurrentWorkoutCycle(ctx context.Context, userID 
 	}
 
 	if activePlan == nil {
-		return nil, fmt.Errorf("no active workout plan found")
+		return nil, nil
 	}
 
 	if activePlan.CurrentCycleID == nil {
-		return nil, fmt.Errorf("active workout plan has no current cycle")
+		return nil, nil
 	}
 
 	cycle, err := s.workoutCycleRepo.GetByID(ctx, *activePlan.CurrentCycleID)

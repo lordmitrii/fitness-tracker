@@ -4,7 +4,7 @@ import DeleteIcon from "../../icons/DeleteIcon";
 import SkipIcon from "../../icons/SkipIcon";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
-import useWorkoutData from "../../hooks/data/useWorkoutData";
+import useCycleData from "../../hooks/data/useCycleData";
 
 const WorkoutExerciseDetailsMenu = ({
   planID,
@@ -19,7 +19,7 @@ const WorkoutExerciseDetailsMenu = ({
 }) => {
   const { t } = useTranslation();
   const [pending, setPending] = useState(false);
-  const { mutations } = useWorkoutData({
+  const { mutations } = useCycleData({
     planID,
     cycleID,
     skipQuery: true,

@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useCallback } from "react";
 import api from "../../api";
 import { QK } from "../../utils/queryKeys";
-import useSinglePlanData from "./useSinglePlanData";
+import usePlansData from "./usePlansData";
 
 export async function fetchCycle(planID, cycleID) {
   try {
@@ -82,20 +82,21 @@ function normalizeCycleShape(cycle) {
 function updateCycleInCache(queryClient, planID, cycleID, updater) {
   const key = QK.cycle(planID, cycleID);
   queryClient.setQueryData(key, (old) => {
+    const hadData = !!old;
     const cycle = old ?? { workouts: [] };
     const next =
       typeof updater === "function" ? updater(cycle) : updater ?? cycle;
-    return normalizeCycleShape(next ?? cycle);
+    const normalized = normalizeCycleShape(next ?? cycle);
+    return hadData ? normalized : { ...normalized, __partial: true };
   });
 }
 
-export default function useWorkoutData({
+export default function useCycleData({
   planID,
   cycleID,
   skipQuery = false,
 } = {}) {
   const queryClient = useQueryClient();
-  const planQuery = useSinglePlanData(planID, { enabled: !skipQuery });
 
   const cycleQuery = useQuery({
     queryKey: QK.cycle(planID, cycleID),
@@ -113,8 +114,12 @@ export default function useWorkoutData({
       return normalizeCycleShape(rest);
     },
   });
+  const plansData = usePlansData({
+    skipQuery: !planID || skipQuery,
+  });
 
-  const plan = planQuery.data ?? {};
+  const plan =
+    plansData?.plans?.find((p) => String(p.id) === String(planID)) || {};
   const cycle = cycleQuery.data ?? { workouts: [] };
   const workouts = cycle.workouts ?? [];
 
@@ -141,14 +146,6 @@ export default function useWorkoutData({
 
   const setPlanCaches = useCallback(
     (updater) => {
-      queryClient.setQueryData(QK.plan(planID), (old) => {
-        const base = old ?? {};
-        const next =
-          typeof updater === "function"
-            ? updater(base)
-            : { ...base, ...updater };
-        return { ...next, __partial: true };
-      });
       queryClient.setQueryData(QK.plans, (list) => {
         if (!Array.isArray(list)) return list;
         return list.map((p) =>
@@ -165,7 +162,6 @@ export default function useWorkoutData({
 
   const invalidate = useCallback(() => {
     return Promise.all([
-      queryClient.invalidateQueries({ queryKey: QK.plan(planID) }),
       queryClient.invalidateQueries({ queryKey: QK.cycle(planID, cycleID) }),
     ]);
   }, [queryClient, planID, cycleID]);
@@ -361,7 +357,6 @@ export default function useWorkoutData({
         const list = old?.workouts ?? [];
         const me = list.find((w) => String(w.id) === String(vars.workoutID));
         if (!me) return old;
-        
 
         let nextWorkouts = list.map((w) =>
           w.id === vars.workoutID ? { ...w, ...vars.payload } : w
@@ -395,7 +390,7 @@ export default function useWorkoutData({
               .map((w) => (w.id === vars.workoutID ? { ...w, index: to } : w));
           }
         }
-        return { ...old, workouts: nextWorkouts };
+        return { ...old, workouts: nextWorkouts, __partial: true };
       });
 
       return ctx;
@@ -409,13 +404,18 @@ export default function useWorkoutData({
 
     onSuccess: (server, vars) => {
       if (!server) return;
+
+      // strip workout_exercises from the server payload so we don't touch local ones
+      const { workout_exercises: _ignore, ...srv } = server;
+
       setCycleCache((old) => {
-        const list = old?.workouts ?? [];
+        const list = old?.workouts || [];
         if (!list.some((w) => w.id === vars.workoutID)) return old;
-        const merged = list.map((w) =>
-          w.id === vars.workoutID ? { ...w, ...server } : w
+
+        const next = list.map((w) =>
+          w.id === vars.workoutID ? { ...w, ...srv } : w
         );
-        return { ...old, workouts: merged };
+        return { ...old, workouts: next };
       });
     },
   });
@@ -558,8 +558,6 @@ export default function useWorkoutData({
       const prevNext = vars?.nextCycleID
         ? queryClient.getQueryData(QK.cycle(planID, vars.nextCycleID))
         : undefined;
-
-      const prevPlan = queryClient.getQueryData(QK.plan(planID));
       const prevPlans = queryClient.getQueryData(QK.plans);
 
       if (vars?.previousCycleID) {
@@ -587,7 +585,9 @@ export default function useWorkoutData({
 
       const isTailDeletion = !vars?.nextCycleID;
       const preservedCurrent =
-        prevPlan?.current_cycle_id ?? plan?.current_cycle_id ?? null;
+        prevPlans?.find((p) => p.id === planID)?.current_cycle_id ??
+        plan?.current_cycle_id ??
+        null;
       setPlanCaches((p) => ({
         ...p,
         current_cycle_id: isTailDeletion
@@ -596,18 +596,12 @@ export default function useWorkoutData({
         updated_at: new Date().toISOString(),
       }));
 
-      queryClient.removeQueries({
-        queryKey: QK.cycle(planID, cycleID),
-        exact: true,
-      });
-
       return {
         prevCurrent,
         prevPrev,
         prevNext,
         previousCycleID: vars?.previousCycleID,
         nextCycleID: vars?.nextCycleID,
-        prevPlan,
         prevPlans,
       };
     },
@@ -624,18 +618,11 @@ export default function useWorkoutData({
           QK.cycle(planID, ctx.nextCycleID),
           ctx.prevNext
         );
-      if (ctx?.prevPlan !== undefined) {
-        queryClient.setQueryData(QK.plan(planID), ctx.prevPlan);
-      }
       if (ctx?.prevPlans !== undefined) {
         queryClient.setQueryData(QK.plans, ctx.prevPlans);
       }
     },
     onSuccess: async (_server, _vars, ctx) => {
-      queryClient.invalidateQueries({
-        queryKey: QK.plan(planID),
-        refetchType: "inactive",
-      });
       queryClient.invalidateQueries({
         queryKey: QK.currentCycle,
         refetchType: "inactive",
@@ -653,6 +640,15 @@ export default function useWorkoutData({
           queryFn: () => fetchCycle(planID, ctx.nextCycleID),
         });
       }
+
+      await queryClient.cancelQueries({
+        queryKey: QK.cycle(planID, cycleID),
+        exact: true,
+      });
+      queryClient.removeQueries({
+        queryKey: QK.cycle(planID, cycleID),
+        exact: true,
+      });
     },
   });
 
@@ -1116,14 +1112,14 @@ export default function useWorkoutData({
       ...computed,
 
       // status
-      loading: planQuery.isLoading || cycleQuery.isLoading,
-      fetching: planQuery.isFetching || cycleQuery.isFetching,
-      fetchedOnce: planQuery.isFetched && cycleQuery.isFetched,
-      error: planQuery.error || cycleQuery.error,
+      loading: cycleQuery.isLoading || plansData.loading,
+      fetching: cycleQuery.isFetching || plansData.fetching,
+      fetchedOnce: cycleQuery.isFetched && plansData.fetchedOnce,
+      error: cycleQuery.error || plansData.error,
 
       // controls
       refetchAll: async () => {
-        await Promise.all([planQuery.refetch(), cycleQuery.refetch()]);
+        await Promise.all([cycleQuery.refetch(), plansData.refetch()]);
       },
       setCycleCache,
       invalidate,
@@ -1157,15 +1153,15 @@ export default function useWorkoutData({
       cycle,
       workouts,
       computed,
-      planQuery.isLoading,
       cycleQuery.isLoading,
-      planQuery.isFetching,
       cycleQuery.isFetching,
-      planQuery.isFetched,
       cycleQuery.isFetched,
-      planQuery.error,
       cycleQuery.error,
-      planQuery.refetch,
+      plansData.loading,
+      plansData.fetching,
+      plansData.fetchedOnce,
+      plansData.error,
+      plansData.refetch,
       cycleQuery.refetch,
       setCycleCache,
       invalidate,

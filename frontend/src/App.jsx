@@ -28,6 +28,7 @@ import InstallationGuide from "./pages/InstallationGuide";
 
 import PrivacyPolicy from "./pages/policies/PrivacyPolicy";
 import HealthDataPolicy from "./pages/policies/HealthDataPolicy";
+import TermsAndConditions from "./pages/policies/TermsAndConditions";
 
 import LoginForm from "./forms/login/LoginForm";
 import RegisterForm from "./forms/login/RegisterForm";
@@ -85,6 +86,11 @@ function App() {
                 path="/health-data-policy"
                 element={<HealthDataPolicy />}
               />
+              <Route
+                path="/terms-and-conditions"
+                element={<TermsAndConditions />}
+              />
+
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
 

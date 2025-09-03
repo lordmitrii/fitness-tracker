@@ -1,7 +1,6 @@
 export const QK = {
   currentCycle: ["currentCycle"],
   plans: ["workoutPlans"],
-  plan: (planID) => ["workoutPlan", asKeyId(planID)],
   cycle: (planID, cycleID) => [
     "workoutCycle",
     asKeyId(planID),

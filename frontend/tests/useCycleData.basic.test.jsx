@@ -1,14 +1,18 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHookWithClient } from "./utils/renderHookWithClient";
-import useWorkoutData from "@/hooks/data/useWorkoutData";
+import useCycleData from "@/hooks/data/useCycleData";
+
 vi.mock("@/api");
 import api from "@/api";
 
-describe("useWorkoutData – basics", () => {
-  it("does not fetch when ids missing or skipQuery=true", async () => {
-    api.get.mockReset();
+describe("useCycleData – basics", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    api.get = vi.fn();
+  });
 
-    const { result, rerender } = renderHookWithClient(useWorkoutData, {
+  it("does not fetch when ids missing or skipQuery=true", async () => {
+    const { result, rerender } = renderHookWithClient(useCycleData, {
       initialProps: { planID: null, cycleID: null, skipQuery: false },
     });
 
@@ -21,16 +25,15 @@ describe("useWorkoutData – basics", () => {
 
   it("select & placeholderData return safe defaults", async () => {
     api.get
-      .mockReset()
-      .mockResolvedValueOnce({ data: undefined }) // plan
-      .mockResolvedValueOnce({ data: undefined }); // cycle
+      .mockResolvedValueOnce({ data: [] })
+      .mockResolvedValueOnce({ data: undefined });
 
-    const { result } = renderHookWithClient(useWorkoutData, {
+    const { result } = renderHookWithClient(useCycleData, {
       initialProps: { planID: "p1", cycleID: "c1", skipQuery: false },
     });
 
     expect(result.current.plan).toEqual({});
-    expect(result.current.cycle.workouts).toEqual([]);
+    expect(result.current.cycle?.workouts).toEqual([]);
     expect(result.current.error).toBeFalsy();
   });
 });
