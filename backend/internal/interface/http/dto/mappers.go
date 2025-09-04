@@ -231,5 +231,16 @@ func ToIndividualExerciseStatsResponse(e *workout.IndividualExercise) Individual
 }
 
 func ToCurrentCycleResponse(cycle *workout.WorkoutCycle) CurrentCycleResponse {
+	if cycle == nil {
+		return CurrentCycleResponse{}
+	}
 	return CurrentCycleResponse{ID: cycle.ID, WorkoutPlanID: cycle.WorkoutPlanID}
+}
+
+func ToUserSettingsResponse(us *user.UserSettings) UserSettingsResponse {
+	return UserSettingsResponse{
+		UnitSystem:         us.UnitSystem,
+		BetaOptIn:          us.BetaOptIn,
+		EmailNotifications: us.EmailNotifications,
+	}
 }

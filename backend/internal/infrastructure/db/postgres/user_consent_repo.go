@@ -2,9 +2,11 @@ package postgres
 
 import (
 	"context"
+
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type userConsentRepo struct {
@@ -27,8 +29,8 @@ func (r *userConsentRepo) GetByUserID(ctx context.Context, userID uint) ([]*user
 	return ucs, nil
 }
 
-func (r *userConsentRepo) Update(ctx context.Context, uc *user.UserConsent) error {
-	res := r.db.WithContext(ctx).Model(&user.UserConsent{}).Where("user_id = ?", uc.UserID).Updates(uc)
+func (r *userConsentRepo) Update(ctx context.Context, id uint, updates map[string]any) error {
+	res := r.db.WithContext(ctx).Model(&user.UserConsent{}).Where("user_id = ?", id).Updates(updates)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -36,6 +38,18 @@ func (r *userConsentRepo) Update(ctx context.Context, uc *user.UserConsent) erro
 		return custom_err.ErrNotFound
 	}
 	return nil
+}
+
+func (r *userConsentRepo) UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*user.UserConsent, error) {
+	var uc user.UserConsent
+	res := r.db.WithContext(ctx).Model(&uc).Where("user_id = ?", id).Clauses(clause.Returning{}).Updates(updates)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RowsAffected == 0 {
+		return nil, custom_err.ErrNotFound
+	}
+	return &uc, nil
 }
 
 func (r *userConsentRepo) DeleteByUserIDAndType(ctx context.Context, userID uint, consentType, version string) error {

@@ -24,10 +24,10 @@ type ProfileCreateRequest struct {
 }
 
 type ProfileUpdateRequest struct {
-	Age      int     `json:"age" binding:"omitempty,min=16,max=150"`
-	HeightCm float64 `json:"height_cm" binding:"omitempty,min=20,max=500"`
-	WeightKg float64 `json:"weight_kg" binding:"omitempty,min=20,max=500"`
-	Sex      string  `json:"sex" binding:"omitempty"`
+	Age      *int     `json:"age" binding:"omitempty,min=16,max=150"`
+	HeightCm *float64 `json:"height_cm" binding:"omitempty,min=20,max=500"`
+	WeightKg *float64 `json:"weight_kg" binding:"omitempty,min=20,max=500"`
+	Sex      *string  `json:"sex" binding:"omitempty"`
 }
 
 type ConsentRequest struct {
@@ -39,6 +39,18 @@ type ConsentRequest struct {
 type DeleteConsentRequest struct {
 	Type    string `json:"type" binding:"required"`
 	Version string `json:"version" binding:"required"`
+}
+
+type UserSettingsCreateRequest struct {
+	UnitSystem         string `json:"unit_system" binding:"oneof=metric imperial"`
+	BetaOptIn          bool   `json:"beta_opt_in"`
+	EmailNotifications bool   `json:"email_notifications"`
+}
+
+type UserSettingsUpdateRequest struct {
+	UnitSystem         *string `json:"unit_system" binding:"omitempty,oneof=metric imperial"`
+	BetaOptIn          *bool   `json:"beta_opt_in" binding:"omitempty"`
+	EmailNotifications *bool   `json:"email_notifications" binding:"omitempty"`
 }
 
 type ProfileResponse struct {
@@ -68,4 +80,10 @@ type MeResponse struct {
 	Email      string         `json:"email"`
 	Roles      []RoleResponse `json:"roles"`
 	IsVerified bool           `json:"is_verified"`
+}
+
+type UserSettingsResponse struct {
+	UnitSystem         string `json:"unit_system"`
+	BetaOptIn          bool   `json:"beta_opt_in"`
+	EmailNotifications bool   `json:"email_notifications"`
 }

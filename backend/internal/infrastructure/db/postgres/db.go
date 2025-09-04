@@ -38,6 +38,7 @@ func AutoMigrate(db *gorm.DB) error {
 		&user.User{},
 		&user.Profile{},
 		&user.UserConsent{},
+		&user.UserSettings{},
 
 		&rbac.Role{}, &rbac.UserRole{},
 		&rbac.Permission{}, &rbac.RolePermission{},

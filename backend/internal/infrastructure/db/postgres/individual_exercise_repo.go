@@ -2,9 +2,11 @@ package postgres
 
 import (
 	"context"
+
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // IndividualExerciseRepo implements workout.Repository using PostgreSQL.
@@ -52,8 +54,8 @@ func (r *IndividualExerciseRepo) GetByNameMuscleGroupAndUser(ctx context.Context
 	return &pe, nil
 }
 
-func (r *IndividualExerciseRepo) Update(ctx context.Context, pe *workout.IndividualExercise) error {
-	res := r.db.WithContext(ctx).Model(&workout.IndividualExercise{}).Where("id = ?", pe.ID).Updates(pe)
+func (r *IndividualExerciseRepo) Update(ctx context.Context, id uint, updates map[string]any) error {
+	res := r.db.WithContext(ctx).Model(&workout.IndividualExercise{}).Where("id = ?", id).Updates(updates)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -61,6 +63,18 @@ func (r *IndividualExerciseRepo) Update(ctx context.Context, pe *workout.Individ
 		return custom_err.ErrNotFound
 	}
 	return nil
+}
+
+func (r *IndividualExerciseRepo) UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*workout.IndividualExercise, error) {
+	var pe workout.IndividualExercise
+	res := r.db.WithContext(ctx).Model(&pe).Where("id = ?", id).Clauses(clause.Returning{}).Updates(updates)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RowsAffected == 0 {
+		return nil, custom_err.ErrNotFound
+	}
+	return &pe, nil
 }
 
 func (r *IndividualExerciseRepo) Delete(ctx context.Context, id uint) error {

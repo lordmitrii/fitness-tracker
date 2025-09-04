@@ -6,11 +6,13 @@ import (
 
 type WorkoutPlanRepository interface {
 	Create(ctx context.Context, wp *WorkoutPlan) error
+	CreateReturning(ctx context.Context, wp *WorkoutPlan) (*WorkoutPlan, error)
 	GetByID(ctx context.Context, id uint) (*WorkoutPlan, error)
 	GetByUserID(ctx context.Context, userID uint) ([]*WorkoutPlan, error)
-	Update(ctx context.Context, wp *WorkoutPlan) error
+	Update(ctx context.Context, id uint, updates map[string]any) error
+	UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*WorkoutPlan, error)
 	Delete(ctx context.Context, id uint) error
-	SetActive(ctx context.Context, wp *WorkoutPlan) (*WorkoutPlan, error)
+	DeactivateOthers(ctx context.Context, userID uint, exceptID uint) error
 }
 
 type WorkoutCycleRepository interface {
@@ -19,10 +21,8 @@ type WorkoutCycleRepository interface {
 	GetByWorkoutPlanID(ctx context.Context, workoutPlanID uint) ([]*WorkoutCycle, error)
 	GetByPlanIDAndWeek(ctx context.Context, planID uint, week int) (*WorkoutCycle, error)
 	GetMaxWeekNumberByPlanID(ctx context.Context, workoutPlanID uint) (int, error)
-	Update(ctx context.Context, wc *WorkoutCycle) error
-	UpdateNextCycleID(ctx context.Context, id, nextID uint) error
-	UpdatePrevCycleID(ctx context.Context, id, previousID uint) error
-	Complete(ctx context.Context, wc *WorkoutCycle) error
+	Update(ctx context.Context, id uint, updates map[string]any) error
+	UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*WorkoutCycle, error)
 	Delete(ctx context.Context, id uint) error
 	ClearData(ctx context.Context, id uint) error
 }
@@ -32,9 +32,9 @@ type WorkoutRepository interface {
 	BulkCreate(ctx context.Context, workouts []*Workout) error
 	GetByID(ctx context.Context, id uint) (*Workout, error)
 	GetByWorkoutCycleID(ctx context.Context, workoutCycleID uint) ([]*Workout, error)
-	Update(ctx context.Context, w *Workout) error
+	Update(ctx context.Context, id uint, updates map[string]any) error
+	UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*Workout, error)
 	Delete(ctx context.Context, id uint) error
-	Complete(ctx context.Context, w *Workout) error
 	GetIncompleteWorkoutsCount(ctx context.Context, workoutCycleID uint) (int64, error)
 	GetSkippedWorkoutsCount(ctx context.Context, workoutCycleID uint) (int64, error)
 	GetMaxWorkoutIndexByWorkoutCycleID(ctx context.Context, workoutCycleID uint) (int, error)
@@ -46,8 +46,8 @@ type WorkoutExerciseRepository interface {
 	Create(ctx context.Context, e *WorkoutExercise) error
 	GetByID(ctx context.Context, id uint) (*WorkoutExercise, error)
 	GetByWorkoutID(ctx context.Context, workoutID uint) ([]*WorkoutExercise, error)
-	Update(ctx context.Context, e *WorkoutExercise) error
-	Complete(ctx context.Context, e *WorkoutExercise) error
+	Update(ctx context.Context, id uint, updates map[string]any) error
+	UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*WorkoutExercise, error)
 	Delete(ctx context.Context, id uint) error
 	GetIncompleteExercisesCount(ctx context.Context, workoutId uint) (int64, error)
 	GetSkippedExercisesCount(ctx context.Context, workoutId uint) (int64, error)
@@ -62,8 +62,8 @@ type WorkoutSetRepository interface {
 	Create(ctx context.Context, ws *WorkoutSet) error
 	GetByID(ctx context.Context, id uint) (*WorkoutSet, error)
 	GetByWorkoutExerciseID(ctx context.Context, workoutExerciseID uint) ([]*WorkoutSet, error)
-	Update(ctx context.Context, ws *WorkoutSet) error
-	Complete(ctx context.Context, ws *WorkoutSet) error
+	Update(ctx context.Context, id uint, updates map[string]any) error
+	UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*WorkoutSet, error)
 	Delete(ctx context.Context, id uint) error
 	GetIncompleteSetsCount(ctx context.Context, workoutExerciseID uint) (int64, error)
 	GetSkippedSetsCount(ctx context.Context, workoutExerciseID uint) (int64, error)
@@ -78,17 +78,8 @@ type ExerciseRepository interface {
 	GetByID(ctx context.Context, id uint) (*Exercise, error)
 	GetByMuscleGroupID(ctx context.Context, muscleGroupID *uint) ([]*Exercise, error)
 	GetAll(ctx context.Context) ([]*Exercise, error)
-	Update(ctx context.Context, e *Exercise) error
-	Delete(ctx context.Context, id uint) error
-}
-
-type IndividualExerciseRepository interface {
-	Create(ctx context.Context, pe *IndividualExercise) error
-	GetByID(ctx context.Context, id uint) (*IndividualExercise, error)
-	GetByUserID(ctx context.Context, workoutPlanID uint) ([]*IndividualExercise, error)
-	GetByUserAndExerciseID(ctx context.Context, planID, exerciseID uint) (*IndividualExercise, error)
-	GetByNameMuscleGroupAndUser(ctx context.Context, name string, muscleGroupID *uint, userID uint) (*IndividualExercise, error)
-	Update(ctx context.Context, pe *IndividualExercise) error
+	Update(ctx context.Context, id uint, updates map[string]any) error
+	UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*Exercise, error)
 	Delete(ctx context.Context, id uint) error
 }
 
@@ -97,6 +88,18 @@ type MuscleGroupRepository interface {
 	GetByID(ctx context.Context, id uint) (*MuscleGroup, error)
 	GetByName(ctx context.Context, name string) (*MuscleGroup, error)
 	GetAll(ctx context.Context) ([]*MuscleGroup, error)
-	Update(ctx context.Context, mg *MuscleGroup) error
+	Update(ctx context.Context, id uint, updates map[string]any) error
+	UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*MuscleGroup, error)
+	Delete(ctx context.Context, id uint) error
+}
+
+type IndividualExerciseRepository interface {
+	Create(ctx context.Context, ie *IndividualExercise) error
+	GetByID(ctx context.Context, id uint) (*IndividualExercise, error)
+	GetByUserID(ctx context.Context, workoutPlanID uint) ([]*IndividualExercise, error)
+	GetByUserAndExerciseID(ctx context.Context, planID, exerciseID uint) (*IndividualExercise, error)
+	GetByNameMuscleGroupAndUser(ctx context.Context, name string, muscleGroupID *uint, userID uint) (*IndividualExercise, error)
+	Update(ctx context.Context, id uint, updates map[string]any) error
+	UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*IndividualExercise, error)
 	Delete(ctx context.Context, id uint) error
 }

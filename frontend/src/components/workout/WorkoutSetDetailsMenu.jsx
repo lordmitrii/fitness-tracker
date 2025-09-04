@@ -4,7 +4,7 @@ import DeleteIcon from "../../icons/DeleteIcon";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import SkipIcon from "../../icons/SkipIcon";
-import useWorkoutData from "../../hooks/data/useWorkoutData";
+import useCycleData from "../../hooks/data/useCycleData";
 
 const WorkoutSetDetailsMenu = ({
   planID,
@@ -21,7 +21,7 @@ const WorkoutSetDetailsMenu = ({
 }) => {
   const { t } = useTranslation();
   const [pending, setPending] = useState(false);
-  const { mutations } = useWorkoutData({ planID, cycleID, skipQuery: true });
+  const { mutations } = useCycleData({ planID, cycleID, skipQuery: true });
 
   const indices = setOrder?.map((s) => s.index) ?? [];
   const maxIndex = indices.length ? Math.max(...indices) : setIndex;

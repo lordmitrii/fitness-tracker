@@ -76,6 +76,7 @@ func main() {
 
 	roleRepo := postgres.NewRoleRepo(db)
 	permissionRepo := postgres.NewPermissionRepo(db)
+	userSettingsRepo := postgres.NewUserSettingsRepo(db)
 
 	emailTokenRepo := postgres.NewEmailTokenRepo(db)
 	emailSender := email.NewGmailSender(
@@ -85,7 +86,7 @@ func main() {
 
 	var exerciseService usecase.ExerciseService = exercise.NewExerciseService(exerciseRepo, muscleGroupRepo)
 	var workoutService usecase.WorkoutService = workout.NewWorkoutService(workoutPlanRepo, workoutCycleRepo, workoutRepo, workoutExerciseRepo, workoutSetRepo, individualExerciseRepo, exerciseRepo)
-	var userService usecase.UserService = user.NewUserService(userRepo, profileRepo, userConsentRepo, roleRepo, permissionRepo)
+	var userService usecase.UserService = user.NewUserService(userRepo, profileRepo, userConsentRepo, roleRepo, permissionRepo, userSettingsRepo)
 	var aiService usecase.AIService = ai.NewAIService(workoutService, userService)
 	var emailService usecase.EmailService = email_usecase.NewEmailService(userService, emailSender, emailTokenRepo)
 	var rbacService usecase.RBACService = rbac.NewRBACService(roleRepo, permissionRepo, userRepo)

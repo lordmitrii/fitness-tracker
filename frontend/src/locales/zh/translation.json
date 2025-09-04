@@ -59,7 +59,8 @@
     "pull_to_refresh": "下拉以刷新",
     "diagnostics": "诊断",
     "share": "分享",
-    "download": "下载"
+    "download": "下载",
+    "settings": "设置"
   },
   "measurements": {
     "weight": "公斤",
@@ -619,5 +620,26 @@
     "edit_roles_hint": "选择该用户应拥有的角色。",
     "reset_password": "重置密码",
     "type_delete_to_confirm": "输入 DELETE 以确认删除该用户"
+  },
+  "settings": {
+    "title": "设置",
+    "language": {
+      "title": "语言",
+      "hint": "选择首选语言。"
+    },
+    "unit_system": {
+      "title": "单位系统",
+      "hint": "选择首选单位系统。",
+      "metric": "公制（千克，厘米）",
+      "imperial": "英制（磅，英尺）"
+    },
+    "beta_opt_in": {
+      "title": "贝塔功能",
+      "hint": "选择加入以在正式发布之前访问新功能。"
+    },
+    "email_notifications": {
+      "title": "电子邮件通知",
+      "hint": "允许电子邮件通知以获取重要更新和新闻。"
+    }
   }
 }

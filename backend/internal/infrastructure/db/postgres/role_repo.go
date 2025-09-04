@@ -29,8 +29,8 @@ func (r *RoleRepo) GetByName(ctx context.Context, roleName string) (*rbac.Role, 
 	return &role, nil
 }
 
-func (r *RoleRepo) Update(ctx context.Context, role *rbac.Role) error {
-	res := r.db.WithContext(ctx).Model(&rbac.Role{}).Where("id = ?", role.ID).Updates(role)
+func (r *RoleRepo) Update(ctx context.Context, id uint, updates map[string]any) error {
+	res := r.db.WithContext(ctx).Model(&rbac.Role{}).Where("id = ?", id).Updates(updates)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -38,6 +38,18 @@ func (r *RoleRepo) Update(ctx context.Context, role *rbac.Role) error {
 		return custom_err.ErrNotFound
 	}
 	return nil
+}
+
+func (r *RoleRepo) UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*rbac.Role, error) {
+	var role rbac.Role
+	res := r.db.WithContext(ctx).Model(&role).Where("id = ?", id).Clauses(clause.Returning{}).Updates(updates)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RowsAffected == 0 {
+		return nil, custom_err.ErrNotFound
+	}
+	return &role, nil
 }
 
 func (r *RoleRepo) Delete(ctx context.Context, roleName string) error {

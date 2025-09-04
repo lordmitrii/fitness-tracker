@@ -10,11 +10,11 @@ import { useState } from "react";
 import Layout from "./layout/Layout";
 
 import Home from "./pages/Home";
+import Settings from "./pages/Settings";
 
 import WorkoutPlans from "./pages/workout/WorkoutPlans";
 import WorkoutCycle from "./pages/workout/WorkoutCycle";
 
-import Profile from "./pages/profile/Profile";
 import NotFound from "./pages/NotFound";
 
 import Admin from "./pages/admin/Admin";
@@ -28,12 +28,14 @@ import InstallationGuide from "./pages/InstallationGuide";
 
 import PrivacyPolicy from "./pages/policies/PrivacyPolicy";
 import HealthDataPolicy from "./pages/policies/HealthDataPolicy";
+import TermsAndConditions from "./pages/policies/TermsAndConditions";
 
 import LoginForm from "./forms/login/LoginForm";
 import RegisterForm from "./forms/login/RegisterForm";
 import ForgotPassword from "./forms/login/ForgotPassword";
 import ResetPassword from "./forms/login/ResetPassword";
 
+import Profile from "./pages/profile/Profile";
 import {
   CreateProfileForm,
   UpdateProfileForm,
@@ -84,13 +86,17 @@ function App() {
                 path="/health-data-policy"
                 element={<HealthDataPolicy />}
               />
+              <Route
+                path="/terms-and-conditions"
+                element={<TermsAndConditions />}
+              />
+
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
 
               {/* Private Route */}
               <Route element={<PrivateRoute />}>
                 <Route path="/ai-chat" element={<AIChat />} />
-
                 {/* Workout Routes */}
                 <Route path="/current-workout" element={<WorkoutRedirect />} />
                 <Route path="/workout-plans" element={<WorkoutPlans />} />
@@ -102,7 +108,6 @@ function App() {
                   path="/update-workout-plan/:planID"
                   element={<UpdateWorkoutPlanForm />}
                 />
-
                 <Route
                   path="/workout-plans/:planID/workout-cycles/:cycleID"
                   element={<WorkoutCycle />}
@@ -115,7 +120,6 @@ function App() {
                   path="/workout-plans/:planID/workout-cycles/:cycleID/update-workout/:workoutID"
                   element={<UpdateWorkoutForm />}
                 />
-
                 {/* Profile Routes */}
                 <Route path="/profile/*" element={<Profile />}>
                   <Route index element={<Navigate to="health" replace />} />
@@ -130,7 +134,6 @@ function App() {
                     element={<UpdateProfileForm />}
                   />
                 </Route>
-
                 {/* Admin Routes */}
                 <Route element={<AdminRoute />}>
                   <Route path="/admin-panel/*" element={<Admin />}>
@@ -144,6 +147,7 @@ function App() {
                     />
                   </Route>
                 </Route>
+                <Route path="/settings" element={<Settings />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />

@@ -17,8 +17,8 @@ func (s *exerciseServiceImpl) GetAllMuscleGroups(ctx context.Context) ([]*workou
 	return s.muscleGroupRepo.GetAll(ctx)
 }
 
-func (s *exerciseServiceImpl) UpdateMuscleGroup(ctx context.Context, mg *workout.MuscleGroup) error {
-	return s.muscleGroupRepo.Update(ctx, mg)
+func (s *exerciseServiceImpl) UpdateMuscleGroup(ctx context.Context, id uint, updates map[string]any) (*workout.MuscleGroup, error) {
+	return s.muscleGroupRepo.UpdateReturning(ctx, id, updates)
 }
 
 func (s *exerciseServiceImpl) DeleteMuscleGroup(ctx context.Context, id uint) error {

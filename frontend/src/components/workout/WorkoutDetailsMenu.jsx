@@ -3,7 +3,7 @@ import UpdateIcon from "../../icons/UpdateIcon";
 import DeleteIcon from "../../icons/DeleteIcon";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
-import useWorkoutData from "../../hooks/data/useWorkoutData";
+import useCycleData from "../../hooks/data/useCycleData";
 
 const WorkoutDetailsMenu = ({
   closeMenu,
@@ -15,11 +15,12 @@ const WorkoutDetailsMenu = ({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [pending, setPending] = useState(false);
-  const { mutations } = useWorkoutData({ planID, cycleID, skipQuery: true });
+  const { mutations } = useCycleData({ planID, cycleID, skipQuery: true });
 
   const handleUpdateWorkout = () => {
     navigate(
-      `/workout-plans/${planID}/workout-cycles/${cycleID}/update-workout/${workoutID}`
+      `/workout-plans/${planID}/workout-cycles/${cycleID}/update-workout/${workoutID}`,
+      { state: { name: workoutName } }
     );
     closeMenu?.();
   };

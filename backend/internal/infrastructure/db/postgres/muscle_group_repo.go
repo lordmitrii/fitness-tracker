@@ -2,9 +2,11 @@ package postgres
 
 import (
 	"context"
+
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type MuscleGroupRepo struct {
@@ -43,8 +45,8 @@ func (r *MuscleGroupRepo) GetAll(ctx context.Context) ([]*workout.MuscleGroup, e
 	return muscleGroups, nil
 }
 
-func (r *MuscleGroupRepo) Update(ctx context.Context, mg *workout.MuscleGroup) error {
-	res := r.db.WithContext(ctx).Model(&workout.MuscleGroup{}).Where("id = ?", mg.ID).Updates(mg)
+func (r *MuscleGroupRepo) Update(ctx context.Context, id uint, updates map[string]any) error {
+	res := r.db.WithContext(ctx).Model(&workout.MuscleGroup{}).Where("id = ?", id).Updates(updates)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -52,6 +54,18 @@ func (r *MuscleGroupRepo) Update(ctx context.Context, mg *workout.MuscleGroup) e
 		return custom_err.ErrNotFound
 	}
 	return nil
+}
+
+func (r *MuscleGroupRepo) UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*workout.MuscleGroup, error) {
+	var mg workout.MuscleGroup
+	res := r.db.WithContext(ctx).Model(&mg).Where("id = ?", id).Clauses(clause.Returning{}).Updates(updates)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RowsAffected == 0 {
+		return nil, custom_err.ErrNotFound
+	}
+	return &mg, nil
 }
 
 func (r *MuscleGroupRepo) Delete(ctx context.Context, id uint) error {

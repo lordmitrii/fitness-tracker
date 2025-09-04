@@ -2,9 +2,11 @@ package postgres
 
 import (
 	"context"
+
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type WorkoutPlanRepo struct {
@@ -17,6 +19,16 @@ func NewWorkoutPlanRepo(db *gorm.DB) workout.WorkoutPlanRepository {
 
 func (r *WorkoutPlanRepo) Create(ctx context.Context, wp *workout.WorkoutPlan) error {
 	return r.db.WithContext(ctx).Create(wp).Error
+}
+
+func (r *WorkoutPlanRepo) CreateReturning(ctx context.Context, wp *workout.WorkoutPlan) (*workout.WorkoutPlan, error) {
+	res := r.db.WithContext(ctx).
+		Clauses(clause.Returning{}).
+		Create(wp)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return wp, nil
 }
 
 func (r *WorkoutPlanRepo) GetByID(ctx context.Context, id uint) (*workout.WorkoutPlan, error) {
@@ -35,8 +47,11 @@ func (r *WorkoutPlanRepo) GetByUserID(ctx context.Context, userID uint) ([]*work
 	return workoutPlans, nil
 }
 
-func (r *WorkoutPlanRepo) Update(ctx context.Context, wp *workout.WorkoutPlan) error {
-	res := r.db.WithContext(ctx).Model(&workout.WorkoutPlan{}).Where("id = ?", wp.ID).Updates(wp)
+func (r *WorkoutPlanRepo) Update(ctx context.Context, id uint, updates map[string]any) error {
+	res := r.db.WithContext(ctx).
+		Model(&workout.WorkoutPlan{}).
+		Where("id = ?", id).
+		Updates(updates)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -44,6 +59,31 @@ func (r *WorkoutPlanRepo) Update(ctx context.Context, wp *workout.WorkoutPlan) e
 		return custom_err.ErrNotFound
 	}
 	return nil
+}
+
+func (r *WorkoutPlanRepo) UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*workout.WorkoutPlan, error) {
+	var wp workout.WorkoutPlan
+	tx := r.db.WithContext(ctx)
+
+	res := tx.Model(&wp).
+		Where("id = ?", id).
+		Clauses(clause.Returning{}).
+		Updates(updates)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RowsAffected == 0 {
+		return nil, custom_err.ErrNotFound
+	}
+
+	if err := tx.
+		Model(&workout.WorkoutCycle{}).
+		Where("workout_plan_id = ?", id).
+		Order("week_number ASC").
+		Find(&wp.WorkoutCycles).Error; err != nil {
+		return nil, err
+	}
+	return &wp, nil
 }
 
 func (r *WorkoutPlanRepo) Delete(ctx context.Context, id uint) error {
@@ -57,9 +97,9 @@ func (r *WorkoutPlanRepo) Delete(ctx context.Context, id uint) error {
 	return nil
 }
 
-func (r *WorkoutPlanRepo) SetActive(ctx context.Context, wp *workout.WorkoutPlan) (*workout.WorkoutPlan, error) {
-	if err := r.db.WithContext(ctx).Model(&workout.WorkoutPlan{}).Where("id = ?", wp.ID).Select("active").Updates(wp).Error; err != nil {
-		return nil, err
-	}
-	return wp, nil
+func (r *WorkoutPlanRepo) DeactivateOthers(ctx context.Context, userID, keepID uint) error {
+	return r.db.WithContext(ctx).
+		Model(&workout.WorkoutPlan{}).
+		Where("user_id = ? AND active = TRUE AND id <> ?", userID, keepID).
+		Update("active", false).Error
 }

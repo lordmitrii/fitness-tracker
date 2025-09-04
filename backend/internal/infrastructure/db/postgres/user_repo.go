@@ -6,7 +6,6 @@ import (
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 	"gorm.io/gorm"
-	"time"
 )
 
 type UserRepo struct {
@@ -43,8 +42,19 @@ func (r *UserRepo) GetByID(ctx context.Context, id uint) (*user.User, error) {
 	return &u, nil
 }
 
-func (r *UserRepo) Update(ctx context.Context, u *user.User) error {
-	res := r.db.WithContext(ctx).Model(&user.User{}).Where("id = ?", u.ID).Updates(u)
+func (r *UserRepo) Update(ctx context.Context, id uint, updates map[string]any) error {
+	res := r.db.WithContext(ctx).Model(&user.User{}).Where("id = ?", id).Updates(updates)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return custom_err.ErrUserNotFound
+	}
+	return nil
+}
+
+func (r *UserRepo) UpdateByEmail(ctx context.Context, email string, updates map[string]any) error {
+	res := r.db.WithContext(ctx).Model(&user.User{}).Where("email = ?", email).Updates(updates)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -56,17 +66,6 @@ func (r *UserRepo) Update(ctx context.Context, u *user.User) error {
 
 func (r *UserRepo) Delete(ctx context.Context, id uint) error {
 	res := r.db.WithContext(ctx).Delete(&user.User{}, id)
-	if res.Error != nil {
-		return res.Error
-	}
-	if res.RowsAffected == 0 {
-		return custom_err.ErrUserNotFound
-	}
-	return nil
-}
-
-func (r *UserRepo) SetVerified(ctx context.Context, email string) error {
-	res := r.db.WithContext(ctx).Model(&user.User{}).Where("email = ?", email).Update("is_verified", true)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -102,8 +101,4 @@ func (r *UserRepo) GetUsers(ctx context.Context, q string, page, pageSize int64)
 	}
 
 	return users, total, nil
-}
-
-func (r *UserRepo) TouchLastSeen(ctx context.Context, userID uint) error {
-	return r.db.WithContext(ctx).Model(&user.User{}).Where("id = ?", userID).Update("last_seen_at", time.Now()).Error
 }

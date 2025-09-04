@@ -18,6 +18,24 @@ export default function usePlansData({ skipQuery = false } = {}) {
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     placeholderData: (prev) => prev,
+    refetchOnMount: (q) => {
+      const d = q?.state?.data;
+      if (!d) return false;
+      if (Array.isArray(d)) return d.some((p) => p && p.__partial);
+      return !!d.__partial;
+    },
+    select: (data) => {
+      if (!data) return data;
+      if (Array.isArray(data)) {
+        return data.map((p) => {
+          if (!p) return p;
+          const { __partial, ...rest } = p;
+          return rest;
+        });
+      }
+      const { __partial, ...rest } = data;
+      return rest;
+    },
   });
 
   const plans = Array.isArray(plansQuery.data) ? plansQuery.data : [];
@@ -69,16 +87,26 @@ export default function usePlansData({ skipQuery = false } = {}) {
       return plan; // expect { id, name, active, current_cycle_id, ... }
     },
     onSuccess: (plan) => {
+      const newId = plan.id;
+
+      const prevList = qc.getQueryData(QK.plans);
+      const prevActiveId = Array.isArray(prevList)
+        ? prevList.find((p) => p.active)?.id
+        : undefined;
+
       setPlansCache((list) => {
-        const next = [plan, ...list.filter((p) => p.id !== plan.id)];
-        if (plan.active) {
-          return next.map((p) =>
-            p.id === plan.id ? { ...p, active: true } : { ...p, active: false }
-          );
+        const withoutDup = list.filter((p) => p.id !== newId);
+        if (!plan.active) {
+          return [plan, ...withoutDup];
         }
-        return next;
+        return [
+          plan,
+          ...withoutDup.map((p) =>
+            p.id === prevActiveId ? { ...p, active: false } : p
+          ),
+        ];
       });
-      qc.setQueryData(QK.plan(plan.id), plan);
+
       qc.invalidateQueries({ queryKey: QK.currentCycle });
     },
     // onSettled: () => invalidate(),
@@ -97,20 +125,12 @@ export default function usePlansData({ skipQuery = false } = {}) {
       setPlansCache((list) =>
         list.map((p) => (p.id === planID ? { ...p, ...payload } : p))
       );
-      qc.setQueryData(QK.plan(planID), (old) => ({
-        ...(old ?? {}),
-        ...payload,
-      }));
       return { previous, planID };
     },
     onError: (_e, _v, ctx) => {
       if (ctx?.previous) qc.setQueryData(QK.plans, ctx.previous);
     },
     onSuccess: (updated) => {
-      qc.setQueryData(QK.plan(updated.id), (old) => ({
-        ...(old ?? {}),
-        ...updated,
-      }));
       setPlansCache((list) =>
         list.map((p) => (p.id === updated.id ? { ...p, ...updated } : p))
       );
@@ -128,23 +148,27 @@ export default function usePlansData({ skipQuery = false } = {}) {
     },
     onMutate: async ({ planID }) => {
       await qc.cancelQueries({ queryKey: QK.plans });
+
       const previous = qc.getQueryData(QK.plans);
+      const prevActiveId = Array.isArray(previous)
+        ? previous.find((p) => p.active)?.id
+        : undefined;
+
       setPlansCache((list) =>
-        list.map((p) =>
-          p.id === planID ? { ...p, active: true } : { ...p, active: false }
-        )
+        list.map((p) => {
+          if (p.id === planID) {
+            return p.active ? p : { ...p, active: true };
+          }
+          if (p.id === prevActiveId && prevActiveId !== planID) {
+            return p.active ? { ...p, active: false } : p;
+          }
+          return p;
+        })
       );
 
-      const hadDetail = qc.getQueryData(QK.plan(planID)) != null;
-      if (hadDetail) {
-        qc.setQueryData(QK.plan(planID), (old) => ({
-          ...(old ?? {}),
-          active: true,
-        }));
-      }
-      return { previous, planID, hadDetail };
+      return { previous, prevActiveId, planID };
     },
-    onError: (_e, _v, ctx) => {
+    onError: (_err, _vars, ctx) => {
       if (ctx?.previous) qc.setQueryData(QK.plans, ctx.previous);
     },
     onSuccess: (updated) => {
@@ -152,21 +176,12 @@ export default function usePlansData({ skipQuery = false } = {}) {
         list.map((p) => (p.id === updated.id ? { ...p, ...updated } : p))
       );
 
-      qc.setQueryData(QK.plan(updated.id), (old) => ({
-        ...(old ?? {}),
-        ...updated,
-      }));
-
-      qc.fetchQuery({
-        queryKey: QK.plan(updated.id),
-        queryFn: () =>
-          api.get(`/workout-plans/${updated.id}`).then((r) => r?.data ?? {}),
-      });
-
-      qc.invalidateQueries({
-        queryKey: QK.currentCycle,
-        refetchType: "inactive",
-      });
+      if (updated?.current_cycle_id && updated?.id) {
+        qc.setQueryData(QK.currentCycle, {
+          id: updated.current_cycle_id,
+          workout_plan_id: updated.id,
+        });
+      }
     },
 
     // onSettled: () => invalidate(),
@@ -182,7 +197,6 @@ export default function usePlansData({ skipQuery = false } = {}) {
       await qc.cancelQueries({ queryKey: QK.plans });
       const previous = qc.getQueryData(QK.plans);
       setPlansCache((list) => list.filter((p) => p.id !== planID));
-      qc.removeQueries({ queryKey: QK.plan(planID), exact: true });
       return { previous };
     },
     onError: (_e, _v, ctx) => {

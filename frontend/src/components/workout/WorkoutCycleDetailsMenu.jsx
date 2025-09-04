@@ -3,7 +3,7 @@ import DeleteIcon from "../../icons/DeleteIcon";
 import { useTranslation } from "react-i18next";
 import { memo, useCallback } from "react";
 import { ArrowLeftIcon, ArrowRightIcon } from "../../icons/ArrowIcon";
-import useWorkoutData from "../../hooks/data/useWorkoutData";
+import useCycleData from "../../hooks/data/useCycleData";
 
 const WorkoutCycleDetailsMenu = ({
   closeMenu,
@@ -15,7 +15,7 @@ const WorkoutCycleDetailsMenu = ({
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { mutations } = useWorkoutData({
+  const { mutations } = useCycleData({
     planID,
     cycleID,
     skipQuery: true,

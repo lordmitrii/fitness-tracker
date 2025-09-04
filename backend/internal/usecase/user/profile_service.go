@@ -13,8 +13,8 @@ func (s *userServiceImpl) GetProfile(ctx context.Context, userID uint) (*user.Pr
 	return s.profileRepo.GetByUserID(ctx, userID)
 }
 
-func (s *userServiceImpl) UpdateProfile(ctx context.Context, p *user.Profile) error {
-	return s.profileRepo.Update(ctx, p)
+func (s *userServiceImpl) UpdateProfile(ctx context.Context, id uint, updates map[string]any) (*user.Profile, error) {
+	return s.profileRepo.UpdateReturning(ctx, id, updates)
 }
 
 func (s *userServiceImpl) DeleteProfile(ctx context.Context, id uint) error {

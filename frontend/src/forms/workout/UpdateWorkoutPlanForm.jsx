@@ -1,39 +1,32 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import LoadingState from "../../states/LoadingState";
 import ErrorState from "../../states/ErrorState";
 import { useTranslation } from "react-i18next";
 import usePlansData from "../../hooks/data/usePlansData";
-import useSinglePlanData from "../../hooks/data/useSinglePlanData";
 import { usePullToRefreshOverride } from "../../context/PullToRefreshContext";
 
 // Update workout plan page
 const UpdateWorkoutPlanForm = () => {
   const { planID } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { plan } = location.state || {};
   const { t } = useTranslation();
 
-  const [planName, setPlanName] = useState("");
+  const [planName, setPlanName] = useState(plan?.name || "");
 
   const [formErrors, setFormErrors] = useState({});
 
-  const {
-    data: plan,
-    isLoading: loading,
-    error,
-    refetch,
-  } = useSinglePlanData(planID);
-  const { mutations } = usePlansData({ skipQuery: true });
+  const { mutations, refetch, error, loading } = usePlansData({
+    skipQuery: true,
+  });
 
   usePullToRefreshOverride(
     useCallback(async () => {
       await refetch();
     }, [refetch])
   );
-
-  useEffect(() => {
-    if (plan?.name != null) setPlanName(plan.name);
-  }, [plan?.name]);
 
   const validate = useCallback(() => {
     const newErrors = {};
@@ -56,7 +49,7 @@ const UpdateWorkoutPlanForm = () => {
         return;
       }
       await mutations.updatePlan.mutateAsync({
-        planID,
+        planID: Number(planID),
         payload: { name: planName.trim() },
       });
       navigate("/workout-plans");

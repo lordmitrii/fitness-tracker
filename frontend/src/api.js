@@ -7,6 +7,9 @@ let refreshPromise = null;
 const isOffline = () =>
   typeof navigator !== "undefined" && navigator.onLine === false;
 
+const isAuthPath = (url = "") =>
+  /\/users\/(login|register|refresh|logout)/.test(url);
+
 const api = axios.create({
   baseURL: "/api",
   headers: { "Content-Type": "application/json" },
@@ -87,13 +90,9 @@ api.interceptors.response.use(
       throw err;
     }
 
-    const isAuthPath = /\/users\/(login|register|refresh|logout)/.test(
-      originalRequest.url || ""
-    );
-
     // Token expired => try refresh once.
     if (
-      !isAuthPath &&
+      !isAuthPath(originalRequest.url) &&
       error.response?.status === 401 &&
       !originalRequest._retry
     ) {
@@ -121,9 +120,7 @@ api.interceptors.response.use(
       }
     }
     try {
-      const isAuth = /\/users\/(login|register|refresh|logout)/.test(
-        error.config?.url || ""
-      );
+      const isAuth = isAuthPath(error.config?.url);
       logStore.push({
         level: "error",
         msg: `Axios error: ${error.message}`,

@@ -5,6 +5,7 @@ import (
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type PermissionRepo struct {
@@ -28,8 +29,8 @@ func (r *PermissionRepo) GetByKey(ctx context.Context, permKey string) (*rbac.Pe
 	return &permission, nil
 }
 
-func (r *PermissionRepo) Update(ctx context.Context, permission *rbac.Permission) error {
-	res := r.db.WithContext(ctx).Model(&rbac.Permission{}).Where("id = ?", permission.ID).Updates(permission)
+func (r *PermissionRepo) Update(ctx context.Context, id uint, updates map[string]any) error {
+	res := r.db.WithContext(ctx).Model(&rbac.Permission{}).Where("id = ?", id).Updates(updates)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -37,6 +38,18 @@ func (r *PermissionRepo) Update(ctx context.Context, permission *rbac.Permission
 		return custom_err.ErrNotFound
 	}
 	return nil
+}
+
+func (r *PermissionRepo) UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*rbac.Permission, error) {
+	var permission rbac.Permission
+	res := r.db.WithContext(ctx).Model(&permission).Where("id = ?", id).Clauses(clause.Returning{}).Updates(updates)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RowsAffected == 0 {
+		return nil, custom_err.ErrNotFound
+	}
+	return &permission, nil
 }
 
 func (r *PermissionRepo) Delete(ctx context.Context, permKey string) error {

@@ -1,4 +1,4 @@
-import { StrictMode } from "react";
+import { StrictMode, Suspense, lazy } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles/index.css";
 import App from "./App.jsx";
@@ -42,10 +42,23 @@ if (navigator.serviceWorker) {
   });
 }
 
+const Devtools = import.meta.env.DEV
+  ? lazy(() =>
+      import("@tanstack/react-query-devtools").then((m) => ({
+        default: m.ReactQueryDevtools,
+      }))
+    )
+  : () => null;
+
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <App />
+      {import.meta.env.DEV && (
+        <Suspense fallback={null}>
+          <Devtools initialIsOpen={false} />
+        </Suspense>
+      )}
     </QueryClientProvider>
   </StrictMode>
 );

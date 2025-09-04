@@ -10,6 +10,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 
 	"github.com/lordmitrii/golang-web-gin/internal/interface/http/handler"
+	// "github.com/lordmitrii/golang-web-gin/internal/interface/http/middleware"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 )
 
@@ -22,6 +23,7 @@ func NewServer(exerciseService usecase.ExerciseService, workoutService usecase.W
 
 	r := gin.Default()
 	api := r.Group("/api")
+	// api.Use(middleware.DebugHeaders())  // middleware to add debug headers to responses
 
 	// Add handlers here
 	handler.NewExerciseHandler(api, exerciseService, rbacService)
