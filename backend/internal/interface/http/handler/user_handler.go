@@ -154,8 +154,8 @@ func (h *UserHandler) CreateProfile(c *gin.Context) {
 	p := &user.Profile{
 		UserID:   userID,
 		Age:      req.Age,
-		HeightCm: req.HeightCm,
-		WeightKg: req.WeightKg,
+		Height:   req.Height,
+		Weight:   req.Weight,
 		Sex:      req.Sex,
 	}
 
@@ -344,11 +344,12 @@ func (h *UserHandler) UpdateUserSettings(c *gin.Context) {
 		return
 	}
 
-	if err := h.svc.UpdateUserSettings(c.Request.Context(), userID, updates); err != nil {
+	settings, err := h.svc.UpdateUserSettings(c.Request.Context(), userID, updates);
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.Status(http.StatusNoContent)
+	c.JSON(http.StatusOK, dto.ToUserSettingsResponse(settings))
 }
 
 func (h *UserHandler) CreateUserSettings(c *gin.Context) {

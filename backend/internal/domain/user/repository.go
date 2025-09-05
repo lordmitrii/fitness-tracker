@@ -12,7 +12,7 @@ type UserRepository interface {
 	UpdateByEmail(ctx context.Context, email string, updates map[string]any) error
 	Delete(ctx context.Context, id uint) error
 	CheckEmail(ctx context.Context, email string) (bool, error)
-	GetUsers(ctx context.Context, q string, page, pageSize int64) ([]*User, int64, error)
+	GetUsers(ctx context.Context, q string, page, pageSize int64, sortBy, sortDir string) ([]*User, int64, error)
 }
 
 type ProfileRepository interface {
@@ -35,5 +35,6 @@ type UserSettingsRepository interface {
 	Create(ctx context.Context, us *UserSettings) error
 	GetByUserID(ctx context.Context, userID uint) (*UserSettings, error)
 	Update(ctx context.Context, userID uint, updates map[string]any) error
+	UpdateReturning(ctx context.Context, userID uint, updates map[string]any) (*UserSettings, error)
 	Delete(ctx context.Context, id uint) error
 }

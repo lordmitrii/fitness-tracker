@@ -1,4 +1,9 @@
-import { EXPECTED_MUSCLE_RATIOS, BODYWEIGHT_FACTOR, MAIN_MUSCLE_GROUPS } from "../config/constants";
+import {
+  EXPECTED_MUSCLE_RATIOS,
+  BODYWEIGHT_FACTOR,
+  MAIN_MUSCLE_GROUPS,
+} from "../config/constants";
+import { toDisplayWeight } from "./numberUtils";
 
 const e1RM = (w, r) => w * (1 + r / 30);
 
@@ -19,7 +24,7 @@ function resolveGroupAndLabel(name) {
   return null;
 }
 
-function aggregateStats(stats) {
+function aggregateStats(stats, unitSystem = "metric") {
   const byMainGroup = {};
 
   for (const s of stats) {
@@ -39,8 +44,9 @@ function aggregateStats(stats) {
     if (!resolved) continue;
 
     const { main: group, label } = resolved;
+    const displayWeight = toDisplayWeight(current_weight, unitSystem);
 
-    const est = e1RM(current_weight, current_reps);
+    const est = e1RM(displayWeight, current_reps);
     const weighted = est * (is_bodyweight ? BODYWEIGHT_FACTOR : 1);
     const ratio = EXPECTED_MUSCLE_RATIOS[label] ?? 1;
     const scaled = weighted / ratio;

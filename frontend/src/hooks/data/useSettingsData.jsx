@@ -18,13 +18,13 @@ async function patchSettings(partial) {
   return res?.data ?? {};
 }
 
-export default function useSettingsData({ enabled = true } = {}) {
+export default function useSettingsData({ skipQuery = false } = {}) {
   const qc = useQueryClient();
 
   const query = useQuery({
     queryKey: QK.settings,
     queryFn: fetchSettings,
-    enabled,
+    enabled: !skipQuery,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     select: (data) => data ?? {},

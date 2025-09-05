@@ -11,6 +11,7 @@ const WorkoutCard = ({
   isCurrentCycle,
   onOpenAddExercise,
   onOpenReplaceExercise,
+  unitSystem = "metric",
 }) => {
   const { t, i18n } = useTranslation();
 
@@ -78,6 +79,7 @@ const WorkoutCard = ({
             exercises={workout.workout_exercises}
             isCurrentCycle={isCurrentCycle}
             onOpenReplaceExercise={handleOpenReplace}
+            unitSystem={unitSystem}
           />
         </div>
       )}

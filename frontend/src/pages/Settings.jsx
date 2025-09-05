@@ -88,8 +88,7 @@ const Settings = () => {
                       onChange={(next) => updateSetting(key, next)}
                       options={def.options}
                       disabled={savingKey === key}
-                      // Tailwind: use a valid width class
-                      widthClass="w-48"
+                      widthClass="w-60 sm:w-70"
                     />
                   </div>
                 </div>

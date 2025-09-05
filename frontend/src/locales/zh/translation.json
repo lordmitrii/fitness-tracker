@@ -63,8 +63,16 @@
     "settings": "设置"
   },
   "measurements": {
-    "weight": "公斤",
-    "height": "厘米",
+    "weight": {
+      "kg": "公斤",
+      "lbs": "磅",
+      "lbs_of": "磅"
+    },
+    "height": {
+      "cm": "厘米",
+      "ft": "英尺",
+      "ft_of": "英尺"
+    },
     "reps": "次",
     "set": "组",
     "sets": "组",
@@ -593,7 +601,12 @@
     "users": {
       "title": "用户",
       "search_placeholder": "搜索用户…",
-      "search_label": "搜索用户"
+      "search_label": "搜索用户",
+      "filter": {
+        "last_seen_at": "最后在线时间",
+        "created_at": "创建时间",
+        "email": "邮箱"
+      }
     },
     "exercises": {
       "title": "锻炼",
@@ -623,10 +636,7 @@
   },
   "settings": {
     "title": "设置",
-    "language": {
-      "title": "语言",
-      "hint": "选择首选语言。"
-    },
+    "loading": "正在加载您的设置...",
     "unit_system": {
       "title": "单位系统",
       "hint": "选择首选单位系统。",

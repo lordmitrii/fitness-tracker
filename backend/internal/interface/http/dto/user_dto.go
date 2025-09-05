@@ -12,22 +12,22 @@ type RegisterRequest struct {
 }
 
 type LoginRequest struct {
-	Email    string `json:"email" binding:"required,email,max=2000"`
-	Password string `json:"password" binding:"required,min=8,max=2000"`
+	Email    string `json:"email" binding:"required,email,max=256"`
+	Password string `json:"password" binding:"required,min=8,max=256"`
 }
 
 type ProfileCreateRequest struct {
-	Age      int     `json:"age" binding:"min=16,max=150"`
-	HeightCm float64 `json:"height_cm" binding:"min=20,max=500"`
-	WeightKg float64 `json:"weight_kg" binding:"min=20,max=500"`
-	Sex      string  `json:"sex"`
+	Age    int    `json:"age" binding:"min=16,max=150"`
+	Height int    `json:"height" binding:"min=200,max=5000"`
+	Weight int    `json:"weight" binding:"min=20_000,max=500_000"`
+	Sex    string `json:"sex"`
 }
 
 type ProfileUpdateRequest struct {
-	Age      *int     `json:"age" binding:"omitempty,min=16,max=150"`
-	HeightCm *float64 `json:"height_cm" binding:"omitempty,min=20,max=500"`
-	WeightKg *float64 `json:"weight_kg" binding:"omitempty,min=20,max=500"`
-	Sex      *string  `json:"sex" binding:"omitempty"`
+	Age    *int    `json:"age" binding:"omitempty,min=16,max=150"`
+	Height *int    `json:"height" binding:"omitempty,min=200,max=5000"`
+	Weight *int    `json:"weight" binding:"omitempty,min=20_000,max=500_000"`
+	Sex    *string `json:"sex" binding:"omitempty"`
 }
 
 type ConsentRequest struct {
@@ -55,8 +55,8 @@ type UserSettingsUpdateRequest struct {
 
 type ProfileResponse struct {
 	Age       int        `json:"age"`
-	HeightCm  float64    `json:"height_cm"`
-	WeightKg  float64    `json:"weight_kg"`
+	Height    int        `json:"height"`
+	Weight    int        `json:"weight"`
 	Sex       string     `json:"sex"`
 	UpdatedAt *time.Time `json:"updated_at"`
 	CreatedAt *time.Time `json:"created_at"`

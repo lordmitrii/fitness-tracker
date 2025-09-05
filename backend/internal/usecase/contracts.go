@@ -97,13 +97,13 @@ type (
 		ResetPassword(ctx context.Context, email, newPassword string) error
 
 		GetUserSettings(ctx context.Context, userID uint) (*user.UserSettings, error)
-		UpdateUserSettings(ctx context.Context, userID uint, updates map[string]any) error
+		UpdateUserSettings(ctx context.Context, userID uint, updates map[string]any) (*user.UserSettings, error)
 		CreateUserSettings(ctx context.Context, settings *user.UserSettings) error
 		DeleteUserSettings(ctx context.Context, userID uint) error
 	}
 
 	AdminService interface {
-		ListUsers(ctx context.Context, q string, page, pageSize int64) ([]*user.User, int64, error)
+		ListUsers(ctx context.Context, q string, page, pageSize int64, sortBy, sortDir string) ([]*user.User, int64, error)
 		ListRoles(ctx context.Context) ([]*rbac.Role, error)
 		SetUserRoles(ctx context.Context, userID uint, roleNames []string) error
 		TriggerResetUserPassword(ctx context.Context, userID uint) error
@@ -119,9 +119,9 @@ type (
 )
 
 type AIService interface {
-	AskStatsQuestion(ctx context.Context, userID uint, question string, previousResponseID string) (string, string, error)
-	AskWorkoutsQuestion(ctx context.Context, userID uint, question string, previousResponseID string) (string, string, error)
-	AskGeneralQuestion(ctx context.Context, userID uint, question string, previousResponseID string) (string, string, error)
+	AskStatsQuestion(ctx context.Context, userID uint, question, lang, previousResponseID string) (string, string, error)
+	AskWorkoutsQuestion(ctx context.Context, userID uint, question, lang, previousResponseID string) (string, string, error)
+	AskGeneralQuestion(ctx context.Context, userID uint, question, lang, previousResponseID string) (string, string, error)
 }
 
 type EmailService interface {

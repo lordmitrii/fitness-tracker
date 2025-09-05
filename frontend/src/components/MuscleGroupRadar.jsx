@@ -16,12 +16,13 @@ const MuscleGroupRadar = ({
   title,
   className = "",
   size = 380,
+  unitSystem = "metric",
 }) => {
   const { t } = useTranslation();
   const gradientId = useId();
 
   const data = useMemo(
-    () => (stats.length ? aggregateStats(stats) : []),
+    () => (stats.length ? aggregateStats(stats, unitSystem) : []),
     [stats]
   );
 
@@ -45,12 +46,12 @@ const MuscleGroupRadar = ({
           </p>
           <p>
             {t("exercise_stats.estimated_1rm")}: {e1RM}{" "}
-            {t("measurements.weight")}
+            {unitSystem === "metric" ? t("measurements.weight.kg") : t("measurements.weight.lbs")}
           </p>
         </div>
       );
     },
-    [t]
+    [t, unitSystem]
   );
 
   if (!data.length) return null;

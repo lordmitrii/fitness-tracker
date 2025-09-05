@@ -38,7 +38,7 @@ const TOPICS = [
 ];
 
 const AIChat = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { hasAnyRole } = useAuth();
 
@@ -150,6 +150,7 @@ const AIChat = () => {
         {
           question: input,
           previous_response_id: previousResponseId,
+          language: i18n.language,
         },
         {
           timeout: 60000, // 60 seconds timeout
@@ -316,7 +317,11 @@ const AIChat = () => {
                 cooldown > 0 || !selectedTopic ? "btn-secondary" : "btn-primary"
               }`}
               disabled={
-                sending || !input.trim() || cooldown > 0 || !selectedTopic || !consentGiven
+                sending ||
+                !input.trim() ||
+                cooldown > 0 ||
+                !selectedTopic ||
+                !consentGiven
               }
             >
               <span className="whitespace-nowrap">

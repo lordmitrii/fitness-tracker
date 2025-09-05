@@ -12,6 +12,7 @@ import { LayoutHeader } from "../../layout/LayoutHeader";
 import useCycleData from "../../hooks/data/useCycleData";
 import { usePullToRefreshOverride } from "../../context/PullToRefreshContext";
 import { useSwipeable } from "react-swipeable";
+import useSettingsData from "../../hooks/data/useSettingsData";
 
 const WorkoutCycle = () => {
   const navigate = useNavigate();
@@ -35,6 +36,8 @@ const WorkoutCycle = () => {
     mutations,
     ui,
   } = useCycleData({ planID, cycleID });
+
+  const { settings } = useSettingsData();
 
   const handlers = useSwipeable({
     onSwipedLeft: () => {
@@ -172,6 +175,7 @@ const WorkoutCycle = () => {
                         isCurrentCycle={!cycle?.next_cycle_id && !!plan?.active}
                         onOpenAddExercise={openAddExercise}
                         onOpenReplaceExercise={openReplaceExercise}
+                        unitSystem={settings?.unit_system}
                       />
                     </div>
                   ))}

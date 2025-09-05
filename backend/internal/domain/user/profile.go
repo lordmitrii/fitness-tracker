@@ -10,11 +10,11 @@ type Profile struct {
 	UserID uint `gorm:"uniqueIndex;not null"`
 	User   User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 
-	Age      int     
-	HeightCm float64 
-	WeightKg float64 
-	Sex      string  
+	Age      int
+	Height int
+	Weight  int
+	Sex      string
 
-	UpdatedAt *time.Time 
-	CreatedAt *time.Time 
+	UpdatedAt *time.Time
+	CreatedAt *time.Time
 }

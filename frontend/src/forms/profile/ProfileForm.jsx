@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef, useCallback, memo } from "react";
+import { useState, useCallback, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import LoadingState from "../../states/LoadingState";
 import ErrorState from "../../states/ErrorState";
@@ -7,31 +7,38 @@ import useProfileData from "../../hooks/data/useProfileData";
 import { PROFILE_LIMITS } from "../../config/constants";
 import { toNumberOrEmpty } from "../../utils/numberUtils";
 import { usePullToRefreshOverride } from "../../context/PullToRefreshContext";
+import { useLocation } from "react-router-dom";
+import {
+  toDisplayHeight,
+  toDisplayWeight,
+  fromDisplayHeight,
+  fromDisplayWeight,
+  displayHeightMax,
+  displayHeightMin,
+  displayWeightMax,
+  displayWeightMin,
+} from "../../utils/numberUtils";
 
-const NUMBER_FIELDS = new Set(["age", "weight_kg", "height_cm"]);
+const NUMBER_FIELDS = new Set(["age", "weight", "height"]);
 
 const ProfileForm = memo(function ProfileForm({
-  initialData = {},
+  initialData,
   onSubmit,
   label,
   submitLabel,
   submitting = false,
+  unitSystem = "metric",
 }) {
   const { t } = useTranslation();
-  const [formData, setFormData] = useState({
-    age: "",
-    weight_kg: "",
-    height_cm: "",
-    sex: "",
-  });
-  const loaded = useRef(false);
 
-  useEffect(() => {
-    if (loaded.current || !initialData || !Object.keys(initialData).length)
-      return;
-    setFormData((prev) => ({ ...prev, ...initialData }));
-    loaded.current = true;
-  }, [initialData]);
+  const [formData, setFormData] = useState(
+    initialData || {
+      age: "",
+      weight: "",
+      height: "",
+      sex: "",
+    }
+  );
 
   const [formErrors, setFormErrors] = useState({});
 
@@ -47,30 +54,30 @@ const ProfileForm = memo(function ProfileForm({
               max: PROFILE_LIMITS.age.max,
             });
           return;
-        case "weight_kg":
+        case "weight":
           if (value === "" || !Number.isFinite(value))
             return t("profile_form.weight_must_be_number");
           if (
-            value < PROFILE_LIMITS.weight_kg.min ||
-            value > PROFILE_LIMITS.weight_kg.max
+            value < PROFILE_LIMITS.weight.min ||
+            value > PROFILE_LIMITS.weight.max
           )
             return t("profile_form.weight_out_of_range", {
-              min: PROFILE_LIMITS.weight_kg.min,
-              max: PROFILE_LIMITS.weight_kg.max,
-              unit: t("measurements.weight"),
+              min: displayWeightMin(PROFILE_LIMITS.weight.min, unitSystem),
+              max: displayWeightMax(PROFILE_LIMITS.weight.max, unitSystem),
+              unit: unitSystem === "metric" ? t("measurements.weight.kg") : t("measurements.weight.lbs_of"),
             });
           return;
-        case "height_cm":
+        case "height":
           if (value === "" || !Number.isFinite(value))
             return t("profile_form.height_must_be_number");
           if (
-            value < PROFILE_LIMITS.height_cm.min ||
-            value > PROFILE_LIMITS.height_cm.max
+            value < PROFILE_LIMITS.height.min ||
+            value > PROFILE_LIMITS.height.max
           )
             return t("profile_form.height_out_of_range", {
-              min: PROFILE_LIMITS.height_cm.min,
-              max: PROFILE_LIMITS.height_cm.max,
-              unit: t("measurements.height"),
+              min: displayHeightMin(PROFILE_LIMITS.height.min, unitSystem),
+              max: displayHeightMax(PROFILE_LIMITS.height.max, unitSystem),
+              unit: unitSystem === "metric" ? t("measurements.height.cm") : t("measurements.height.ft_of"),
             });
           return;
         case "sex":
@@ -79,7 +86,7 @@ const ProfileForm = memo(function ProfileForm({
           return;
       }
     },
-    [t]
+    [t, unitSystem]
   );
 
   const handleBlur = useCallback(
@@ -92,7 +99,7 @@ const ProfileForm = memo(function ProfileForm({
   );
 
   const validate = useCallback(() => {
-    const fields = ["age", "weight_kg", "height_cm", "sex"];
+    const fields = ["age", "weight", "height", "sex"];
     const errs = {};
     for (const name of fields) {
       const err = validateField(name, formData[name]);
@@ -123,8 +130,8 @@ const ProfileForm = memo(function ProfileForm({
 
       const payload = {
         age: formData.age, // already a number
-        weight_kg: Math.round(formData.weight_kg * 10) / 10,
-        height_cm: Math.round(formData.height_cm * 10) / 10,
+        weight: formData.weight,
+        height: formData.height,
         sex: formData.sex,
       };
 
@@ -162,64 +169,92 @@ const ProfileForm = memo(function ProfileForm({
         </div>
 
         <div>
-          <label
-            htmlFor="weight_kg"
-            className="block text-body font-medium mb-1"
-          >
-            {t("profile_form.weight_label")} ({t("measurements.weight")})
+          <label htmlFor="weight" className="block text-body font-medium mb-1">
+            {t("profile_form.weight_label")} (
+            {unitSystem === "metric"
+              ? t("measurements.weight.kg")
+              : t("measurements.weight.lbs_of")}
+            )
           </label>
           <input
             type="number"
             inputMode="decimal"
-            name="weight_kg"
-            id="weight_kg"
-            min={PROFILE_LIMITS.weight_kg.min}
-            max={PROFILE_LIMITS.weight_kg.max}
+            name="weight"
+            id="weight"
+            min={displayWeightMin(PROFILE_LIMITS.weight.min, unitSystem)}
+            max={displayWeightMax(PROFILE_LIMITS.weight.max, unitSystem)}
             step="0.1"
             required
             placeholder={
               t("profile_form.weight_placeholder") +
               " " +
-              t("measurements.weight")
+              t(
+                unitSystem === "metric"
+                  ? "measurements.weight.kg"
+                  : "measurements.weight.lbs_of"
+              )
             }
-            value={formData.weight_kg}
-            onChange={handleChange}
+            value={toDisplayWeight(formData.weight, unitSystem)}
+            onChange={(e) => {
+              const raw = toNumberOrEmpty(e.target.value); 
+              const displayVal = raw === "" ? "" : Math.round(raw * 10) / 10; 
+              const baseVal = fromDisplayWeight(displayVal, unitSystem);
+              setFormData((prev) => ({ ...prev, weight: baseVal }));
+              setFormErrors((prev) =>
+                prev.weight ? { ...prev, weight: undefined } : prev
+              );
+            }}
             onBlur={handleBlur}
             className="input-style"
           />
-          {formErrors.weight_kg && (
-            <p className="text-caption-red mt-1">{formErrors.weight_kg}</p>
+          {formErrors.weight && (
+            <p className="text-caption-red mt-1">{formErrors.weight}</p>
           )}
         </div>
 
         <div>
-          <label
-            htmlFor="height_cm"
-            className="block text-body font-medium mb-1"
-          >
-            {t("profile_form.height_label")} ({t("measurements.height")})
+          <label htmlFor="height" className="block text-body font-medium mb-1">
+            {t("profile_form.height_label")} (
+            {unitSystem === "metric"
+              ? t("measurements.height.cm")
+              : t("measurements.height.ft_of")}
+            )
           </label>
           <input
             type="number"
             inputMode="decimal"
-            name="height_cm"
-            id="height_cm"
-            min={PROFILE_LIMITS.height_cm.min}
-            max={PROFILE_LIMITS.height_cm.max}
+            name="height"
+            id="height"
+            min={displayHeightMin(PROFILE_LIMITS.height.min, unitSystem)}
+            max={displayHeightMax(PROFILE_LIMITS.height.max, unitSystem)}
             step="0.1"
             required
             placeholder={
               t("profile_form.height_placeholder") +
               " " +
-              t("measurements.height")
+              t(
+                unitSystem === "metric"
+                  ? "measurements.height.cm"
+                  : "measurements.height.ft_of"
+              )
             }
-            value={formData.height_cm}
-            onChange={handleChange}
+            value={toDisplayHeight(formData.height, unitSystem)}
+            onChange={
+              (e) => {
+                const raw = toNumberOrEmpty(e.target.value); 
+                const displayVal = raw === "" ? "" : Math.round(raw * 10) / 10; 
+                const baseVal = fromDisplayHeight(displayVal, unitSystem);
+                setFormData((prev) => ({ ...prev, height: baseVal }));
+                setFormErrors((prev) =>
+                  prev.height ? { ...prev, height: undefined } : prev
+                );
+              }
+            }
             onBlur={handleBlur}
             className="input-style"
           />
-          {formErrors.height_cm && (
-            <p className="text-caption-red mt-1">{formErrors.height_cm}</p>
+          {formErrors.height && (
+            <p className="text-caption-red mt-1">{formErrors.height}</p>
           )}
         </div>
 
@@ -267,6 +302,7 @@ const ProfileForm = memo(function ProfileForm({
 export const CreateProfileForm = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const location = useLocation();
   const { refetch, mutations } = useProfileData({ skipQuery: true });
 
   usePullToRefreshOverride(
@@ -302,6 +338,7 @@ export const CreateProfileForm = () => {
       label={t("profile_form.create_profile")}
       submitLabel={t("general.create")}
       submitting={mutations.create.isPending}
+      unitSystem={location.state?.unit_system}
     />
   );
 };
@@ -310,23 +347,16 @@ export const CreateProfileForm = () => {
 export const UpdateProfileForm = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const location = useLocation();
 
-  const { profile, loading, error, refetch, mutations } = useProfileData();
+  const { loading, error, refetch, mutations } = useProfileData({
+    skipQuery: true,
+  });
 
   usePullToRefreshOverride(
     useCallback(async () => {
       await refetch();
     }, [refetch])
-  );
-
-  const initialData = useMemo(
-    () => ({
-      age: profile?.age ?? "",
-      weight_kg: profile?.weight_kg ?? "",
-      height_cm: profile?.height_cm ?? "",
-      sex: profile?.sex || "",
-    }),
-    [profile]
   );
 
   const handleUpdate = (payload) => {
@@ -357,12 +387,15 @@ export const UpdateProfileForm = () => {
 
   return (
     <ProfileForm
-      key={profile?.id ?? JSON.stringify(initialData)}
-      initialData={initialData}
+      key={
+        location.state?.profile?.id ?? JSON.stringify(location.state?.profile)
+      }
+      initialData={location.state?.profile}
       onSubmit={handleUpdate}
       label={t("profile_form.update_profile")}
       submitLabel={t("general.update")}
       submitting={mutations.upsert.isPending}
+      unitSystem={location.state?.unit_system}
     />
   );
 };
