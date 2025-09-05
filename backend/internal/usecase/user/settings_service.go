@@ -25,8 +25,8 @@ func (s *userServiceImpl) GetUserSettings(ctx context.Context, userID uint) (*us
 	return settings, nil
 }
 
-func (s *userServiceImpl) UpdateUserSettings(ctx context.Context, userID uint, updates map[string]any) error {
-	return s.settingsRepo.Update(ctx, userID, updates)
+func (s *userServiceImpl) UpdateUserSettings(ctx context.Context, userID uint, updates map[string]any) (*user.UserSettings, error) {
+	return s.settingsRepo.UpdateReturning(ctx, userID, updates)
 }
 
 func (s *userServiceImpl) DeleteUserSettings(ctx context.Context, userID uint) error {

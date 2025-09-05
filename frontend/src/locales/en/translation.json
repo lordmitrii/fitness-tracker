@@ -63,8 +63,16 @@
     "settings": "Settings"
   },
   "measurements": {
-    "weight": "kg",
-    "height": "cm",
+    "weight": {
+      "kg": "kg",
+      "lbs": "lbs",
+      "lbs_of": "lbs"
+    },
+    "height": {
+      "cm": "cm",
+      "ft": "ft",
+      "ft_of": "ft"
+    },
     "reps": "reps",
     "set": "set",
     "sets": "sets",
@@ -593,7 +601,12 @@
     "users": {
       "title": "Users",
       "search_placeholder": "Search users…",
-      "search_label": "Search users"
+      "search_label": "Search users",
+      "filter": {
+        "last_seen_at": "Last Seen At",
+        "created_at": "Created At",
+        "email": "Email"
+      }
     },
     "exercises": {
       "title": "Exercises",

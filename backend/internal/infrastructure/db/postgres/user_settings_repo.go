@@ -2,9 +2,11 @@ package postgres
 
 import (
 	"context"
+
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type UserSettingsRepo struct {
@@ -32,7 +34,7 @@ func (r *UserSettingsRepo) GetByUserID(ctx context.Context, userID uint) (*user.
 
 func (r *UserSettingsRepo) Update(ctx context.Context, userID uint, updates map[string]any) error {
 	if len(updates) == 0 {
-		return nil 
+		return nil
 	}
 
 	res := r.db.Model(&user.UserSettings{}).Where("user_id = ?", userID).Updates(updates)
@@ -43,6 +45,18 @@ func (r *UserSettingsRepo) Update(ctx context.Context, userID uint, updates map[
 		return custom_err.ErrNotFound
 	}
 	return nil
+}
+
+func (r *UserSettingsRepo) UpdateReturning(ctx context.Context, userID uint, updates map[string]any) (*user.UserSettings, error) {
+	var settings user.UserSettings
+	res := r.db.Model(&settings).Where("user_id = ?", userID).Clauses(clause.Returning{}).Updates(updates)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RowsAffected == 0 {
+		return nil, custom_err.ErrNotFound
+	}
+	return &settings, nil
 }
 
 func (r *UserSettingsRepo) Delete(ctx context.Context, userID uint) error {

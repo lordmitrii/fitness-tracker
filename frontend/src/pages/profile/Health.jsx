@@ -5,10 +5,13 @@ import useProfileData from "../../hooks/data/useProfileData";
 import LoadingState from "../../states/LoadingState";
 import ErrorState from "../../states/ErrorState";
 import { usePullToRefreshOverride } from "../../context/PullToRefreshContext";
+import useSettingsData from "../../hooks/data/useSettingsData";
+import { toDisplayHeight, toDisplayWeight } from "../../utils/numberUtils";
 
 const Health = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { settings } = useSettingsData();
 
   const { profile, loading, error, refetch } = useProfileData();
 
@@ -41,12 +44,18 @@ const Health = () => {
 
             <div className="font-semibold">{t("profile.weight_label")}</div>
             <div className="text-right">
-              {profile.weight_kg} {t("measurements.weight")}
+              {toDisplayWeight(profile.weight, settings?.unit_system)}{" "}
+              {settings?.unit_system === "metric"
+                ? t("measurements.weight.kg")
+                : t("measurements.weight.lbs_of")}
             </div>
 
             <div className="font-semibold">{t("profile.height_label")}</div>
             <div className="text-right">
-              {profile.height_cm} {t("measurements.height")}
+              {toDisplayHeight(profile.height, settings?.unit_system)}{" "}
+              {settings?.unit_system === "metric"
+                ? t("measurements.height.cm")
+                : t("measurements.height.ft_of")}
             </div>
 
             <div className="font-semibold">{t("profile.sex_label")}</div>
@@ -56,7 +65,9 @@ const Health = () => {
           </div>
           <button
             className="btn btn-primary w-full"
-            onClick={() => navigate("/profile/health/update-profile")}
+            onClick={() =>
+              navigate("/profile/health/update-profile", { state: { profile, unit_system: settings?.unit_system } })
+            }
           >
             {t("general.update")}
           </button>
@@ -68,7 +79,7 @@ const Health = () => {
           </p>
           <button
             className="btn btn-primary w-full"
-            onClick={() => navigate("/profile/health/create-profile")}
+            onClick={() => navigate("/profile/health/create-profile", { state: { unit_system: settings?.unit_system } })}
           >
             {t("general.create_profile")}
           </button>

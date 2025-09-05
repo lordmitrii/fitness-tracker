@@ -15,8 +15,8 @@ type IndividualExercise struct {
 	MuscleGroupID *uint
 	MuscleGroup   *MuscleGroup `gorm:"foreignKey:MuscleGroupID;constraint:OnDelete:SET NULL,OnUpdate:CASCADE;"`
 
-	CurrentWeight float64 `gorm:"-"`
-	CurrentReps   int     `gorm:"-"`
+	CurrentWeight int `gorm:"-"`
+	CurrentReps   int `gorm:"-"`
 
 	LastCompletedWorkoutExerciseID *uint
 	LastCompletedWorkoutExercise   *WorkoutExercise `gorm:"foreignKey:LastCompletedWorkoutExerciseID;constraint:OnDelete:SET NULL,OnUpdate:CASCADE;"`

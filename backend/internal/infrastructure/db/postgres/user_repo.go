@@ -3,6 +3,9 @@ package postgres
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
+
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 	"gorm.io/gorm"
@@ -83,7 +86,7 @@ func (r *UserRepo) CheckEmail(ctx context.Context, email string) (bool, error) {
 	return count > 0, nil
 }
 
-func (r *UserRepo) GetUsers(ctx context.Context, q string, page, pageSize int64) ([]*user.User, int64, error) {
+func (r *UserRepo) GetUsers(ctx context.Context, q string, page, pageSize int64, sortBy, sortDir string) ([]*user.User, int64, error) {
 	var users []*user.User
 	var total int64
 
@@ -96,7 +99,23 @@ func (r *UserRepo) GetUsers(ctx context.Context, q string, page, pageSize int64)
 		return nil, 0, err
 	}
 
-	if err := db.Offset(int((page - 1) * pageSize)).Limit(int(pageSize)).Preload("Roles.Permissions").Order("last_seen_at, created_at").Find(&users).Error; err != nil {
+	col := map[string]string{
+		"last_seen_at": "last_seen_at",
+		"created_at":   "created_at",
+		"email":        "email",
+	}[strings.ToLower(sortBy)]
+	if col == "" {
+		col = "last_seen_at"
+	}
+
+	dir := strings.ToUpper(sortDir)
+	if dir != "ASC" && dir != "DESC" {
+		dir = "DESC"
+	}
+
+	order := fmt.Sprintf("%s %s NULLS LAST", col, dir)
+
+	if err := db.Offset(int((page - 1) * pageSize)).Limit(int(pageSize)).Preload("Roles.Permissions").Order(order).Find(&users).Error; err != nil {
 		return nil, 0, err
 	}
 

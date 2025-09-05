@@ -91,19 +91,19 @@ type WorkoutExerciseReplaceRequest struct {
 }
 
 type WorkoutSetCreateRequest struct {
-	Index          int      `json:"index"`
-	Weight         *float64 `json:"weight" binding:"omitempty,min=0,max=2000"`
-	Reps           *int     `json:"reps" binding:"omitempty,min=1,max=2000"`
-	PreviousWeight *float64 `json:"previous_weight" binding:"omitempty,min=0,max=2000"`
-	PreviousReps   *int     `json:"previous_reps" binding:"omitempty,min=1,max=2000"`
+	Index          int  `json:"index"`
+	Weight         *int `json:"weight" binding:"omitempty,min=0,max=2_000_000"`
+	Reps           *int `json:"reps" binding:"omitempty,min=1,max=2000"`
+	PreviousWeight *int `json:"previous_weight" binding:"omitempty,min=0,max=2_000_000"`
+	PreviousReps   *int `json:"previous_reps" binding:"omitempty,min=1,max=2000"`
 }
 
 type WorkoutSetUpdateRequest struct {
-	Index     *int      `json:"index" binding:"omitempty"`
-	Weight    *float64  `json:"weight" binding:"omitempty,min=0,max=2000"`
-	Reps      *int      `json:"reps" binding:"omitempty,min=1,max=2000"`
-	Completed *bool     `json:"completed" binding:"omitempty"`
-	Skipped   *bool     `json:"skipped" binding:"omitempty"`
+	Index     *int  `json:"index" binding:"omitempty"`
+	Weight    *int  `json:"weight" binding:"omitempty,min=0,max=2_000_000"`
+	Reps      *int  `json:"reps" binding:"omitempty,min=1,max=2000"`
+	Completed *bool `json:"completed" binding:"omitempty"`
+	Skipped   *bool `json:"skipped" binding:"omitempty"`
 }
 
 type WorkoutSetCompleteRequest struct {
@@ -173,7 +173,7 @@ type IndividualExerciseResponse struct {
 	Exercise                       ExerciseResponse         `json:"exercise"`
 	LastCompletedWorkoutExerciseID *uint                    `json:"last_completed_workout_exercise_id,omitempty"`
 	LastCompletedWorkoutExercise   *WorkoutExerciseResponse `json:"last_completed_workout_exercise,omitempty"`
-	CurrentWeight                  float64                  `json:"current_weight,omitempty"`
+	CurrentWeight                  int                      `json:"current_weight,omitempty"`
 	CurrentReps                    int                      `json:"current_reps,omitempty"`
 	CreatedAt                      *time.Time               `json:"created_at"`
 	UpdatedAt                      *time.Time               `json:"updated_at"`
@@ -200,9 +200,9 @@ type WorkoutSetResponse struct {
 	Index             int        `json:"index,omitempty"`
 	Completed         bool       `json:"completed,omitempty"`
 	Skipped           bool       `json:"skipped,omitempty"`
-	Weight            *float64   `json:"weight,omitempty"`
+	Weight            *int       `json:"weight,omitempty"`
 	Reps              *int       `json:"reps,omitempty"`
-	PreviousWeight    *float64   `json:"previous_weight,omitempty"`
+	PreviousWeight    *int       `json:"previous_weight,omitempty"`
 	PreviousReps      *int       `json:"previous_reps,omitempty"`
 	CreatedAt         *time.Time `json:"created_at"`
 	UpdatedAt         *time.Time `json:"updated_at"`
@@ -219,8 +219,8 @@ type IndividualExerciseStatsResponse struct {
 	ExerciseID    *uint               `json:"exercise_id,omitempty"`
 	Exercise      ExerciseResponse    `json:"exercise"`
 
-	CurrentWeight float64 `json:"current_weight,omitempty"`
-	CurrentReps   int     `json:"current_reps,omitempty"`
+	CurrentWeight int `json:"current_weight,omitempty"`
+	CurrentReps   int `json:"current_reps,omitempty"`
 
 	CreatedAt *time.Time `json:"created_at"`
 	UpdatedAt *time.Time `json:"updated_at"`

@@ -10,11 +10,11 @@ type WorkoutSet struct {
 	Completed bool `gorm:"default:false"`
 	Skipped   bool `gorm:"default:false"`
 
-	Weight *float64
-	Reps   *int
+	Weight *int
+	Reps    *int
 
-	PreviousWeight *float64
-	PreviousReps   *int
+	PreviousWeight *int
+	PreviousReps    *int
 
 	CreatedAt *time.Time `example:"2010-10-01T10:00:00Z"`
 	UpdatedAt *time.Time `example:"2010-10-01T10:00:00Z"`

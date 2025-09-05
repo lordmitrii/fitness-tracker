@@ -4,7 +4,14 @@ import WorkoutSetDetailsMenu from "./WorkoutSetDetailsMenu";
 import CheckBox from "../CheckBox";
 import { getExerciseProgressBadge } from "../../utils/exerciseUtils";
 import { useTranslation } from "react-i18next";
-import { toNumberOrEmpty, toNullIfEmpty } from "../../utils/numberUtils";
+import {
+  toNumberOrEmpty,
+  toNullIfEmpty,
+  toDisplayWeight,
+  fromDisplayWeight,
+  displayWeightMax,
+  displayWeightMin,
+} from "../../utils/numberUtils";
 import { SET_LIMITS } from "../../config/constants";
 import { ChartEqualIcon } from "../../icons/ChartIcon";
 import useCycleData from "../../hooks/data/useCycleData";
@@ -17,6 +24,7 @@ const WorkoutSetRow = ({
   setItem,
   setOrder,
   isCurrentCycle,
+  unitSystem = "metric",
 }) => {
   const { t } = useTranslation();
   const [errors, setErrors] = useState({});
@@ -77,15 +85,15 @@ const WorkoutSetRow = ({
         setItem.weight > SET_LIMITS.weight.max
       ) {
         errors.weight = t("workout_plan_single.validation.weight_range", {
-          min: SET_LIMITS.weight.min,
-          max: SET_LIMITS.weight.max,
-          unit: t("measurements.weight"),
+          min: displayWeightMin(SET_LIMITS.weight.min, unitSystem, 2),
+          max: displayWeightMax(SET_LIMITS.weight.max, unitSystem, 2),
+          unit: unitSystem === "imperial" ? t("measurements.weight_lb") : t("measurements.weight_kg"),
         });
       }
 
       return { ok: Object.keys(errors).length === 0, errors };
     },
-    [t]
+    [t, unitSystem]
   );
 
   // Send patch request for set fields
@@ -292,18 +300,22 @@ const WorkoutSetRow = ({
 
       <input
         type="number"
-        placeholder={setItem.previous_weight ?? t("general.n_a")}
-        value={setItem.weight ?? ""}
-        step={0.1}
-        min={SET_LIMITS.weight.min}
-        max={SET_LIMITS.weight.max}
+        placeholder={
+          toDisplayWeight(setItem.previous_weight, unitSystem, 2) ||
+          t("general.n_a")
+        }
+        value={toDisplayWeight(setItem.weight, unitSystem, 2)}
+        step={0.01}
+        min={displayWeightMin(SET_LIMITS.weight.min, unitSystem, 2)}
+        max={displayWeightMax(SET_LIMITS.weight.max, unitSystem, 2)}
         inputMode="decimal"
         onFocus={() => setErrors((prev) => ({ ...prev, weight: "" }))}
         onBlur={handleBlur}
         onChange={(e) => {
           const raw = toNumberOrEmpty(e.target.value);
-          const next = raw === "" ? "" : Math.round(raw * 10) / 10;
-          onChangeWeight(next);
+          const next = raw === "" ? "" : Math.round(raw * 100) / 100;
+          const nextBase = fromDisplayWeight(next, unitSystem);
+          onChangeWeight(nextBase);
         }}
         className={`input-style placeholder:italic 
             ${errors.weight ? "!border-2 !border-red-600" : ""}

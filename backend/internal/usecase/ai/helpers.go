@@ -3,19 +3,29 @@ package ai
 import (
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
+	"math"
 )
 
-func BuildProcessedStats(stats []*workout.IndividualExercise, profile *user.Profile) []map[string]any {
+func BuildProcessedStats(stats []*workout.IndividualExercise, profile *user.Profile, unitSystem string) []map[string]any {
 	processedStats := []map[string]any{}
+	imperial := unitSystem == "imperial"
 
 	for _, stat := range stats {
 		if stat.CurrentWeight == 0 && stat.CurrentReps == 0 {
 			continue
 		}
+
+		var weight float64
+		if imperial {
+			weight = math.Round((float64(stat.CurrentWeight)/453.59237)*100) / 100
+		} else {
+			weight = math.Round((float64(stat.CurrentWeight)/1000)*100) / 100
+		}
+
 		statMap := map[string]any{
 			"exercise_name":   stat.Name,
 			"best_set_reps":   stat.CurrentReps,
-			"best_set_weight": stat.CurrentWeight,
+			"best_set_weight": weight,
 		}
 		if stat.IsTimeBased {
 			statMap["is_time_based"] = true
@@ -24,9 +34,23 @@ func BuildProcessedStats(stats []*workout.IndividualExercise, profile *user.Prof
 	}
 
 	if profile != nil {
+		var weight float64
+		if imperial {
+			weight = math.Round((float64(profile.Weight)/453.59237)*100) / 100
+		} else {
+			weight = math.Round((float64(profile.Weight)/1000)*100) / 100
+		}
+
+		var height float64
+		if imperial {
+			height = math.Round((float64(profile.Height)/304.8)*100) / 100
+		} else {
+			height = math.Round((float64(profile.Height)/10)*100) / 100
+		}
+
 		processedStats = append(processedStats, map[string]any{
-			"user_weight": profile.WeightKg,
-			"user_height": profile.HeightCm,
+			"user_weight": weight,
+			"user_height": height,
 			"user_age":    profile.Age,
 			"user_sex":    profile.Sex,
 		})

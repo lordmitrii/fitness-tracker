@@ -6,7 +6,7 @@ import (
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 )
 
-func (s *adminServiceImpl) ListUsers(ctx context.Context, q string, page, pageSize int64) ([]*user.User, int64, error) {
+func (s *adminServiceImpl) ListUsers(ctx context.Context, q string, page, pageSize int64, sortBy, sortDir string) ([]*user.User, int64, error) {
 	if page <= 0 {
 		page = 1
 	}
@@ -14,7 +14,7 @@ func (s *adminServiceImpl) ListUsers(ctx context.Context, q string, page, pageSi
 		pageSize = 20
 	}
 
-	users, total, err := s.userRepo.GetUsers(ctx, q, page, pageSize)
+	users, total, err := s.userRepo.GetUsers(ctx, q, page, pageSize, sortBy, sortDir)
 	if err != nil {
 		return nil, 0, err
 	}

@@ -13,6 +13,7 @@ const WorkoutExerciseRow = ({
   allExercises,
   isCurrentCycle,
   onOpenReplaceExercise,
+  unitSystem = "metric",
 }) => {
   const { t } = useTranslation();
 
@@ -94,7 +95,7 @@ const WorkoutExerciseRow = ({
             {t("workout_plan_single.set_label")}
           </div>
           <div className="whitespace-nowrap">
-            {t("workout_plan_single.weight_label")} ({t("measurements.weight")})
+            {t("workout_plan_single.weight_label")} ({unitSystem === "metric" ? t("measurements.weight.kg") : t("measurements.weight.lbs")})
           </div>
           <div className="">
             {exercise.individual_exercise?.is_time_based
@@ -119,6 +120,7 @@ const WorkoutExerciseRow = ({
               setItem={set}
               setOrder={setOrder}
               isCurrentCycle={isCurrentCycle}
+              unitSystem={unitSystem}
             />
           ))}
         </div>

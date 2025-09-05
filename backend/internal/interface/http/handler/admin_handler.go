@@ -35,8 +35,10 @@ func (h *AdminHandler) GetUsers(c *gin.Context) {
 	q := strings.TrimSpace(c.Query("q"))
 	page := parseInt(c.Query("page"), 1)
 	pageSize := min(parseInt(c.Query("page_size"), 20), 200)
+	sortBy := strings.TrimSpace(c.Query("sort_by"))
+	sortDir := strings.TrimSpace(c.Query("sort_dir"))
 
-	users, total, err := h.svc.ListUsers(c.Request.Context(), q, page, pageSize)
+	users, total, err := h.svc.ListUsers(c.Request.Context(), q, page, pageSize, sortBy, sortDir)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

@@ -7,6 +7,7 @@ import { highlightMatches } from "../../utils/highlightMatches";
 import Pagination from "../../components/Pagination";
 import EditRolesModal from "../../modals/admin/EditRolesModal";
 import DangerMenu from "../../components/admin/AdminDangerMenu";
+import DropdownSelect from "../../components/DropdownSelect";
 import { usePullToRefreshOverride } from "../../context/PullToRefreshContext";
 
 const PAGE_SIZE = 20;
@@ -20,6 +21,8 @@ const Users = () => {
   const [users, setUsers] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState("last_seen_at");
+  const [sortDir, setSortDir] = useState("desc");
 
   const [query, setQuery] = useState("");
   const [search, setSearch] = useState("");
@@ -44,6 +47,16 @@ const Users = () => {
       cancelled = true;
     };
   }, []);
+
+  const toggleSort = (col) => {
+    if (sortBy === col) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortBy(col);
+      setSortDir("asc");
+    }
+    setPage(1);
+  };
 
   const handleSaveRoles = async (newRoleNames) => {
     if (!editingUser) return;
@@ -80,7 +93,13 @@ const Users = () => {
     setFetchError(null);
     api
       .get("/admin/users", {
-        params: { q: search || undefined, page, page_size: PAGE_SIZE },
+        params: {
+          q: search || undefined,
+          page,
+          page_size: PAGE_SIZE,
+          sort_by: sortBy,
+          sort_dir: sortDir,
+        },
       })
       .then((res) => {
         setUsers(res.data.users || []);
@@ -91,7 +110,7 @@ const Users = () => {
         setFetchError(err);
       })
       .finally(() => setLoading(false));
-  }, [page, search]);
+  }, [page, search, sortBy, sortDir]);
 
   useEffect(() => {
     loadUsers();
@@ -117,28 +136,46 @@ const Users = () => {
         <h1 className="text-title">{t("admin.users.title")}</h1>
 
         <div className="flex items-center gap-2">
-          <div className="flex w-full gap-2">
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                setPage(1);
-              }}
-              placeholder={t("admin.users.search_placeholder")}
-              className="input-style"
+          <div className="flex sm:flex-row flex-col w-full gap-2">
+            <DropdownSelect
+              value={sortBy}
+              onChange={setSortBy}
+              options={[
+                {
+                  value: "last_seen_at",
+                  label: t("admin.users.filter.last_seen_at"),
+                },
+                {
+                  value: "created_at",
+                  label: t("admin.users.filter.created_at"),
+                },
+                { value: "email", label: t("admin.users.filter.email") },
+              ]}
+              widthClass="w-full"
             />
-            <button
-              className={`btn ${query ? "btn-primary" : "btn-secondary"}`}
-              onClick={() => {
-                setQuery("");
-                setSearch("");
-                setPage(1);
-              }}
-              disabled={!query && !search}
-            >
-              {t("general.clear")}
-            </button>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setPage(1);
+                }}
+                placeholder={t("admin.users.search_placeholder")}
+                className="input-style"
+              />
+              <button
+                className={`btn ${query ? "btn-primary" : "btn-secondary"}`}
+                onClick={() => {
+                  setQuery("");
+                  setSearch("");
+                  setPage(1);
+                }}
+                disabled={!query && !search}
+              >
+                {t("general.clear")}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -172,7 +209,11 @@ const Users = () => {
                   <td className="px-4 py-3 align-center">
                     <div className="flex flex-col">
                       <span className="text-body max-w-[30dvh] overflow-x-auto">
-                        {highlightMatches(u.email, query, "bg-blue-600 text-white")}
+                        {highlightMatches(
+                          u.email,
+                          query,
+                          "bg-blue-600 text-white"
+                        )}
                       </span>
                       {u.created_at && (
                         // <span className="text-caption">

@@ -6,10 +6,13 @@ import { e1RM } from "../../utils/exerciseStatsUtils";
 import useStatsHook from "../../hooks/data/useStatsHook";
 import { usePullToRefreshOverride } from "../../context/PullToRefreshContext";
 import { useCallback } from "react";
+import useSettingsData from "../../hooks/data/useSettingsData";
+import { toDisplayWeight } from "../../utils/numberUtils";
 
 const Stats = () => {
   const { t } = useTranslation();
   const { stats, bestPerformances, loading, error, refetch } = useStatsHook();
+  const { settings } = useSettingsData();
 
   usePullToRefreshOverride(
     useCallback(async () => {
@@ -22,7 +25,7 @@ const Stats = () => {
   if (error) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <>
-        <MuscleGroupRadar stats={stats} />
+      <MuscleGroupRadar stats={stats} unitSystem={settings?.unit_system} />
 
       {stats && stats.length > 0 ? (
         <div className="card flex flex-col gap-6">
@@ -67,8 +70,14 @@ const Stats = () => {
                         className="peer hidden"
                       />
                       <span className="peer-checked:hidden">
-                        {exercise.current_weight} {t("measurements.weight")} x{" "}
-                        {exercise.current_reps}{" "}
+                        {toDisplayWeight(
+                          exercise.current_weight,
+                          settings?.unit_system
+                        )}{" "}
+                        {settings?.unit_system === "metric"
+                          ? t("measurements.weight.kg")
+                          : t("measurements.weight.lbs_of")}{" "}
+                        x {exercise.current_reps}{" "}
                         {exercise.is_time_based
                           ? t("measurements.seconds")
                           : t("measurements.reps")}
@@ -78,12 +87,17 @@ const Stats = () => {
                           <>
                             {Math.round(
                               e1RM(
-                                exercise.current_weight,
+                                toDisplayWeight(
+                                  exercise.current_weight,
+                                  settings?.unit_system
+                                ),
                                 exercise.current_reps
                               )
                             )}{" "}
-                            {t("measurements.weight")} x 1{" "}
-                            {t("measurements.reps")} (
+                            {settings?.unit_system === "metric"
+                              ? t("measurements.weight.kg")
+                              : t("measurements.weight.lbs_of")}{" "}
+                            x 1 {t("measurements.reps")} (
                             {t("exercise_stats.estimated")})
                           </>
                         ) : (

@@ -42,7 +42,7 @@ func (h *AIHandler) AskStatsQuestion(c *gin.Context) {
 		return
 	}
 
-	resp, prevRespID, err := h.svc.AskStatsQuestion(c.Request.Context(), userID, req.Question, req.PreviousResponseID)
+	resp, prevRespID, err := h.svc.AskStatsQuestion(c.Request.Context(), userID, req.Question, req.Language, req.PreviousResponseID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -67,7 +67,7 @@ func (h *AIHandler) AskWorkoutsQuestion(c *gin.Context) {
 		return
 	}
 
-	resp, prevRespID, err := h.svc.AskWorkoutsQuestion(c.Request.Context(), userID, req.Question, req.PreviousResponseID)
+	resp, prevRespID, err := h.svc.AskWorkoutsQuestion(c.Request.Context(), userID, req.Question, req.Language, req.PreviousResponseID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -92,7 +92,7 @@ func (h *AIHandler) AskGeneralQuestion(c *gin.Context) {
 		return
 	}
 
-	resp, prevRespID, err := h.svc.AskGeneralQuestion(c.Request.Context(), userID, req.Question, req.PreviousResponseID)
+	resp, prevRespID, err := h.svc.AskGeneralQuestion(c.Request.Context(), userID, req.Question, req.Language, req.PreviousResponseID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
