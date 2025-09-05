@@ -309,6 +309,7 @@ const WorkoutSetRow = ({
         min={displayWeightMin(SET_LIMITS.weight.min, unitSystem, 2)}
         max={displayWeightMax(SET_LIMITS.weight.max, unitSystem, 2)}
         inputMode="decimal"
+        autoComplete="off"
         onFocus={() => setErrors((prev) => ({ ...prev, weight: "" }))}
         onBlur={handleBlur}
         onChange={(e) => {
@@ -335,6 +336,7 @@ const WorkoutSetRow = ({
         min={SET_LIMITS.reps.min}
         max={SET_LIMITS.reps.max}
         inputMode="numeric"
+        autoComplete="off"
         step={1}
         onFocus={() => setErrors((prev) => ({ ...prev, reps: "" }))}
         onBlur={handleBlur}

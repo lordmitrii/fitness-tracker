@@ -329,6 +329,8 @@ const AddWorkoutPlanForm = () => {
                 <div className="text-caption">{planName.length}/50</div>
               </div>
               <input
+                id="name"
+                name="name"
                 type="text"
                 value={planName}
                 maxLength={50}

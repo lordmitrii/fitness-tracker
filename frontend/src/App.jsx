@@ -51,6 +51,7 @@ import {
 } from "./forms/workout/WorkoutForm";
 
 import PrivateRoute from "./routes/PrivateRoute";
+import GuestRoute from "./routes/GuestRoute";
 import AdminRoute from "./routes/AdminRoute";
 import WorkoutRedirect from "./routes/WorkoutRedirect";
 
@@ -79,8 +80,7 @@ function App() {
                 path="/installation-guide"
                 element={<InstallationGuide />}
               />
-              <Route path="/login" element={<LoginForm />} />
-              <Route path="/register" element={<RegisterForm />} />
+
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route
                 path="/health-data-policy"
@@ -91,8 +91,14 @@ function App() {
                 element={<TermsAndConditions />}
               />
 
-              <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+
+              {/* Guest Route */}
+              <Route element={<GuestRoute />}>
+                <Route path="/login" element={<LoginForm />} />
+                <Route path="/register" element={<RegisterForm />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+              </Route>
 
               {/* Private Route */}
               <Route element={<PrivateRoute />}>

@@ -87,6 +87,7 @@ const UpdateWorkoutPlanForm = () => {
           <input
             type="text"
             name="name"
+            autoComplete="off"
             id="name"
             maxLength={50}
             placeholder={t("update_workout_plan_form.plan_name_placeholder")}

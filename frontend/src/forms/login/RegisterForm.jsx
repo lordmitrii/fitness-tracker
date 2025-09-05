@@ -8,7 +8,7 @@ import { getPolicyVersion } from "../../utils/policiesUtils";
 const RegisterForm = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { register } = useAuth();
+  const { register, isRefreshing, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [privacyConsent, setPrivacyConsent] = useState(false);
@@ -200,7 +200,11 @@ const RegisterForm = () => {
           )}
         </div>
       </div>
-      <button type="submit" className="btn btn-primary w-full">
+      <button
+        type="submit"
+        className="btn btn-primary w-full"
+        disabled={isRefreshing || loading}
+      >
         {t("general.register")}
       </button>
       <div className="text-center text-caption mt-2">

@@ -33,7 +33,7 @@ func GenerateToken(userID uint) (string, error) {
 }
 
 func GenerateRefreshToken(userID uint) (string, error) {
-	expiresAt := time.Now().Add(7 * 24 * time.Hour)
+	expiresAt := time.Now().Add(30 * 24 * time.Hour)
 	claims := Claims{
 		UserID: userID,
 		StandardClaims: jwt.StandardClaims{

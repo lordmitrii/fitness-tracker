@@ -151,6 +151,7 @@ const ProfileForm = memo(function ProfileForm({
           <input
             type="number"
             inputMode="numeric"
+            autoComplete="off"
             name="age"
             id="age"
             min={PROFILE_LIMITS.age.min}
@@ -179,6 +180,7 @@ const ProfileForm = memo(function ProfileForm({
           <input
             type="number"
             inputMode="decimal"
+            autoComplete="off"
             name="weight"
             id="weight"
             min={displayWeightMin(PROFILE_LIMITS.weight.min, unitSystem)}
@@ -223,6 +225,7 @@ const ProfileForm = memo(function ProfileForm({
           <input
             type="number"
             inputMode="decimal"
+            autoComplete="off"
             name="height"
             id="height"
             min={displayHeightMin(PROFILE_LIMITS.height.min, unitSystem)}

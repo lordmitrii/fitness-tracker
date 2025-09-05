@@ -13,33 +13,52 @@ import api, {
   clearAccessToken,
 } from "../api";
 import { useTranslation } from "react-i18next";
+import useStorageObject from "../hooks/useStorageObject";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const { t } = useTranslation();
+
   const [isAuth, setIsAuth] = useState(false);
   const [loading, setLoading] = useState(true);
   const [roles, setRoles] = useState([]);
   const [user, setUser] = useState(null);
 
+  const [
+    authSnap,
+    setAuthSnap,
+    { clear: clearAuthSnap, restoring: snapRestoring },
+  ] = useStorageObject(
+    "auth:last-snapshot",
+    {
+      user: null,
+      roles: [],
+      isAuth: false,
+    },
+    localStorage
+  );
+
   const refreshInFlightRef = useRef(null);
-  const lastAuthRef = useRef({
-    user: null,
-    roles: [],
-    isAuth: false,
-  });
+  const lastAuthRef = useRef(authSnap);
+  const hydratedRef = useRef(false);
+
+  useEffect(() => {
+    lastAuthRef.current = authSnap;
+  }, [authSnap]);
 
   const loadMe = useCallback(async () => {
     const res = await api.get("/users/me");
-    setUser(res.data);
-    setRoles(res.data.roles || []);
-    lastAuthRef.current = {
+    const next = {
       user: res.data,
       roles: res.data.roles || [],
       isAuth: true,
     };
-  }, []);
+    setUser(next.user);
+    setRoles(next.roles);
+    lastAuthRef.current = next;
+    setAuthSnap(next);
+  }, [setAuthSnap]);
 
   const refresh = useCallback(async () => {
     if (refreshInFlightRef.current) return refreshInFlightRef.current;
@@ -58,29 +77,25 @@ export const AuthProvider = ({ children }) => {
         setIsAuth(false);
         setRoles([]);
         setUser(null);
-        lastAuthRef.current = {
-          user: null,
-          roles: [],
-          isAuth: false,
-        };
+        const next = { user: null, roles: [], isAuth: false };
+        lastAuthRef.current = next;
+        setAuthSnap(next);
         return "unauthenticated";
       } catch (error) {
         console.error("Refresh error:", error);
         if (error?.isOffline) {
-          setIsAuth(lastAuthRef.current.isAuth);
-          setRoles(lastAuthRef.current.roles);
-          setUser(lastAuthRef.current.user);
+          setIsAuth(!!lastAuthRef.current.isAuth);
+          setRoles(lastAuthRef.current.roles || []);
+          setUser(lastAuthRef.current.user || null);
           return "offline";
         }
         clearAccessToken();
         setIsAuth(false);
         setRoles([]);
         setUser(null);
-        lastAuthRef.current = {
-          user: null,
-          roles: [],
-          isAuth: false,
-        };
+        const next = { user: null, roles: [], isAuth: false };
+        lastAuthRef.current = next;
+        setAuthSnap(next);
         return "unauthenticated";
       } finally {
         setLoading(false);
@@ -88,19 +103,23 @@ export const AuthProvider = ({ children }) => {
     })();
 
     refreshInFlightRef.current = p;
-
     p.finally(() => {
-      if (refreshInFlightRef.current === p) {
-        refreshInFlightRef.current = null;
-      }
+      if (refreshInFlightRef.current === p) refreshInFlightRef.current = null;
     });
-
     return p;
-  }, [loadMe]);
+  }, [loadMe, setAuthSnap]);
 
   useEffect(() => {
+    if (hydratedRef.current || snapRestoring) return;
+
+    setIsAuth(!!authSnap.isAuth);
+    setUser(authSnap.user || null);
+    setRoles(authSnap.roles || []);
+    setLoading(false);
+
+    hydratedRef.current = true;
     refresh();
-  }, [refresh]);
+  }, [authSnap, snapRestoring, refresh]);
 
   useEffect(() => {
     const onOnline = () => refresh();
@@ -161,8 +180,9 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error("Logout error:", error);
     }
-    lastAuthRef.current = { user: null, roles: [], isAuth: false };
-    // Optionally, send a logout endpoint to clear cookie on backend
+    const next = { user: null, roles: [], isAuth: false };
+    lastAuthRef.current = next;
+    clearAuthSnap();
   };
 
   const hasRole = (roleName) => roles.some((r) => r.name === roleName);

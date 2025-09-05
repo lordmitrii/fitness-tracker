@@ -139,7 +139,7 @@ const ResetPassword = () => {
           className="input-style"
           type="password"
           required
-          autoComplete="new-password"
+          autoComplete="off"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           placeholder={t("reset_password.confirm_password_placeholder")}
