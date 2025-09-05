@@ -16,7 +16,7 @@ const WorkoutPlans = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
 
-  const { currentCycle } = useCurrentCycleData();
+  const { currentCycle, refetch: refetchCurrentCycle } = useCurrentCycleData();
 
   const {
     plans,
@@ -41,7 +41,8 @@ const WorkoutPlans = () => {
   usePullToRefreshOverride(
     useCallback(async () => {
       await refetch();
-    }, [refetch])
+      await refetchCurrentCycle();
+    }, [refetch, refetchCurrentCycle])
   );
 
   if (loading)

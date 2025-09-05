@@ -295,6 +295,7 @@ const AIChat = () => {
           <div className="flex gap-2 items-center">
             <input
               className="input-style"
+              autoComplete="off"
               placeholder={
                 selectedTopic
                   ? t("ai_chat.user_input_placeholder")

@@ -5,6 +5,8 @@ import DropdownSelect from "../components/DropdownSelect";
 import useSettingsData from "../hooks/data/useSettingsData";
 import LoadingState from "../states/LoadingState";
 import ErrorState from "../states/ErrorState";
+import { useCallback } from "react";
+import { usePullToRefreshOverride } from "../context/PullToRefreshContext";
 
 function Switch({ checked, onChange, disabled = false }) {
   return (
@@ -31,6 +33,12 @@ const Settings = () => {
   const { t } = useTranslation();
   const { settings, loading, error, updateSetting, savingKey, refetch } =
     useSettingsData();
+  
+  usePullToRefreshOverride(
+    useCallback(async () => {
+      await refetch();
+    }, [refetch])
+  );
 
   const SETTING_DEFS = useMemo(
     () => ({
@@ -124,7 +132,6 @@ const Settings = () => {
 
           return null;
         })}
-
 
         {/* other settings that are not in SETTING_DEFS */}
         {/* {settings &&

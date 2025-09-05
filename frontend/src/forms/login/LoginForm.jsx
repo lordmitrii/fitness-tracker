@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 const LoginForm = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { login } = useAuth();
+  const { login, isRefreshing, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
@@ -69,7 +69,11 @@ const LoginForm = () => {
           placeholder={t("login_form.password_placeholder")}
         />
       </div>
-      <button className="btn btn-primary w-full" type="submit">
+      <button
+        className="btn btn-primary w-full"
+        type="submit"
+        disabled={isRefreshing || loading}
+      >
         {t("general.login")}
       </button>
       <div className="text-center text-caption mt-2">

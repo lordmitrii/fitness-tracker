@@ -23,6 +23,7 @@ function CustomExerciseFields({
       <input
         className="input-style"
         type="text"
+        autoComplete="off"
         maxLength={50}
         placeholder={t("add_workout_exercise_modal.exercise_name_placeholder")}
         value={name}
@@ -64,6 +65,7 @@ function SetsField({ t, value, onChange, error }) {
           t("measurements.sets").slice(1)
         }
         inputMode="numeric"
+        autoComplete="off"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         min={1}

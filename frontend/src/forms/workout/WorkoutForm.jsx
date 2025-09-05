@@ -70,6 +70,7 @@ const WorkoutForm = memo(function WorkoutForm({
           <input
             type="text"
             name="name"
+            autoComplete="off"
             id="name"
             placeholder={t("workout_form.workout_name_placeholder")}
             value={formData.name}

@@ -156,6 +156,7 @@ const Users = () => {
             <div className="flex gap-2">
               <input
                 type="text"
+                autoComplete="off"
                 value={query}
                 onChange={(e) => {
                   setQuery(e.target.value);

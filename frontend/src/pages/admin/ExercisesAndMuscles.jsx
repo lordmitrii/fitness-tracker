@@ -67,6 +67,7 @@ const ExercisesAndMuscles = () => {
           <div className="flex w-full gap-2">
             <input
               type="text"
+              autoComplete="off"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t("admin.exercises.search_placeholder")}

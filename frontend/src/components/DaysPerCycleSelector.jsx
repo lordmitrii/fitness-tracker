@@ -81,6 +81,7 @@ const DaysPerCycleSelector = ({ value, onChange }) => {
               value={customValue}
               onChange={handleInputChange}
               inputMode="numeric"
+              autoComplete="off"
               placeholder={t("days_per_cycle_selector.days")}
               className="input-style text-center"
             />
