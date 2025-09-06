@@ -1,13 +1,14 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
+	"github.com/lordmitrii/golang-web-gin/internal/interface/http/dto"
 	"github.com/lordmitrii/golang-web-gin/internal/interface/http/middleware"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
-	"github.com/lordmitrii/golang-web-gin/internal/interface/http/dto"
 )
 
 type EmailHandler struct {
@@ -49,7 +50,7 @@ func (h *EmailHandler) SendVerificationEmail(c *gin.Context) {
 		return
 	}
 
-	if err := h.svc.SendVerificationEmail(c.Request.Context(), req.To); err != nil {
+	if err := h.svc.SendVerificationEmail(c.Request.Context(), req.To, req.Language); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -77,7 +78,8 @@ func (h *EmailHandler) SendResetPasswordEmail(c *gin.Context) {
 		return
 	}
 
-	if err := h.svc.SendResetPasswordEmail(c.Request.Context(), req.To); err != nil {
+	if err := h.svc.SendResetPasswordEmail(c.Request.Context(), req.To, req.Language); err != nil {
+		fmt.Println("Failed to send reset password email:", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

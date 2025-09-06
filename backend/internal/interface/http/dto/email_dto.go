@@ -1,7 +1,8 @@
 package dto
 
 type SendVerificationEmailRequest struct {
-	To string `json:"to" binding:"required,email"`
+	To       string `json:"to" binding:"required,email"`
+	Language string `json:"language"`
 }
 
 type SendNotificationEmailRequest struct {
@@ -11,7 +12,8 @@ type SendNotificationEmailRequest struct {
 }
 
 type SendResetPasswordEmailRequest struct {
-	To string `json:"to" binding:"required,email"`
+	To       string `json:"to" binding:"required,email"`
+	Language string `json:"language"`
 }
 
 type ValidateTokenRequest struct {

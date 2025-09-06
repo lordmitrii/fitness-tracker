@@ -126,8 +126,8 @@ type AIService interface {
 
 type EmailService interface {
 	SendNotificationEmail(ctx context.Context, to, subject, body string) error
-	SendVerificationEmail(ctx context.Context, to string) error
-	SendResetPasswordEmail(ctx context.Context, to string) error
+	SendVerificationEmail(ctx context.Context, to, lang string) error
+	SendResetPasswordEmail(ctx context.Context, to, lang string) error
 	ValidateToken(ctx context.Context, token, tokenType string) (bool, error)
 	ResetPassword(ctx context.Context, token, newPassword string) error
 	VerifyAccount(ctx context.Context, token string) error
