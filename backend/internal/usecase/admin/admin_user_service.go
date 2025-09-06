@@ -54,7 +54,7 @@ func (s *adminServiceImpl) TriggerResetUserPassword(ctx context.Context, userID 
 		return err
 	}
 
-	return s.emailSvc.SendResetPasswordEmail(ctx, user.Email)
+	return s.emailSvc.SendResetPasswordEmail(ctx, user.Email, "en")
 }
 
 func (s *adminServiceImpl) DeleteUser(ctx context.Context, userID uint) error {

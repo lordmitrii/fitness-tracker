@@ -36,6 +36,7 @@ import (
 	myredis "github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/redis"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/job"
 	"github.com/lordmitrii/golang-web-gin/internal/interface/http"
+	"log"
 )
 
 func main() {
@@ -79,10 +80,26 @@ func main() {
 	userSettingsRepo := postgres.NewUserSettingsRepo(db)
 
 	emailTokenRepo := postgres.NewEmailTokenRepo(db)
-	emailSender := email.NewGmailSender(
-		os.Getenv("NOREPLY_EMAIL"),
-		os.Getenv("NOREPLY_EMAIL_PASSWORD"),
+	// emailSender := email.NewGmailSender(            //not working in digital ocean as port 587 is blocked
+	// 	os.Getenv("NOREPLY_EMAIL"),
+	// 	os.Getenv("NOREPLY_EMAIL_PASSWORD"),
+	// )
+
+	// emailSender := email.NewSESSender(              // not working cause we need to verify domain first - that means getting the paid email domain
+	// 	os.Getenv("AWS_ACCESS_KEY_ID"),
+	// 	os.Getenv("AWS_SECRET_ACCESS_KEY"),
+	// 	os.Getenv("AWS_REGION"),
+	// 	os.Getenv("AWS_FROM_EMAIL"),
+	// )
+
+	emailSender := email.NewSendGridSender(
+		os.Getenv("SENDGRID_FROM_EMAIL"),
+		os.Getenv("SENDGRID_API_KEY"),
 	)
+
+	if err := email.LoadTemplates("./"); err != nil {
+		log.Printf("email templates not loaded, using inline fallback: %v", err)
+	}
 
 	var exerciseService usecase.ExerciseService = exercise.NewExerciseService(exerciseRepo, muscleGroupRepo)
 	var workoutService usecase.WorkoutService = workout.NewWorkoutService(workoutPlanRepo, workoutCycleRepo, workoutRepo, workoutExerciseRepo, workoutSetRepo, individualExerciseRepo, exerciseRepo)

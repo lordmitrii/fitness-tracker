@@ -1,0 +1,10 @@
+{{ define "verification.html" }}
+{{ template "base.html" . }}
+{{ end }}
+
+{{ define "content" }}
+<p>{{ .Intro }}</p>
+<div style="font-size:24px;font-weight:700;letter-spacing:2px;padding:12px 16px;border-radius:8px;border:1px solid #E5E7EB;display:inline-block;">
+  {{ .Code }}
+</div>
+{{ end }}

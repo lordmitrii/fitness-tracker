@@ -17,10 +17,10 @@ func (s *emailServiceImpl) SendNotificationEmail(ctx context.Context, to, subjec
 		return nil
 	}
 
-	return s.emailSender.SendNotificationEmail(to, subject, body)
+	return s.emailSender.SendNotificationEmail(to, subject, body, "en")
 }
 
-func (s *emailServiceImpl) SendVerificationEmail(ctx context.Context, to string) error {
+func (s *emailServiceImpl) SendVerificationEmail(ctx context.Context, to, lang string) error {
 	exists, err := s.userService.CheckEmail(ctx, to)
 	if err != nil {
 		return nil
@@ -47,10 +47,10 @@ func (s *emailServiceImpl) SendVerificationEmail(ctx context.Context, to string)
 		return err
 	}
 
-	return s.emailSender.SendVerificationEmail(to, code)
+	return s.emailSender.SendVerificationEmail(to, code, lang)
 }
 
-func (s *emailServiceImpl) SendResetPasswordEmail(ctx context.Context, to string) error {
+func (s *emailServiceImpl) SendResetPasswordEmail(ctx context.Context, to, lang string) error {
 	exists, err := s.userService.CheckEmail(ctx, to)
 	if err != nil {
 		return nil
@@ -77,7 +77,7 @@ func (s *emailServiceImpl) SendResetPasswordEmail(ctx context.Context, to string
 	}
 
 	link := fmt.Sprintf("https://ftrackerapp.co.uk/reset-password?token=%s&spinner=false", token)
-	return s.emailSender.SendResetPasswordEmail(to, link)
+	return s.emailSender.SendResetPasswordEmail(to, link, lang)
 }
 
 func (s *emailServiceImpl) ValidateToken(ctx context.Context, token, tokenType string) (bool, error) {
