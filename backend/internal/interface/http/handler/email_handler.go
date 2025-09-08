@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -79,7 +78,6 @@ func (h *EmailHandler) SendResetPasswordEmail(c *gin.Context) {
 	}
 
 	if err := h.svc.SendResetPasswordEmail(c.Request.Context(), req.To, req.Language); err != nil {
-		fmt.Println("Failed to send reset password email:", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
