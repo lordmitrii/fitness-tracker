@@ -136,6 +136,10 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "profile not found"})
 		return
 	}
+	if p == nil {
+		c.Status(http.StatusNoContent)
+		return
+	}
 	c.JSON(http.StatusOK, dto.ToProfileResponse(p))
 }
 
@@ -152,11 +156,11 @@ func (h *UserHandler) CreateProfile(c *gin.Context) {
 	}
 
 	p := &user.Profile{
-		UserID:   userID,
-		Age:      req.Age,
-		Height:   req.Height,
-		Weight:   req.Weight,
-		Sex:      req.Sex,
+		UserID: userID,
+		Age:    req.Age,
+		Height: req.Height,
+		Weight: req.Weight,
+		Sex:    req.Sex,
 	}
 
 	if err := h.svc.CreateProfile(c.Request.Context(), p); err != nil {
@@ -344,7 +348,7 @@ func (h *UserHandler) UpdateUserSettings(c *gin.Context) {
 		return
 	}
 
-	settings, err := h.svc.UpdateUserSettings(c.Request.Context(), userID, updates);
+	settings, err := h.svc.UpdateUserSettings(c.Request.Context(), userID, updates)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

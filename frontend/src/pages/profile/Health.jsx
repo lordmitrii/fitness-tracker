@@ -36,7 +36,7 @@ const Health = () => {
         {t("profile.your_profile")}
       </h1>
 
-      {profile && profile.age ? (
+      {!!profile ? (
         <>
           <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-body mb-8">
             <div className="font-semibold">{t("profile.age_label")}</div>

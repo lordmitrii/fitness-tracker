@@ -7,6 +7,9 @@ import (
 )
 
 func ToProfileResponse(p *user.Profile) ProfileResponse {
+	if p == nil {
+		return ProfileResponse{}
+	}
 	return ProfileResponse{
 		Age:       p.Age,
 		Height:    p.Height,

@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useCallback } from "react";
 import api from "../../api";
 import { QK } from "../../utils/queryKeys";
-import usePlansData from "./usePlansData";
 
 export async function fetchCycle(planID, cycleID) {
   try {
@@ -114,12 +113,6 @@ export default function useCycleData({
       return normalizeCycleShape(rest);
     },
   });
-  const plansData = usePlansData({
-    skipQuery: !planID || skipQuery,
-  });
-
-  const plan =
-    plansData?.plans?.find((p) => String(p.id) === String(planID)) || {};
   const cycle = cycleQuery.data ?? { workouts: [] };
   const workouts = cycle.workouts ?? [];
 
@@ -585,9 +578,9 @@ export default function useCycleData({
 
       const isTailDeletion = !vars?.nextCycleID;
       const preservedCurrent =
-        prevPlans?.find((p) => p.id === planID)?.current_cycle_id ??
-        plan?.current_cycle_id ??
-        null;
+        prevPlans?.find((p) => String(p.id) === String(planID))
+          ?.current_cycle_id ?? null;
+
       setPlanCaches((p) => ({
         ...p,
         current_cycle_id: isTailDeletion
@@ -1106,20 +1099,20 @@ export default function useCycleData({
   return useMemo(
     () => ({
       // data
-      plan,
       cycle,
       workouts,
       ...computed,
 
       // status
-      loading: cycleQuery.isLoading || plansData.loading,
-      fetching: cycleQuery.isFetching || plansData.fetching,
-      fetchedOnce: cycleQuery.isFetched && plansData.fetchedOnce,
-      error: cycleQuery.error || plansData.error,
+      loading: cycleQuery.isLoading, // || plansData.loading,
+      fetching: cycleQuery.isFetching, // || plansData.fetching,
+      fetchedOnce: cycleQuery.isFetched, // && plansData.fetchedOnce,
+      error: cycleQuery.error, // || plansData.error,
 
       // controls
       refetchAll: async () => {
-        await Promise.all([cycleQuery.refetch(), plansData.refetch()]);
+        await Promise.all([cycleQuery.refetch()]);
+        //await Promise.all([cycleQuery.refetch(), plansData.refetch()]);
       },
       setCycleCache,
       invalidate,
@@ -1149,7 +1142,6 @@ export default function useCycleData({
       },
     }),
     [
-      plan,
       cycle,
       workouts,
       computed,
@@ -1157,11 +1149,6 @@ export default function useCycleData({
       cycleQuery.isFetching,
       cycleQuery.isFetched,
       cycleQuery.error,
-      plansData.loading,
-      plansData.fetching,
-      plansData.fetchedOnce,
-      plansData.error,
-      plansData.refetch,
       cycleQuery.refetch,
       setCycleCache,
       invalidate,

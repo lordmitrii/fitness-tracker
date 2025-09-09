@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import WorkoutCard from "../../components/workout/WorkoutCard";
 import DropdownMenu from "../../components/DropdownMenu";
 import WorkoutCycleDetailsMenu from "../../components/workout/WorkoutCycleDetailsMenu";
@@ -13,6 +13,7 @@ import useCycleData from "../../hooks/data/useCycleData";
 import { usePullToRefreshOverride } from "../../context/PullToRefreshContext";
 import { useSwipeable } from "react-swipeable";
 import useSettingsData from "../../hooks/data/useSettingsData";
+import usePlansData from "../../hooks/data/usePlansData";
 
 const WorkoutCycle = () => {
   const navigate = useNavigate();
@@ -24,7 +25,6 @@ const WorkoutCycle = () => {
   const [exerciseModal, setExerciseModal] = useState(null);
 
   const {
-    plan,
     cycle,
     workouts,
     totalSets,
@@ -36,6 +36,12 @@ const WorkoutCycle = () => {
     mutations,
     ui,
   } = useCycleData({ planID, cycleID });
+
+  const { plans, fetchedOnce: planFetchedOnce } = usePlansData();
+  const plan = useMemo(
+    () => plans.find((p) => String(p.id) === String(planID)),
+    [planFetchedOnce]
+  ); // TODO: check that this dep is bug free
 
   const { settings } = useSettingsData();
 
