@@ -2,11 +2,20 @@ import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const PrivateRoute = () => {
-  const { isAuth, loading } = useAuth();
+  const { isAuth, loading, hasRole } = useAuth();
+  const hasRestrictedRole = hasRole("restricted");
 
   if (loading) return null;
 
-  return isAuth ? <Outlet /> : <Navigate to="/login" />;
+  if (!isAuth) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (hasRestrictedRole) {
+    return <Navigate to="/account-verification" replace />;
+  }
+
+  return <Outlet />;
 };
 
 export default PrivateRoute;

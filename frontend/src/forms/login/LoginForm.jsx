@@ -17,7 +17,7 @@ const LoginForm = () => {
       setError(null);
       const resp = await login(username, password);
       if (resp.status == 200 || resp.status == 201) {
-        navigate("/");
+        navigate("/", { replace: true });
       } else {
         setError(resp.message);
       }

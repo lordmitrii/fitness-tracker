@@ -32,7 +32,7 @@ const WorkoutPlans = () => {
     if (searchParams.get("showCurrent") === "true" && plans.length) {
       if (currentCycle) {
         navigate(
-          `/workout-plans/${currentCycle.workout_plan_id}/workout-cycles/${currentCycle.id}`
+          `/workout-plans/${currentCycle.workout_plan_id}/workout-cycles/${currentCycle.id}`, { replace: true }
         );
       }
     }

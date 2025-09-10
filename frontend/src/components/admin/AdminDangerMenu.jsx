@@ -13,7 +13,7 @@ const DangerMenu = ({ user, onDone, setError }) => {
       await call();
       onDone();
     } catch (error) {
-      console.log("Error resettig user's email:", error)
+      console.error("Error resettig user's email:", error)
       setError(error?.response?.data?.error || error?.response?.data?.message || error?.message);
     } finally {
       setBusy(null);

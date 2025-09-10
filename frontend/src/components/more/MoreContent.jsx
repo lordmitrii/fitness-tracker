@@ -49,7 +49,7 @@ const MoreContent = ({ onDone, variant = "sheet" }) => {
 
   function handleLogout() {
     logout();
-    navigate("/login");
+    navigate("/login", { replace: true });
     onDone?.();
   }
 

@@ -44,13 +44,16 @@ func AutoMigrate(db *gorm.DB) error {
 		&rbac.Permission{}, &rbac.RolePermission{},
 
 		&email.EmailToken{},
-
+		
+		&workout.MuscleGroup{},
 		&workout.Exercise{},
+		&workout.IndividualExercise{},
+
 		&workout.WorkoutPlan{},
 		&workout.WorkoutCycle{},
 		&workout.Workout{},
-		&workout.IndividualExercise{},
 		&workout.WorkoutExercise{},
 		&workout.WorkoutSet{},
 	)
+
 }

@@ -93,6 +93,10 @@ function App() {
               />
 
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route
+                path="/account-verification"
+                element={<AccountVerification />}
+              />
 
               {/* Guest Route */}
               <Route element={<GuestRoute />}>
@@ -103,11 +107,6 @@ function App() {
 
               {/* Private Route */}
               <Route element={<PrivateRoute />}>
-                <Route
-                  path="/account-verification"
-                  element={<AccountVerification />}
-                />
-
                 <Route path="/ai-chat" element={<AIChat />} />
                 {/* Workout Routes */}
                 <Route path="/current-workout" element={<WorkoutRedirect />} />

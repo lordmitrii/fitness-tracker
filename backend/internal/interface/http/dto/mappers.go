@@ -199,12 +199,12 @@ func ToIndividualExerciseResponse(e *workout.IndividualExercise) IndividualExerc
 		resp.Exercise = ToExerciseResponse(e.Exercise)
 	}
 
-	var lastCompletedWorkoutExercise *WorkoutExerciseResponse
-	if e.LastCompletedWorkoutExercise != nil {
-		tmp := ToWorkoutExerciseResponse(e.LastCompletedWorkoutExercise)
-		lastCompletedWorkoutExercise = &tmp
-	}
-	resp.LastCompletedWorkoutExercise = lastCompletedWorkoutExercise
+	// var lastCompletedWorkoutExercise *WorkoutExerciseResponse
+	// if e.LastCompletedWorkoutExercise != nil {
+	// 	tmp := ToWorkoutExerciseResponse(e.LastCompletedWorkoutExercise)
+	// 	lastCompletedWorkoutExercise = &tmp
+	// }
+	// resp.LastCompletedWorkoutExercise = lastCompletedWorkoutExercise
 
 	return resp
 }

@@ -82,7 +82,7 @@ const ResetPassword = () => {
 
       if (response.status === 200) {
         sessionStorage.setItem("hasLoaded", "1");
-        navigate("/login");
+        navigate("/login", { replace: true });
       } else {
         setError(t("reset_password.reset_failed"));
         console.error("Password reset failed:", response.data);
@@ -99,7 +99,7 @@ const ResetPassword = () => {
     return (
       <ErrorState
         error={t("reset_password.invalid_link")}
-        onRetry={() => navigate("/forgot-password")}
+        onRetry={() => navigate("/forgot-password", { replace: true })}
       />
     );
 

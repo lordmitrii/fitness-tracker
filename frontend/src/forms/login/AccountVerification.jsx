@@ -1,14 +1,14 @@
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import api from "../../api";
 import { useCooldown } from "../../hooks/useCooldown";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Navigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 const AccountVerification = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refresh, isAuth, hasRole } = useAuth();
   const [email, setEmail] = useState(user?.email ?? "");
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
@@ -19,6 +19,14 @@ const AccountVerification = () => {
 
   const [searchParams] = useSearchParams();
   const isRegistering = searchParams.get("registering") === "true";
+
+  const emailModified = useMemo(
+    () => user?.email != email,
+    [user?.email, email]
+  );
+
+  if (!isAuth) return <Navigate to="/login" replace />;
+  if (!hasRole("restricted")) return <Navigate to="/" replace />;
 
   const handleSave = async () => {
     if (pending) return;
@@ -41,7 +49,7 @@ const AccountVerification = () => {
     }
 
     setPending(true);
-    setShowInputField(false)
+    setShowInputField(false);
     try {
       await api.patch("users/accounts", { email });
       setEmail(email);
@@ -96,8 +104,7 @@ const AccountVerification = () => {
     } catch (error) {
       console.error("Error sending verification email:", error);
       setError(t("account_verification.error_sending_email"));
-    }
-    finally {
+    } finally {
       setPending(false);
     }
   };
@@ -113,6 +120,7 @@ const AccountVerification = () => {
         token: codeValue,
       });
       if (response.status == 200) {
+        await refresh();
         setSuccessMessage(t("account_verification.verification_success"));
 
         // Registering path
@@ -122,7 +130,7 @@ const AccountVerification = () => {
           //   if (
           //     !(loginResp.status == 200 || loginResp.status == 201)
           //   ) {
-          navigate("/login");
+          navigate("/login", { replace: true });
           //   }
         }
 
@@ -152,7 +160,7 @@ const AccountVerification = () => {
           <label className="block text-body font-semibold mb-1" htmlFor="email">
             {t("general.email")}
           </label>
-          {user?.email != email && (
+          {emailModified && (
             <button
               className="text-caption-blue"
               type="button"
@@ -165,9 +173,7 @@ const AccountVerification = () => {
         <input
           id="email"
           className={`input-style ${
-             user?.email == email || pending
-              ? "opacity-50 cursor-not-allowed"
-              : ""
+            !emailModified || pending ? "opacity-50 cursor-not-allowed" : ""
           }`}
           disabled={pending}
           type="email"
@@ -176,7 +182,7 @@ const AccountVerification = () => {
           inputMode="email"
           value={email}
           onChange={(e) => {
-            setShowInputField(false)
+            setShowInputField(false);
             setEmail(e.target.value);
           }}
           placeholder={t("account_verification.email_placeholder")}
@@ -204,9 +210,9 @@ const AccountVerification = () => {
         {showInputField && (
           <button
             className={`btn w-full flex-3 ${
-              (pending || user?.email != email)? "btn-secondary" : "btn-primary"
+              pending || emailModified ? "btn-secondary" : "btn-primary"
             }`}
-            disabled={pending || user?.email != email}
+            disabled={pending || emailModified}
             type="button"
             onClick={handleVerify}
           >
@@ -215,10 +221,12 @@ const AccountVerification = () => {
         )}
         <button
           className={`btn w-full flex-1 whitespace-nowrap ${
-            (cooldown > 0 || pending || user?.email != email) ? "btn-secondary" : "btn-primary"
+            cooldown > 0 || pending || emailModified
+              ? "btn-secondary"
+              : "btn-primary"
           } ${showInputField ? "opacity-75" : ""}`}
           type="button"
-          disabled={cooldown > 0 || pending || user?.email != email}
+          disabled={cooldown > 0 || pending || emailModified}
           onClick={handleSend}
         >
           {cooldown > 0

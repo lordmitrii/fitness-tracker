@@ -19,7 +19,7 @@ type IndividualExercise struct {
 	CurrentReps   int `gorm:"-"`
 
 	LastCompletedWorkoutExerciseID *uint
-	LastCompletedWorkoutExercise   *WorkoutExercise `gorm:"foreignKey:LastCompletedWorkoutExerciseID;constraint:OnDelete:SET NULL,OnUpdate:CASCADE;"`
+	// LastCompletedWorkoutExercise   *WorkoutExercise `gorm:"foreignKey:LastCompletedWorkoutExerciseID;constraint:OnDelete:SET NULL,OnUpdate:CASCADE;"`
 
 	UserID uint      `gorm:"uniqueIndex:idx_name_user_id;not null"`
 	User   user.User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`

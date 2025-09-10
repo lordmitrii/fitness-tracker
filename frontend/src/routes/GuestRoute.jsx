@@ -6,7 +6,7 @@ const GuestRoute = () => {
 
   if (loading) return null;
 
-  return isAuth ? <Navigate to="/" /> : <Outlet />;
+  return isAuth ? <Navigate to="/" replace /> : <Outlet />;
 };
 
 export default GuestRoute;

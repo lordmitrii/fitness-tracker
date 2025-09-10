@@ -95,10 +95,10 @@ const RegisterForm = () => {
       if (resp.status == 201 || resp.status == 200) {
         const loginResp = await login(username, password);
         if (loginResp.status == 201 || loginResp.status == 200) {
-          navigate("/account-verification?registering=true");
+          navigate("/account-verification?registering=true", { replace: true });
         } else {
           // Unsuccessful login
-          navigate("/login");
+          navigate("/login", { replace: true });
         }
       } else {
         setError(resp.message);

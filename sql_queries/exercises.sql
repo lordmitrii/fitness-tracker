@@ -52,7 +52,6 @@ VALUES
     ('EZ Bar Curls', false, 4, 'ez-bar-curls', false),
     ('Dumbbell Curls', false, 4, 'dumbbell-curls', false),
     ('Machine Preacher Curls', false, 4, 'machine-preacher-curls', false),
-
 -- Triceps
     ('Pushdowns', false, 5, 'tricep-pushdowns', false),
     ('Overhead Tricep Extensions', false, 5, 'overhead-tricep-extensions', false),

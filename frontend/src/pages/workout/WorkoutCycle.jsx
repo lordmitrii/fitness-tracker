@@ -37,10 +37,10 @@ const WorkoutCycle = () => {
     ui,
   } = useCycleData({ planID, cycleID });
 
-  const { plans, fetchedOnce: planFetchedOnce } = usePlansData();
+  const { plans } = usePlansData();
   const plan = useMemo(
     () => plans.find((p) => String(p.id) === String(planID)),
-    [planFetchedOnce]
+    [plans, planID]
   ); // TODO: check that this dep is bug free
 
   const { settings } = useSettingsData();
@@ -49,13 +49,15 @@ const WorkoutCycle = () => {
     onSwipedLeft: () => {
       cycle?.next_cycle_id &&
         navigate(
-          `/workout-plans/${planID}/workout-cycles/${cycle.next_cycle_id}`
+          `/workout-plans/${planID}/workout-cycles/${cycle.next_cycle_id}`,
+          { replace: true }
         );
     },
     onSwipedRight: () => {
       cycle?.previous_cycle_id &&
         navigate(
-          `/workout-plans/${planID}/workout-cycles/${cycle.previous_cycle_id}`
+          `/workout-plans/${planID}/workout-cycles/${cycle.previous_cycle_id}`,
+          { replace: true }
         );
     },
     preventDefaultTouchmoveEvent: true,
