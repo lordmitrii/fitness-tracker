@@ -28,6 +28,7 @@ func NewUserHandler(r *gin.RouterGroup, svc usecase.UserService) {
 		protected.Use(middleware.JWTMiddleware())
 		{
 			protected.GET("/me", h.Me)
+			protected.PATCH("/accounts", h.UpdateAccount)
 
 			protected.POST("/profile", h.CreateProfile)
 			protected.GET("/profile", h.GetProfile)
@@ -61,7 +62,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 		return
 	}
 
-	if err := h.svc.Register(c.Request.Context(), req.Email, req.Password, req.PrivacyConsent, req.HealthDataConsent, req.PrivacyPolicyVersion, req.HealthDataPolicyVersion); err != nil {
+	if err := h.svc.Register(c.Request.Context(), req.Username, req.Email, req.Password, req.PrivacyConsent, req.HealthDataConsent, req.PrivacyPolicyVersion, req.HealthDataPolicyVersion); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -75,7 +76,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	user, err := h.svc.Authenticate(c.Request.Context(), req.Email, req.Password)
+	user, err := h.svc.Authenticate(c.Request.Context(), req.Username, req.Password)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 		return
@@ -136,7 +137,34 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "profile not found"})
 		return
 	}
+	if p == nil {
+		c.Status(http.StatusNoContent)
+		return
+	}
 	c.JSON(http.StatusOK, dto.ToProfileResponse(p))
+}
+
+func (h *UserHandler) UpdateAccount(c *gin.Context) {
+	userID, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+
+	var req dto.AccountUpdateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	updates := dto.BuildUpdatesFromPatchDTO(&req)
+	
+	account, err := h.svc.UpdateAccount(c.Request.Context(), userID, updates)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.ToAccountResponse(account))
 }
 
 func (h *UserHandler) CreateProfile(c *gin.Context) {
@@ -152,11 +180,11 @@ func (h *UserHandler) CreateProfile(c *gin.Context) {
 	}
 
 	p := &user.Profile{
-		UserID:   userID,
-		Age:      req.Age,
-		Height:   req.Height,
-		Weight:   req.Weight,
-		Sex:      req.Sex,
+		UserID: userID,
+		Age:    req.Age,
+		Height: req.Height,
+		Weight: req.Weight,
+		Sex:    req.Sex,
 	}
 
 	if err := h.svc.CreateProfile(c.Request.Context(), p); err != nil {
@@ -303,6 +331,7 @@ func (h *UserHandler) Me(c *gin.Context) {
 	h.svc.TouchLastSeen(c.Request.Context(), userID)
 
 	resp := dto.MeResponse{
+		Username:   user.Username,
 		Email:      user.Email,
 		Roles:      dto.ToRoleResponses(user.Roles),
 		IsVerified: user.IsVerified,
@@ -344,7 +373,7 @@ func (h *UserHandler) UpdateUserSettings(c *gin.Context) {
 		return
 	}
 
-	settings, err := h.svc.UpdateUserSettings(c.Request.Context(), userID, updates);
+	settings, err := h.svc.UpdateUserSettings(c.Request.Context(), userID, updates)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

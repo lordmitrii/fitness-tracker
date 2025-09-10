@@ -61,6 +61,7 @@ import { ErrorBoundary } from "./diagnostics/ErrorBoundary";
 import LogPanel from "./diagnostics/LogPanel";
 import { useLongPressToggle } from "./hooks/useLongPressToggle";
 import TouchHotspot from "./components/TouchHotspot";
+import AccountVerification from "./forms/login/AccountVerification";
 
 function App() {
   const [showLogs, setShowLogs] = useState(false);
@@ -92,6 +93,10 @@ function App() {
               />
 
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route
+                path="/account-verification"
+                element={<AccountVerification />}
+              />
 
               {/* Guest Route */}
               <Route element={<GuestRoute />}>

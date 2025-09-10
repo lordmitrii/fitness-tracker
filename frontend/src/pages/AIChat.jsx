@@ -203,7 +203,7 @@ const AIChat = () => {
     return (
       <ErrorState
         error={t("general.page_no_permissions")}
-        onRetry={() => navigate("/")}
+        onRetry={() => navigate("/", { replace: true })}
       />
     );
 

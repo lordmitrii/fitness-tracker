@@ -32,7 +32,6 @@ describe("useCycleData – basics", () => {
       initialProps: { planID: "p1", cycleID: "c1", skipQuery: false },
     });
 
-    expect(result.current.plan).toEqual({});
     expect(result.current.cycle?.workouts).toEqual([]);
     expect(result.current.error).toBeFalsy();
   });

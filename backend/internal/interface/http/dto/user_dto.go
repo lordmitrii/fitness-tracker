@@ -3,6 +3,7 @@ package dto
 import "time"
 
 type RegisterRequest struct {
+	Username                string `binding:"required,min=5,max=55"`
 	Email                   string `binding:"required,email,max=256"`
 	Password                string `binding:"required,min=8,max=129"`
 	PrivacyConsent          bool   `json:"privacy_consent" binding:"required"`
@@ -12,8 +13,14 @@ type RegisterRequest struct {
 }
 
 type LoginRequest struct {
-	Email    string `json:"email" binding:"required,email,max=256"`
+	Username string `json:"username" binding:"required,max=256"`
 	Password string `json:"password" binding:"required,min=8,max=256"`
+}
+
+type AccountUpdateRequest struct {
+	Username *string `json:"username" binding:"omitempty,min=5,max=55"`
+	Email    *string `json:"email" binding:"omitempty,email,max=256"`
+	Password *string `json:"password" binding:"omitempty,min=8,max=129"`
 }
 
 type ProfileCreateRequest struct {
@@ -77,6 +84,7 @@ type TokenResponse struct {
 }
 
 type MeResponse struct {
+	Username   string         `json:"username"`
 	Email      string         `json:"email"`
 	Roles      []RoleResponse `json:"roles"`
 	IsVerified bool           `json:"is_verified"`
@@ -86,4 +94,9 @@ type UserSettingsResponse struct {
 	UnitSystem         string `json:"unit_system"`
 	BetaOptIn          bool   `json:"beta_opt_in"`
 	EmailNotifications bool   `json:"email_notifications"`
+}
+
+type AccountResponse struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
 }

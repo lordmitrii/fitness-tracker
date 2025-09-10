@@ -8,6 +8,7 @@ type SetRolesRequest struct {
 
 type UserResponse struct {
 	ID         uint           `json:"id"`
+	Username   string         `json:"username"`
 	Email      string         `json:"email"`
 	IsVerified bool           `json:"is_verified"`
 	LastSeenAt time.Time      `json:"last_seen_at"`

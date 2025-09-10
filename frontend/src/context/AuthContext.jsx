@@ -127,15 +127,15 @@ export const AuthProvider = ({ children }) => {
     return () => window.removeEventListener("online", onOnline);
   }, [refresh]);
 
-  const login = async (email, password) => {
+  const login = async (username, password) => {
     try {
-      const { data } = await loginRequest(email, password);
-      if (data && data.access_token) {
-        setAccessToken(data.access_token);
+      const response = await loginRequest(username, password);
+      if (response?.data?.access_token) {
+        setAccessToken(response.data.access_token);
         setIsAuth(true);
         await loadMe();
       }
-      return data;
+      return response;
     } catch (error) {
       if (!error.response || error.isOffline)
         return { message: t("errors.network_error") };
@@ -145,15 +145,17 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (
+    username,
     email,
     password,
     privacyConsent,
     privacyPolicyVersion,
     healthDataConsent,
-    healthDataPolicyVersion
+    healthDataPolicyVersion,
   ) => {
     try {
       const response = await registerRequest(
+        username,
         email,
         password,
         privacyConsent,

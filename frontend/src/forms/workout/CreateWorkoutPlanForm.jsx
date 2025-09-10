@@ -421,7 +421,7 @@ const AddWorkoutPlanForm = () => {
           workouts,
         });
         clear();
-        navigate("/workout-plans");
+        navigate("/workout-plans", { replace: true });
       } catch (error) {
         console.error(error);
         setError(error);

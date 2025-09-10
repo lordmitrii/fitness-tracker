@@ -15,6 +15,6 @@ type Role struct {
 }
 
 type UserRole struct {
-	UserID uint `gorm:"primaryKey"`
-	RoleID uint `gorm:"primaryKey"`
+	UserID uint `gorm:"primaryKey;not null;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	RoleID uint `gorm:"primaryKey;not null;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }

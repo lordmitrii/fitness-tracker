@@ -316,7 +316,7 @@ export const CreateProfileForm = () => {
 
   const handleCreate = (payload) => {
     mutations.create.mutate(payload, {
-      onSuccess: () => navigate("/profile"),
+      onSuccess: () => navigate("/profile", { replace: true }),
       onError: (err) => {
         console.error("Error creating profile:", err);
       },
@@ -382,7 +382,7 @@ export const UpdateProfileForm = () => {
         onRetry={() => {
           mutations.upsert.reset();
           refetch();
-          navigate("/profile");
+          navigate("/profile", { replace: true });
         }}
       />
     );

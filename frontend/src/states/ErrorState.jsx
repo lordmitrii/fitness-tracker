@@ -8,6 +8,9 @@ const pickMessage = (error, t) => {
   if (typeof error === "string") return error;
   return (
     error?.response?.data?.message ??
+    (typeof error?.response?.data?.error === "string"
+      ? error.response.data
+      : null) ??
     error?.message ??
     (typeof error?.response?.data === "string" ? error.response.data : null) ??
     t("error_state.unknown_error")

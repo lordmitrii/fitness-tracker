@@ -46,7 +46,7 @@ const DaysPerCycleSelector = ({ value, onChange }) => {
           <button
             key={i}
             type="button"
-            className={`px-3 sm:px-6 py-2 rounded-xl font-medium transition ${
+            className={`px-2 sm:px-6 py-2 rounded-xl font-medium transition flex-1 mx-1 ${
               value === i + 1
                 ? "bg-blue-600 text-white shadow-md scale-105"
                 : "bg-white text-body hover:bg-blue-100"
@@ -61,7 +61,7 @@ const DaysPerCycleSelector = ({ value, onChange }) => {
         ))}
         <button
           type="button"
-          className={`px-4 py-2 rounded-xl font-medium transition shadow-lg ${
+          className={`px-4 py-2 rounded-xl font-medium transition shadow-lg flex-1 mx-1 ${
             value > MAX_STANDARD_DAYS
               ? "bg-blue-600 text-white shadow-md scale-105"
               : "bg-white text-body hover:bg-blue-100"

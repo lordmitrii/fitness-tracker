@@ -6,7 +6,7 @@ const AdminRoute = () => {
 
   if (loading) return null;
 
-  return hasAnyRole(["admin"]) ? <Outlet /> : <Navigate to="/forbidden" />;
+  return hasAnyRole(["admin"]) ? <Outlet /> : <Navigate to="/forbidden" replace />;
 };
 
 export default AdminRoute;

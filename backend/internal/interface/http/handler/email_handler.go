@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -26,12 +25,14 @@ func NewEmailHandler(r *gin.RouterGroup, svc usecase.EmailService, rateLimiter u
 
 		email.POST("/send-reset-password", h.SendResetPasswordEmail)
 		email.POST("/reset-password", h.ResetPassword)
+		email.POST("/send-account-verification", h.SendVerificationEmail)
+		email.POST("/verify-account", h.VerifyAccount)
 
 		protected := email.Group("/")
 		protected.Use(middleware.JWTMiddleware())
 		{
-			protected.POST("/send-account-verification", h.SendVerificationEmail)
-			protected.POST("/verify-account", h.VerifyAccount)
+			// protected.POST("/send-account-verification", h.SendVerificationEmail)
+			// protected.POST("/verify-account", h.VerifyAccount)
 
 			adminonly := protected.Group("")
 			adminonly.Use(middleware.RequirePerm(rbacService, rbac.PermAdmin))
@@ -79,7 +80,6 @@ func (h *EmailHandler) SendResetPasswordEmail(c *gin.Context) {
 	}
 
 	if err := h.svc.SendResetPasswordEmail(c.Request.Context(), req.To, req.Language); err != nil {
-		fmt.Println("Failed to send reset password email:", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

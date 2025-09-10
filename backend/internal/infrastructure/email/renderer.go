@@ -3,14 +3,18 @@ package email
 import (
 	"bytes"
 	"html/template"
-	"path/filepath"
+	"embed"
 )
+
+
+//go:embed templates/email/*.html
+var emailFS embed.FS
 
 var tpl *template.Template
 
 func LoadTemplates(basePath string) error {
 	var err error
-	tpl, err = template.ParseGlob(filepath.Join(basePath, "templates/email/*.html"))
+	tpl, err = template.ParseFS(emailFS, "templates/email/*.html")
 	return err
 }
 

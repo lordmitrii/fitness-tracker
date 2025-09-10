@@ -32,7 +32,7 @@ const WorkoutPlans = () => {
     if (searchParams.get("showCurrent") === "true" && plans.length) {
       if (currentCycle) {
         navigate(
-          `/workout-plans/${currentCycle.workout_plan_id}/workout-cycles/${currentCycle.id}`
+          `/workout-plans/${currentCycle.workout_plan_id}/workout-cycles/${currentCycle.id}`, { replace: true }
         );
       }
     }
@@ -114,7 +114,7 @@ const WorkoutPlans = () => {
             ))}
           </ul>
         ) : (
-          <div className="bg-white rounded-2xl shadow p-8 flex flex-col items-center mt-8">
+          <div className="bg-white rounded-2xl shadow p-8 flex flex-col items-center">
             <p className="text-body mb-6">
               {t("workout_plans.no_plans_found")}
             </p>

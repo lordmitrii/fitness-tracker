@@ -108,7 +108,7 @@ export const CreateWorkoutForm = () => {
           payload
         );
         await qc.invalidateQueries({ queryKey: QK.cycle(planID, cycleID) });
-        navigate(`/workout-plans/${planID}/workout-cycles/${cycleID}`);
+        navigate(`/workout-plans/${planID}/workout-cycles/${cycleID}`, { replace: true });
       } catch (error) {
         console.error("Error creating workout:", error);
         setError(error);

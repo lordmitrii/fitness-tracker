@@ -9,6 +9,7 @@ import (
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type UserRepo struct {
@@ -26,6 +27,17 @@ func (r *UserRepo) Create(ctx context.Context, u *user.User) error {
 func (r *UserRepo) GetByEmail(ctx context.Context, email string) (*user.User, error) {
 	var u user.User
 	if err := r.db.WithContext(ctx).Where("email = ?", email).First(&u).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, custom_err.ErrUserNotFound
+		}
+		return nil, err
+	}
+	return &u, nil
+}
+
+func (r *UserRepo) GetByUsername(ctx context.Context, username string) (*user.User, error) {
+	var u user.User
+	if err := r.db.WithContext(ctx).Where("username = ?", username).First(&u).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, custom_err.ErrUserNotFound
 		}
@@ -54,6 +66,21 @@ func (r *UserRepo) Update(ctx context.Context, id uint, updates map[string]any) 
 		return custom_err.ErrUserNotFound
 	}
 	return nil
+}
+
+func (r *UserRepo) UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*user.User, error) {
+	var user user.User
+	res := r.db.WithContext(ctx).
+		Model(&user).Where("id = ?", id).
+		Clauses(clause.Returning{}).
+		Updates(updates)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RowsAffected == 0 {
+		return nil, custom_err.ErrUserNotFound
+	}
+	return &user, nil
 }
 
 func (r *UserRepo) UpdateByEmail(ctx context.Context, email string, updates map[string]any) error {
@@ -92,7 +119,8 @@ func (r *UserRepo) GetUsers(ctx context.Context, q string, page, pageSize int64,
 
 	db := r.db.WithContext(ctx).Model(&user.User{})
 	if q != "" {
-		db = db.Where("email ILIKE ?", "%"+q+"%")
+		query := "%" + q + "%"
+		db = db.Where("username ILIKE ? OR email ILIKE ? ", query, query)
 	}
 
 	if err := db.Count(&total).Error; err != nil {

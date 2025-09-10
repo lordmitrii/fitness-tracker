@@ -8,7 +8,8 @@ import { getPolicyVersion } from "../../utils/policiesUtils";
 const RegisterForm = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { register, isRefreshing, loading } = useAuth();
+  const { login, register, isRefreshing, loading } = useAuth();
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [privacyConsent, setPrivacyConsent] = useState(false);
@@ -25,6 +26,18 @@ const RegisterForm = () => {
     } else if (email.length > 255) {
       newErrors.email = t("register_form.email_too_long", {
         limit: 255,
+      });
+    }
+
+    if (!username) {
+      newErrors.username = t("register_form.username_required");
+    } else if (username.length < 6) {
+      newErrors.username = t("register_form.username_min_length", {
+        minLength: 6,
+      });
+    } else if (username.length > 50) {
+      newErrors.username = t("register_form.username_too_long", {
+        limit: 50,
       });
     }
 
@@ -53,7 +66,7 @@ const RegisterForm = () => {
     }
 
     return newErrors;
-  }, [email, password, privacyConsent, healthDataConsent, t]);
+  }, [email, username, password, privacyConsent, healthDataConsent, t]);
 
   const handleSubmit = useCallback(
     async (e) => {
@@ -71,6 +84,7 @@ const RegisterForm = () => {
       const privacyConsentVersion = getPolicyVersion("privacy_policy");
 
       const resp = await register(
+        username,
         email,
         password,
         privacyConsent,
@@ -78,18 +92,24 @@ const RegisterForm = () => {
         healthDataConsent,
         healthDataConsentVersion
       );
-      if (resp.status === 201) {
-        navigate("/login");
+      if (resp.status == 201 || resp.status == 200) {
+        const loginResp = await login(username, password);
+        if (loginResp.status == 201 || loginResp.status == 200) {
+          navigate("/account-verification?registering=true", { replace: true });
+        } else {
+          // Unsuccessful login
+          navigate("/login", { replace: true });
+        }
       } else {
         setError(resp.message);
       }
     },
     [
       email,
+      username,
       password,
       privacyConsent,
       healthDataConsent,
-      register,
       validateForm,
       navigate,
     ]
@@ -117,6 +137,27 @@ const RegisterForm = () => {
         />
         {formErrors.email && (
           <p className="text-caption-red mt-1">{formErrors.email}</p>
+        )}
+      </div>
+      <div>
+        <label
+          className="block text-body font-semibold mb-1"
+          htmlFor="username"
+        >
+          {t("general.username")}
+        </label>
+        <input
+          id="username"
+          type="text"
+          value={username}
+          autoComplete="off"
+          onChange={(e) => setUsername(e.target.value)}
+          required
+          placeholder="user123"
+          className="input-style"
+        />
+        {formErrors.username && (
+          <p className="text-caption-red mt-1">{formErrors.username}</p>
         )}
       </div>
       <div>
@@ -205,7 +246,7 @@ const RegisterForm = () => {
         className="btn btn-primary w-full"
         disabled={isRefreshing || loading}
       >
-        {t("general.register")}
+        {t("general.continue")}
       </button>
       <div className="text-center text-caption mt-2">
         {t("register_form.already_have_account")}{" "}
