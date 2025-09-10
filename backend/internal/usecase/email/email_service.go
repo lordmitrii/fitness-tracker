@@ -6,10 +6,13 @@ import (
 	"time"
 
 	"github.com/lordmitrii/golang-web-gin/internal/domain/email"
+	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func (s *emailServiceImpl) SendNotificationEmail(ctx context.Context, to, subject, body string) error {
-	exists, err := s.userService.CheckEmail(ctx, to)
+	exists, err := s.userRepo.CheckEmail(ctx, to)
 	if err != nil {
 		return nil
 	}
@@ -21,12 +24,11 @@ func (s *emailServiceImpl) SendNotificationEmail(ctx context.Context, to, subjec
 }
 
 func (s *emailServiceImpl) SendVerificationEmail(ctx context.Context, to, lang string) error {
-	exists, err := s.userService.CheckEmail(ctx, to)
-	if err != nil {
+	user, err := s.userRepo.GetByEmail(ctx, to)
+	if err != nil && err == custom_err.ErrUserNotFound {
 		return nil
-	}
-	if !exists {
-		return nil
+	} else if err != nil {
+		return err
 	}
 
 	// Generate a random verification code
@@ -37,7 +39,7 @@ func (s *emailServiceImpl) SendVerificationEmail(ctx context.Context, to, lang s
 
 	t := time.Now().Add(15 * time.Minute)
 	err = s.emailTokenRepo.Create(ctx, &email.EmailToken{
-		Email:     to,
+		UserID:    user.ID,
 		Token:     code,
 		Type:      "verification",
 		ExpiresAt: &t,
@@ -51,12 +53,11 @@ func (s *emailServiceImpl) SendVerificationEmail(ctx context.Context, to, lang s
 }
 
 func (s *emailServiceImpl) SendResetPasswordEmail(ctx context.Context, to, lang string) error {
-	exists, err := s.userService.CheckEmail(ctx, to)
-	if err != nil {
+	user, err := s.userRepo.GetByEmail(ctx, to)
+	if err != nil && err == custom_err.ErrUserNotFound {
 		return nil
-	}
-	if !exists {
-		return nil
+	} else if err != nil {
+		return err
 	}
 
 	token, err := generateToken()
@@ -66,7 +67,7 @@ func (s *emailServiceImpl) SendResetPasswordEmail(ctx context.Context, to, lang 
 
 	t := time.Now().Add(15 * time.Minute)
 	err = s.emailTokenRepo.Create(ctx, &email.EmailToken{
-		Email:     to,
+		UserID:    user.ID,
 		Token:     token,
 		Type:      "reset_password",
 		ExpiresAt: &t,
@@ -101,7 +102,21 @@ func (s *emailServiceImpl) VerifyAccount(ctx context.Context, token string) erro
 		return nil
 	}
 
-	s.userService.SetVerified(ctx, emailToken.Email)
+	err = s.roleRepo.RemoveRoleFromUser(ctx, emailToken.UserID, rbac.RoleRestricted)
+	if err != nil {
+		return err
+	}
+
+	err = s.roleRepo.AssignRoleToUser(ctx, emailToken.UserID, rbac.RoleVerified)
+	if err != nil {
+		return err
+	}
+
+	err = s.userRepo.Update(ctx, emailToken.UserID, map[string]any{"is_verified": true})
+	if err != nil {
+		return err
+	}
+
 	s.emailTokenRepo.Delete(ctx, emailToken.ID)
 	return nil
 }
@@ -115,7 +130,12 @@ func (s *emailServiceImpl) ResetPassword(ctx context.Context, token, newPassword
 		return fmt.Errorf("invalid or expired token")
 	}
 
-	err = s.userService.ResetPassword(ctx, emailToken.Email, newPassword)
+	hash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	err = s.userRepo.Update(ctx, emailToken.UserID, map[string]any{"password_hash": string(hash)})
 	if err != nil {
 		return err
 	}

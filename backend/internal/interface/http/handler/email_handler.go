@@ -25,12 +25,14 @@ func NewEmailHandler(r *gin.RouterGroup, svc usecase.EmailService, rateLimiter u
 
 		email.POST("/send-reset-password", h.SendResetPasswordEmail)
 		email.POST("/reset-password", h.ResetPassword)
+		email.POST("/send-account-verification", h.SendVerificationEmail)
+		email.POST("/verify-account", h.VerifyAccount)
 
 		protected := email.Group("/")
 		protected.Use(middleware.JWTMiddleware())
 		{
-			protected.POST("/send-account-verification", h.SendVerificationEmail)
-			protected.POST("/verify-account", h.VerifyAccount)
+			// protected.POST("/send-account-verification", h.SendVerificationEmail)
+			// protected.POST("/verify-account", h.VerifyAccount)
 
 			adminonly := protected.Group("")
 			adminonly.Use(middleware.RequirePerm(rbacService, rbac.PermAdmin))

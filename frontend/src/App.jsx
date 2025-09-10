@@ -61,6 +61,7 @@ import { ErrorBoundary } from "./diagnostics/ErrorBoundary";
 import LogPanel from "./diagnostics/LogPanel";
 import { useLongPressToggle } from "./hooks/useLongPressToggle";
 import TouchHotspot from "./components/TouchHotspot";
+import AccountVerification from "./forms/login/AccountVerification";
 
 function App() {
   const [showLogs, setShowLogs] = useState(false);
@@ -102,6 +103,11 @@ function App() {
 
               {/* Private Route */}
               <Route element={<PrivateRoute />}>
+                <Route
+                  path="/account-verification"
+                  element={<AccountVerification />}
+                />
+
                 <Route path="/ai-chat" element={<AIChat />} />
                 {/* Workout Routes */}
                 <Route path="/current-workout" element={<WorkoutRedirect />} />

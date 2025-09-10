@@ -13,7 +13,8 @@ const DangerMenu = ({ user, onDone, setError }) => {
       await call();
       onDone();
     } catch (error) {
-      setError(error);
+      console.log("Error resettig user's email:", error)
+      setError(error?.response?.data?.error || error?.response?.data?.message || error?.message);
     } finally {
       setBusy(null);
     }
@@ -25,6 +26,7 @@ const DangerMenu = ({ user, onDone, setError }) => {
         className="btn btn-secondary whitespace-nowrap"
         disabled={busy !== null}
         onClick={() =>
+          confirm(t("admin.confirm_password_reset")) &&
           act("reset", () => api.post(`/admin/users/${user.id}/password-reset`))
         }
       >

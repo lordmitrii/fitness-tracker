@@ -4,7 +4,7 @@ import api from "../../api";
 import { useCooldown } from "../../hooks/useCooldown";
 
 const ForgotPassword = () => {
-  const { t } = useTranslation();
+  const { t, i18n} = useTranslation();
   const [email, setEmail] = useState("");
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -22,11 +22,12 @@ const ForgotPassword = () => {
     }
 
     try {
-      const response1 = await api.post("/email/send-reset-password", {
+      const response = await api.post("/email/send-reset-password", {
         to: email,
+        language: i18n.language
       });
 
-      if (response1.status == 200) {
+      if (response.status == 200) {
         setError(null);
         setSuccess(true);
         startCooldown(60);

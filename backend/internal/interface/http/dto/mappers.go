@@ -167,7 +167,7 @@ func ToWorkoutSetResponse(s *workout.WorkoutSet) WorkoutSetResponse {
 		WorkoutExerciseID: s.WorkoutExerciseID,
 		Index:             s.Index,
 		Completed:         s.Completed,
-		Weight:           s.Weight,
+		Weight:            s.Weight,
 		Reps:              s.Reps,
 		Skipped:           s.Skipped,
 		PreviousWeight:    s.PreviousWeight,
@@ -186,7 +186,7 @@ func ToIndividualExerciseResponse(e *workout.IndividualExercise) IndividualExerc
 		MuscleGroupID:                  e.MuscleGroupID,
 		ExerciseID:                     e.ExerciseID,
 		LastCompletedWorkoutExerciseID: e.LastCompletedWorkoutExerciseID,
-		CurrentWeight:                   e.CurrentWeight,
+		CurrentWeight:                  e.CurrentWeight,
 		CurrentReps:                    e.CurrentReps,
 		CreatedAt:                      e.CreatedAt,
 		UpdatedAt:                      e.UpdatedAt,
@@ -211,16 +211,16 @@ func ToIndividualExerciseResponse(e *workout.IndividualExercise) IndividualExerc
 
 func ToIndividualExerciseStatsResponse(e *workout.IndividualExercise) IndividualExerciseStatsResponse {
 	resp := IndividualExerciseStatsResponse{
-		ID:             e.ID,
-		Name:           e.Name,
-		IsBodyweight:   e.IsBodyweight,
-		IsTimeBased:    e.IsTimeBased,
-		MuscleGroupID:  e.MuscleGroupID,
-		ExerciseID:     e.ExerciseID,
-		CurrentWeight:  e.CurrentWeight,
-		CurrentReps:    e.CurrentReps,
-		CreatedAt:      e.CreatedAt,
-		UpdatedAt:      e.UpdatedAt,
+		ID:            e.ID,
+		Name:          e.Name,
+		IsBodyweight:  e.IsBodyweight,
+		IsTimeBased:   e.IsTimeBased,
+		MuscleGroupID: e.MuscleGroupID,
+		ExerciseID:    e.ExerciseID,
+		CurrentWeight: e.CurrentWeight,
+		CurrentReps:   e.CurrentReps,
+		CreatedAt:     e.CreatedAt,
+		UpdatedAt:     e.UpdatedAt,
 	}
 
 	if e.MuscleGroup != nil {
@@ -245,5 +245,12 @@ func ToUserSettingsResponse(us *user.UserSettings) UserSettingsResponse {
 		UnitSystem:         us.UnitSystem,
 		BetaOptIn:          us.BetaOptIn,
 		EmailNotifications: us.EmailNotifications,
+	}
+}
+
+func ToAccountResponse(ac *user.User) AccountResponse {
+	return AccountResponse{
+		Username: ac.Username,
+		Email:    ac.Email,
 	}
 }

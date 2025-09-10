@@ -23,7 +23,7 @@ const EditRolesModal = ({ user, allRoles, saving, onClose, onSave }) => {
   return (
     <Modal onRequestClose={() => (saving ? null : onClose())}>
       <h1 className="text-body mb-1">
-        {t("admin.edit_roles_for", { email: user.email })}
+        {t("admin.edit_roles_for", { username: user.username })}
       </h1>
       <p className="text-caption mb-4">{t("admin.edit_roles_hint")}</p>
 

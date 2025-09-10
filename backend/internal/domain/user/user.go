@@ -8,7 +8,8 @@ import (
 
 type User struct {
 	ID           uint   `gorm:"primaryKey"`
-	Email        string `gorm:"not null;uniqueIndex"`
+	Username     string `gorm:"uniqueIndex"`  //TODO: after migration, add not null
+	Email        string `gorm:"uniqueIndex"`
 	PasswordHash string `gorm:"not null"`
 
 	Roles []rbac.Role `gorm:"many2many:user_roles"`

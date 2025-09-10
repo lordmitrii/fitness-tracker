@@ -76,9 +76,11 @@ type (
 	}
 
 	UserService interface {
-		Register(ctx context.Context, email, password string, privacyConsent, healthDataConsent bool, privacyPolicyVersion, healthDataPolicyVersion string) error
-		Authenticate(ctx context.Context, email, password string) (*user.User, error)
+		Register(ctx context.Context, username, email, password string, privacyConsent, healthDataConsent bool, privacyPolicyVersion, healthDataPolicyVersion string) error
+		Authenticate(ctx context.Context, username, password string) (*user.User, error)
+
 		Me(ctx context.Context, userID uint) (*user.User, error)
+		UpdateAccount(ctx context.Context, userID uint, updates map[string]any) (*user.User, error)
 
 		CreateProfile(ctx context.Context, p *user.Profile) error
 		// DeleteUser(ctx context.Context, id uint) error
@@ -91,10 +93,6 @@ type (
 		CreateConsent(ctx context.Context, consent *user.UserConsent) error
 		UpdateConsent(ctx context.Context, id uint, updates map[string]any) (*user.UserConsent, error)
 		DeleteConsent(ctx context.Context, userID uint, consentType, version string) error
-
-		SetVerified(ctx context.Context, email string) error
-		CheckEmail(ctx context.Context, email string) (bool, error)
-		ResetPassword(ctx context.Context, email, newPassword string) error
 
 		GetUserSettings(ctx context.Context, userID uint) (*user.UserSettings, error)
 		UpdateUserSettings(ctx context.Context, userID uint, updates map[string]any) (*user.UserSettings, error)

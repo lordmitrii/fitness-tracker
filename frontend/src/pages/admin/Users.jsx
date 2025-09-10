@@ -81,7 +81,7 @@ const Users = () => {
       setEditingUser(null);
     } catch (err) {
       setUsers(prev);
-      setActionError(err?.response?.data?.message || err?.message);
+      setActionError(err?.response?.data?.message || err?.response?.data?.error || err?.message);
     } finally {
       setSaving(false);
       loadUsers();
@@ -149,7 +149,7 @@ const Users = () => {
                   value: "created_at",
                   label: t("admin.users.filter.created_at"),
                 },
-                { value: "email", label: t("admin.users.filter.email") },
+                { value: "username", label: t("admin.users.filter.username") },
               ]}
               widthClass="w-full"
             />
@@ -185,7 +185,7 @@ const Users = () => {
         <table className="min-w-full text-body">
           <thead className="text-left text-body uppercase tracking-wide bg-gray-50">
             <tr>
-              <th className="px-4 py-3">{t("admin.table.email")}</th>
+              <th className="px-4 py-3">{t("admin.table.username")}</th>
               <th className="px-4 py-3">{t("admin.table.roles")}</th>
               <th className="px-4 py-3 w-auto sm:w-40 text-right">
                 {t("general.actions")}
@@ -210,11 +210,13 @@ const Users = () => {
                   <td className="px-4 py-3 align-center">
                     <div className="flex flex-col">
                       <span className="text-body max-w-[30dvh] overflow-x-auto">
-                        {highlightMatches(
-                          u.email,
-                          query,
-                          "bg-blue-600 text-white"
-                        )}
+                        {!!u.username
+                          ? highlightMatches(
+                              u.username,
+                              query,
+                              "bg-blue-600 text-white"
+                            )
+                          : t("general.unknown")}
                       </span>
                       {u.created_at && (
                         // <span className="text-caption">
@@ -225,15 +227,27 @@ const Users = () => {
                         //       )
                         //     : t("general.n_a")}
                         // </span>
-                        <span className="text-caption">
-                          {t("admin.table.last_seen_at")}:{" "}
-                          {u.last_seen_at &&
-                          u.last_seen_at !== "0001-01-01T00:00:00Z"
-                            ? new Date(u.last_seen_at).toLocaleString(
-                                i18n.language
-                              )
-                            : t("general.n_a")}
-                        </span>
+                        <>
+                          <span className="text-caption">
+                            {t("admin.table.email")}:{" "}
+                            {!!u.email
+                              ? highlightMatches(
+                                  u.email,
+                                  query,
+                                  "bg-blue-600 text-white"
+                                )
+                              : t("general.n_a")}
+                          </span>
+                          <span className="text-caption">
+                            {t("admin.table.last_seen_at")}:{" "}
+                            {u.last_seen_at &&
+                            u.last_seen_at !== "0001-01-01T00:00:00Z"
+                              ? new Date(u.last_seen_at).toLocaleString(
+                                  i18n.language
+                                )
+                              : t("general.n_a")}
+                          </span>
+                        </>
                       )}
                     </div>
                   </td>

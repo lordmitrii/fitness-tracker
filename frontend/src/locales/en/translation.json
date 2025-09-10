@@ -60,7 +60,9 @@
     "diagnostics": "Diagnostics",
     "share": "Share",
     "download": "Download",
-    "settings": "Settings"
+    "settings": "Settings",
+    "username": "Username",
+    "unknown": "Unknown"
   },
   "measurements": {
     "weight": {
@@ -82,7 +84,8 @@
     "network_error": "Network error. Please, check server status.",
     "registration_error": "Registration failed. Please, try again.",
     "login_error": "Login failed. Please, check your credentials.",
-    "logout_error": "Logout failed. Please, try again."
+    "logout_error": "Logout failed. Please, try again.",
+    "send_verification_error": "Error sending verification email. Please, try again."
   },
   "global_loading": {
     "welcome": "Welcome to the FTracker!",
@@ -229,6 +232,9 @@
     "email_required": "Email is required.",
     "email_invalid": "Invalid email address.",
     "email_too_long": "Email must be less than {{limit}} characters.",
+    "username_min_length": "Username must be at least {{minLength}} characters.",
+    "username_required": "Username is required.",
+    "username_too_long": "Username must be less than {{limit}} characters.",
     "password_required": "Password is required.",
     "password_too_long": "Password must be less than {{limit}} characters."
   },
@@ -282,6 +288,24 @@
     "reset_password_button": "Reset",
     "invalid_link": "Invalid or expired reset link.",
     "verifying_link": "Verifying link..."
+  },
+  "account_verification": {
+    "title": "Account Verification",
+    "send_code": "Send Code",
+    "resend_code": "Resend Code",
+    "email_placeholder": "Enter your email",
+    "email_invalid": "Invalid email address.",
+    "email_too_long": "Email must be less than {{limit}} characters.",
+    "email_required": "Email is required.",
+    "error_sending_email": "Error sending verification code. Please, try again or contact the support team.",
+    "code_sent": "Verification code has been sent.",
+    "verification_success": "Your account is now verified!",
+    "code_label": "Verification Code",
+    "code_placeholder": "Enter verification code",
+    "error_verifying": "Couldn't verify the code. Please, try again.",
+    "verify": "Verify",
+    "error_registering": "Registration failed. Please, try again.",
+    "error_updating_email": "Error updating email. Please, try again."
   },
   "add_workout_plan_form": {
     "create_workout_plan": "Create Workout Plan",
@@ -605,7 +629,8 @@
       "filter": {
         "last_seen_at": "Last Seen At",
         "created_at": "Created At",
-        "email": "Email"
+        "email": "Email",
+        "username": "Username"
       }
     },
     "exercises": {
@@ -619,6 +644,7 @@
     },
     "table": {
       "email": "Email",
+      "username": "Username",
       "roles": "Roles",
       "joined_at": "Joined",
       "last_seen_at": "Last Seen",
@@ -629,9 +655,10 @@
     "no_roles_defined": "No roles defined.",
     "no_exercises": "No exercises",
     "edit_roles": "Edit roles",
-    "edit_roles_for": "Edit roles for {{email}}",
+    "edit_roles_for": "Edit roles for {{username}}",
     "edit_roles_hint": "Select the roles this user should have.",
     "reset_password": "Reset password",
+    "confirm_password_reset": "Are you sure you want to reset user's password? This will send an email to user.",
     "type_delete_to_confirm": "Type DELETE to confirm deleting this user"
   },
   "settings": {

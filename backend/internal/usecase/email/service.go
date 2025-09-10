@@ -2,22 +2,26 @@ package email
 
 import (
 	"github.com/lordmitrii/golang-web-gin/internal/domain/email"
-	"github.com/lordmitrii/golang-web-gin/internal/usecase"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 )
 
 type emailServiceImpl struct {
-	userService    usecase.UserService
+	userRepo       user.UserRepository
+	roleRepo       rbac.RoleRepository
 	emailSender    email.EmailSender
 	emailTokenRepo email.EmailTokenRepository
 }
 
 func NewEmailService(
-	userService usecase.UserService,
+	userRepo user.UserRepository,
+	roleRepo rbac.RoleRepository,
 	emailSender email.EmailSender,
 	emailTokenRepo email.EmailTokenRepository,
 ) *emailServiceImpl {
 	return &emailServiceImpl{
-		userService:    userService,
+		userRepo:       userRepo,
+		roleRepo:       roleRepo,
 		emailSender:    emailSender,
 		emailTokenRepo: emailTokenRepo,
 	}

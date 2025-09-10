@@ -9,12 +9,12 @@ import (
 	"time"
 )
 
-func (s *userServiceImpl) Register(ctx context.Context, email, password string, privacyConsent, healthDataConsent bool, privacyPolicyVersion, healthDataPolicyVersion string) error {
+func (s *userServiceImpl) Register(ctx context.Context, username, email, password string, privacyConsent, healthDataConsent bool, privacyPolicyVersion, healthDataPolicyVersion string) error {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
-	u := &user.User{Email: email, PasswordHash: string(hash)}
+	u := &user.User{Username: username, Email: email, PasswordHash: string(hash)}
 
 	if !privacyConsent || !healthDataConsent {
 		return custom_err.ErrNoConsent
@@ -63,8 +63,8 @@ func (s *userServiceImpl) Register(ctx context.Context, email, password string, 
 }
 
 // Authenticate verifies credentials.
-func (s *userServiceImpl) Authenticate(ctx context.Context, email, password string) (*user.User, error) {
-	u, err := s.authRepo.GetByEmail(ctx, email)
+func (s *userServiceImpl) Authenticate(ctx context.Context, username, password string) (*user.User, error) {
+	u, err := s.authRepo.GetByUsername(ctx, username)
 	if err != nil {
 		return nil, err
 	}
@@ -78,39 +78,8 @@ func (s *userServiceImpl) Me(ctx context.Context, userID uint) (*user.User, erro
 	return s.authRepo.GetByID(ctx, userID)
 }
 
-func (s *userServiceImpl) SetVerified(ctx context.Context, email string) error {
-	user, err := s.authRepo.GetByEmail(ctx, email)
-	if err != nil {
-		return err
-	}
-
-	err = s.roleRepo.RemoveRoleFromUser(ctx, user.ID, rbac.RoleRestricted)
-	if err != nil {
-		return err
-	}
-
-	err = s.roleRepo.AssignRoleToUser(ctx, user.ID, rbac.RoleVerified)
-	if err != nil {
-		return err
-	}
-
-	return s.authRepo.Update(ctx, user.ID, map[string]any{"is_verified": true})
-}
-
-func (s *userServiceImpl) CheckEmail(ctx context.Context, email string) (bool, error) {
-	exists, err := s.authRepo.CheckEmail(ctx, email)
-	if err != nil {
-		return false, err
-	}
-	return exists, nil
-}
-
-func (s *userServiceImpl) ResetPassword(ctx context.Context, email, newPassword string) error {
-	hash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
-	if err != nil {
-		return err
-	}
-	return s.authRepo.UpdateByEmail(ctx, email, map[string]any{"password_hash": string(hash)})
+func (s *userServiceImpl) UpdateAccount(ctx context.Context, userID uint, updates map[string]any) (*user.User, error) {
+	return s.authRepo.UpdateReturning(ctx, userID, updates)
 }
 
 func (s *userServiceImpl) TouchLastSeen(ctx context.Context, userID uint) error {

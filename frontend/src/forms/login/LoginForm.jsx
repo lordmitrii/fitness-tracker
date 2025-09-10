@@ -7,7 +7,7 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { login, isRefreshing, loading } = useAuth();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
 
@@ -15,14 +15,14 @@ const LoginForm = () => {
     async (e) => {
       e.preventDefault();
       setError(null);
-      const resp = await login(email, password);
-      if (resp.access_token) {
+      const resp = await login(username, password);
+      if (resp.status == 200 || resp.status == 201) {
         navigate("/");
       } else {
         setError(resp.message);
       }
     },
-    [email, password, login, navigate]
+    [username, password, login, navigate]
   );
 
   return (
@@ -32,18 +32,18 @@ const LoginForm = () => {
       </h1>
       {error && <div className="container-error">{error}</div>}
       <div>
-        <label className="block text-body font-semibold mb-1" htmlFor="email">
-          {t("general.email")}
+        <label className="block text-body font-semibold mb-1" htmlFor="username">
+          {t("general.username")}
         </label>
         <input
-          id="email"
+          id="username"
           className="input-style"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           required
-          autoComplete="username"
-          placeholder="username@example.com"
+          autoComplete="off"
+          placeholder="user1234"
         />
       </div>
       <div>

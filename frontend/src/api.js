@@ -144,11 +144,12 @@ export const clearAccessToken = () => {
   accessToken = null;
 };
 
-export const loginRequest = (email, password) => {
-  return api.post("/users/login", { email, password });
+export const loginRequest = (username, password) => {
+  return api.post("/users/login", { username, password });
 };
 
 export const registerRequest = (
+  username,
   email,
   password,
   privacyConsent,
@@ -157,6 +158,7 @@ export const registerRequest = (
   healthDataPolicyVersion
 ) => {
   return api.post("/users/register", {
+    username,
     email,
     password,
     privacy_consent: privacyConsent,
