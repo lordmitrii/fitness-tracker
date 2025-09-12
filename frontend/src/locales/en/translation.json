@@ -640,7 +640,18 @@
       "exercise": "Exercise",
       "muscles_title": "Muscle Groups",
       "muscles_hint": "Select the muscle group the exercise should target.",
-      "all_muscles": "All Muscles"
+      "all_muscles": "All Muscles",
+      "muscle_group": "Muscle Group",
+      "muscle_groups": "Muscle Groups",
+      "add_exercise": "Add Exercise",
+      "muscle_group_required": "Muscle group is required.",
+      "name_required": "Exercise name is required.",
+      "name_too_long": "Exercise name must be less than {{limit}} characters.",
+      "exercise_already_exists": "This exercise already exists.",
+      "muscle_group_already_exists": "This muscle group already exists.",
+      "muscle_group_name_placeholder": "Enter muscle group name",
+      "exercise_name_placeholder": "Enter exercise name",
+      "confirm_delete_exercise": "Are you sure you want to delete this exercise?"
     },
     "table": {
       "email": "Email",

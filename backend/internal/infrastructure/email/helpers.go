@@ -272,15 +272,22 @@ func wrapHTML(title, innerHTML, smallNote, needHelp, footerNote string) string {
 	}
 	return `<!doctype html><html><head><meta charset="utf-8"><title>` + html.EscapeString(title) + `</title>
 <meta name="color-scheme" content="light"></head>
-<body style="margin:0;padding:0;background:` + brand.BgHex + `;">
+<body style="margin:0;padding:0;background:` + brand.BgHex + `;font-family:Arial, sans-serif;">
   <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:` + brand.BgHex + `;padding:24px 0;">
     <tr><td align="center">
       <table role="presentation" cellpadding="0" cellspacing="0" width="600" style="max-width:600px;background:#ffffff;border-radius:16px;box-shadow:0 4px 14px rgba(15,23,42,0.06);overflow:hidden;">
-        <tr><td style="padding:20px 24px;border-bottom:1px solid #F1F5F9;">
+	  <tr>
+          <td style="padding:32px 24px 16px 24px; text-align:center; background:#fff;">
+            <div style="font-size:28px; font-weight:800; color: ` + brand.AccentHex + `;">
+              ` + html.EscapeString(brand.AppName) + `
+            </div>
+          </td>
+        </tr>
+	  <tr><td style="padding:20px 24px;border-bottom:1px solid #F1F5F9;">
           <table role="presentation" width="100%"><tr>
             <td style="text-align:left;vertical-align:middle;">` + logo + `</td>
             <td style="text-align:right;vertical-align:middle;">
-              <div style="font-size:12px;color:` + brand.MutedHex + `;">` + html.EscapeString(brand.AppName) + ` · ` + now + `</div>
+              <div style="font-size:12px;color:` + brand.MutedHex + `;">` + now + `</div>
             </td>
           </tr></table>
         </td></tr>

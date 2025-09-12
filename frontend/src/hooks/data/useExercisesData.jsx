@@ -132,6 +132,108 @@ export default function useExercisesData(onError) {
     onError,
   });
 
+  const createExercise = useMutation({
+    mutationFn: async ({ name, muscle_group_id }) => {
+      const { data } = await api.post("exercises/", { name, muscle_group_id });
+      return data;
+    },
+    onSuccess: (newExercise) => {
+      queryClient.setQueryData(QK.exercisesBundle, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          exercises: [...old.exercises, newExercise],
+          poolOnlyExercises: [...old.poolOnlyExercises, newExercise],
+        };
+      });
+    },
+  });
+
+  const updateExercise = useMutation({
+    mutationFn: async (exercise) => {
+      const { id, name, muscle_group_id } = exercise;
+      const { data } = await api.put(`exercises/${id}`, { name, muscle_group_id });
+      return data;
+    },
+    onSuccess: (updatedExercise) => {
+      queryClient.setQueryData(QK.exercisesBundle, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          exercises: old.exercises.map((ex) =>
+            ex.id === updatedExercise.id ? updatedExercise : ex
+          ),
+        };
+      });
+    },
+  });
+
+  const deleteExercise = useMutation({
+    mutationFn: async (exerciseID) => {
+      await api.delete(`exercises/${exerciseID}`);
+      return exerciseID;
+    },
+    onSuccess: (deletedExerciseID) => {
+      queryClient.setQueryData(QK.exercisesBundle, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          exercises: old.exercises.filter((ex) => ex.id !== deletedExerciseID),
+          poolOnlyExercises: old.poolOnlyExercises.filter((ex) => ex.id !== deletedExerciseID),
+        };
+      });
+    },
+  });
+
+  const createMuscleGroup = useMutation({
+    mutationFn: async ({ name }) => {
+      const { data } = await api.post("muscle-groups/", { name });
+      return data;
+    },
+    onSuccess: (newMuscleGroup) => {
+      queryClient.setQueryData(QK.exercisesBundle, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          muscleGroups: [...old.muscleGroups, newMuscleGroup],
+        };
+      });
+    },
+  });
+  const updateMuscleGroup = useMutation({
+    mutationFn: async (muscleGroup) => {
+      const { id, name } = muscleGroup;
+      const { data } = await api.put(`muscle-groups/${id}`, { name });
+      return data;
+    },
+    onSuccess: (updatedMuscleGroup) => {
+      queryClient.setQueryData(QK.exercisesBundle, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          muscleGroups: old.muscleGroups.map((mg) =>
+            mg.id === updatedMuscleGroup.id ? updatedMuscleGroup : mg
+          ),
+        };
+      });
+    },
+  });
+  const deleteMuscleGroup = useMutation({
+    mutationFn: async (muscleGroupID) => {
+      await api.delete(`muscle-groups/${muscleGroupID}`);
+      return muscleGroupID;
+    },
+    onSuccess: (deletedMuscleGroupID) => {
+      queryClient.setQueryData(QK.exercisesBundle, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          muscleGroups: old.muscleGroups.filter((mg) => mg.id !== deletedMuscleGroupID),
+        };
+      });
+    },
+  });
+
   return useMemo(
     () => ({
       exercises: data?.exercises ?? [],
@@ -147,6 +249,12 @@ export default function useExercisesData(onError) {
       mutations: {
         createIndividualExercise,
         attachWorkoutExercise,
+        createExercise,
+        updateExercise,
+        deleteExercise,
+        createMuscleGroup,
+        updateMuscleGroup,
+        deleteMuscleGroup,
       },
     }),
     [
@@ -160,6 +268,12 @@ export default function useExercisesData(onError) {
       invalidateExercisesBundle,
       createIndividualExercise,
       attachWorkoutExercise,
+      createExercise,
+      updateExercise,
+      deleteExercise,
+      createMuscleGroup,
+      updateMuscleGroup,
+      deleteMuscleGroup,
     ]
   );
 }

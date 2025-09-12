@@ -32,7 +32,7 @@ const ExerciseSelect = ({
   const getLabelLower = useCallback((ex) => ex._labelLower, []);
   const filterPredicate = useCallback(
     (ex, qLower) =>
-      ex._labelLower.includes(qLower) || ex._nameLower.includes(qLower),
+      ex._labelLower.includes(qLower), // || ex._nameLower.includes(qLower),
     []
   );
   const handleSelect = useCallback(

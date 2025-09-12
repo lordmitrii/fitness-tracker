@@ -73,9 +73,6 @@ a:visited {
   --color-green-900: #56f5b7;
 }
 
-.scroll-stable {
-  scrollbar-gutter: stable both-edges;
-}
 
 @media (hover: hover) and (pointer: fine) {
   .ptr-pill {

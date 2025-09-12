@@ -13,7 +13,7 @@ const AccountVerification = () => {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [showInputField, setShowInputField] = useState(false);
-  const [codeValue, setCodeValue] = useState(null);
+  const [codeValue, setCodeValue] = useState("");
   const { cooldown, start: startCooldown } = useCooldown();
   const [pending, setPending] = useState(false);
 
