@@ -41,7 +41,7 @@ function ScrollAreaWithPTR({ children }) {
           overscroll-contain
           touch-pan-y
           [--webkit-overflow-scrolling:touch]
-          relative scroll-stable
+          relative
         "
         >
           <PullToRefreshPill

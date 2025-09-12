@@ -5,7 +5,7 @@ import MuscleGroupRadar from "../../components/MuscleGroupRadar";
 import { e1RM } from "../../utils/exerciseStatsUtils";
 import useStatsHook from "../../hooks/data/useStatsHook";
 import { usePullToRefreshOverride } from "../../context/PullToRefreshContext";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSettingsData from "../../hooks/data/useSettingsData";
 import { toDisplayWeight } from "../../utils/numberUtils";
 
@@ -13,6 +13,11 @@ const Stats = () => {
   const { t } = useTranslation();
   const { stats, bestPerformances, loading, error, refetch } = useStatsHook();
   const { settings } = useSettingsData();
+
+  const filteredStats = useMemo(() => {
+    if (!stats || stats.length === 0) return [];
+    return stats.filter((s) => s.current_reps && s.current_weight) || [];
+  }, [stats]);
 
   usePullToRefreshOverride(
     useCallback(async () => {
@@ -25,9 +30,8 @@ const Stats = () => {
   if (error) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <>
-      <MuscleGroupRadar stats={stats} unitSystem={settings?.unit_system} />
-
-      {stats && stats.length > 0 ? (
+      <MuscleGroupRadar stats={filteredStats} unitSystem={settings?.unit_system} />
+      {filteredStats.length > 0 ? (
         <div className="card flex flex-col gap-6">
           <h2 className="text-title text-center">
             {t("exercise_stats.best_performances")}

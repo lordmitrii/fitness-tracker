@@ -137,24 +137,50 @@ const AddWorkoutExerciseModal = ({
 
   const exercisesL10n = useMemo(() => {
     return exercises.map((ex) => {
-      const base = ex.slug ? t(`exercise.${ex.slug}`) : ex.name || "";
+      let base = "";
+
+      if (ex.slug) {
+        const translated = t(`exercise.${ex.slug}`);
+        if (translated && translated !== `exercise.${ex.slug}`) {
+          base = translated;
+        }
+      }
+
+      if (!base) {
+        base = ex.name || t("general.n_a");
+      }
+
       const suffix =
         ex.source === "custom"
           ? ` ${t("add_workout_exercise_modal.custom_suffix")}`
           : "";
+
       const label = base + suffix;
+
       return {
         ...ex,
         _label: label,
         _labelLower: label.toLowerCase(),
-        _nameLower: (ex.name || "").toLowerCase(),
+        // _nameLower: (ex.name || "").toLowerCase(),
       };
     });
   }, [exercises, t]);
 
   const muscleGroupsL10n = useMemo(() => {
     return muscleGroups.map((g) => {
-      const label = g.slug ? t(`muscle_group.${g.slug}`) : g.name;
+      let label = "";
+
+      if (g.slug) {
+        const translated = t(`muscle_group.${g.slug}`);
+        if (translated && translated !== `muscle_group.${g.slug}`) {
+          label = translated;
+        }
+      }
+
+      if (!label) {
+        label = g.name || t("general.n_a");
+      }
+
       return { ...g, _label: label, _labelLower: label.toLowerCase() };
     });
   }, [muscleGroups, t]);

@@ -60,7 +60,9 @@
     "diagnostics": "诊断",
     "share": "分享",
     "download": "下载",
-    "settings": "设置"
+    "settings": "设置",
+    "username": "用户名",
+    "unknown": "未知"
   },
   "measurements": {
     "weight": {
@@ -82,7 +84,8 @@
     "network_error": "网络错误。请检查服务器状态。",
     "registration_error": "注册失败。请重试。",
     "login_error": "登录失败。请检查您的信息。",
-    "logout_error": "退出失败。请重试。"
+    "logout_error": "退出失败。请重试。",
+    "send_verification_error": "发送验证邮件失败。请重试。"
   },
   "global_loading": {
     "welcome": "欢迎来到 FTracker！",
@@ -229,6 +232,9 @@
     "email_required": "电子邮件为必填项。",
     "email_invalid": "无效的电子邮件地址。",
     "email_too_long": "电子邮件必须少于 {{limit}} 个字符。",
+    "username_min_length": "用户名至少需要 {{minLength}} 个字符。",
+    "username_required": "用户名为必填项。",
+    "username_too_long": "用户名必须少于 {{limit}} 个字符。",
     "password_required": "密码为必填项。",
     "password_too_long": "密码必须少于 {{limit}} 个字符。"
   },
@@ -282,6 +288,24 @@
     "reset_password_button": "重置",
     "invalid_link": "重置链接无效或已过期。",
     "verifying_link": "正在验证链接..."
+  },
+  "account_verification": {
+    "title": "账户验证",
+    "send_code": "发送验证码",
+    "resend_code": "重新发送验证码",
+    "email_placeholder": "请输入邮箱",
+    "email_invalid": "邮箱地址无效。",
+    "email_too_long": "邮箱地址必须少于 {{limit}} 个字符。",
+    "email_required": "邮箱为必填项。",
+    "error_sending_email": "发送验证码时出错。请重试或联系支持团队。",
+    "code_sent": "验证码已发送。",
+    "verification_success": "您的账户已成功验证！",
+    "code_label": "验证码",
+    "code_placeholder": "请输入验证码",
+    "error_verifying": "无法验证验证码。请重试。",
+    "verify": "验证",
+    "error_registering": "注册失败。请重试。",
+    "error_updating_email": "更新邮箱时出错。请重试。"
   },
   "add_workout_plan_form": {
     "create_workout_plan": "创建锻炼计划",
@@ -605,20 +629,33 @@
       "filter": {
         "last_seen_at": "最后在线时间",
         "created_at": "创建时间",
-        "email": "邮箱"
+        "email": "邮箱",
+        "username": "用户名"
       }
     },
     "exercises": {
-      "title": "锻炼",
-      "search_placeholder": "搜索锻炼…",
-      "search_label": "搜索锻炼",
-      "exercise": "锻炼",
+      "title": "练习",
+      "search_placeholder": "搜索练习…",
+      "search_label": "搜索练习",
+      "exercise": "练习",
       "muscles_title": "肌肉群",
-      "muscles_hint": "选择该锻炼应针对的肌肉群。",
-      "all_muscles": "所有肌肉"
+      "muscles_hint": "选择该练习所针对的肌肉群。",
+      "all_muscles": "所有肌肉",
+      "muscle_group": "肌肉群",
+      "muscle_groups": "肌肉群",
+      "add_exercise": "添加练习",
+      "muscle_group_required": "必须选择肌肉群。",
+      "name_required": "必须输入练习名称。",
+      "name_too_long": "练习名称必须少于 {{limit}} 个字符。",
+      "exercise_already_exists": "该练习已存在。",
+      "muscle_group_already_exists": "该肌肉群已存在。",
+      "muscle_group_name_placeholder": "输入肌肉群名称",
+      "exercise_name_placeholder": "输入练习名称",
+      "confirm_delete_exercise": "确定要删除该练习吗？"
     },
     "table": {
       "email": "邮箱",
+      "username": "用户名",
       "roles": "角色",
       "joined_at": "加入时间",
       "last_seen_at": "最后在线时间",
@@ -629,9 +666,10 @@
     "no_roles_defined": "未定义角色。",
     "no_exercises": "暂无锻炼。",
     "edit_roles": "编辑角色",
-    "edit_roles_for": "编辑 {{email}} 的角色",
+    "edit_roles_for": "编辑 {{username}} 的角色",
     "edit_roles_hint": "选择该用户应拥有的角色。",
     "reset_password": "重置密码",
+    "confirm_reset_password": "您确定要为 {{username}} 重置密码吗？这将向他们发送一封包含新密码的电子邮件。",
     "type_delete_to_confirm": "输入 DELETE 以确认删除该用户"
   },
   "settings": {
