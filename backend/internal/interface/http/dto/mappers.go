@@ -2,6 +2,7 @@ package dto
 
 import (
 	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/translations"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 )
@@ -252,5 +253,15 @@ func ToAccountResponse(ac *user.User) AccountResponse {
 	return AccountResponse{
 		Username: ac.Username,
 		Email:    ac.Email,
+	}
+}
+
+func ToTranslationResponse(t *translations.Translation) TranslationResponse {
+	return TranslationResponse{
+		ID:        t.ID,
+		Namespace: t.Namespace,
+		Locale:    t.Locale,
+		Key:       t.Key,
+		Value:     t.Value,
 	}
 }

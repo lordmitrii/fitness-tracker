@@ -4,9 +4,10 @@ import { useTranslation } from "react-i18next";
 import Modal from "../Modal";
 import MuscleGroupSelect from "../../components/workout/MuscleGroupSelect";
 import SpinnerIcon from "../../icons/SpinnerIcon";
+import CheckBox from "../../components/CheckBox";
 
 const AddExerciseOrMuscleModal = ({
-  exercisesL10n = [], 
+  exercisesL10n = [],
   muscleGroupsL10n = [],
   loading = false,
   onCreateExercise,
@@ -19,12 +20,18 @@ const AddExerciseOrMuscleModal = ({
   const [mode, setMode] = useState("exercise");
   const [submitting, setSubmitting] = useState(false);
   const [name, setName] = useState("");
+  const [autoTranslate, setAutoTranslate] = useState(true);
+  const [isBodyweight, setIsBodyweight] = useState(false);
+  const [isTimeBased, setIsTimeBased] = useState(false);
   const [formErrors, setFormErrors] = useState({});
   const [muscleGroupID, setMuscleGroupID] = useState(null);
   const [openWhich, setOpenWhich] = useState("none");
 
   const resetForm = () => {
     setName("");
+    setIsBodyweight(false);
+    setIsTimeBased(false);
+    setAutoTranslate(true);
     setMuscleGroupID(null);
     setFormErrors({});
   };
@@ -80,15 +87,27 @@ const AddExerciseOrMuscleModal = ({
           ? onCreateExercise({
               name: name.trim(),
               muscle_group_id: muscleGroupID,
+              auto_translate: autoTranslate,
+              is_time_based: isTimeBased,
+              is_bodyweight: isBodyweight,
             })
           : onCreateExercise?.mutateAsync?.({
               name: name.trim(),
               muscle_group_id: muscleGroupID,
+              auto_translate: autoTranslate,
+              is_time_based: isTimeBased,
+              is_bodyweight: isBodyweight,
             }));
       } else {
         await (typeof onCreateMuscleGroup === "function"
-          ? onCreateMuscleGroup({ name: name.trim() })
-          : onCreateMuscleGroup?.mutateAsync?.({ name: name.trim() }));
+          ? onCreateMuscleGroup({
+              name: name.trim(),
+              auto_translate: autoTranslate,
+            })
+          : onCreateMuscleGroup?.mutateAsync?.({
+              name: name.trim(),
+              auto_translate: autoTranslate,
+            }));
       }
       resetForm();
       onClose?.();
@@ -167,23 +186,62 @@ const AddExerciseOrMuscleModal = ({
         </div>
 
         {mode === "exercise" && (
-          <div>
-            <MuscleGroupSelect
-              t={t}
-              muscleGroups={muscleGroupsL10n} // <- use pre-localized list
-              value={muscleGroupID}
-              onChange={setMuscleGroupID}
-              required
-              openWhich={openWhich}
-              setOpenWhich={setOpenWhich}
-            />
-            {formErrors.muscleGroupID && (
-              <p className="text-caption-red mt-1">
-                {formErrors.muscleGroupID}
-              </p>
-            )}
-          </div>
+          <>
+            <div>
+              <MuscleGroupSelect
+                t={t}
+                muscleGroups={muscleGroupsL10n} // <- use pre-localized list
+                value={muscleGroupID}
+                onChange={setMuscleGroupID}
+                required
+                openWhich={openWhich}
+                setOpenWhich={setOpenWhich}
+              />
+              {formErrors.muscleGroupID && (
+                <p className="text-caption-red mt-1">
+                  {formErrors.muscleGroupID}
+                </p>
+              )}
+            </div>
+            <div className="flex justify-between align-center text-caption gap-6">
+              <div className="flex items-center gap-2">
+                <CheckBox
+                  id="is-bodyweight"
+                  title={t("workout_plan_single.is_bodyweight")}
+                  checked={isBodyweight}
+                  onChange={(e) => setIsBodyweight(e.target.checked)}
+                />
+                <label htmlFor="is-bodyweight">
+                  {t("admin.exercises.is_bodyweight")}
+                </label>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckBox
+                  id="is-time-based"
+                  title={t("workout_plan_single.set_completed")}
+                  checked={isTimeBased}
+                  onChange={(e) => setIsTimeBased(e.target.checked)}
+                />
+                <label htmlFor="is-time-based">
+                  {t("admin.exercises.is_time_based")}
+                </label>
+              </div>
+            </div>
+          </>
         )}
+
+        <div className="flex items-center text-caption gap-2">
+          <CheckBox
+            id="auto-translate"
+            title={t("admin.exercises.auto_translate")}
+            checked={autoTranslate}
+            onChange={(e) => setAutoTranslate(e.target.checked)}
+            disabled={submittingNow}
+          />
+          <label htmlFor="auto-translate">
+            {t("admin.exercises.auto_translate")}
+          </label>
+        </div>
 
         <div className="flex gap-2 justify-between mt-3">
           <button type="button" className="btn btn-secondary" onClick={onClose}>

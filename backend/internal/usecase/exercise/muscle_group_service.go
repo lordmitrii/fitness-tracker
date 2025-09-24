@@ -5,8 +5,15 @@ import (
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 )
 
-func (s *exerciseServiceImpl) CreateMuscleGroup(ctx context.Context, mg *workout.MuscleGroup) error {
-	return s.muscleGroupRepo.Create(ctx, mg)
+func (s *exerciseServiceImpl) CreateMuscleGroup(ctx context.Context, mg *workout.MuscleGroup, autoTranslate bool) error {
+	err := s.muscleGroupRepo.Create(ctx, mg)
+	if err != nil {
+		return err
+	}
+	if autoTranslate {
+		// TODO: Call translation service here...
+	}
+	return nil
 }
 
 func (s *exerciseServiceImpl) GetMuscleGroupByID(ctx context.Context, id uint) (*workout.MuscleGroup, error) {

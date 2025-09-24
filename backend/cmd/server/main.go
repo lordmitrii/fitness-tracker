@@ -19,12 +19,14 @@ import (
 	"os"
 
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/email"
+	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/translations"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/admin"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/ai"
 	email_usecase "github.com/lordmitrii/golang-web-gin/internal/usecase/email"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/exercise"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/rbac"
+	translations_usecase "github.com/lordmitrii/golang-web-gin/internal/usecase/translations"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/user"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/workout"
 
@@ -32,11 +34,12 @@ import (
 	"context"
 	"time"
 
+	"log"
+
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/postgres"
 	myredis "github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/redis"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/job"
 	"github.com/lordmitrii/golang-web-gin/internal/interface/http"
-	"log"
 )
 
 func main() {
@@ -80,6 +83,8 @@ func main() {
 	userSettingsRepo := postgres.NewUserSettingsRepo(db)
 
 	emailTokenRepo := postgres.NewEmailTokenRepo(db)
+	translationRepo := postgres.NewTranslationsRepo(db)
+	missingTranslationRepo := postgres.NewMissingTranslationsRepo(db)
 	// emailSender := email.NewGmailSender(            //not working in digital ocean as port 587 is blocked
 	// 	os.Getenv("NOREPLY_EMAIL"),
 	// 	os.Getenv("NOREPLY_EMAIL_PASSWORD"),
@@ -101,13 +106,19 @@ func main() {
 		log.Printf("email templates not loaded, using inline fallback: %v", err)
 	}
 
-	var exerciseService usecase.ExerciseService = exercise.NewExerciseService(exerciseRepo, muscleGroupRepo)
+	translator := translations.NewDeepLTranslator(
+		os.Getenv("DEEPL_AUTH_KEY"),
+		os.Getenv("DEEPL_API_URL"),
+	)
+
+	var exerciseService usecase.ExerciseService = exercise.NewExerciseService(exerciseRepo, muscleGroupRepo, translator)
 	var workoutService usecase.WorkoutService = workout.NewWorkoutService(workoutPlanRepo, workoutCycleRepo, workoutRepo, workoutExerciseRepo, workoutSetRepo, individualExerciseRepo, exerciseRepo)
 	var userService usecase.UserService = user.NewUserService(userRepo, profileRepo, userConsentRepo, roleRepo, permissionRepo, userSettingsRepo)
 	var aiService usecase.AIService = ai.NewAIService(workoutService, userService)
 	var emailService usecase.EmailService = email_usecase.NewEmailService(userRepo, roleRepo, emailSender, emailTokenRepo)
 	var rbacService usecase.RBACService = rbac.NewRBACService(roleRepo, permissionRepo, userRepo)
 	var adminService usecase.AdminService = admin.NewAdminService(userRepo, roleRepo, emailService)
+	var translationService usecase.TranslationService = translations_usecase.NewTranslationService(translationRepo, missingTranslationRepo)
 
 	if os.Getenv("DEVELOPMENT_MODE") == "false" {
 		cleanupJob := job.NewCleanupJob(db)
@@ -117,7 +128,7 @@ func main() {
 		go cleanupJob.Run(ctx, 24*time.Hour)
 	}
 
-	server := http.NewServer(exerciseService, workoutService, userService, aiService, emailService, redisLimiter, adminService, rbacService)
+	server := http.NewServer(exerciseService, workoutService, userService, aiService, emailService, redisLimiter, adminService, rbacService, translationService)
 
 	var port string
 	if port = os.Getenv("PORT"); port == "" {

@@ -6,6 +6,7 @@ import (
 	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/translations"
 	"os"
 
 	"gorm.io/driver/postgres"
@@ -54,6 +55,9 @@ func AutoMigrate(db *gorm.DB) error {
 		&workout.Workout{},
 		&workout.WorkoutExercise{},
 		&workout.WorkoutSet{},
+
+		&translations.Translation{},
+		&translations.MissingTranslation{},
 	)
 
 }

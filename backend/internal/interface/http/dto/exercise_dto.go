@@ -5,6 +5,7 @@ type ExerciseCreateRequest struct {
 	IsBodyweight  bool   `json:"is_bodyweight"`
 	IsTimeBased   bool   `json:"is_time_based"`
 	MuscleGroupID *uint  `json:"muscle_group_id"`
+	AutoTranslate  bool   `json:"auto_translate"`
 }
 
 type ExerciseUpdateRequest struct {
@@ -13,9 +14,10 @@ type ExerciseUpdateRequest struct {
 	IsTimeBased   *bool   `json:"is_time_based" binding:"omitempty"`
 	MuscleGroupID *uint    `json:"muscle_group_id" binding:"omitempty"`
 }
-
+ 
 type MuscleGroupCreateRequest struct {
 	Name string `json:"name" binding:"required,max=50"`
+	AutoTranslate  bool   `json:"auto_translate"`
 }
 
 type MuscleGroupUpdateRequest struct {

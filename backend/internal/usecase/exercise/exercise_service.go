@@ -5,8 +5,15 @@ import (
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 )
 
-func (s *exerciseServiceImpl) CreateExercise(ctx context.Context, e *workout.Exercise) error {
-	return s.exerciseRepo.Create(ctx, e)
+func (s *exerciseServiceImpl) CreateExercise(ctx context.Context, e *workout.Exercise, autoTranslate bool) error {
+	err := s.exerciseRepo.Create(ctx, e)
+	if err != nil {
+		return err
+	}
+	if autoTranslate {
+		// TODO: Call translation service here...
+	}
+	return nil
 }
 
 func (s *exerciseServiceImpl) GetExerciseByID(ctx context.Context, id uint) (*workout.Exercise, error) {

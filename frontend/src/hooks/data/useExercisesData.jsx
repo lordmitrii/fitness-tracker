@@ -133,8 +133,8 @@ export default function useExercisesData(onError) {
   });
 
   const createExercise = useMutation({
-    mutationFn: async ({ name, muscle_group_id }) => {
-      const { data } = await api.post("exercises/", { name, muscle_group_id });
+    mutationFn: async ({ name, muscle_group_id, auto_translate, is_time_based, is_bodyweight }) => {
+      const { data } = await api.post("exercises/", { name, muscle_group_id, auto_translate, is_time_based, is_bodyweight });
       return data;
     },
     onSuccess: (newExercise) => {
@@ -186,8 +186,8 @@ export default function useExercisesData(onError) {
   });
 
   const createMuscleGroup = useMutation({
-    mutationFn: async ({ name }) => {
-      const { data } = await api.post("muscle-groups/", { name });
+    mutationFn: async ({ name, auto_translate }) => {
+      const { data } = await api.post("muscle-groups/", { name, auto_translate });
       return data;
     },
     onSuccess: (newMuscleGroup) => {

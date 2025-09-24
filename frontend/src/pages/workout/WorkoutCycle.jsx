@@ -41,7 +41,7 @@ const WorkoutCycle = () => {
   const plan = useMemo(
     () => plans.find((p) => String(p.id) === String(planID)),
     [plans, planID]
-  ); // TODO: check that this dep is bug free
+  );
 
   const { settings } = useSettingsData();
 

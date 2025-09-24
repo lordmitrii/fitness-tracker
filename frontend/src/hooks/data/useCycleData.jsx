@@ -332,7 +332,39 @@ export default function useCycleData({
     onSuccess: withStatsInvalidation(() => {}),
   });
 
-  // 4) Update workout
+  const addWorkout = useMutation({
+    mutationKey: ["addWorkout", planID, cycleID],
+    mutationFn: async ({ payload }) => {
+      const res = await api.post(
+        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts`,
+        payload
+      );
+      return res?.data ?? null;
+    },
+    ...optimisticCycle,
+
+    onMutate: async (vars) => {
+      const ctx = await optimisticCycle.onMutate(vars);
+      const tempId = `__temp_wk_${Date.now()}`;
+      setCycleCache((cycle) => ({
+        ...cycle,
+        workouts: (cycle.workouts || []).concat({ ...vars.payload, id: tempId }),
+      }));
+      return { ...ctx, tempId };
+    },
+    onSuccess: (server, _vars, ctx) => {
+      if (!server?.id || !ctx?.tempId) return;
+
+      setCycleCache((cycle) => ({
+        ...cycle,
+        workouts: (cycle.workouts || []).map((w) =>
+          w.id === ctx.tempId ? { ...w, id: server.id } : w
+        ),
+      }));
+    },
+  });
+
+  // 5) Update workout
   const updateWorkout = useMutation({
     mutationKey: ["updateWorkout", planID, cycleID],
     mutationFn: async ({ workoutID, payload }) => {
@@ -413,7 +445,7 @@ export default function useCycleData({
     },
   });
 
-  // 5) Delete workout
+  // 6) Delete workout
   const deleteWorkout = useMutation({
     mutationKey: ["deleteWorkout", planID, cycleID],
     mutationFn: async ({ workoutID }) => {
@@ -455,7 +487,7 @@ export default function useCycleData({
     // onSettled: () => queryClient.invalidateQueries({ queryKey: QK.cycle(planID, cycleID) }),
   });
 
-  // 6) Replace/add exercises (API details may differ; wire similarly)
+  // 7) Replace/add exercises (API details may differ; wire similarly)
   const upsertExercise = useMutation({
     mutationKey: ["upsertExercise", planID, cycleID],
     mutationFn: async ({
@@ -532,7 +564,7 @@ export default function useCycleData({
     },
   });
 
-  // 7) Delete cycle
+  // 8) Delete cycle
   const deleteCycle = useMutation({
     mutationKey: ["deleteCycle", planID, cycleID],
     mutationFn: async ({ previousCycleID, nextCycleID }) => {
@@ -645,7 +677,7 @@ export default function useCycleData({
     },
   });
 
-  // 8) Move exercise (up/down one position)
+  // 9) Move exercise (up/down one position)
   const moveExercise = useMutation({
     mutationKey: ["moveExercise", planID, cycleID],
     mutationFn: async ({ workoutID, exerciseID, direction }) => {
@@ -696,7 +728,7 @@ export default function useCycleData({
     },
   });
 
-  // 9) Skip exercise (marks all sets skipped, treat exercise as "completed via skip")
+  // 10) Skip exercise (marks all sets skipped, treat exercise as "completed via skip")
   const skipExercise = useMutation({
     mutationKey: ["skipExercise", planID, cycleID],
     mutationFn: async ({ workoutID, exerciseID }) => {
@@ -742,7 +774,7 @@ export default function useCycleData({
     },
   });
 
-  // 10) Delete exercise
+  // 11) Delete exercise
   const deleteExercise = useMutation({
     mutationKey: ["deleteExercise", planID, cycleID],
     mutationFn: async ({ workoutID, exerciseID }) => {
@@ -785,7 +817,7 @@ export default function useCycleData({
     onSuccess: withStatsInvalidation(() => {}),
   });
 
-  // 11) Move set up/down within an exercise
+  // 12) Move set up/down within an exercise
   const moveSet = useMutation({
     mutationKey: ["moveSet", planID, cycleID],
     mutationFn: async ({ workoutID, exerciseID, setID, direction }) => {
@@ -839,7 +871,7 @@ export default function useCycleData({
     },
   });
 
-  // 12) Add a set at a specific index (above/below)
+  // 13) Add a set at a specific index (above/below)
   const addSet = useMutation({
     mutationKey: ["addSet", planID, cycleID],
     mutationFn: async ({ workoutID, exerciseID, index, template }) => {
@@ -926,7 +958,7 @@ export default function useCycleData({
     },
   });
 
-  // 13) Skip a set (mark skipped:true, completed:false)
+  // 14) Skip a set (mark skipped:true, completed:false)
   const skipSet = useMutation({
     mutationKey: ["skipSet", planID, cycleID],
     mutationFn: async ({ workoutID, exerciseID, setID }) => {
@@ -969,7 +1001,7 @@ export default function useCycleData({
     },
   });
 
-  // 14) Delete a set
+  // 15) Delete a set
   const deleteSet = useMutation({
     mutationKey: ["deleteSet", planID, cycleID],
     mutationFn: async ({ workoutID, exerciseID, setID }) => {
@@ -1122,6 +1154,7 @@ export default function useCycleData({
         completeCycle,
         updateSetFields,
         toggleSetCompleted,
+        addWorkout,
         updateWorkout,
         deleteWorkout,
         upsertExercise,
@@ -1155,6 +1188,7 @@ export default function useCycleData({
       completeCycle,
       updateSetFields,
       toggleSetCompleted,
+      addWorkout,
       updateWorkout,
       deleteWorkout,
       deleteCycle,
