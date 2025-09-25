@@ -19,10 +19,24 @@ function persistSoon() {
 }
 
 function makeId(langs, ns, key, versions) {
-  const normLangs = langs.map((l) => l.split("-")[0]).sort(); 
-  const versionKey = (
-    versions ? normLangs.map((l) => versions[l] || "0") : []
-  ).join(",");
+  const normLangs = Array.from(
+    new Set(langs.map((l) => l.split("-")[0]))
+  ).sort();
+
+  const versionKey = normLangs
+    .map((l) => {
+      if (!versions) return "0";
+      const v = versions[l];
+      if (v && typeof v === "object" && v !== null) {
+        return v[ns] || "0";
+      }
+      if (typeof v === "string" || typeof v === "number") {
+        return String(v);
+      }
+      return "0";
+    })
+    .join(",");
+
   return `${ns}|${normLangs.join(",")}|${key}|${versionKey}`;
 }
 

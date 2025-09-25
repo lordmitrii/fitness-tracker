@@ -39,7 +39,7 @@ func (s *aiServiceImpl) AskStatsQuestion(ctx context.Context, userID uint, quest
 		fullPrompt = fmt.Sprintf("The user asks: %s\n", question)
 	}
 
-	return callOpenAIChat(ctx, fullPrompt, previousResponseID, 256)
+	return s.openai.CallOpenAIChat(ctx, fullPrompt, previousResponseID, 256)
 }
 
 func (s *aiServiceImpl) AskWorkoutsQuestion(ctx context.Context, userID uint, question, lang, previousResponseID string) (string, string, error) {
@@ -70,7 +70,7 @@ func (s *aiServiceImpl) AskWorkoutsQuestion(ctx context.Context, userID uint, qu
 		} else {
 			fullPrompt = fmt.Sprintf("The user asks: %s\n", question)
 		}
-		return callOpenAIChat(ctx, fullPrompt, previousResponseID, 256)
+		return s.openai.CallOpenAIChat(ctx, fullPrompt, previousResponseID, 256)
 	}
 
 	currentCycle, _ := s.workoutService.GetWorkoutCycleByID(ctx, *activePlan.CurrentCycleID)
@@ -88,7 +88,7 @@ func (s *aiServiceImpl) AskWorkoutsQuestion(ctx context.Context, userID uint, qu
 		fullPrompt = fmt.Sprintf("The user asks: %s\n", question)
 	}
 
-	return callOpenAIChat(ctx, fullPrompt, previousResponseID, 256)
+	return s.openai.CallOpenAIChat(ctx, fullPrompt, previousResponseID, 256)
 }
 
 func (s *aiServiceImpl) AskGeneralQuestion(ctx context.Context, userID uint, question, lang, previousResponseID string) (string, string, error) {
@@ -103,6 +103,6 @@ func (s *aiServiceImpl) AskGeneralQuestion(ctx context.Context, userID uint, que
 		fullPrompt = fmt.Sprintf("The user asks: %s\n", question)
 	}
 
-	return callOpenAIChat(ctx, fullPrompt, previousResponseID, 256)
+	return s.openai.CallOpenAIChat(ctx, fullPrompt, previousResponseID, 256)
 	// return fmt.Sprintf("General question: %s", question), fmt.Sprintf("previous_response_id: %s", previousResponseID), nil
 }

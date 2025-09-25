@@ -40,14 +40,20 @@ func parseInt(s string, def int64) int64 {
 }
 
 func etagMatch(inm, etag string) bool {
-  parts := strings.Split(inm, ",")
-  strip := func(s string) string { return strings.TrimSpace(strings.Trim(s, `"`)) }
-  a := strip(strings.TrimPrefix(etag, "W/"))
-  for _, p := range parts {
-    b := strip(strings.TrimPrefix(p, "W/"))
-    if b == "*" || b == a {
-      return true
-    }
-  }
-  return false
+	if inm == "" || etag == "" {
+		return false
+	}
+	strip := func(s string) string {
+		s = strings.TrimSpace(s)
+		s = strings.TrimPrefix(s, "W/")
+		return strings.Trim(s, `"`)
+	}
+	a := strip(etag)
+	for _, part := range strings.Split(inm, ",") {
+		p := strip(part)
+		if p == "*" || p == a {
+			return true
+		}
+	}
+	return false
 }

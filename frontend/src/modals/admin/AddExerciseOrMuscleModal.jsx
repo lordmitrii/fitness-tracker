@@ -177,7 +177,12 @@ const AddExerciseOrMuscleModal = ({
                 : t("admin.exercises.muscle_group_name_placeholder")
             }
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (/^[a-zA-Z\s-]*$/.test(val)) {
+                setName(val);
+              }
+            }}
             required
           />
           {formErrors.name && (

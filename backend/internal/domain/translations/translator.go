@@ -1,5 +1,9 @@
 package translations
 
+import (
+	"context"
+)
+
 type Translator interface {
-	Translate(key, lang string) string
+	Translate(ctx context.Context, key, lang string) (string, error)
 }

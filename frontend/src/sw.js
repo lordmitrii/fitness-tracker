@@ -1,7 +1,7 @@
 import { clientsClaim } from "workbox-core";
 import { precacheAndRoute, createHandlerBoundToURL } from "workbox-precaching";
 import { registerRoute, NavigationRoute } from "workbox-routing";
-import { NetworkFirst, CacheFirst } from "workbox-strategies";
+import { NetworkFirst, CacheFirst, NetworkOnly } from "workbox-strategies";
 import { CacheableResponsePlugin } from "workbox-cacheable-response";
 import { ExpirationPlugin } from "workbox-expiration";
 
@@ -45,9 +45,18 @@ self.addEventListener("activate", () =>
 );
 
 registerRoute(
+  ({url, request}) =>
+    url.origin === self.location.origin &&
+    url.pathname.startsWith("/api/i18n/") &&
+    request.method === "GET",
+  new NetworkOnly()
+);
+
+registerRoute(
   ({ url, request }) =>
     url.origin === self.location.origin &&
     url.pathname.startsWith("/api/") &&
+    !url.pathname.startsWith("/api/i18n/") &&
     request.method === "GET",
   new NetworkFirst({
     cacheName: "api-cache",

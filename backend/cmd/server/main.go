@@ -18,11 +18,12 @@ package main
 import (
 	"os"
 
+	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/ai"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/email"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/translations"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/admin"
-	"github.com/lordmitrii/golang-web-gin/internal/usecase/ai"
+	ai_usecase "github.com/lordmitrii/golang-web-gin/internal/usecase/ai"
 	email_usecase "github.com/lordmitrii/golang-web-gin/internal/usecase/email"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/exercise"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/rbac"
@@ -85,6 +86,8 @@ func main() {
 	emailTokenRepo := postgres.NewEmailTokenRepo(db)
 	translationRepo := postgres.NewTranslationsRepo(db)
 	missingTranslationRepo := postgres.NewMissingTranslationsRepo(db)
+
+	versionRepo := postgres.NewVersionRepository(db)
 	// emailSender := email.NewGmailSender(            //not working in digital ocean as port 587 is blocked
 	// 	os.Getenv("NOREPLY_EMAIL"),
 	// 	os.Getenv("NOREPLY_EMAIL_PASSWORD"),
@@ -111,14 +114,19 @@ func main() {
 		os.Getenv("DEEPL_API_URL"),
 	)
 
-	var exerciseService usecase.ExerciseService = exercise.NewExerciseService(exerciseRepo, muscleGroupRepo, translator)
+	openai := ai.NewOpenAI(
+		os.Getenv("OPENAI_API_KEY"),
+		1.0, // temperature
+	)
+
+	var exerciseService usecase.ExerciseService = exercise.NewExerciseService(exerciseRepo, muscleGroupRepo, translator, translationRepo, versionRepo)
 	var workoutService usecase.WorkoutService = workout.NewWorkoutService(workoutPlanRepo, workoutCycleRepo, workoutRepo, workoutExerciseRepo, workoutSetRepo, individualExerciseRepo, exerciseRepo)
 	var userService usecase.UserService = user.NewUserService(userRepo, profileRepo, userConsentRepo, roleRepo, permissionRepo, userSettingsRepo)
-	var aiService usecase.AIService = ai.NewAIService(workoutService, userService)
+	var aiService usecase.AIService = ai_usecase.NewAIService(workoutService, userService, openai)
 	var emailService usecase.EmailService = email_usecase.NewEmailService(userRepo, roleRepo, emailSender, emailTokenRepo)
 	var rbacService usecase.RBACService = rbac.NewRBACService(roleRepo, permissionRepo, userRepo)
 	var adminService usecase.AdminService = admin.NewAdminService(userRepo, roleRepo, emailService)
-	var translationService usecase.TranslationService = translations_usecase.NewTranslationService(translationRepo, missingTranslationRepo)
+	var translationService usecase.TranslationService = translations_usecase.NewTranslationService(translationRepo, missingTranslationRepo, versionRepo)
 
 	if os.Getenv("DEVELOPMENT_MODE") == "false" {
 		cleanupJob := job.NewCleanupJob(db)

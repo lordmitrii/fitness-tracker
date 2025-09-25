@@ -24,6 +24,7 @@ func NewTranslationHandler(r *gin.RouterGroup, svc usecase.TranslationService) {
 		group.GET("/:locale/:namespace", h.GetTranslations)
 		group.POST("/missing", h.ReportMissingTranslation)
 		group.POST("/missing/batch", h.ReportMissingTranslationBatch)
+		group.GET("/meta", h.GetI18nMeta)
 
 		adminonly := group.Group("/")
 		adminonly.Use(middleware.JWTMiddleware())
@@ -36,42 +37,89 @@ func NewTranslationHandler(r *gin.RouterGroup, svc usecase.TranslationService) {
 }
 
 func (h *TranslationHandler) GetTranslations(c *gin.Context) {
-  ns := c.Param("namespace")
-  lng := c.Param("locale")
+	ns := c.Param("namespace")
+	lng := c.Param("locale")
 
-  rows, err := h.svc.GetTranslations(c.Request.Context(), ns, lng)
-  if err != nil {
-    c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-    return
-  }
+	rows, err := h.svc.GetTranslations(c.Request.Context(), ns, lng)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
-  resp := make(map[string]string, len(rows))
-  for _, t := range rows {
-    resp[t.Key] = t.Value
-  }
+	resp := make(map[string]string, len(rows))
+	for _, t := range rows {
+		resp[t.Key] = t.Value
+	}
 
-  keys := make([]string, 0, len(resp))
-  for k := range resp { keys = append(keys, k) }
-  sort.Strings(keys)
+	keys := make([]string, 0, len(resp))
+	for k := range resp {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
 
-  hsh := sha1.New()
-  for _, k := range keys {
-    hsh.Write([]byte(k))
-    hsh.Write([]byte{0})
-    hsh.Write([]byte(resp[k]))
-    hsh.Write([]byte{0})
-  }
-  etag := `W/"` + hex.EncodeToString(hsh.Sum(nil)) + `"`
+	hsh := sha1.New()
+	for _, k := range keys {
+		hsh.Write([]byte(k))
+		hsh.Write([]byte{0})
+		hsh.Write([]byte(resp[k]))
+		hsh.Write([]byte{0})
+	}
+	etag := `W/"` + hex.EncodeToString(hsh.Sum(nil)) + `"`
 
-  inm := c.GetHeader("If-None-Match")
-  if inm != "" && etagMatch(inm, etag) {
-    c.Status(http.StatusNotModified)
-    return
-  }
+	inm := c.GetHeader("If-None-Match")
+	if inm != "" && etagMatch(inm, etag) {
+		c.Status(http.StatusNotModified)
+		return
+	}
 
-  c.Header("ETag", etag)
-  c.Header("Cache-Control", "public, max-age=300, stale-while-revalidate=86400")
-  c.JSON(http.StatusOK, resp)
+	c.Header("ETag", etag)
+	c.Header("Cache-Control", "public, max-age=300, stale-while-revalidate=86400")
+	c.JSON(http.StatusOK, resp)
+}
+
+func (h *TranslationHandler) GetI18nMeta(c *gin.Context) {
+	locales := c.Query("locales")
+	namespaces := c.Query("namespaces")
+
+	vers, err := h.svc.GetI18nMeta(c.Request.Context(), locales, namespaces)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	locs := make([]string, 0, len(vers))
+	for k := range vers {
+		locs = append(locs, k)
+	}
+	sort.Strings(locs)
+
+	hsh := sha1.New()
+	for _, loc := range locs {
+		hsh.Write([]byte(loc))
+		hsh.Write([]byte{0})
+		nsKeys := make([]string, 0, len(vers[loc]))
+		for ns := range vers[loc] {
+			nsKeys = append(nsKeys, ns)
+		}
+		sort.Strings(nsKeys)
+		for _, ns := range nsKeys {
+			hsh.Write([]byte(ns))
+			hsh.Write([]byte{0})
+			hsh.Write([]byte(vers[loc][ns]))
+			hsh.Write([]byte{0})
+		}
+	}
+	etag := `W/"` + hex.EncodeToString(hsh.Sum(nil)) + `"`
+
+	if inm := c.GetHeader("If-None-Match"); inm != "" && etagMatch(inm, etag) {
+		c.Status(http.StatusNotModified)
+		return
+	}
+
+	c.Header("ETag", etag)
+	c.Header("Cache-Control", "public, max-age=0, must-revalidate")
+
+	c.JSON(http.StatusOK, gin.H{"versions": vers})
 }
 
 func (h *TranslationHandler) ReportMissingTranslation(c *gin.Context) {
@@ -123,7 +171,6 @@ func (h *TranslationHandler) ReportMissingTranslationBatch(c *gin.Context) {
 
 	c.Status(http.StatusNoContent)
 }
-
 
 func (h *TranslationHandler) CreateTranslation(c *gin.Context) {
 	var req dto.CreateTranslationRequest

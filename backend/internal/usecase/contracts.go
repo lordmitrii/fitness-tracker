@@ -138,6 +138,7 @@ type TranslationService interface {
 	CreateTranslation(ctx context.Context, translation *translations.Translation) error
 	DeleteTranslation(ctx context.Context, id uint) error
 	ReportMissingTranslations(ctx context.Context, translations []*translations.MissingTranslation) error
+	GetI18nMeta(ctx context.Context, locales, namespaces string) (map[string]map[string]string, error)
 }
 type RateLimiter interface {
 	Allow(ctx context.Context, key string, limit int, per time.Duration) (bool, time.Duration, error)
