@@ -6,6 +6,8 @@ import (
 	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/translations"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/versions"
 	"os"
 
 	"gorm.io/driver/postgres"
@@ -35,6 +37,10 @@ func NewPostgresDB(dsn string) (*gorm.DB, error) {
 // AutoMigrate applies schema migrations for all models.
 func AutoMigrate(db *gorm.DB) error {
 	return db.AutoMigrate(
+		&versions.Version{},
+		&translations.Translation{},
+		&translations.MissingTranslation{},
+
 		&user.User{},
 		&user.Profile{},
 		&user.UserConsent{},

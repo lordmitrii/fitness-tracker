@@ -3,24 +3,35 @@ package ai
 import (
 	"context"
 	"fmt"
-	"os"
 
+	"github.com/lordmitrii/golang-web-gin/internal/domain/ai"
 	"github.com/openai/openai-go"
 	"github.com/openai/openai-go/option"
 	"github.com/openai/openai-go/responses"
 )
 
-func callOpenAIChat(ctx context.Context, input string, previousResponseID string, maxTokens int64) (string, string, error) {
-	apiKey := os.Getenv("OPENAI_API_KEY")
-	if apiKey == "" {
-		return "", "", fmt.Errorf("OPENAI_API_KEY not set")
+type OpenAI struct {
+	APIKey      string
+	Temperature float64
+}
+
+func NewOpenAI(apiKey string, temperature float64) ai.OpenAI {
+	return &OpenAI{
+		APIKey:      apiKey,
+		Temperature: temperature,
+	}
+}
+
+func (o *OpenAI) CallOpenAIChat(ctx context.Context, input string, previousResponseID string, maxTokens int64) (string, string, error) {
+	if o.APIKey == "" {
+		return "", "", fmt.Errorf("api key not set for OpenAI")
 	}
 
-	client := openai.NewClient(option.WithAPIKey(apiKey))
+	client := openai.NewClient(option.WithAPIKey(o.APIKey))
 
 	params := responses.ResponseNewParams{
 		Model:           openai.ChatModelGPT4_1Nano2025_04_14,
-		Temperature:     openai.Float(1.0),
+		Temperature:     openai.Float(o.Temperature),
 		MaxOutputTokens: openai.Int(maxTokens),
 		Input: responses.ResponseNewParamsInputUnion{
 			OfString: openai.String(input),

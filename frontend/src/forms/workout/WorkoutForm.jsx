@@ -1,12 +1,9 @@
 import { useState, useCallback, memo } from "react";
-import api from "../../api";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import LoadingState from "../../states/LoadingState";
 import ErrorState from "../../states/ErrorState";
 import { useTranslation } from "react-i18next";
-import { useQueryClient } from "@tanstack/react-query";
-import { QK } from "../../utils/queryKeys";
 import useCycleData from "../../hooks/data/useCycleData";
 
 const WorkoutForm = memo(function WorkoutForm({
@@ -97,21 +94,18 @@ export const CreateWorkoutForm = () => {
   const { t } = useTranslation();
   const { planID, cycleID } = useParams();
   const navigate = useNavigate();
-  const [error, setError] = useState(null);
-  const qc = useQueryClient();
+  const { mutations, error, refetchAll } = useCycleData({ planID, cycleID, skipQuery: true });
 
   const handleCreate = useCallback(
     async (payload) => {
       try {
-        await api.post(
-          `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts`,
-          payload
-        );
-        await qc.invalidateQueries({ queryKey: QK.cycle(planID, cycleID) });
+        await mutations.addWorkout.mutateAsync({
+          cycleID: Number(cycleID),
+          payload,
+        });
         navigate(`/workout-plans/${planID}/workout-cycles/${cycleID}`, { replace: true });
       } catch (error) {
         console.error("Error creating workout:", error);
-        setError(error);
       }
     },
     [planID, cycleID, navigate]
@@ -119,7 +113,7 @@ export const CreateWorkoutForm = () => {
 
   if (error)
     return (
-      <ErrorState error={error} onRetry={() => window.location.reload()} />
+      <ErrorState error={error} onRetry={refetchAll} />
     );
 
   return (

@@ -35,7 +35,7 @@ func (s *SendGridSender) send(to string, msg Message) error {
 	body, _ := json.Marshal(payload)
 
 	req, _ := http.NewRequestWithContext(context.Background(),
-		"POST", "https://api.sendgrid.com/v3/mail/send", bytes.NewReader(body))
+		http.MethodPost, "https://api.sendgrid.com/v3/mail/send", bytes.NewReader(body))
 	req.Header.Set("Authorization", "Bearer "+s.APIKey)
 	req.Header.Set("Content-Type", "application/json")
 

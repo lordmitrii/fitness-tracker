@@ -62,7 +62,7 @@ func (h *ExerciseHandler) CreateExercise(c *gin.Context) {
 		MuscleGroupID: req.MuscleGroupID,
 	}
 
-	if err := h.svc.CreateExercise(c.Request.Context(), &ex); err != nil {
+	if err := h.svc.CreateExercise(c.Request.Context(), &ex, req.AutoTranslate); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -177,7 +177,7 @@ func (h *ExerciseHandler) CreateMuscleGroup(c *gin.Context) {
 		Name: req.Name,
 	}
 
-	if err := h.svc.CreateMuscleGroup(c.Request.Context(), &muscleGroup); err != nil {
+	if err := h.svc.CreateMuscleGroup(c.Request.Context(), &muscleGroup, req.AutoTranslate); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

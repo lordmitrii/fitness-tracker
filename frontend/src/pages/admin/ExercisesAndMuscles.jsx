@@ -139,12 +139,17 @@ const ExercisesAndMuscles = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="sm:col-span-2 overflow-x-auto rounded-xl shadow-sm border border-gray-600">
-          <table className="min-w-full text-caption">
+        <div className="sm:col-span-2 overflow-x-auto rounded-xl shadow-sm border border-gray-600 h-fit">
+          <table className="w-full min-w-full text-caption table-fixed">
+            <colgroup>
+              <col className="w-[10%]" />
+              <col className="w-[40%]" />
+              <col className="w-[25%]" />
+              <col className="w-[25%]" />
+            </colgroup>
             <thead className="text-center text-body uppercase tracking-wide bg-gray-50">
               <tr>
-                <th className="px-4 py-3 flex items-center justify-center gap-2">
-                  {t("admin.exercises.exercise")}{" "}
+                <th className="px-4 py-3">
                   <button
                     className=""
                     onClick={() => setExEditModeEnabled(!exEditModeEnabled)}
@@ -156,13 +161,32 @@ const ExercisesAndMuscles = () => {
                     )}
                   </button>
                 </th>
+                <th className="px-4 py-3 text-left truncate">
+                  {t("admin.exercises.name")}{" "}
+                  {/* <button
+                    className=""
+                    onClick={() => setExEditModeEnabled(!exEditModeEnabled)}
+                  >
+                    {exEditModeEnabled ? (
+                      <CheckIcon className={"size-4"} />
+                    ) : (
+                      <EditIcon className={"size-4"} />
+                    )}
+                  </button> */}
+                </th>
+                <th className="px-4 py-3 truncate">
+                  {t("admin.exercises.is_time_based")}{" "}
+                </th>
+                <th className="px-4 py-3 truncate">
+                  {t("admin.exercises.is_bodyweight")}{" "}
+                </th>
               </tr>
             </thead>
             <tbody>
               {filteredExercises.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={1}
+                    colSpan={4}
                     className="px-6 py-2 text-center text-caption"
                   >
                     {t("admin.no_exercises")}
@@ -175,18 +199,7 @@ const ExercisesAndMuscles = () => {
                       key={ex.id}
                       className="text-center border-t hover:bg-gray-50 transition-colors"
                     >
-                      <td
-                        className={`font-medium flex items-center text-start ${
-                          exEditModeEnabled
-                            ? "justify-between"
-                            : "justify-center"
-                        } gap-2 px-4 py-2`}
-                      >
-                        {highlightMatches(
-                          ex._label,
-                          query,
-                          "bg-blue-600 text-white"
-                        )}
+                      <td className="px-4 py-3">
                         {exEditModeEnabled && (
                           <div className="flex gap-2 justify-center">
                             {/* <button
@@ -198,7 +211,8 @@ const ExercisesAndMuscles = () => {
                           </button> */}
                             <button
                               className="btn btn-danger"
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 if (
                                   confirm(
                                     t("admin.exercises.confirm_delete_exercise")
@@ -216,6 +230,21 @@ const ExercisesAndMuscles = () => {
                           </div>
                         )}
                       </td>
+                      <td
+                        className="font-medium text-left px-4 py-3 overflow-x-auto"
+                      >
+                        {highlightMatches(
+                          ex._label,
+                          query,
+                          "bg-blue-600 text-white"
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {ex.is_time_based ? t("general.yes") : t("general.no")}
+                      </td>
+                      <td className="px-4 py-3">
+                        {ex.is_bodyweight ? t("general.yes") : t("general.no")}
+                      </td>
                     </tr>
                   );
                 })
@@ -229,7 +258,10 @@ const ExercisesAndMuscles = () => {
             <h3 className="text-title">
               <div className="flex items-center gap-2">
                 {t("admin.exercises.muscles_title")}{" "}
-                <button className="" onClick={() => setMgEditModeEnabled(!mgEditModeEnabled)}>
+                <button
+                  className=""
+                  onClick={() => setMgEditModeEnabled(!mgEditModeEnabled)}
+                >
                   {mgEditModeEnabled ? (
                     <CheckIcon className={"size-4"} />
                   ) : (
@@ -264,7 +296,8 @@ const ExercisesAndMuscles = () => {
                     {mgEditModeEnabled ? (
                       <button
                         className="btn btn-danger"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           if (
                             confirm(
                               t("admin.exercises.confirm_delete_muscle_group")
@@ -297,11 +330,23 @@ const ExercisesAndMuscles = () => {
           exercisesL10n={exercisesL10n}
           muscleGroupsL10n={muscleGroupsL10n}
           loading={loading}
-          onCreateExercise={({ name, muscle_group_id }) =>
-            mutations.createExercise.mutate({ name, muscle_group_id })
+          onCreateExercise={({
+            name,
+            muscle_group_id,
+            auto_translate,
+            is_time_based,
+            is_bodyweight,
+          }) =>
+            mutations.createExercise.mutate({
+              name,
+              muscle_group_id,
+              auto_translate,
+              is_time_based,
+              is_bodyweight,
+            })
           }
-          onCreateMuscleGroup={({ name }) =>
-            mutations.createMuscleGroup.mutate({ name })
+          onCreateMuscleGroup={({ name, auto_translate }) =>
+            mutations.createMuscleGroup.mutate({ name, auto_translate })
           }
           onError={(err) =>
             setActionError(

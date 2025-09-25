@@ -2,6 +2,7 @@ import CheckIcon from "../icons/CheckIcon";
 import { memo } from "react";
 
 const CheckBox = ({
+  id,
   title,
   checked,
   onChange,
@@ -11,6 +12,7 @@ const CheckBox = ({
   return (
     <label className="relative flex justify-center items-center cursor-pointer">
       <input
+        id={id}
         type="checkbox"
         checked={checked}
         onChange={onChange}

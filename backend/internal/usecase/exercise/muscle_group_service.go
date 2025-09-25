@@ -2,11 +2,52 @@ package exercise
 
 import (
 	"context"
+	"fmt"
+	"unicode"
+
+	"github.com/lordmitrii/golang-web-gin/internal/domain/translations"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/versions"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 )
 
-func (s *exerciseServiceImpl) CreateMuscleGroup(ctx context.Context, mg *workout.MuscleGroup) error {
-	return s.muscleGroupRepo.Create(ctx, mg)
+func (s *exerciseServiceImpl) CreateMuscleGroup(ctx context.Context, mg *workout.MuscleGroup, autoTranslate bool) error {
+	err := s.muscleGroupRepo.Create(ctx, mg)
+	if err != nil {
+		return err
+	}
+
+	if !autoTranslate {
+		return nil
+	}
+
+	for iso, locale := range translations.ISO2Locale {
+		val, err := s.translator.Translate(ctx, mg.Name, iso)
+		if err != nil {
+			return fmt.Errorf("auto-translate muscle group name failed for locale %s: %w", locale, err)
+		}
+
+		if len(val) > 0 {
+			runes := []rune(val)
+			runes[0] = unicode.ToUpper(runes[0])
+			val = string(runes)
+		}
+
+		tr := &translations.Translation{
+			Namespace: "translation",
+			Locale:    locale,
+			Key:       fmt.Sprintf("muscle_group.%s", mg.Slug),
+			Value:     val,
+		}
+
+		if err := s.translationRepo.Create(ctx, tr); err != nil {
+			return fmt.Errorf("saving translation failed for locale %s: %w", locale, err)
+		}
+
+		if err := s.versionRepo.BumpVersion(ctx, versions.VersionTranslationKey(locale, "translation")); err != nil {
+			return fmt.Errorf("bumping version failed for locale %s: %w", locale, err)
+		}
+	}
+	return nil
 }
 
 func (s *exerciseServiceImpl) GetMuscleGroupByID(ctx context.Context, id uint) (*workout.MuscleGroup, error) {

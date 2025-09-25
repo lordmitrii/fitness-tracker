@@ -32,23 +32,29 @@ function CustomExerciseFields({
       />
       {nameError && <p className="text-caption-red mt-1">{nameError}</p>}
 
-      <div className="flex justify-between align-center gap-6">
-        <span className="flex items-center text-caption gap-2">
-          <span>{t("add_workout_exercise_modal.is_bodyweight")}</span>
+      <div className="flex justify-between align-center text-caption gap-6">
+        <div className="flex items-center gap-2">
           <CheckBox
+            id="is-bodyweight"
             title={t("workout_plan_single.is_bodyweight")}
             checked={isBodyweight}
             onChange={(e) => setIsBodyweight(e.target.checked)}
           />
-        </span>
-        <span className="flex items-center text-caption gap-2">
-          <span>{t("add_workout_exercise_modal.is_time_based")}</span>
+          <label htmlFor="is-bodyweight">
+            {t("add_workout_exercise_modal.is_bodyweight")}
+          </label>
+        </div>
+        <div className="flex items-center gap-2">
           <CheckBox
+            id="is-time-based"
             title={t("workout_plan_single.set_completed")}
             checked={isTimeBased}
             onChange={(e) => setIsTimeBased(e.target.checked)}
           />
-        </span>
+          <label htmlFor="is-time-based">
+            {t("add_workout_exercise_modal.is_time_based")}
+          </label>
+        </div>
       </div>
     </>
   );

@@ -1,9 +1,11 @@
 package handler
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
+	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 func currentUserID(c *gin.Context) (uint, bool) {
@@ -35,4 +37,23 @@ func parseInt(s string, def int64) int64 {
 		return def
 	}
 	return int64(n)
+}
+
+func etagMatch(inm, etag string) bool {
+	if inm == "" || etag == "" {
+		return false
+	}
+	strip := func(s string) string {
+		s = strings.TrimSpace(s)
+		s = strings.TrimPrefix(s, "W/")
+		return strings.Trim(s, `"`)
+	}
+	a := strip(etag)
+	for _, part := range strings.Split(inm, ",") {
+		p := strip(part)
+		if p == "*" || p == a {
+			return true
+		}
+	}
+	return false
 }

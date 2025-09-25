@@ -3,10 +3,12 @@ package usecase
 import (
 	"context"
 
+	"time"
+
 	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/translations"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
-	"time"
 )
 
 type (
@@ -61,14 +63,14 @@ type (
 	}
 
 	ExerciseService interface {
-		CreateExercise(ctx context.Context, e *workout.Exercise) error
+		CreateExercise(ctx context.Context, e *workout.Exercise, autoTranslate bool) error
 		GetExerciseByID(ctx context.Context, id uint) (*workout.Exercise, error)
 		GetExercisesByMuscleGroupID(ctx context.Context, muscleGroupID *uint) ([]*workout.Exercise, error)
 		GetAllExercises(ctx context.Context) ([]*workout.Exercise, error)
 		UpdateExercise(ctx context.Context, id uint, updates map[string]any) (*workout.Exercise, error)
 		DeleteExercise(ctx context.Context, id uint) error
 
-		CreateMuscleGroup(ctx context.Context, mg *workout.MuscleGroup) error
+		CreateMuscleGroup(ctx context.Context, mg *workout.MuscleGroup, autoTranslate bool) error
 		GetMuscleGroupByID(ctx context.Context, id uint) (*workout.MuscleGroup, error)
 		GetAllMuscleGroups(ctx context.Context) ([]*workout.MuscleGroup, error)
 		UpdateMuscleGroup(ctx context.Context, id uint, updates map[string]any) (*workout.MuscleGroup, error)
@@ -129,6 +131,14 @@ type EmailService interface {
 	ValidateToken(ctx context.Context, token, tokenType string) (bool, error)
 	ResetPassword(ctx context.Context, token, newPassword string) error
 	VerifyAccount(ctx context.Context, token string) error
+}
+type TranslationService interface {
+	GetTranslations(ctx context.Context, namespace, locale string) ([]*translations.Translation, error)
+	UpdateTranslation(ctx context.Context, id uint, updates map[string]any) error
+	CreateTranslation(ctx context.Context, translation *translations.Translation) error
+	DeleteTranslation(ctx context.Context, id uint) error
+	ReportMissingTranslations(ctx context.Context, translations []*translations.MissingTranslation) error
+	GetI18nMeta(ctx context.Context, locales, namespaces string) (map[string]map[string]string, error)
 }
 type RateLimiter interface {
 	Allow(ctx context.Context, key string, limit int, per time.Duration) (bool, time.Duration, error)

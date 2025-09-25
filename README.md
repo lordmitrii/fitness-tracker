@@ -9,7 +9,7 @@ Track workouts, exercises, and progress. The backend exposes a REST API with JWT
 - **Databases:** Postgres, Redis
 - **Frontend:** React, Vite, Tailwind CSS
 - **Tooling:** Docker Compose
-- **External APIs:** OpenAI
+- **External APIs:** OpenAI, Deepl Translate, Sendgrid, AWS
 
 ## Project Structure
 
@@ -38,16 +38,21 @@ backend/
 ├── cmd/server/main.go                        # Entrypoint of the app
 ├── internal/
 │   ├── domain/                                # Domain models, services, use-cases
+│   │   ├── ai/
 │   │   ├── email/
 │   │   ├── errors/                            # Custom error definitions
 │   │   ├── user/
 │   │   │   ├── profile.go                     # Domain definition of entity
 │   │   │   ├── repository.go                  # Domain definition of repository
 │   │   │   └── user.go
+│   │   ├── versions/                          # Domain definition of versions for the app
 │   │   ├── rbac/
+│   │   ├── translations/
 │   │   └── workout/
 │
 │   ├── infrastructure/
+│   │   ├── ai/                                # AIs
+│   │   │   └── openai.go
 │   │   ├── db/
 │   │   │   ├── postgres/                      # Data layer of the app
 │   │   │   │   ├── db.go                      # All migrations and layer assembly
@@ -59,6 +64,8 @@ backend/
 │   │   │       └── limiter.go
 │   │   ├── email/                             # Email bots, etc.
 │   │   │   └── gmail_sender.go
+│   │   ├── translations/                      # Translations APIs
+│   │   │   └── deepl_translator.go
 │   │   └── job/                               # Cleanups
 │   │       └── cleanup.go
 │
@@ -91,7 +98,6 @@ backend/
 │       │   ├── ai_service_test.go             # Go tests
 │       │   ├── helpers_test.go
 │       │   ├── service.go
-│       │   ├── openai.go                      # Callers to OpenAI
 │       │   ├── ai_service.go
 │       │   └── helpers.go
 │       ├── email/
@@ -101,6 +107,10 @@ backend/
 │       ├── rbac/
 │       │   ├── service.go
 │       │   └── rbac_service.go
+│       ├── translations/
+│       │   ├── service.go
+│       │   ├── helpers.go
+│       │   └── translation_service.go
 │       ├── exercise/
 │       │   ├── service.go
 │       │   ├── muscle_group_service.go
