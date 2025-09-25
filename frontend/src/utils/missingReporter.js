@@ -18,15 +18,15 @@ function persistSoon() {
   } catch {}
 }
 
-function makeId(langs, ns, key, versions) {
+function makeId(langs, ns, key, meta) {
   const normLangs = Array.from(
     new Set(langs.map((l) => l.split("-")[0]))
   ).sort();
 
   const versionKey = normLangs
     .map((l) => {
-      if (!versions) return "0";
-      const v = versions[l];
+      if (!meta) return "0";
+      const v = meta[l];
       if (v && typeof v === "object" && v !== null) {
         return v[ns] || "0";
       }
@@ -41,7 +41,7 @@ function makeId(langs, ns, key, versions) {
 }
 
 export function reportMissing(languages, namespace, key, options) {
-  const id = makeId(languages, namespace, key, options?.versions);
+  const id = makeId(languages, namespace, key, options?.meta);
   if (reported.has(id)) return;
   reported.add(id);
   persistSoon();

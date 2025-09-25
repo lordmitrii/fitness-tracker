@@ -5,13 +5,14 @@ import ThemeSwitcher from "../ThemeSwitcher";
 import { useTranslation, Trans } from "react-i18next";
 import { Link } from "react-router-dom";
 import GitHubIcon from "../../icons/GitHubIcon";
-import { APP_VERSION } from "../../config/versions";
 import NewIcon from "../../icons/NewIcon";
+import useVersionsData from "../../hooks/data/userVersionsData";
 
 const MoreContent = ({ onDone, variant = "sheet" }) => {
   const { isAuth, hasAnyRole, logout } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { getVersion } = useVersionsData();
 
   const links = [
     { to: "/", label: t("general.home"), auth: null, roles: [] },
@@ -111,8 +112,8 @@ const MoreContent = ({ onDone, variant = "sheet" }) => {
       </div>
 
       <div className="mx-2">
-        <div className="flex flex-col justify-center intems-center gap-4 text-gray-600 text- sm:text-left text-sm font-medium tracking-wide mb-8">
-          <div className="flex gap-2">
+        <div className="flex flex-col justify-center gap-4 text-gray-600 sm:text-left text-caption font-medium tracking-wide mb-8">
+          <div className="flex gap-2 justify-center sm:justify-start items-center text-center sm:text-left">
             <span>
               <Trans
                 i18nKey="general.our_policies"
@@ -132,10 +133,10 @@ const MoreContent = ({ onDone, variant = "sheet" }) => {
             </span>
           </div>
 
-          <div className="flex justify-start items-center gap-2">
+          <div className="flex justify-center sm:justify-start items-center gap-2">
             <a
               href="mailto:help.ftrackerapp@mail.com"
-              className="hover:text-blue-300 transition text-sm sm:text-base"
+              className="hover:text-blue-300 transition"
             >
               {t("general.contact_support")}
             </a>
@@ -148,9 +149,9 @@ const MoreContent = ({ onDone, variant = "sheet" }) => {
               <GitHubIcon />
             </a>
           </div>
-          <div className="flex justify-start items-center gap-2">
+          <div className="flex justify-center sm:justify-start items-center gap-2">
             <span>
-              {t("general.version")}: {APP_VERSION}
+              {t("general.version")}: {getVersion("app") ? getVersion("app") : t("general.n_a")}{" "}
             </span>
           </div>
         </div>

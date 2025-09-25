@@ -10,11 +10,10 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 
 	"github.com/lordmitrii/golang-web-gin/internal/interface/http/handler"
-	// "github.com/lordmitrii/golang-web-gin/internal/interface/http/middleware"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 )
 
-func NewServer(exerciseService usecase.ExerciseService, workoutService usecase.WorkoutService, userService usecase.UserService, aiService usecase.AIService, emailService usecase.EmailService, rateLimiter usecase.RateLimiter, adminService usecase.AdminService, rbacService usecase.RBACService, translationService usecase.TranslationService) *gin.Engine {
+func NewServer(exerciseService usecase.ExerciseService, workoutService usecase.WorkoutService, userService usecase.UserService, aiService usecase.AIService, emailService usecase.EmailService, rateLimiter usecase.RateLimiter, adminService usecase.AdminService, rbacService usecase.RBACService, translationService usecase.TranslationService, versionsService usecase.VersionsService) *gin.Engine {
 	if os.Getenv("DEVELOPMENT_MODE") == "true" {
 		gin.SetMode(gin.DebugMode)
 	} else {
@@ -33,10 +32,17 @@ func NewServer(exerciseService usecase.ExerciseService, workoutService usecase.W
 	handler.NewEmailHandler(api, emailService, rateLimiter, rbacService)
 	handler.NewAdminHandler(api, adminService, rbacService)
 	handler.NewTranslationHandler(api, translationService)
+	handler.NewVersionsHandler(api, versionsService)
 
 	// Swagger endpoint at /swagger/index.html
-	if os.Getenv("DEVELOPMENT_MODE") == "true" {
-		r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	if os.Getenv("SWAGGER_ENABLED") == "true" {
+		user := os.Getenv("SWAGGER_USER")
+		pass := os.Getenv("SWAGGER_PASS")
+		if user != "" && pass != "" {
+			r.GET("/swagger/*any", gin.BasicAuth(gin.Accounts{user: pass}), ginSwagger.WrapHandler(swaggerFiles.Handler))
+		} else {
+			r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+		}
 	}
 
 	return r

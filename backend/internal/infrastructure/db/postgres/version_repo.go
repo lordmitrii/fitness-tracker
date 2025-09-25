@@ -38,6 +38,14 @@ func (r *versionRepository) GetByKey(ctx context.Context, key string) (*versions
 	return &version, nil
 }
 
+func (r *versionRepository) GetAll(ctx context.Context) ([]*versions.Version, error) {
+	var versionsList []*versions.Version
+	if err := r.db.Find(&versionsList).Error; err != nil {
+		return nil, err
+	}
+	return versionsList, nil
+}
+
 func (r *versionRepository) Update(ctx context.Context, version *versions.Version) error {
 	return r.db.Save(version).Error
 }

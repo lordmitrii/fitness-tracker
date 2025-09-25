@@ -59,7 +59,7 @@ const AIChat = () => {
   const [error, setError] = useState(null);
   const chatWindowRef = useRef(null);
 
-  const { consentGiven, giveConsent, ready } = useConsent("ai_chat");
+  const { consentGiven, giveConsent, ready } = useConsent("aiChatPrivacy");
   const [showConsent, setShowConsent] = useState(false);
 
   const { cooldown, start: startCooldown } = useCooldown();

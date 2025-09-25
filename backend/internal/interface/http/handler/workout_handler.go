@@ -69,15 +69,27 @@ func NewWorkoutHandler(r *gin.RouterGroup, svc usecase.WorkoutService) {
 		wp.GET("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:weID/workout-sets", h.GetWorkoutSetsByWorkoutExerciseID)
 
 		wp.GET("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:weID/workout-sets/:setID", h.GetWorkoutSetByID)
-		wp.PATCH(":id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:weID/workout-sets/:setID", h.UpdateWorkoutSet)
+		wp.PATCH("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:weID/workout-sets/:setID", h.UpdateWorkoutSet)
 		wp.DELETE("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:weID/workout-sets/:setID", h.DeleteWorkoutSet)
-		wp.PATCH(":id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:weID/workout-sets/:setID/update-complete", h.CompleteWorkoutSet)
-		wp.POST(":id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:weID/workout-sets/:setID/move", h.MoveWorkoutSet)
+		wp.PATCH("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:weID/workout-sets/:setID/update-complete", h.CompleteWorkoutSet)
+		wp.POST("/:id/workout-cycles/:cycleID/workouts/:workoutID/workout-exercises/:weID/workout-sets/:setID/move", h.MoveWorkoutSet)
 	}
 
 	auth.GET("/current-cycle", h.GetCurrentWorkoutCycle)
 }
 
+// CreateWorkoutPlan godoc
+// @Summary      Create workout plan
+// @Tags         workout-plans
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.WorkoutPlanCreateRequest  true  "Workout plan payload"
+// @Success      201   {object}  dto.WorkoutPlanResponse
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      401   {object}  dto.MessageResponse
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /workout-plans [post]
 func (h *WorkoutHandler) CreateWorkoutPlan(c *gin.Context) {
 	userID, exists := currentUserID(c)
 	if !exists {
@@ -105,6 +117,17 @@ func (h *WorkoutHandler) CreateWorkoutPlan(c *gin.Context) {
 	c.JSON(http.StatusCreated, dto.ToWorkoutPlanResponse(wp))
 }
 
+// GetWorkoutPlan godoc
+// @Summary      Get workout plan
+// @Tags         workout-plans
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id   path      uint  true  "Workout Plan ID" example(1)
+// @Success      200  {object}  dto.WorkoutPlanResponse
+// @Failure      400  {object}  dto.MessageResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      404  {object}  dto.MessageResponse
+// @Router       /workout-plans/{id} [get]
 func (h *WorkoutHandler) GetWorkoutPlan(c *gin.Context) {
 	id := parseUint(c.Param("id"), 0)
 	if id == 0 {
@@ -119,6 +142,16 @@ func (h *WorkoutHandler) GetWorkoutPlan(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ToWorkoutPlanResponse(wp))
 }
+
+// GetWorkoutPlansByUserID godoc
+// @Summary      List workout plans for current user
+// @Tags         workout-plans
+// @Security     BearerAuth
+// @Produce      json
+// @Success      200  {array}   dto.WorkoutPlanResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      404  {object}  dto.MessageResponse
+// @Router       /workout-plans [get]
 func (h *WorkoutHandler) GetWorkoutPlansByUserID(c *gin.Context) {
 	userID, exists := currentUserID(c)
 	if !exists {
@@ -138,6 +171,19 @@ func (h *WorkoutHandler) GetWorkoutPlansByUserID(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// UpdateWorkoutPlan godoc
+// @Summary      Update workout plan
+// @Tags         workout-plans
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id    path      uint                       true  "Workout Plan ID" example(1)
+// @Param        body  body      dto.WorkoutPlanUpdateRequest true "Fields to update"
+// @Success      200   {object}  dto.WorkoutPlanResponse
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      401   {object}  dto.MessageResponse
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /workout-plans/{id} [patch]
 func (h *WorkoutHandler) UpdateWorkoutPlan(c *gin.Context) {
 	id := parseUint(c.Param("id"), 0)
 	if id == 0 {
@@ -160,6 +206,18 @@ func (h *WorkoutHandler) UpdateWorkoutPlan(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ToWorkoutPlanResponse(wp))
 }
+
+// DeleteWorkoutPlan godoc
+// @Summary      Delete workout plan
+// @Tags         workout-plans
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id   path      uint  true  "Workout Plan ID" example(1)
+// @Success      204  {string}  string "No Content"
+// @Failure      400  {object}  dto.MessageResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /workout-plans/{id} [delete]
 func (h *WorkoutHandler) DeleteWorkoutPlan(c *gin.Context) {
 	id := parseUint(c.Param("id"), 0)
 	if id == 0 {
@@ -173,6 +231,19 @@ func (h *WorkoutHandler) DeleteWorkoutPlan(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// SetActiveWorkoutPlan godoc
+// @Summary      Set workout plan active/inactive
+// @Tags         workout-plans
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id    path      uint                          true  "Workout Plan ID" example(1)
+// @Param        body  body      dto.SetActiveWorkoutPlanRequest true "Active flag"
+// @Success      200   {object}  dto.WorkoutPlanResponse
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      401   {object}  dto.MessageResponse
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/set-active [patch]
 func (h *WorkoutHandler) SetActiveWorkoutPlan(c *gin.Context) {
 	id := parseUint(c.Param("id"), 0)
 	if id == 0 {
@@ -192,6 +263,19 @@ func (h *WorkoutHandler) SetActiveWorkoutPlan(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToWorkoutPlanResponse(wp))
 }
 
+// AddWorkoutCycleToWorkoutPlan godoc
+// @Summary      Add cycle to workout plan
+// @Tags         workout-cycles
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id    path      uint                         true  "Workout Plan ID" example(1)
+// @Param        body  body      dto.WorkoutCycleCreateRequest true "Cycle payload"
+// @Success      201   {object}  dto.WorkoutCycleResponse
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      401   {object}  dto.MessageResponse
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles [post]
 func (h *WorkoutHandler) AddWorkoutCycleToWorkoutPlan(c *gin.Context) {
 	id := parseUint(c.Param("id"), 0)
 	if id == 0 {
@@ -219,6 +303,17 @@ func (h *WorkoutHandler) AddWorkoutCycleToWorkoutPlan(c *gin.Context) {
 	c.JSON(http.StatusCreated, dto.ToWorkoutCycleResponse(wc))
 }
 
+// GetWorkoutCyclesByWorkoutPlanID godoc
+// @Summary      List cycles for a workout plan
+// @Tags         workout-cycles
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id   path      uint  true  "Workout Plan ID" example(1)
+// @Success      200  {array}   dto.WorkoutCycleResponse
+// @Failure      400  {object}  dto.MessageResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      404  {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles [get]
 func (h *WorkoutHandler) GetWorkoutCyclesByWorkoutPlanID(c *gin.Context) {
 	id := parseUint(c.Param("id"), 0)
 	if id == 0 {
@@ -240,6 +335,18 @@ func (h *WorkoutHandler) GetWorkoutCyclesByWorkoutPlanID(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// GetWorkoutCycleByID godoc
+// @Summary      Get cycle by ID
+// @Tags         workout-cycles
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id       path      uint  true  "Workout Plan ID" example(1)
+// @Param        cycleID  path      uint  true  "Cycle ID"        example(12)
+// @Success      200  {object}  dto.WorkoutCycleResponse
+// @Failure      400  {object}  dto.MessageResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      404  {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID} [get]
 func (h *WorkoutHandler) GetWorkoutCycleByID(c *gin.Context) {
 	id := parseUint(c.Param("cycleID"), 0)
 	if id == 0 {
@@ -254,6 +361,21 @@ func (h *WorkoutHandler) GetWorkoutCycleByID(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, dto.ToWorkoutCycleResponse(workoutCycle))
 }
+
+// UpdateWorkoutCycle godoc
+// @Summary      Update cycle
+// @Tags         workout-cycles
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id       path      uint                           true  "Workout Plan ID" example(1)
+// @Param        cycleID  path      uint                           true  "Cycle ID"        example(12)
+// @Param        body     body      dto.WorkoutCycleUpdateRequest  true  "Fields to update"
+// @Success      200      {object}  dto.WorkoutCycleResponse
+// @Failure      400      {object}  dto.MessageResponse
+// @Failure      401      {object}  dto.MessageResponse
+// @Failure      500      {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID} [patch]
 func (h *WorkoutHandler) UpdateWorkoutCycle(c *gin.Context) {
 	id := parseUint(c.Param("cycleID"), 0)
 	if id == 0 {
@@ -277,6 +399,18 @@ func (h *WorkoutHandler) UpdateWorkoutCycle(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ToWorkoutCycleResponse(wc))
 }
+// DeleteWorkoutCycle godoc
+// @Summary      Delete cycle
+// @Tags         workout-cycles
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id       path      uint  true  "Workout Plan ID" example(1)
+// @Param        cycleID  path      uint  true  "Cycle ID"        example(12)
+// @Success      204  {string}  string "No Content"
+// @Failure      400  {object}  dto.MessageResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID} [delete]
 func (h *WorkoutHandler) DeleteWorkoutCycle(c *gin.Context) {
 	id := parseUint(c.Param("cycleID"), 0)
 	if id == 0 {
@@ -291,6 +425,20 @@ func (h *WorkoutHandler) DeleteWorkoutCycle(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// CompleteWorkoutCycle godoc
+// @Summary      Mark cycle completed/skipped
+// @Tags         workout-cycles
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id       path      uint                           true  "Workout Plan ID" example(1)
+// @Param        cycleID  path      uint                           true  "Cycle ID"        example(12)
+// @Param        body     body      dto.WorkoutCycleCompleteRequest true "Complete payload"
+// @Success      200      {object}  dto.WorkoutCycleResponse
+// @Failure      400      {object}  dto.MessageResponse
+// @Failure      401      {object}  dto.MessageResponse
+// @Failure      500      {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID}/update-complete [patch]
 func (h *WorkoutHandler) CompleteWorkoutCycle(c *gin.Context) {
 	id := parseUint(c.Param("id"), 0)
 	if id == 0 {
@@ -319,6 +467,20 @@ func (h *WorkoutHandler) CompleteWorkoutCycle(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToWorkoutCycleResponse(wc))
 }
 
+// AddWorkoutToWorkoutCycle godoc
+// @Summary      Add workout to cycle
+// @Tags         workouts
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id       path      uint                    true  "Workout Plan ID" example(1)
+// @Param        cycleID  path      uint                    true  "Cycle ID"        example(12)
+// @Param        body     body      dto.WorkoutCreateRequest true "Workout payload"
+// @Success      201      {object}  dto.WorkoutResponse
+// @Failure      400      {object}  dto.MessageResponse
+// @Failure      401      {object}  dto.MessageResponse
+// @Failure      500      {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts [post]
 func (h *WorkoutHandler) AddWorkoutToWorkoutCycle(c *gin.Context) {
 	id := parseUint(c.Param("cycleID"), 0)
 	if id == 0 {
@@ -346,7 +508,18 @@ func (h *WorkoutHandler) AddWorkoutToWorkoutCycle(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, dto.ToWorkoutResponse(w))
 }
-
+// GetWorkoutsByWorkoutCycleID godoc
+// @Summary      List workouts in a cycle
+// @Tags         workouts
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id       path      uint  true  "Workout Plan ID" example(1)
+// @Param        cycleID  path      uint  true  "Cycle ID"        example(12)
+// @Success      200      {array}   dto.WorkoutResponse
+// @Failure      400      {object}  dto.MessageResponse
+// @Failure      401      {object}  dto.MessageResponse
+// @Failure      404      {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts [get]
 func (h *WorkoutHandler) GetWorkoutsByWorkoutCycleID(c *gin.Context) {
 	id := parseUint(c.Param("cycleID"), 0)
 	if id == 0 {
@@ -368,6 +541,20 @@ func (h *WorkoutHandler) GetWorkoutsByWorkoutCycleID(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// CreateMultipleWorkouts godoc
+// @Summary      Bulk create workouts in a cycle
+// @Tags         workouts
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id       path      uint                        true  "Workout Plan ID" example(1)
+// @Param        cycleID  path      uint                        true  "Cycle ID"        example(12)
+// @Param        body     body      []dto.WorkoutBulkCreateRequest true "Array of workouts"
+// @Success      201      {object}  dto.MessageResponse
+// @Failure      400      {object}  dto.MessageResponse
+// @Failure      401      {object}  dto.MessageResponse
+// @Failure      500      {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/create-multiple [post]
 func (h *WorkoutHandler) CreateMultipleWorkouts(c *gin.Context) {
 	id := parseUint(c.Param("cycleID"), 0)
 	if id == 0 {
@@ -409,7 +596,19 @@ func (h *WorkoutHandler) CreateMultipleWorkouts(c *gin.Context) {
 	}
 	c.JSON(http.StatusCreated, dto.MessageResponse{Message: "Workouts created successfully"})
 }
-
+// GetWorkoutByID godoc
+// @Summary      Get workout
+// @Tags         workouts
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id         path      uint  true  "Workout Plan ID" example(1)
+// @Param        cycleID    path      uint  true  "Cycle ID"        example(12)
+// @Param        workoutID  path      uint  true  "Workout ID"      example(100)
+// @Success      200  {object}  dto.WorkoutResponse
+// @Failure      400  {object}  dto.MessageResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      404  {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID} [get]
 func (h *WorkoutHandler) GetWorkoutByID(c *gin.Context) {
 	id := parseUint(c.Param("workoutID"), 0)
 	if id == 0 {
@@ -424,7 +623,21 @@ func (h *WorkoutHandler) GetWorkoutByID(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, dto.ToWorkoutResponse(workout))
 }
-
+// UpdateWorkout godoc
+// @Summary      Update workout
+// @Tags         workouts
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id         path      uint                      true  "Workout Plan ID" example(1)
+// @Param        cycleID    path      uint                      true  "Cycle ID"        example(12)
+// @Param        workoutID  path      uint                      true  "Workout ID"      example(100)
+// @Param        body       body      dto.WorkoutUpdateRequest  true  "Fields to update"
+// @Success      200        {object}  dto.WorkoutResponse
+// @Failure      400        {object}  dto.MessageResponse
+// @Failure      401        {object}  dto.MessageResponse
+// @Failure      500        {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID} [patch]
 func (h *WorkoutHandler) UpdateWorkout(c *gin.Context) {
 	id := parseUint(c.Param("workoutID"), 0)
 	if id == 0 {
@@ -448,6 +661,19 @@ func (h *WorkoutHandler) UpdateWorkout(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ToWorkoutResponse(w))
 }
+// DeleteWorkout godoc
+// @Summary      Delete workout
+// @Tags         workouts
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id         path      uint  true  "Workout Plan ID" example(1)
+// @Param        cycleID    path      uint  true  "Cycle ID"        example(12)
+// @Param        workoutID  path      uint  true  "Workout ID"      example(100)
+// @Success      204  {string}  string "No Content"
+// @Failure      400  {object}  dto.MessageResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID} [delete]
 func (h *WorkoutHandler) DeleteWorkout(c *gin.Context) {
 	id := parseUint(c.Param("workoutID"), 0)
 	if id == 0 {
@@ -462,6 +688,21 @@ func (h *WorkoutHandler) DeleteWorkout(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// CompleteWorkout godoc
+// @Summary      Mark workout completed/skipped
+// @Tags         workouts
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id         path      uint                       true  "Workout Plan ID" example(1)
+// @Param        cycleID    path      uint                       true  "Cycle ID"        example(12)
+// @Param        workoutID  path      uint                       true  "Workout ID"      example(100)
+// @Param        body       body      dto.WorkoutCompleteRequest true  "Complete payload"
+// @Success      200        {object}  dto.WorkoutResponse
+// @Failure      400        {object}  dto.MessageResponse
+// @Failure      401        {object}  dto.MessageResponse
+// @Failure      500        {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/update-complete [patch]
 func (h *WorkoutHandler) CompleteWorkout(c *gin.Context) {
 	id := parseUint(c.Param("workoutID"), 0)
 	if id == 0 {
@@ -489,7 +730,21 @@ func (h *WorkoutHandler) CompleteWorkout(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ToWorkoutResponse(w))
 }
-
+// MoveWorkout godoc
+// @Summary      Move workout position within cycle
+// @Tags         workouts
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id         path      uint                   true  "Workout Plan ID" example(1)
+// @Param        cycleID    path      uint                   true  "Cycle ID"        example(12)
+// @Param        workoutID  path      uint                   true  "Workout ID"      example(100)
+// @Param        body       body      dto.WorkoutMoveRequest true  "Move payload"
+// @Success      200        {object}  dto.MessageResponse
+// @Failure      400        {object}  dto.MessageResponse
+// @Failure      401        {object}  dto.MessageResponse
+// @Failure      500        {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/move [post]
 func (h *WorkoutHandler) MoveWorkout(c *gin.Context) {
 	id := parseUint(c.Param("workoutID"), 0)
 	if id == 0 {
@@ -515,7 +770,21 @@ func (h *WorkoutHandler) MoveWorkout(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, dto.MessageResponse{Message: "Workout moved successfully"})
 }
-
+// AddWorkoutExerciseToWorkout godoc
+// @Summary      Add exercise to workout
+// @Tags         workout-exercises
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id         path      uint                             true  "Workout Plan ID" example(1)
+// @Param        cycleID    path      uint                             true  "Cycle ID"        example(12)
+// @Param        workoutID  path      uint                             true  "Workout ID"      example(100)
+// @Param        body       body      dto.WorkoutExerciseCreateRequest true  "Exercise payload"
+// @Success      201        {object}  dto.WorkoutExerciseResponse
+// @Failure      400        {object}  dto.MessageResponse
+// @Failure      401        {object}  dto.MessageResponse
+// @Failure      500        {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises [post]
 func (h *WorkoutHandler) AddWorkoutExerciseToWorkout(c *gin.Context) {
 	id := parseUint(c.Param("workoutID"), 0)
 	if id == 0 {
@@ -544,7 +813,19 @@ func (h *WorkoutHandler) AddWorkoutExerciseToWorkout(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, dto.ToWorkoutExerciseResponse(we))
 }
-
+// GetWorkoutExercisesByWorkoutID godoc
+// @Summary      List exercises in a workout
+// @Tags         workout-exercises
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id         path      uint  true  "Workout Plan ID" example(1)
+// @Param        cycleID    path      uint  true  "Cycle ID"        example(12)
+// @Param        workoutID  path      uint  true  "Workout ID"      example(100)
+// @Success      200  {array}   dto.WorkoutExerciseResponse
+// @Failure      400  {object}  dto.MessageResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      404  {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises [get]
 func (h *WorkoutHandler) GetWorkoutExercisesByWorkoutID(c *gin.Context) {
 	id := parseUint(c.Param("workoutID"), 0)
 	if id == 0 {
@@ -565,7 +846,20 @@ func (h *WorkoutHandler) GetWorkoutExercisesByWorkoutID(c *gin.Context) {
 
 	c.JSON(http.StatusOK, resp)
 }
-
+// GetWorkoutExerciseByID godoc
+// @Summary      Get workout exercise
+// @Tags         workout-exercises
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id         path      uint  true  "Workout Plan ID" example(1)
+// @Param        cycleID    path      uint  true  "Cycle ID"        example(12)
+// @Param        workoutID  path      uint  true  "Workout ID"      example(100)
+// @Param        weID       path      uint  true  "Workout Exercise ID" example(500)
+// @Success      200  {object}  dto.WorkoutExerciseResponse
+// @Failure      400  {object}  dto.MessageResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      404  {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises/{weID} [get]
 func (h *WorkoutHandler) GetWorkoutExerciseByID(c *gin.Context) {
 	id := parseUint(c.Param("weID"), 0)
 	if id == 0 {
@@ -580,7 +874,22 @@ func (h *WorkoutHandler) GetWorkoutExerciseByID(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, dto.ToWorkoutExerciseResponse(exercise))
 }
-
+// UpdateWorkoutExercise godoc
+// @Summary      Update workout exercise
+// @Tags         workout-exercises
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id         path      uint                           true  "Workout Plan ID" example(1)
+// @Param        cycleID    path      uint                           true  "Cycle ID"        example(12)
+// @Param        workoutID  path      uint                           true  "Workout ID"      example(100)
+// @Param        weID       path      uint                           true  "Workout Exercise ID" example(500)
+// @Param        body       body      dto.WorkoutExerciseUpdateRequest true "Fields to update"
+// @Success      200        {object}  dto.WorkoutExerciseResponse
+// @Failure      400        {object}  dto.MessageResponse
+// @Failure      401        {object}  dto.MessageResponse
+// @Failure      500        {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises/{weID} [patch]
 func (h *WorkoutHandler) UpdateWorkoutExercise(c *gin.Context) {
 	id := parseUint(c.Param("weID"), 0)
 	if id == 0 {
@@ -604,7 +913,22 @@ func (h *WorkoutHandler) UpdateWorkoutExercise(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ToWorkoutExerciseResponse(we))
 }
-
+// CompleteWorkoutExercise godoc
+// @Summary      Mark workout exercise completed/skipped
+// @Tags         workout-exercises
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id         path      uint                             true  "Workout Plan ID" example(1)
+// @Param        cycleID    path      uint                             true  "Cycle ID"        example(12)
+// @Param        workoutID  path      uint                             true  "Workout ID"      example(100)
+// @Param        weID       path      uint                             true  "Workout Exercise ID" example(500)
+// @Param        body       body      dto.WorkoutExerciseCompleteRequest true "Complete payload"
+// @Success      200        {object}  dto.WorkoutExerciseResponse
+// @Failure      400        {object}  dto.MessageResponse
+// @Failure      401        {object}  dto.MessageResponse
+// @Failure      500        {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises/{weID}/update-complete [patch]
 func (h *WorkoutHandler) CompleteWorkoutExercise(c *gin.Context) {
 	id := parseUint(c.Param("weID"), 0)
 	if id == 0 {
@@ -625,7 +949,22 @@ func (h *WorkoutHandler) CompleteWorkoutExercise(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ToWorkoutExerciseResponse(we))
 }
-
+// MoveWorkoutExercise godoc
+// @Summary      Move workout exercise position
+// @Tags         workout-exercises
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id         path      uint                              true  "Workout Plan ID" example(1)
+// @Param        cycleID    path      uint                              true  "Cycle ID"        example(12)
+// @Param        workoutID  path      uint                              true  "Workout ID"      example(100)
+// @Param        weID       path      uint                              true  "Workout Exercise ID" example(500)
+// @Param        body       body      dto.WorkoutExerciseMoveRequest    true  "Move payload"
+// @Success      200        {object}  dto.MessageResponse
+// @Failure      400        {object}  dto.MessageResponse
+// @Failure      401        {object}  dto.MessageResponse
+// @Failure      500        {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises/{weID}/move [post]
 func (h *WorkoutHandler) MoveWorkoutExercise(c *gin.Context) {
 	id := parseUint(c.Param("workoutID"), 0)
 	if id == 0 {
@@ -651,7 +990,22 @@ func (h *WorkoutHandler) MoveWorkoutExercise(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.MessageResponse{Message: "Exercise moved successfully"})
 }
-
+// ReplaceWorkoutExercise godoc
+// @Summary      Replace workout exercise
+// @Tags         workout-exercises
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id         path      uint                               true  "Workout Plan ID" example(1)
+// @Param        cycleID    path      uint                               true  "Cycle ID"        example(12)
+// @Param        workoutID  path      uint                               true  "Workout ID"      example(100)
+// @Param        weID       path      uint                               true  "Workout Exercise ID" example(500)
+// @Param        body       body      dto.WorkoutExerciseReplaceRequest  true  "Replace payload"
+// @Success      200        {object}  dto.WorkoutExerciseResponse
+// @Failure      400        {object}  dto.MessageResponse
+// @Failure      401        {object}  dto.MessageResponse
+// @Failure      500        {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises/{weID}/replace [post]
 func (h *WorkoutHandler) ReplaceWorkoutExercise(c *gin.Context) {
 	id := parseUint(c.Param("workoutID"), 0)
 	if id == 0 {
@@ -678,7 +1032,20 @@ func (h *WorkoutHandler) ReplaceWorkoutExercise(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ToWorkoutExerciseResponse(we))
 }
-
+// DeleteWorkoutExercise godoc
+// @Summary      Delete workout exercise
+// @Tags         workout-exercises
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id         path      uint  true  "Workout Plan ID" example(1)
+// @Param        cycleID    path      uint  true  "Cycle ID"        example(12)
+// @Param        workoutID  path      uint  true  "Workout ID"      example(100)
+// @Param        weID       path      uint  true  "Workout Exercise ID" example(500)
+// @Success      204  {string}  string "No Content"
+// @Failure      400  {object}  dto.MessageResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises/{weID} [delete]
 func (h *WorkoutHandler) DeleteWorkoutExercise(c *gin.Context) {
 	id := parseUint(c.Param("weID"), 0)
 	if id == 0 {
@@ -692,7 +1059,22 @@ func (h *WorkoutHandler) DeleteWorkoutExercise(c *gin.Context) {
 	}
 	c.Status(http.StatusNoContent)
 }
-
+// AddWorkoutSetToWorkoutExercise godoc
+// @Summary      Add set to workout exercise
+// @Tags         workout-sets
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id         path      uint                         true  "Workout Plan ID" example(1)
+// @Param        cycleID    path      uint                         true  "Cycle ID"        example(12)
+// @Param        workoutID  path      uint                         true  "Workout ID"      example(100)
+// @Param        weID       path      uint                         true  "Workout Exercise ID" example(500)
+// @Param        body       body      dto.WorkoutSetCreateRequest  true  "Set payload"
+// @Success      201        {object}  dto.WorkoutSetResponse
+// @Failure      400        {object}  dto.MessageResponse
+// @Failure      401        {object}  dto.MessageResponse
+// @Failure      500        {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises/{weID}/workout-sets [post]
 func (h *WorkoutHandler) AddWorkoutSetToWorkoutExercise(c *gin.Context) {
 	weID := parseUint(c.Param("weID"), 0)
 	if weID == 0 {
@@ -722,7 +1104,20 @@ func (h *WorkoutHandler) AddWorkoutSetToWorkoutExercise(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, dto.ToWorkoutSetResponse(ws))
 }
-
+// GetWorkoutSetsByWorkoutExerciseID godoc
+// @Summary      List sets of a workout exercise
+// @Tags         workout-sets
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id         path      uint  true  "Workout Plan ID" example(1)
+// @Param        cycleID    path      uint  true  "Cycle ID"        example(12)
+// @Param        workoutID  path      uint  true  "Workout ID"      example(100)
+// @Param        weID       path      uint  true  "Workout Exercise ID" example(500)
+// @Success      200  {array}   dto.WorkoutSetResponse
+// @Failure      400  {object}  dto.MessageResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      404  {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises/{weID}/workout-sets [get]
 func (h *WorkoutHandler) GetWorkoutSetsByWorkoutExerciseID(c *gin.Context) {
 	weID := parseUint(c.Param("weID"), 0)
 	if weID == 0 {
@@ -742,6 +1137,21 @@ func (h *WorkoutHandler) GetWorkoutSetsByWorkoutExerciseID(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, resp)
 }
+// DeleteWorkoutSet godoc
+// @Summary      Delete a set
+// @Tags         workout-sets
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id         path      uint  true  "Workout Plan ID" example(1)
+// @Param        cycleID    path      uint  true  "Cycle ID"        example(12)
+// @Param        workoutID  path      uint  true  "Workout ID"      example(100)
+// @Param        weID       path      uint  true  "Workout Exercise ID" example(500)
+// @Param        setID      path      uint  true  "Set ID"          example(700)
+// @Success      204  {string}  string "No Content"
+// @Failure      400  {object}  dto.MessageResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises/{weID}/workout-sets/{setID} [delete]
 func (h *WorkoutHandler) DeleteWorkoutSet(c *gin.Context) {
 	setID := parseUint(c.Param("setID"), 0)
 	if setID == 0 {
@@ -755,7 +1165,21 @@ func (h *WorkoutHandler) DeleteWorkoutSet(c *gin.Context) {
 	}
 	c.Status(http.StatusNoContent)
 }
-
+// GetWorkoutSetByID godoc
+// @Summary      Get a set
+// @Tags         workout-sets
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id         path      uint  true  "Workout Plan ID" example(1)
+// @Param        cycleID    path      uint  true  "Cycle ID"        example(12)
+// @Param        workoutID  path      uint  true  "Workout ID"      example(100)
+// @Param        weID       path      uint  true  "Workout Exercise ID" example(500)
+// @Param        setID      path      uint  true  "Set ID"          example(700)
+// @Success      200  {object}  dto.WorkoutSetResponse
+// @Failure      400  {object}  dto.MessageResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      404  {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises/{weID}/workout-sets/{setID} [get]
 func (h *WorkoutHandler) GetWorkoutSetByID(c *gin.Context) {
 	setID := parseUint(c.Param("setID"), 0)
 	if setID == 0 {
@@ -771,7 +1195,23 @@ func (h *WorkoutHandler) GetWorkoutSetByID(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ToWorkoutSetResponse(set))
 }
-
+// UpdateWorkoutSet godoc
+// @Summary      Update a set
+// @Tags         workout-sets
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id         path      uint                        true  "Workout Plan ID" example(1)
+// @Param        cycleID    path      uint                        true  "Cycle ID"        example(12)
+// @Param        workoutID  path      uint                        true  "Workout ID"      example(100)
+// @Param        weID       path      uint                        true  "Workout Exercise ID" example(500)
+// @Param        setID      path      uint                        true  "Set ID"          example(700)
+// @Param        body       body      dto.WorkoutSetUpdateRequest true  "Fields to update"
+// @Success      200        {object}  dto.WorkoutSetResponse
+// @Failure      400        {object}  dto.MessageResponse
+// @Failure      401        {object}  dto.MessageResponse
+// @Failure      500        {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises/{weID}/workout-sets/{setID} [patch]
 func (h *WorkoutHandler) UpdateWorkoutSet(c *gin.Context) {
 	id := parseUint(c.Param("setID"), 0)
 	if id == 0 {
@@ -795,7 +1235,23 @@ func (h *WorkoutHandler) UpdateWorkoutSet(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ToWorkoutSetResponse(ws))
 }
-
+// CompleteWorkoutSet godoc
+// @Summary      Mark set completed/skipped
+// @Tags         workout-sets
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id         path      uint                         true  "Workout Plan ID" example(1)
+// @Param        cycleID    path      uint                         true  "Cycle ID"        example(12)
+// @Param        workoutID  path      uint                         true  "Workout ID"      example(100)
+// @Param        weID       path      uint                         true  "Workout Exercise ID" example(500)
+// @Param        setID      path      uint                         true  "Set ID"          example(700)
+// @Param        body       body      dto.WorkoutSetCompleteRequest true "Complete payload"
+// @Success      200        {object}  dto.WorkoutSetResponse
+// @Failure      400        {object}  dto.MessageResponse
+// @Failure      401        {object}  dto.MessageResponse
+// @Failure      500        {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises/{weID}/workout-sets/{setID}/update-complete [patch]
 func (h *WorkoutHandler) CompleteWorkoutSet(c *gin.Context) {
 	id := parseUint(c.Param("setID"), 0)
 	if id == 0 {
@@ -817,7 +1273,23 @@ func (h *WorkoutHandler) CompleteWorkoutSet(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ToWorkoutSetResponse(ws))
 }
-
+// MoveWorkoutSet godoc
+// @Summary      Move set position
+// @Tags         workout-sets
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id         path      uint                      true  "Workout Plan ID" example(1)
+// @Param        cycleID    path      uint                      true  "Cycle ID"        example(12)
+// @Param        workoutID  path      uint                      true  "Workout ID"      example(100)
+// @Param        weID       path      uint                      true  "Workout Exercise ID" example(500)
+// @Param        setID      path      uint                      true  "Set ID"          example(700)
+// @Param        body       body      dto.WorkoutSetMoveRequest true  "Move payload"
+// @Success      200        {object}  dto.MessageResponse
+// @Failure      400        {object}  dto.MessageResponse
+// @Failure      401        {object}  dto.MessageResponse
+// @Failure      500        {object}  dto.MessageResponse
+// @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises/{weID}/workout-sets/{setID}/move [post]
 func (h *WorkoutHandler) MoveWorkoutSet(c *gin.Context) {
 	weID := parseUint(c.Param("weID"), 0)
 	if weID == 0 {
@@ -844,6 +1316,15 @@ func (h *WorkoutHandler) MoveWorkoutSet(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.MessageResponse{Message: "Set moved successfully"})
 }
 
+// GetIndividualExercises godoc
+// @Summary      List user's individual exercises
+// @Tags         individual-exercises
+// @Security     BearerAuth
+// @Produce      json
+// @Success      200  {array}   dto.IndividualExerciseResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      404  {object}  dto.MessageResponse
+// @Router       /individual-exercises [get]
 func (h *WorkoutHandler) GetIndividualExercises(c *gin.Context) {
 	userID, exists := currentUserID(c)
 	if !exists {
@@ -864,6 +1345,18 @@ func (h *WorkoutHandler) GetIndividualExercises(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// GetOrCreateIndividualExercise godoc
+// @Summary      Get or create an individual exercise
+// @Tags         individual-exercises
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.IndividualExerciseCreateOrGetRequest  true  "Create or get payload"
+// @Success      200   {object}  dto.IndividualExerciseResponse
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      401   {object}  dto.MessageResponse
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /individual-exercises [post]
 func (h *WorkoutHandler) GetOrCreateIndividualExercise(c *gin.Context) {
 	userID, exists := currentUserID(c)
 	if !exists {
@@ -893,6 +1386,15 @@ func (h *WorkoutHandler) GetOrCreateIndividualExercise(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToIndividualExerciseResponse(ie))
 }
 
+// GetIndividualExercisesStats godoc
+// @Summary      Stats for user's individual exercises
+// @Tags         individual-exercises
+// @Security     BearerAuth
+// @Produce      json
+// @Success      200  {array}   dto.IndividualExerciseStatsResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /individual-exercises/stats [get]
 func (h *WorkoutHandler) GetIndividualExercisesStats(c *gin.Context) {
 	userID, exists := currentUserID(c)
 	if !exists {
@@ -912,7 +1414,15 @@ func (h *WorkoutHandler) GetIndividualExercisesStats(c *gin.Context) {
 
 	c.JSON(http.StatusOK, resp)
 }
-
+// GetCurrentWorkoutCycle godoc
+// @Summary      Get current workout cycle for user
+// @Tags         workout-cycles
+// @Security     BearerAuth
+// @Produce      json
+// @Success      200  {object}  dto.CurrentCycleResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      404  {object}  dto.MessageResponse
+// @Router       /current-cycle [get]
 func (h *WorkoutHandler) GetCurrentWorkoutCycle(c *gin.Context) {
 	userID, exists := currentUserID(c)
 	if !exists {

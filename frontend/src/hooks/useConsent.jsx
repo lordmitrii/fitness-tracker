@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import api from "../api";
-import { getPolicyVersion } from "../utils/policiesUtils";
+import useVersionsData from "./data/userVersionsData";
 
 const useConsent = (type) => {
-  const version = getPolicyVersion(type);
+  const { getVersion } = useVersionsData();
+  const version = getVersion(type);
   const storageKey = `${type}_consent_v${version}`;
 
   const initialFromStorage = sessionStorage.getItem(storageKey);

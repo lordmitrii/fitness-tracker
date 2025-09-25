@@ -31,6 +31,24 @@ func NewAdminHandler(r *gin.RouterGroup, svc usecase.AdminService, rbacService u
 	}
 }
 
+// GetUsers godoc
+// @Summary      List users (admin)
+// @Description  Returns a paginated list of users with optional filtering and sorting.
+// @Tags         admin
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        q          query     string  false  "Free-text search on username/email"
+// @Param        page       query     int     false  "Page number (1-based)"                 minimum(1) default(1)
+// @Param        page_size  query     int     false  "Page size"                             minimum(1) maximum(200) default(20)
+// @Param        sort_by    query     string  false  "Sort field"                            Enums(id,username,email,created_at,last_seen_at,is_verified)
+// @Param        sort_dir   query     string  false  "Sort direction"                        Enums(asc,desc) default(desc)
+// @Success      200  {object}  dto.ListUserResponse
+// @Failure      400  {object}  dto.MessageResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      403  {object}  dto.MessageResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /admin/users [get]
 func (h *AdminHandler) GetUsers(c *gin.Context) {
 	q := strings.TrimSpace(c.Query("q"))
 	page := parseInt(c.Query("page"), 1)
@@ -64,6 +82,17 @@ func (h *AdminHandler) GetUsers(c *gin.Context) {
 
 }
 
+// GetRoles godoc
+// @Summary      List roles (admin)
+// @Tags         admin
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Success      200  {array}   dto.RoleResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      403  {object}  dto.MessageResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /admin/roles [get]
 func (h *AdminHandler) GetRoles(c *gin.Context) {
 	roles, err := h.svc.ListRoles(c.Request.Context())
 	if err != nil {
@@ -82,6 +111,22 @@ func (h *AdminHandler) GetRoles(c *gin.Context) {
 	c.JSON(http.StatusOK, respRoles)
 }
 
+
+// SetUserRoles godoc
+// @Summary      Set user roles (admin)
+// @Description  Replaces the user's roles with the provided list of role names.
+// @Tags         admin
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id    path      uint               true  "User ID"
+// @Param        body  body      dto.SetRolesRequest true "New role names"
+// @Success      204  {string}  string  "No Content"
+// @Failure      400  {object}  dto.MessageResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      403  {object}  dto.MessageResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /admin/users/{id}/roles [post]
 func (h *AdminHandler) SetUserRoles(c *gin.Context) {
 	userID := parseUint(c.Param("id"), 0)
 	if userID == 0 {
@@ -102,6 +147,19 @@ func (h *AdminHandler) SetUserRoles(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// DeleteUser godoc
+// @Summary      Delete user (admin)
+// @Tags         admin
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id   path      uint  true  "User ID"
+// @Success      204  {string}  string  "No Content"
+// @Failure      400  {object}  dto.MessageResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      403  {object}  dto.MessageResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /admin/users/{id} [delete]
 func (h *AdminHandler) DeleteUser(c *gin.Context) {
 	userID := parseUint(c.Param("id"), 0)
 	if userID == 0 {
@@ -116,6 +174,20 @@ func (h *AdminHandler) DeleteUser(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// TriggerResetUserPassword godoc
+// @Summary      Trigger password reset (admin)
+// @Description  Sends a password reset flow for the specified user.
+// @Tags         admin
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id   path      uint  true  "User ID"
+// @Success      204  {string}  string  "No Content"
+// @Failure      400  {object}  dto.MessageResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      403  {object}  dto.MessageResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /admin/users/{id}/password-reset [post]
 func (h *AdminHandler) TriggerResetUserPassword(c *gin.Context) {
 	userID := parseUint(c.Param("id"), 0)
 	if userID == 0 {

@@ -2,6 +2,7 @@ package workout
 
 import (
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
+	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 )
 
 type workoutServiceImpl struct {
@@ -22,7 +23,7 @@ func NewWorkoutService(
 	workoutSetRepo workout.WorkoutSetRepository,
 	individualExerciseRepo workout.IndividualExerciseRepository,
 	exerciseRepo workout.ExerciseRepository,
-) *workoutServiceImpl {
+) usecase.WorkoutService {
 	return &workoutServiceImpl{
 		workoutPlanRepo:        workoutPlanRepo,
 		workoutCycleRepo:       workoutCycleRepo,
