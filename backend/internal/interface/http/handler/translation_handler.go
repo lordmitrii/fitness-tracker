@@ -36,6 +36,19 @@ func NewTranslationHandler(r *gin.RouterGroup, svc usecase.TranslationService) {
 	}
 }
 
+
+// GetTranslations godoc
+// @Summary      Get translations map
+// @Description  Returns a key->value map for a given locale and namespace. Supports ETag caching.
+// @Tags         translations
+// @Accept       json
+// @Produce      json
+// @Param        locale     path      string  true  "Locale code"     example(en)
+// @Param        namespace  path      string  true  "Namespace"        example(common)
+// @Success      200  {object}  map[string]string
+// @Header       200  {string}  ETag  "Weak ETag for cache validation"
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /i18n/{locale}/{namespace} [get]
 func (h *TranslationHandler) GetTranslations(c *gin.Context) {
 	ns := c.Param("namespace")
 	lng := c.Param("locale")
@@ -77,6 +90,19 @@ func (h *TranslationHandler) GetTranslations(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+
+// GetI18nMeta godoc
+// @Summary      Get i18n metadata (versions)
+// @Description  Returns version strings for locales/namespaces to enable client-side caching. Supports ETag caching.
+// @Tags         translations
+// @Accept       json
+// @Produce      json
+// @Param        locales     query     string  false  "Comma-separated locales filter"     example(en,de,fr)
+// @Param        namespaces  query     string  false  "Comma-separated namespaces filter"  example(common,errors)
+// @Success      200  {object}  dto.I18nMetaResponse
+// @Header       200  {string}  ETag  "Weak ETag for cache validation"
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /i18n/meta [get]
 func (h *TranslationHandler) GetI18nMeta(c *gin.Context) {
 	locales := c.Query("locales")
 	namespaces := c.Query("namespaces")
@@ -122,6 +148,18 @@ func (h *TranslationHandler) GetI18nMeta(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"versions": vers})
 }
 
+
+// ReportMissingTranslation godoc
+// @Summary      Report a missing translation
+// @Description  Publishes a missing translation entry for all provided languages.
+// @Tags         translations
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.MissingTranslationsReportRequest  true  "Missing translation payload"
+// @Success      204  {string}  string  "No Content"
+// @Failure      400  {object}  dto.MessageResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /i18n/missing [post]
 func (h *TranslationHandler) ReportMissingTranslation(c *gin.Context) {
 	var req dto.MissingTranslationsReportRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -146,6 +184,17 @@ func (h *TranslationHandler) ReportMissingTranslation(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+
+// ReportMissingTranslationBatch godoc
+// @Summary      Report multiple missing translations
+// @Tags         translations
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.MissingTranslationsReportBatchRequest  true  "Batch of missing translations"
+// @Success      204  {string}  string  "No Content"
+// @Failure      400  {object}  dto.MessageResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /i18n/missing/batch [post]
 func (h *TranslationHandler) ReportMissingTranslationBatch(c *gin.Context) {
 	var req dto.MissingTranslationsReportBatchRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -172,6 +221,19 @@ func (h *TranslationHandler) ReportMissingTranslationBatch(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// CreateTranslation godoc
+// @Summary      Create translation (admin)
+// @Tags         translations
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.CreateTranslationRequest  true  "Create translation payload"
+// @Success      201  {object}  dto.TranslationResponse
+// @Failure      400  {object}  dto.MessageResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      403  {object}  dto.MessageResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /i18n [post]
 func (h *TranslationHandler) CreateTranslation(c *gin.Context) {
 	var req dto.CreateTranslationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -194,6 +256,20 @@ func (h *TranslationHandler) CreateTranslation(c *gin.Context) {
 	c.JSON(http.StatusCreated, dto.ToTranslationResponse(translation))
 }
 
+// UpdateTranslation godoc
+// @Summary      Update translation (admin)
+// @Tags         translations
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id    path      uint                         true  "Translation ID"
+// @Param        body  body      dto.UpdateTranslationRequest true  "Fields to update"
+// @Success      204  {string}  string  "No Content"
+// @Failure      400  {object}  dto.MessageResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      403  {object}  dto.MessageResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /i18n/{id} [patch]
 func (h *TranslationHandler) UpdateTranslation(c *gin.Context) {
 	id := parseUint(c.Param("id"), 0)
 	if id == 0 {
@@ -216,6 +292,19 @@ func (h *TranslationHandler) UpdateTranslation(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// DeleteTranslation godoc
+// @Summary      Delete translation (admin)
+// @Tags         translations
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id  path      uint  true  "Translation ID"
+// @Success      204  {string}  string  "No Content"
+// @Failure      400  {object}  dto.MessageResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      403  {object}  dto.MessageResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /i18n/{id} [delete]
 func (h *TranslationHandler) DeleteTranslation(c *gin.Context) {
 	id := parseUint(c.Param("id"), 0)
 	if id == 0 {

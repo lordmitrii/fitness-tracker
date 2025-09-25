@@ -21,6 +21,14 @@ func NewVersionsHandler(r *gin.RouterGroup, svc usecase.VersionsService) {
 	}
 }
 
+// GetCurrentVersion godoc
+// @Summary      Get current version by key
+// @Tags         versions
+// @Produce      json
+// @Param        key  path   string  true  "Version key"  example(mobile_app)
+// @Success      200  {object}  dto.VersionResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /versions/{key} [get]
 func (h *VersionsHandler) GetCurrentVersion(c *gin.Context) {
 	key := c.Param("key")
 	version, err := h.svc.GetCurrentVersion(c.Request.Context(), key)
@@ -32,6 +40,13 @@ func (h *VersionsHandler) GetCurrentVersion(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToVersionsResponse(version))
 }
 
+// GetAllVersions godoc
+// @Summary      List all versions
+// @Tags         versions
+// @Produce      json
+// @Success      200  {array}   dto.VersionResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /versions [get]
 func (h *VersionsHandler) GetAllVersions(c *gin.Context) {
 	versions, err := h.svc.GetAllVersions(c.Request.Context())
 	if err != nil {

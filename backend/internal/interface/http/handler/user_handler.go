@@ -47,6 +47,16 @@ func NewUserHandler(r *gin.RouterGroup, svc usecase.UserService) {
 	}
 }
 
+// Register godoc
+// @Summary      Register a new user
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.RegisterRequest  true  "Registration payload"
+// @Success      201   {string}  string               "Created"
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /users/register [post]
 func (h *UserHandler) Register(c *gin.Context) {
 	var req dto.RegisterRequest
 
@@ -69,6 +79,19 @@ func (h *UserHandler) Register(c *gin.Context) {
 	c.Status(http.StatusCreated)
 }
 
+// Login godoc
+// @Summary      Login with username/password
+// @Description  Returns an access token in JSON and sets a refresh token cookie.
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.LoginRequest   true  "Credentials"
+// @Success      200   {object}  dto.TokenResponse
+// @Header       200   {string}  Set-Cookie  "refresh_token cookie (HttpOnly)"
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      401   {object}  dto.MessageResponse "Invalid credentials"
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /users/login [post]
 func (h *UserHandler) Login(c *gin.Context) {
 	var req dto.LoginRequest
 
@@ -98,11 +121,28 @@ func (h *UserHandler) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.TokenResponse{AccessToken: accessToken})
 }
 
+// Logout godoc
+// @Summary      Logout
+// @Description  Clears the refresh token cookie.
+// @Tags         users
+// @Produce      json
+// @Success      200  {object}  dto.MessageResponse
+// @Header       200  {string}  Set-Cookie  "refresh_token cleared"
+// @Router       /users/logout [post]
 func (h *UserHandler) Logout(c *gin.Context) {
 	c.SetCookie("refresh_token", "", -1, "/", "", false, true)
 	c.JSON(http.StatusOK, dto.MessageResponse{Message: "logged out"})
 }
 
+// RefreshToken godoc
+// @Summary      Refresh access token
+// @Description  Reads refresh token cookie and returns a new access token.
+// @Tags         users
+// @Produce      json
+// @Success      200  {object}  dto.TokenResponse
+// @Failure      401  {object}  dto.MessageResponse "Missing or invalid refresh token"
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /users/refresh [post]
 func (h *UserHandler) RefreshToken(c *gin.Context) {
 	refreshToken, err := c.Cookie("refresh_token")
 	if err != nil || refreshToken == "" {
@@ -127,6 +167,16 @@ func (h *UserHandler) RefreshToken(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.TokenResponse{AccessToken: accessToken})
 }
 
+// GetProfile godoc
+// @Summary      Get profile
+// @Tags         users
+// @Security     BearerAuth
+// @Produce      json
+// @Success      200  {object}  dto.ProfileResponse
+// @Success      204  {string}  string "No Content when profile is empty"
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      404  {object}  dto.MessageResponse "Profile not found"
+// @Router       /users/profile [get]
 func (h *UserHandler) GetProfile(c *gin.Context) {
 	userID, exists := currentUserID(c)
 	if !exists {
@@ -144,6 +194,18 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToProfileResponse(p))
 }
 
+// UpdateAccount godoc
+// @Summary      Update account fields
+// @Tags         users
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.AccountUpdateRequest  true  "Fields to update"
+// @Success      200   {object}  dto.AccountResponse
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      401   {object}  dto.MessageResponse
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /users/accounts [patch]
 func (h *UserHandler) UpdateAccount(c *gin.Context) {
 	userID, exists := currentUserID(c)
 	if !exists {
@@ -167,6 +229,18 @@ func (h *UserHandler) UpdateAccount(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToAccountResponse(account))
 }
 
+// CreateProfile godoc
+// @Summary      Create profile
+// @Tags         users
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.ProfileCreateRequest  true  "Profile payload"
+// @Success      201   {object}  dto.ProfileResponse
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      401   {object}  dto.MessageResponse
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /users/profile [post]
 func (h *UserHandler) CreateProfile(c *gin.Context) {
 	userID, exists := currentUserID(c)
 	if !exists {
@@ -193,7 +267,18 @@ func (h *UserHandler) CreateProfile(c *gin.Context) {
 	}
 	c.JSON(http.StatusCreated, dto.ToProfileResponse(p))
 }
-
+// UpdateProfile godoc
+// @Summary      Update profile
+// @Tags         users
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.ProfileUpdateRequest  true  "Fields to update"
+// @Success      200   {object}  dto.ProfileResponse
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      401   {object}  dto.MessageResponse
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /users/profile [put]
 func (h *UserHandler) UpdateProfile(c *gin.Context) {
 	id, exists := currentUserID(c)
 	if !exists {
@@ -215,7 +300,15 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, dto.ToProfileResponse(p))
 }
-
+// DeleteProfile godoc
+// @Summary      Delete profile
+// @Tags         users
+// @Security     BearerAuth
+// @Produce      json
+// @Success      204  {string}  string "No Content"
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /users/profile [delete]
 func (h *UserHandler) DeleteProfile(c *gin.Context) {
 	userID, exists := currentUserID(c)
 	if !exists {
@@ -228,7 +321,15 @@ func (h *UserHandler) DeleteProfile(c *gin.Context) {
 	}
 	c.Status(http.StatusNoContent)
 }
-
+// GetConsents godoc
+// @Summary      List consents
+// @Tags         users
+// @Security     BearerAuth
+// @Produce      json
+// @Success      200  {array}   dto.ConsentResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /users/consents [get]
 func (h *UserHandler) GetConsents(c *gin.Context) {
 	userID, exists := currentUserID(c)
 	if !exists {
@@ -248,7 +349,18 @@ func (h *UserHandler) GetConsents(c *gin.Context) {
 
 	c.JSON(http.StatusOK, resp)
 }
-
+// CreateConsent godoc
+// @Summary      Create consent
+// @Tags         users
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.ConsentRequest  true  "Consent payload"
+// @Success      201   {object}  dto.ConsentResponse
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      401   {object}  dto.MessageResponse
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /users/consents [post]
 func (h *UserHandler) CreateConsent(c *gin.Context) {
 	userID, exists := currentUserID(c)
 	if !exists {
@@ -275,6 +387,18 @@ func (h *UserHandler) CreateConsent(c *gin.Context) {
 	c.JSON(http.StatusCreated, dto.ToConsentResponse(cns))
 }
 
+// UpdateConsent godoc
+// @Summary      Update consent
+// @Tags         users
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.ConsentRequest  true  "Fields to update"
+// @Success      200   {object}  dto.ConsentResponse
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      401   {object}  dto.MessageResponse
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /users/consents [put]
 func (h *UserHandler) UpdateConsent(c *gin.Context) {
 	id, exists := currentUserID(c)
 	if !exists {
@@ -297,6 +421,18 @@ func (h *UserHandler) UpdateConsent(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToConsentResponse(consent))
 }
 
+// DeleteConsent godoc
+// @Summary      Delete consent
+// @Tags         users
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.DeleteConsentRequest  true  "Consent to delete"
+// @Success      204  {string}  string "No Content"
+// @Failure      400  {object}  dto.MessageResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /users/consents [delete]
 func (h *UserHandler) DeleteConsent(c *gin.Context) {
 	userID, exists := currentUserID(c)
 	if !exists {
@@ -316,6 +452,15 @@ func (h *UserHandler) DeleteConsent(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// Me godoc
+// @Summary      Get current user info
+// @Tags         users
+// @Security     BearerAuth
+// @Produce      json
+// @Success      200  {object}  dto.MeResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /users/me [get]
 func (h *UserHandler) Me(c *gin.Context) {
 	userID, exists := currentUserID(c)
 	if !exists {
@@ -340,6 +485,15 @@ func (h *UserHandler) Me(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// GetUserSettings godoc
+// @Summary      Get user settings
+// @Tags         users
+// @Security     BearerAuth
+// @Produce      json
+// @Success      200  {object}  dto.UserSettingsResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /users/settings [get]
 func (h *UserHandler) GetUserSettings(c *gin.Context) {
 	userID, exists := currentUserID(c)
 	if !exists {
@@ -355,6 +509,19 @@ func (h *UserHandler) GetUserSettings(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToUserSettingsResponse(settings))
 }
 
+// UpdateUserSettings godoc
+// @Summary      Update user settings
+// @Tags         users
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.UserSettingsUpdateRequest  true  "Fields to update"
+// @Success      200   {object}  dto.UserSettingsResponse
+// @Success      204   {string}  string "No Content when no changes"
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      401   {object}  dto.MessageResponse
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /users/settings [patch]
 func (h *UserHandler) UpdateUserSettings(c *gin.Context) {
 	userID, exists := currentUserID(c)
 	if !exists {
@@ -381,6 +548,18 @@ func (h *UserHandler) UpdateUserSettings(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToUserSettingsResponse(settings))
 }
 
+// CreateUserSettings godoc
+// @Summary      Create user settings
+// @Tags         users
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.UserSettingsCreateRequest  true  "Settings payload"
+// @Success      201   {object}  dto.UserSettingsResponse
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      401   {object}  dto.MessageResponse
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /users/settings [post]
 func (h *UserHandler) CreateUserSettings(c *gin.Context) {
 	userID, exists := currentUserID(c)
 	if !exists {
@@ -407,6 +586,15 @@ func (h *UserHandler) CreateUserSettings(c *gin.Context) {
 	c.JSON(http.StatusCreated, dto.ToUserSettingsResponse(settings))
 }
 
+// DeleteUserSettings godoc
+// @Summary      Delete user settings
+// @Tags         users
+// @Security     BearerAuth
+// @Produce      json
+// @Success      204  {string}  string "No Content"
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /users/settings [delete]
 func (h *UserHandler) DeleteUserSettings(c *gin.Context) {
 	userID, exists := currentUserID(c)
 	if !exists {

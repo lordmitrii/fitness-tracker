@@ -29,6 +29,21 @@ func NewAIHandler(r *gin.RouterGroup, svc usecase.AIService, rateLimiter usecase
 	}
 }
 
+// AskStatsQuestion godoc
+// @Summary      Ask a stats-related question
+// @Description  Lets the user ask AI about stats-related information.
+// @Tags         ai
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.AIQuestionRequest  true  "Question payload"
+// @Success      200   {object}  dto.AIQuestionResponse
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      401   {object}  dto.MessageResponse
+// @Failure      403   {object}  dto.MessageResponse
+// @Failure      429   {object}  dto.MessageResponse  "Rate limited"
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /ai/ask-stats [post]
 func (h *AIHandler) AskStatsQuestion(c *gin.Context) {
 	userID, exists := currentUserID(c)
 	if !exists {
@@ -54,6 +69,21 @@ func (h *AIHandler) AskStatsQuestion(c *gin.Context) {
 	})
 }
 
+// AskWorkoutsQuestion godoc
+// @Summary      Ask a workouts-related question
+// @Description  Lets the user ask AI about workouts and training.
+// @Tags         ai
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.AIQuestionRequest  true  "Question payload"
+// @Success      200   {object}  dto.AIQuestionResponse
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      401   {object}  dto.MessageResponse
+// @Failure      403   {object}  dto.MessageResponse
+// @Failure      429   {object}  dto.MessageResponse  "Rate limited"
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /ai/ask-workouts [post]
 func (h *AIHandler) AskWorkoutsQuestion(c *gin.Context) {
 	userID, exists := currentUserID(c)
 	if !exists {
@@ -79,6 +109,21 @@ func (h *AIHandler) AskWorkoutsQuestion(c *gin.Context) {
 	})
 }
 
+// AskGeneralQuestion godoc
+// @Summary      Ask a general AI question
+// @Description  Lets the user ask AI any general-purpose question.
+// @Tags         ai
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.AIQuestionRequest  true  "Question payload"
+// @Success      200   {object}  dto.AIQuestionResponse
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      401   {object}  dto.MessageResponse
+// @Failure      403   {object}  dto.MessageResponse
+// @Failure      429   {object}  dto.MessageResponse  "Rate limited"
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /ai/ask-general [post]
 func (h *AIHandler) AskGeneralQuestion(c *gin.Context) {
 	userID, exists := currentUserID(c)
 	if !exists {

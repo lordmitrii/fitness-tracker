@@ -48,6 +48,19 @@ func NewExerciseHandler(r *gin.RouterGroup, svc usecase.ExerciseService, rbacSer
 	}
 }
 
+// CreateExercise godoc
+// @Summary      Create exercise (admin)
+// @Tags         exercises
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.ExerciseCreateRequest  true  "Exercise payload"
+// @Success      201   {object}  dto.ExerciseResponse
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      401   {object}  dto.MessageResponse
+// @Failure      403   {object}  dto.MessageResponse
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /exercises [post]
 func (h *ExerciseHandler) CreateExercise(c *gin.Context) {
 	var req dto.ExerciseCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -69,7 +82,17 @@ func (h *ExerciseHandler) CreateExercise(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, dto.ToExerciseResponse(&ex))
 }
-
+// GetExerciseByID godoc
+// @Summary      Get exercise by ID
+// @Tags         exercises
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id   path      uint  true  "Exercise ID"  example(12)
+// @Success      200  {object}  dto.ExerciseResponse
+// @Failure      400  {object}  dto.MessageResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      404  {object}  dto.MessageResponse
+// @Router       /exercises/{id} [get]
 func (h *ExerciseHandler) GetExerciseByID(c *gin.Context) {
 	id := parseUint(c.Param("id"), 0)
 	if id == 0 {
@@ -83,7 +106,16 @@ func (h *ExerciseHandler) GetExerciseByID(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, dto.ToExerciseResponse(exercise))
 }
-
+// GetAllExercises godoc
+// @Summary      List exercises
+// @Tags         exercises
+// @Security     BearerAuth
+// @Produce      json
+// @Success      200  {array}   dto.ExerciseResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      404  {object}  dto.MessageResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /exercises [get]
 func (h *ExerciseHandler) GetAllExercises(c *gin.Context) {
 	exercises, err := h.svc.GetAllExercises(c.Request.Context())
 	if err != nil {
@@ -99,6 +131,20 @@ func (h *ExerciseHandler) GetAllExercises(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// UpdateExercise godoc
+// @Summary      Update exercise (admin)
+// @Tags         exercises
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id    path      uint                     true  "Exercise ID"  example(12)
+// @Param        body  body      dto.ExerciseUpdateRequest true "Fields to update"
+// @Success      200   {object}  dto.ExerciseResponse
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      401   {object}  dto.MessageResponse
+// @Failure      403   {object}  dto.MessageResponse
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /exercises/{id} [patch]
 func (h *ExerciseHandler) UpdateExercise(c *gin.Context) {
 	id := parseUint(c.Param("id"), 0)
 	if id == 0 {
@@ -123,6 +169,18 @@ func (h *ExerciseHandler) UpdateExercise(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToExerciseResponse(ex))
 }
 
+// DeleteExercise godoc
+// @Summary      Delete exercise (admin)
+// @Tags         exercises
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id  path      uint  true  "Exercise ID"  example(12)
+// @Success      204 {string}  string "No Content"
+// @Failure      400 {object}  dto.MessageResponse
+// @Failure      401 {object}  dto.MessageResponse
+// @Failure      403 {object}  dto.MessageResponse
+// @Failure      404 {object}  dto.MessageResponse
+// @Router       /exercises/{id} [delete]
 func (h *ExerciseHandler) DeleteExercise(c *gin.Context) {
 	id := parseUint(c.Param("id"), 0)
 	if id == 0 {
@@ -136,6 +194,16 @@ func (h *ExerciseHandler) DeleteExercise(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// GetAllMuscleGroups godoc
+// @Summary      List muscle groups
+// @Tags         muscle-groups
+// @Security     BearerAuth
+// @Produce      json
+// @Success      200  {array}   dto.MuscleGroupResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      404  {object}  dto.MessageResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /muscle-groups [get]
 func (h *ExerciseHandler) GetAllMuscleGroups(c *gin.Context) {
 	muscleGroups, err := h.svc.GetAllMuscleGroups(c.Request.Context())
 	if err != nil {
@@ -151,6 +219,17 @@ func (h *ExerciseHandler) GetAllMuscleGroups(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// GetMuscleGroupByID godoc
+// @Summary      Get muscle group by ID
+// @Tags         muscle-groups
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id   path      uint  true  "Muscle Group ID" example(3)
+// @Success      200  {object}  dto.MuscleGroupResponse
+// @Failure      400  {object}  dto.MessageResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      404  {object}  dto.MessageResponse
+// @Router       /muscle-groups/{id} [get]
 func (h *ExerciseHandler) GetMuscleGroupByID(c *gin.Context) {
 	id := parseUint(c.Param("id"), 0)
 	if id == 0 {
@@ -166,6 +245,19 @@ func (h *ExerciseHandler) GetMuscleGroupByID(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToMuscleGroupResponse(muscleGroup))
 }
 
+// CreateMuscleGroup godoc
+// @Summary      Create muscle group (admin)
+// @Tags         muscle-groups
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.MuscleGroupCreateRequest  true  "Muscle group payload"
+// @Success      201   {object}  dto.MuscleGroupResponse
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      401   {object}  dto.MessageResponse
+// @Failure      403   {object}  dto.MessageResponse
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /muscle-groups [post]
 func (h *ExerciseHandler) CreateMuscleGroup(c *gin.Context) {
 	var req dto.MuscleGroupCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -184,6 +276,20 @@ func (h *ExerciseHandler) CreateMuscleGroup(c *gin.Context) {
 	c.JSON(http.StatusCreated, dto.ToMuscleGroupResponse(&muscleGroup))
 }
 
+// UpdateMuscleGroup godoc
+// @Summary      Update muscle group (admin)
+// @Tags         muscle-groups
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id    path      uint                          true  "Muscle Group ID" example(3)
+// @Param        body  body      dto.MuscleGroupUpdateRequest  true  "Fields to update"
+// @Success      200   {object}  dto.MuscleGroupResponse
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      401   {object}  dto.MessageResponse
+// @Failure      403   {object}  dto.MessageResponse
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /muscle-groups/{id} [patch]
 func (h *ExerciseHandler) UpdateMuscleGroup(c *gin.Context) {
 	id := parseUint(c.Param("id"), 0)
 	if id == 0 {
@@ -207,6 +313,18 @@ func (h *ExerciseHandler) UpdateMuscleGroup(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToMuscleGroupResponse(mg))
 }
 
+// DeleteMuscleGroup godoc
+// @Summary      Delete muscle group (admin)
+// @Tags         muscle-groups
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id  path      uint  true  "Muscle Group ID" example(3)
+// @Success      204 {string}  string "No Content"
+// @Failure      400 {object}  dto.MessageResponse
+// @Failure      401 {object}  dto.MessageResponse
+// @Failure      403 {object}  dto.MessageResponse
+// @Failure      404 {object}  dto.MessageResponse
+// @Router       /muscle-groups/{id} [delete]
 func (h *ExerciseHandler) DeleteMuscleGroup(c *gin.Context) {
 	id := parseUint(c.Param("id"), 0)
 	if id == 0 {

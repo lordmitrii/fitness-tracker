@@ -1,17 +1,17 @@
-// @title        Fitness Tracker API
-// @version      1.0
-// @description  A workout logging API.
-// @termsOfService https://example.com/terms/
-
-// @contact.name   API Support
-// @contact.url    https://example.com/support
-// @contact.email  support@example.com
-
-// @license.name  MIT
-// @license.url   https://opensource.org/licenses/MIT
-
-// @host      localhost:8080
-// @BasePath  /api
+// @title           Fitness Tracker API
+// @version         1.0
+// @description     Public HTTP API for the Fitness Tracker app.
+// @BasePath        /api
+// @schemes         http https
+//
+// @contact.name    API Support
+// @contact.url     https://example.com/support
+// @contact.email   dev@example.com
+//
+// @securityDefinitions.apikey BearerAuth
+// @in              header
+// @name            Authorization
+// @description     Format: Bearer <token>
 
 package main
 

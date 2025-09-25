@@ -44,6 +44,17 @@ func NewEmailHandler(r *gin.RouterGroup, svc usecase.EmailService, rateLimiter u
 	}
 }
 
+// SendVerificationEmail godoc
+// @Summary      Send account verification email
+// @Tags         email
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.SendVerificationEmailRequest  true  "Verification email payload"
+// @Success      200   {object}  dto.MessageResponse
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      429   {object}  dto.MessageResponse "Rate limited"
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /email/send-account-verification [post]
 func (h *EmailHandler) SendVerificationEmail(c *gin.Context) {
 	var req dto.SendVerificationEmailRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -58,6 +69,20 @@ func (h *EmailHandler) SendVerificationEmail(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.MessageResponse{Message: "Verification email sent"})
 }
 
+// SendNotificationEmail godoc
+// @Summary      Send notification email (admin only)
+// @Tags         email
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.SendNotificationEmailRequest  true  "Notification email payload"
+// @Success      200   {object}  dto.MessageResponse
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      401   {object}  dto.MessageResponse
+// @Failure      403   {object}  dto.MessageResponse
+// @Failure      429   {object}  dto.MessageResponse "Rate limited"
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /email/send-notification [post]
 func (h *EmailHandler) SendNotificationEmail(c *gin.Context) {
 	var req dto.SendNotificationEmailRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -72,6 +97,17 @@ func (h *EmailHandler) SendNotificationEmail(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.MessageResponse{Message: "Notification email sent"})
 }
 
+// SendResetPasswordEmail godoc
+// @Summary      Send reset password email
+// @Tags         email
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.SendResetPasswordEmailRequest  true  "Reset password email payload"
+// @Success      200   {object}  dto.MessageResponse
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      429   {object}  dto.MessageResponse "Rate limited"
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /email/send-reset-password [post]
 func (h *EmailHandler) SendResetPasswordEmail(c *gin.Context) {
 	var req dto.SendResetPasswordEmailRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -86,6 +122,18 @@ func (h *EmailHandler) SendResetPasswordEmail(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.MessageResponse{Message: "Reset password email sent"})
 }
 
+// ValidateToken godoc
+// @Summary      Validate email-related token
+// @Tags         email
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.ValidateTokenRequest  true  "Token validation payload"
+// @Success      200   {object}  dto.MessageResponse
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      401   {object}  dto.MessageResponse "Invalid/expired token"
+// @Failure      429   {object}  dto.MessageResponse "Rate limited"
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /email/validate-token [post]
 func (h *EmailHandler) ValidateToken(c *gin.Context) {
 	var req dto.ValidateTokenRequest
 
@@ -106,6 +154,18 @@ func (h *EmailHandler) ValidateToken(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.MessageResponse{Message: "Token is valid"})
 }
 
+// ResetPassword godoc
+// @Summary      Reset password with token
+// @Tags         email
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.ResetPasswordRequest  true  "Password reset payload"
+// @Success      200   {object}  dto.MessageResponse
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      401   {object}  dto.MessageResponse
+// @Failure      429   {object}  dto.MessageResponse "Rate limited"
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /email/reset-password [post]
 func (h *EmailHandler) ResetPassword(c *gin.Context) {
 	var req dto.ResetPasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -120,6 +180,18 @@ func (h *EmailHandler) ResetPassword(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.MessageResponse{Message: "Password reset successfully"})
 }
 
+// VerifyAccount godoc
+// @Summary      Verify account with token
+// @Tags         email
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.VerifyAccountRequest  true  "Account verification payload"
+// @Success      200   {object}  dto.MessageResponse
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      401   {object}  dto.MessageResponse
+// @Failure      429   {object}  dto.MessageResponse "Rate limited"
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /email/verify-account [post]
 func (h *EmailHandler) VerifyAccount(c *gin.Context) {
 	var req dto.VerifyAccountRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

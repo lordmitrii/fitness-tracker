@@ -42,7 +42,7 @@ func SeedRBAC(db *gorm.DB) error {
 
 		rolePerms := map[string][]string{
 			rbac.RoleAdmin: {
-				rbac.PermAdmin,
+				rbac.PermAdmin, 
 				rbac.PermUserReadSelf, rbac.PermUserWriteSelf,
 				rbac.PermWorkoutReadSelf, rbac.PermWorkoutWriteSelf,
 				rbac.PermUserReadOthers, rbac.PermUserWriteOthers,
