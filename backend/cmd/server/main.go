@@ -29,6 +29,7 @@ import (
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/rbac"
 	translations_usecase "github.com/lordmitrii/golang-web-gin/internal/usecase/translations"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/user"
+	"github.com/lordmitrii/golang-web-gin/internal/usecase/versions"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/workout"
 
 	// "github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/inmemory"
@@ -127,6 +128,7 @@ func main() {
 	var rbacService usecase.RBACService = rbac.NewRBACService(roleRepo, permissionRepo, userRepo)
 	var adminService usecase.AdminService = admin.NewAdminService(userRepo, roleRepo, emailService)
 	var translationService usecase.TranslationService = translations_usecase.NewTranslationService(translationRepo, missingTranslationRepo, versionRepo)
+	var versionsService usecase.VersionsService = versions.NewVersionsService(versionRepo)
 
 	if os.Getenv("DEVELOPMENT_MODE") == "false" {
 		cleanupJob := job.NewCleanupJob(db)
@@ -136,7 +138,7 @@ func main() {
 		go cleanupJob.Run(ctx, 24*time.Hour)
 	}
 
-	server := http.NewServer(exerciseService, workoutService, userService, aiService, emailService, redisLimiter, adminService, rbacService, translationService)
+	server := http.NewServer(exerciseService, workoutService, userService, aiService, emailService, redisLimiter, adminService, rbacService, translationService, versionsService)
 
 	var port string
 	if port = os.Getenv("PORT"); port == "" {

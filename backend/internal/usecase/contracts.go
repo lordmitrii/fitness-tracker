@@ -8,6 +8,7 @@ import (
 	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/translations"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/versions"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 )
 
@@ -139,6 +140,10 @@ type TranslationService interface {
 	DeleteTranslation(ctx context.Context, id uint) error
 	ReportMissingTranslations(ctx context.Context, translations []*translations.MissingTranslation) error
 	GetI18nMeta(ctx context.Context, locales, namespaces string) (map[string]map[string]string, error)
+}
+type VersionsService interface {
+	GetCurrentVersion(ctx context.Context, key string) (*versions.Version, error)
+	GetAllVersions(ctx context.Context) ([]*versions.Version, error)
 }
 type RateLimiter interface {
 	Allow(ctx context.Context, key string, limit int, per time.Duration) (bool, time.Duration, error)

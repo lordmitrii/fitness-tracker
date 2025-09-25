@@ -3,7 +3,7 @@ import { useCallback, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import CheckBox from "../../components/CheckBox";
-import { getPolicyVersion } from "../../utils/policiesUtils";
+import useVersionsData from "../../hooks/data/userVersionsData";
 
 const RegisterForm = () => {
   const navigate = useNavigate();
@@ -16,6 +16,8 @@ const RegisterForm = () => {
   const [healthDataConsent, setHealthDataConsent] = useState(false);
   const [error, setError] = useState(null);
   const [formErrors, setFormErrors] = useState({});
+
+  const { getVersion } = useVersionsData({ skipQuery: false });
 
   const validateForm = useCallback(() => {
     const newErrors = {};
@@ -80,8 +82,8 @@ const RegisterForm = () => {
         return;
       }
 
-      const healthDataConsentVersion = getPolicyVersion("health_data");
-      const privacyConsentVersion = getPolicyVersion("privacy_policy");
+      const healthDataConsentVersion = getVersion("healthDataPolicy");
+      const privacyConsentVersion = getVersion("privacyPolicy");
 
       const resp = await register(
         username,

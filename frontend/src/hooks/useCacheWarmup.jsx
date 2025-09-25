@@ -6,6 +6,7 @@ import { fetchProfile } from "../hooks/data/useProfileData";
 import { fetchPlans } from "../hooks/data/usePlansData";
 import { fetchCurrentCycle } from "../hooks/data/useCurrentCycleData";
 import { fetchSettings } from "./data/useSettingsData";
+import { fetchVersions } from "./data/userVersionsData";
 
 export function useCacheWarmup({
   enable = true,
@@ -90,6 +91,11 @@ export function useCacheWarmup({
         qc.prefetchQuery({
           queryKey: QK.settings,
           queryFn: fetchSettings,
+          staleTime: 5 * 60 * 1000,
+        }),
+        qc.prefetchQuery({
+          queryKey: QK.versions,
+          queryFn: fetchVersions,
           staleTime: 5 * 60 * 1000,
         }),
       ]);

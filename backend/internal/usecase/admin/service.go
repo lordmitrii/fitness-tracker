@@ -16,7 +16,7 @@ func NewAdminService(
 	userRepo user.UserRepository,
 	roleRepo rbac.RoleRepository,
 	emailSvc usecase.EmailService,
-) *adminServiceImpl {
+) usecase.AdminService {
 	return &adminServiceImpl{
 		userRepo: userRepo,
 		roleRepo: roleRepo,

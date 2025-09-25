@@ -10,6 +10,7 @@ export const QK = {
   profile: ["profile"],
   exercisesBundle: ["exercisesBundle"],
   settings: ["settings"],
+  versions: ["versions"],
 };
 
 const asKeyId = (v) => (v == null ? v : String(v));

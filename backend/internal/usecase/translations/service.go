@@ -3,6 +3,7 @@ package translations
 import (
 	"github.com/lordmitrii/golang-web-gin/internal/domain/translations"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/versions"
+	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 )
 
 type translationServiceImpl struct {
@@ -11,7 +12,7 @@ type translationServiceImpl struct {
 	versionRepo            versions.VersionRepository
 }
 
-func NewTranslationService(tr translations.TranslationRepository, mtr translations.MissingTranslationRepository, vr versions.VersionRepository) *translationServiceImpl {
+func NewTranslationService(tr translations.TranslationRepository, mtr translations.MissingTranslationRepository, vr versions.VersionRepository) usecase.TranslationService {
 	return &translationServiceImpl{
 		translationRepo:        tr,
 		missingTranslationRepo: mtr,

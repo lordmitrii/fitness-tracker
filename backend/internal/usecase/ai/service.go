@@ -15,7 +15,7 @@ func NewAIService(
 	workoutService usecase.WorkoutService,
 	userService usecase.UserService,
 	openai ai.OpenAI,	
-) *aiServiceImpl {
+) usecase.AIService {
 	return &aiServiceImpl{
 		workoutService: workoutService,
 		userService:    userService,

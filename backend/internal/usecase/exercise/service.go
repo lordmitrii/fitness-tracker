@@ -4,6 +4,7 @@ import (
 	"github.com/lordmitrii/golang-web-gin/internal/domain/translations"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/versions"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
+	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 )
 
 type exerciseServiceImpl struct {
@@ -20,7 +21,7 @@ func NewExerciseService(
 	translator translations.Translator,
 	translationRepo translations.TranslationRepository,
 	versionRepo versions.VersionRepository,
-) *exerciseServiceImpl {
+) usecase.ExerciseService {
 	return &exerciseServiceImpl{
 		exerciseRepo:    exerciseRepo,
 		muscleGroupRepo: muscleGroupRepo,

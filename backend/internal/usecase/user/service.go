@@ -3,6 +3,7 @@ package user
 import (
 	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
+	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 )
 
 type userServiceImpl struct {
@@ -21,7 +22,7 @@ func NewUserService(
 	roleRepo rbac.RoleRepository,
 	permissionRepo rbac.PermissionRepository,
 	settingsRepo user.UserSettingsRepository,
-) *userServiceImpl {
+) usecase.UserService {
 	return &userServiceImpl{
 		authRepo:        ur,
 		profileRepo:     pr,

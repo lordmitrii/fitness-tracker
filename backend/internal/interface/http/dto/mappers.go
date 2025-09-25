@@ -4,6 +4,7 @@ import (
 	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/translations"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/versions"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 )
 
@@ -107,7 +108,6 @@ func ToWorkoutCycleResponse(wc *workout.WorkoutCycle) WorkoutCycleResponse {
 			resp.Workouts = append(resp.Workouts, ToWorkoutResponse(w))
 		}
 	}
-
 	return resp
 }
 
@@ -264,4 +264,20 @@ func ToTranslationResponse(t *translations.Translation) TranslationResponse {
 		Key:       t.Key,
 		Value:     t.Value,
 	}
+}
+
+func ToVersionsResponse(v *versions.Version) VersionResponse {
+	return VersionResponse{
+		ID:      v.ID,
+		Key:     v.Key,
+		Version: v.Version,
+	}
+}
+
+func ToVersionsMultipleResponse(versions []*versions.Version) []VersionResponse {
+	resp := make([]VersionResponse, 0, len(versions))
+	for _, v := range versions {
+		resp = append(resp, ToVersionsResponse(v))
+	}
+	return resp
 }
