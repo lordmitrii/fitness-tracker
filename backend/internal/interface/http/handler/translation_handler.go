@@ -73,7 +73,7 @@ func (h *TranslationHandler) GetTranslations(c *gin.Context) {
 	}
 
 	c.Header("ETag", etag)
-	c.Header("Cache-Control", "public, max-age=300, stale-while-revalidate=86400")
+	// c.Header("Cache-Control", "public, max-age=300, stale-while-revalidate=86400")
 	c.JSON(http.StatusOK, resp)
 }
 
@@ -117,7 +117,7 @@ func (h *TranslationHandler) GetI18nMeta(c *gin.Context) {
 	}
 
 	c.Header("ETag", etag)
-	c.Header("Cache-Control", "public, max-age=0, must-revalidate")
+	// c.Header("Cache-Control", "public, max-age=0, must-revalidate")
 
 	c.JSON(http.StatusOK, gin.H{"versions": vers})
 }
