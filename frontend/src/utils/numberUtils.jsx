@@ -5,9 +5,18 @@ const roundDown = (x, p) => Math.floor(x * pow10(p)) / pow10(p);
 const roundUp = (x, p) => Math.ceil(x * pow10(p)) / pow10(p);
 
 export const toNumberOrEmpty = (v) => {
-  if (v === "" || v === "-" || v === "." || v === "-.") return "";
-  if (typeof v === "string" && v.trim() === "") return "";
-  const n = Number(v);
+  if (v === "" || (typeof v === "string" && v.trim() === "")) return "";
+
+  const s = String(v)
+    .replace(/\u00A0/g, "")          
+    .replace(/[，]/g, ",")              
+    .replace(/[٫،٬]/g, ",")         
+    .replace(/[．｡]/g, ".")             
+    .replace(",", ".");                
+
+  if (s === "-" || s === "." || s === "-.") return "";
+
+  const n = Number(s);
   return Number.isFinite(n) ? n : "";
 };
 
