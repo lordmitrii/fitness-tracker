@@ -13,6 +13,7 @@ import {
   usePullToRefreshContext,
 } from "../context/PullToRefreshContext";
 import { useCacheWarmup } from "../hooks/useCacheWarmup";
+import useKeyboardVisible from "../hooks/useKeyboardVisible";
 
 function ScrollAreaWithPTR({ children }) {
   const scrollRef = useRef(null);
@@ -72,7 +73,7 @@ function ScrollAreaWithPTR({ children }) {
 
 const Layout = ({ children }) => {
   const [searchParams] = useSearchParams();
-
+  const keyboardVisible = useKeyboardVisible({ threshold: 150 });
   const spinnerEnabled = searchParams.get("spinner") !== "false";
   const isNewSession = sessionStorage.getItem("hasLoaded") !== "1";
   const warmupDone = useCacheWarmup({
@@ -120,8 +121,8 @@ const Layout = ({ children }) => {
               <ScrollAreaWithPTR>{children}</ScrollAreaWithPTR>
             </div>
           </div>
-
-          <div className="sm:hidden">
+          <div id="above-menubar-portal" className="sm:hidden" />
+          <div className={`sm:hidden ${keyboardVisible ? "hidden" : ""}`}>
             <MenuPanel />
           </div>
         </div>

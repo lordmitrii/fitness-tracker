@@ -12,6 +12,8 @@ import { useAuth } from "../context/AuthContext";
 import ErrorState from "../states/ErrorState";
 import LoadingState from "../states/LoadingState";
 import { LayoutHeader } from "../layout/LayoutHeader";
+import { createPortal } from "react-dom";
+import { useIsBelowSm } from "../hooks/useIsBelowSm";
 
 const TOPICS = [
   {
@@ -41,6 +43,12 @@ const AIChat = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { hasAnyRole } = useAuth();
+
+  const isBelowSm = useIsBelowSm();
+  const portalHost =
+    typeof document !== "undefined"
+      ? document.getElementById("above-menubar-portal")
+      : null;
 
   const [store, setStore, { restoring }] = useStorageState("aiChatState", {
     selectedTopic: "askGeneral", // Set to null if want to show "choose topic" first. Now general topic will be preselected.
@@ -207,6 +215,67 @@ const AIChat = () => {
       />
     );
 
+  const inputArea = (
+    <form
+      onSubmit={handleSend}
+      className="shrink-0 bg-white gap-2 border-t border-gray-200 p-6 pt-2 flex flex-col"
+    >
+      <div className="flex-1 flex justify-end mb-1 min-w-0 gap-2">
+        {(error || cooldown > 0) && (
+          <div className="flex-1 text-caption-red truncate">
+            {error ||
+              t("ai_chat.wait_seconds", {
+                seconds: cooldown,
+              })}
+          </div>
+        )}
+        <div className="shrink-0 text-caption">{input.length}/255</div>
+      </div>
+      <div className="flex gap-2 items-center">
+        <input
+          className="input-style"
+          autoComplete="off"
+          placeholder={
+            selectedTopic
+              ? t("ai_chat.user_input_placeholder")
+              : t("ai_chat.user_input_placeholder_select_topic")
+          }
+          value={input}
+          type="text"
+          maxLength={255}
+          onChange={(e) => {
+            setInput(e.target.value);
+          }}
+          disabled={sending || !selectedTopic}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) handleSend(e);
+          }}
+        />
+        <button
+          type="submit"
+          className={`btn size-fit ${
+            cooldown > 0 || !selectedTopic ? "btn-secondary" : "btn-primary"
+          }`}
+          disabled={
+            sending ||
+            !input.trim() ||
+            cooldown > 0 ||
+            !selectedTopic ||
+            !consentGiven
+          }
+        >
+          <span className="whitespace-nowrap">
+            {sending ? (
+              <SpinnerIcon className="animate-spin w-4 h-4" />
+            ) : (
+              t("ai_chat.send_button")
+            )}
+          </span>
+        </button>
+      </div>
+    </form>
+  );
+
   return (
     <>
       <LayoutHeader disablePaddingBottom>
@@ -277,64 +346,9 @@ const AIChat = () => {
             </div>
           )}
         </div>
-        <form
-          onSubmit={handleSend}
-          className="shrink-0 bg-white gap-2 border-t border-gray-200 p-6 pt-2 flex flex-col"
-        >
-          <div className="flex-1 flex justify-end mb-1 min-w-0 gap-2">
-            {(error || cooldown > 0) && (
-              <div className="flex-1 text-caption-red truncate">
-                {error ||
-                  t("ai_chat.wait_seconds", {
-                    seconds: cooldown,
-                  })}
-              </div>
-            )}
-            <div className="shrink-0 text-caption">{input.length}/255</div>
-          </div>
-          <div className="flex gap-2 items-center">
-            <input
-              className="input-style"
-              autoComplete="off"
-              placeholder={
-                selectedTopic
-                  ? t("ai_chat.user_input_placeholder")
-                  : t("ai_chat.user_input_placeholder_select_topic")
-              }
-              value={input}
-              type="text"
-              maxLength={255}
-              onChange={(e) => {
-                setInput(e.target.value);
-              }}
-              disabled={sending || !selectedTopic}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) handleSend(e);
-              }}
-            />
-            <button
-              type="submit"
-              className={`btn size-fit ${
-                cooldown > 0 || !selectedTopic ? "btn-secondary" : "btn-primary"
-              }`}
-              disabled={
-                sending ||
-                !input.trim() ||
-                cooldown > 0 ||
-                !selectedTopic ||
-                !consentGiven
-              }
-            >
-              <span className="whitespace-nowrap">
-                {sending ? (
-                  <SpinnerIcon className="animate-spin w-4 h-4" />
-                ) : (
-                  t("ai_chat.send_button")
-                )}
-              </span>
-            </button>
-          </div>
-        </form>
+        {isBelowSm && portalHost
+          ? createPortal(inputArea, portalHost)
+          : inputArea}
       </div>
       {showConsent && (
         <ConsentModal onAccept={giveConsent} onDecline={() => navigate("/")} />
