@@ -4,32 +4,44 @@ import (
 	"context"
 	"fmt"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
+	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/uow"
 )
 
-func (s *workoutServiceImpl) CreateWorkoutSet(ctx context.Context, ws *workout.WorkoutSet) error {
-	maxIndex, err := s.workoutSetRepo.GetMaxIndexByWorkoutExerciseID(ctx, ws.WorkoutExerciseID)
-	if err != nil {
-		return err
-	}
-
-	if ws.Index <= 0 {
-		ws.Index = maxIndex + 1
-	} else {
-		if err := s.workoutSetRepo.IncrementIndexesAfter(ctx, ws.WorkoutExerciseID, ws.Index); err != nil {
+// Order of locks used:
+// 1. workouts
+// 2. workout_exercises
+// 3. workout_sets
+func (s *workoutServiceImpl) CreateWorkoutSet(ctx context.Context, workoutId, weId uint, ws *workout.WorkoutSet) error {
+	return uow.Do(ctx, s.db, func(ctx context.Context) error {
+		if err := s.workoutRepo.LockByIDForUpdate(ctx, workoutId); err != nil {
 			return err
 		}
-	}
+		if err := s.workoutExerciseRepo.LockByIDForUpdate(ctx, weId); err != nil {
+			return err
+		}
+		maxIndex, err := s.workoutSetRepo.GetMaxIndexByWorkoutExerciseID(ctx, weId)
+		if err != nil {
+			return err
+		}
 
-	we, err := s.workoutExerciseRepo.UpdateReturning(ctx, ws.WorkoutExerciseID, map[string]any{"completed": false})
-	if err != nil {
-		return err
-	}
+		if ws.Index <= 0 {
+			ws.Index = maxIndex + 1
+		} else {
+			if err := s.workoutSetRepo.IncrementIndexesAfter(ctx, weId, ws.Index); err != nil {
+				return err
+			}
+		}
 
-	if err := s.workoutRepo.Update(ctx, we.WorkoutID, map[string]any{"completed": false}); err != nil {
-		return err
-	}
+		if err := s.workoutExerciseRepo.Update(ctx, weId, map[string]any{"completed": false}); err != nil {
+			return err
+		}
 
-	return s.workoutSetRepo.Create(ctx, ws)
+		if err := s.workoutRepo.Update(ctx, workoutId, map[string]any{"completed": false}); err != nil {
+			return err
+		}
+
+		return s.workoutSetRepo.Create(ctx, ws)
+	})
 }
 
 func (s *workoutServiceImpl) GetWorkoutSetByID(ctx context.Context, id uint) (*workout.WorkoutSet, error) {
@@ -40,142 +52,187 @@ func (s *workoutServiceImpl) GetWorkoutSetsByWorkoutExerciseID(ctx context.Conte
 	return s.workoutSetRepo.GetByWorkoutExerciseID(ctx, workoutExerciseID)
 }
 
-func (s *workoutServiceImpl) UpdateWorkoutSet(ctx context.Context, id uint, updates map[string]any) (*workout.WorkoutSet, error) {
-	// Set skipped and completed to false if updating workout set
-	updates["skipped"] = false
-	updates["completed"] = false
-
-	ws, err := s.workoutSetRepo.UpdateReturning(ctx, id, updates)
-	if err != nil {
-		return nil, err
-	}
-	we, err := s.workoutExerciseRepo.UpdateReturning(ctx, ws.WorkoutExerciseID, map[string]any{"completed": false, "skipped": false})
-	if err != nil {
-		return nil, err
-	}
-
-	if err := s.workoutRepo.Update(ctx, we.WorkoutID, map[string]any{"completed": false, "skipped": false}); err != nil {
-		return nil, err
-	}
-
-	return ws, nil
-}
-
-func (s *workoutServiceImpl) CompleteWorkoutSet(ctx context.Context, id uint, completed, skipped bool) (*workout.WorkoutSet, error) {
-	ws, err := s.workoutSetRepo.UpdateReturning(ctx, id, map[string]any{"completed": completed, "skipped": skipped})
-	if err != nil {
-		return nil, err
-	}
-
-	incompletedSetsCount, err := s.workoutSetRepo.GetIncompleteSetsCount(ctx, ws.WorkoutExerciseID)
-	if err != nil {
-		return nil, err
-	}
-
-	we, err := s.workoutExerciseRepo.UpdateReturning(ctx, ws.WorkoutExerciseID, map[string]any{"completed": incompletedSetsCount == 0})
-	if err != nil {
-		return nil, err
-	}
-
-	incompletedExercisesCount, err := s.workoutExerciseRepo.GetIncompleteExercisesCount(ctx, we.WorkoutID)
-	if err != nil {
-		return nil, err
-	}
-
-	skippedExercisesCount, err := s.workoutExerciseRepo.GetSkippedExercisesCount(ctx, we.WorkoutID)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := s.workoutRepo.Update(ctx, we.WorkoutID, map[string]any{"completed": incompletedExercisesCount-skippedExercisesCount == 0}); err != nil {
-		return nil, err
-	}
-
-	ie, err := s.individualExerciseRepo.GetByID(ctx, we.IndividualExerciseID)
-	if err != nil {
-		return nil, err
-	}
-
-	if ie.LastCompletedWorkoutExerciseID != nil {
-		if err := s.workoutExerciseRepo.Update(ctx, we.ID, map[string]any{"previous_exercise_id": ie.LastCompletedWorkoutExerciseID}); err != nil {
+// Order of locks used:
+// 1. workouts
+// 2. workout_exercises
+// 3. workout_sets
+func (s *workoutServiceImpl) UpdateWorkoutSet(ctx context.Context, workoutId, weId, id uint, updates map[string]any) (*workout.WorkoutSet, error) {
+	return uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.WorkoutSet, error) {
+		if err := s.workoutRepo.LockByIDForUpdate(ctx, workoutId); err != nil {
 			return nil, err
 		}
-	}
-
-	if ws.Completed {
-		if err := s.individualExerciseRepo.Update(ctx, ie.ID, map[string]any{"last_completed_workout_exercise_id": we.ID}); err != nil {
+		if err := s.workoutExerciseRepo.LockByIDForUpdate(ctx, weId); err != nil {
 			return nil, err
 		}
-	}
+		// Set skipped and completed to false if updating workout set
+		updates["skipped"] = false
+		updates["completed"] = false
 
-	return ws, nil
+		ws, err := s.workoutSetRepo.UpdateReturning(ctx, id, updates)
+		if err != nil {
+			return nil, err
+		}
+		if err := s.workoutExerciseRepo.Update(ctx, ws.WorkoutExerciseID, map[string]any{"completed": false, "skipped": false}); err != nil {
+			return nil, err
+		}
+
+		if err := s.workoutRepo.Update(ctx, workoutId, map[string]any{"completed": false, "skipped": false}); err != nil {
+			return nil, err
+		}
+
+		return ws, nil
+	})
 }
 
+// Order of locks used:
+// 1. workouts
+// 2. workout_exercises
+// 3. workout_sets
+// 4. individual_exercises
+func (s *workoutServiceImpl) CompleteWorkoutSet(ctx context.Context, workoutId, weId, id uint, completed, skipped bool) (*workout.WorkoutSet, error) {
+	return uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.WorkoutSet, error) {
+		if err := s.workoutRepo.LockByIDForUpdate(ctx, workoutId); err != nil {
+			return nil, err
+		}
+		if err := s.workoutExerciseRepo.LockByIDForUpdate(ctx, weId); err != nil {
+			return nil, err
+		}
+		ws, err := s.workoutSetRepo.UpdateReturning(ctx, id, map[string]any{"completed": completed, "skipped": skipped})
+		if err != nil {
+			return nil, err
+		}
+
+		incompletedSetsCount, err := s.workoutSetRepo.GetIncompleteSetsCount(ctx, ws.WorkoutExerciseID)
+		if err != nil {
+			return nil, err
+		}
+
+		we, err := s.workoutExerciseRepo.UpdateReturning(ctx, ws.WorkoutExerciseID, map[string]any{"completed": incompletedSetsCount == 0})
+		if err != nil {
+			return nil, err
+		}
+
+		incompletedExercisesCount, err := s.workoutExerciseRepo.GetIncompleteExercisesCount(ctx, workoutId)
+		if err != nil {
+			return nil, err
+		}
+
+		skippedExercisesCount, err := s.workoutExerciseRepo.GetSkippedExercisesCount(ctx, workoutId)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := s.workoutRepo.Update(ctx, workoutId, map[string]any{"completed": incompletedExercisesCount-skippedExercisesCount == 0}); err != nil {
+			return nil, err
+		}
+
+		ie, err := s.individualExerciseRepo.GetByID(ctx, we.IndividualExerciseID)
+		if err != nil {
+			return nil, err
+		}
+
+		if ie.LastCompletedWorkoutExerciseID != nil {
+			if err := s.workoutExerciseRepo.Update(ctx, we.ID, map[string]any{"previous_exercise_id": ie.LastCompletedWorkoutExerciseID}); err != nil {
+				return nil, err
+			}
+		}
+
+		if ws.Completed {
+			if err := s.individualExerciseRepo.Update(ctx, ie.ID, map[string]any{"last_completed_workout_exercise_id": we.ID}); err != nil {
+				return nil, err
+			}
+		}
+
+		return ws, nil
+	})
+}
+
+// Order of locks used:
+// 1. workout_exercises
+// 2. workout_sets
 func (s *workoutServiceImpl) MoveWorkoutSet(ctx context.Context, exerciseID, setID uint, direction string) error {
-	workoutSet, err := s.workoutSetRepo.GetByID(ctx, setID)
-	if err != nil {
-		return err
-	}
+	return uow.DoIfNotInTx(ctx, s.db, func(ctx context.Context) error {
+		if err := s.workoutExerciseRepo.LockByIDForUpdate(ctx, exerciseID); err != nil {
+			return err
+		}
 
-	if workoutSet.WorkoutExerciseID != exerciseID {
-		return fmt.Errorf("workout set %d does not belong to workout exercise %d", setID, exerciseID)
-	}
+		workoutSet, err := s.workoutSetRepo.GetByID(ctx, setID)
+		if err != nil {
+			return err
+		}
 
-	if direction != "up" && direction != "down" {
-		return fmt.Errorf("invalid direction: %s", direction)
-	}
+		if workoutSet.WorkoutExerciseID != exerciseID {
+			return fmt.Errorf("workout set %d does not belong to workout exercise %d", setID, exerciseID)
+		}
 
-	var neighborIndex int
-	if direction == "up" {
-		neighborIndex = workoutSet.Index - 1
-	} else {
-		neighborIndex = workoutSet.Index + 1
-	}
-	if neighborIndex < 0 {
-		return fmt.Errorf("cannot move set further %s", direction)
-	}
+		if direction != "up" && direction != "down" {
+			return fmt.Errorf("invalid direction: %s", direction)
+		}
 
-	if err := s.workoutSetRepo.SwapWorkoutSetsByIndex(ctx, workoutSet.WorkoutExerciseID, workoutSet.Index, neighborIndex); err != nil {
-		return err
-	}
+		var neighborIndex int
+		if direction == "up" {
+			neighborIndex = workoutSet.Index - 1
+		} else {
+			neighborIndex = workoutSet.Index + 1
+		}
+		if neighborIndex < 0 {
+			return fmt.Errorf("cannot move set further %s", direction)
+		}
 
-	return nil
+		if err := s.workoutSetRepo.SwapWorkoutSetsByIndex(ctx, workoutSet.WorkoutExerciseID, workoutSet.Index, neighborIndex); err != nil {
+			return err
+		}
+
+		return nil
+	})
 }
 
-func (s *workoutServiceImpl) DeleteWorkoutSet(ctx context.Context, id uint) error {
-	ws, err := s.workoutSetRepo.GetByID(ctx, id)
-	if err != nil {
-		return err
-	}
+// Order of locks used:
+// 1. workouts
+// 2. workout_exercises
+// 3. workout_sets
+func (s *workoutServiceImpl) DeleteWorkoutSet(ctx context.Context, workoutId, weId, id uint) error {
+	return uow.Do(ctx, s.db, func(ctx context.Context) error {
+		if err := s.workoutRepo.LockByIDForUpdate(ctx, workoutId); err != nil {
+			return err
+		}
+		if err := s.workoutExerciseRepo.LockByIDForUpdate(ctx, weId); err != nil {
+			return err
+		}
+		ws, err := s.workoutSetRepo.GetByIDForUpdate(ctx, id)
+		if err != nil {
+			return err
+		}
 
-	if err := s.workoutSetRepo.Delete(ctx, id); err != nil {
-		return err
-	}
+		if err := s.workoutSetRepo.Delete(ctx, id); err != nil {
+			return err
+		}
 
-	if err := s.workoutSetRepo.DecrementIndexesAfter(ctx, ws.WorkoutExerciseID, ws.Index); err != nil {
-		return err
-	}
+		if err := s.workoutSetRepo.DecrementIndexesAfter(ctx, ws.WorkoutExerciseID, ws.Index); err != nil {
+			return err
+		}
 
-	incompletedSetsCount, err := s.workoutSetRepo.GetIncompleteSetsCount(ctx, ws.WorkoutExerciseID)
-	if err != nil {
-		return err
-	}
+		incompletedSetsCount, err := s.workoutSetRepo.GetIncompleteSetsCount(ctx, ws.WorkoutExerciseID)
+		if err != nil {
+			return err
+		}
 
-	we, err := s.workoutExerciseRepo.UpdateReturning(ctx, ws.WorkoutExerciseID, map[string]any{"completed": incompletedSetsCount == 0})
-	if err != nil {
-		return err
-	}
+		we, err := s.workoutExerciseRepo.UpdateReturning(ctx, ws.WorkoutExerciseID, map[string]any{"completed": incompletedSetsCount == 0})
+		if err != nil {
+			return err
+		}
 
-	incompletedExercisesCount, err := s.workoutExerciseRepo.GetIncompleteExercisesCount(ctx, we.WorkoutID)
-	if err != nil {
-		return err
-	}
+		incompletedExercisesCount, err := s.workoutExerciseRepo.GetIncompleteExercisesCount(ctx, we.WorkoutID)
+		if err != nil {
+			return err
+		}
 
-	if err := s.workoutRepo.Update(ctx, we.WorkoutID, map[string]any{"completed": incompletedExercisesCount == 0}); err != nil {
-		return err
-	}
+		if err := s.workoutRepo.Update(ctx, we.WorkoutID, map[string]any{"completed": incompletedExercisesCount == 0}); err != nil {
+			return err
+		}
 
-	return nil
+		return nil
+	})
 }
 
 func (s *workoutServiceImpl) GetIncompleteSetsCount(ctx context.Context, workoutExerciseID uint) (int64, error) {
@@ -206,7 +263,7 @@ func (s *workoutServiceImpl) GetPreviousSets(ctx context.Context, individualExer
 
 	var prevSets []*workout.WorkoutSet
 
-	for i := int64(0); i < qt; i++ {
+	for i := range qt {
 		pSet := &workout.WorkoutSet{}
 		if i < int64(len(previousSets)) {
 			pSet.PreviousReps = previousSets[i].Reps

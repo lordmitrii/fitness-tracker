@@ -42,7 +42,7 @@ const WorkoutCard = ({
     <div className="sm:rounded-2xl shadow-lg bg-white sm:border sm:border-gray-200 p-6 sm:hover:shadow-lg transition flex flex-col gap-3">
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between gap-2 min-w-0 relative">
-          <h1 className="text-body-blue font-extrabold truncate">
+          <h1 title={`Workout ${workout.name} (id: ${workout.id})`} className="text-body-blue font-extrabold truncate">
             {workout.name}
           </h1>
           <DropdownMenu

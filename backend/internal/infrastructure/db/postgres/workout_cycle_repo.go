@@ -5,6 +5,7 @@ import (
 
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
+	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/txctx"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -17,13 +18,20 @@ func NewWorkoutCycleRepo(db *gorm.DB) workout.WorkoutCycleRepository {
 	return &WorkoutCycleRepo{db: db}
 }
 
+func (r *WorkoutCycleRepo) dbFrom(ctx context.Context) *gorm.DB {
+	if tx, ok := txctx.From(ctx); ok {
+		return tx.WithContext(ctx)
+	}
+	return r.db.WithContext(ctx)
+}
+
 func (r *WorkoutCycleRepo) Create(ctx context.Context, wc *workout.WorkoutCycle) error {
-	return r.db.WithContext(ctx).Create(wc).Error
+	return r.dbFrom(ctx).Create(wc).Error
 }
 
 func (r *WorkoutCycleRepo) GetByID(ctx context.Context, id uint) (*workout.WorkoutCycle, error) {
 	var wc workout.WorkoutCycle
-	if err := r.db.WithContext(ctx).Preload("Workouts", func(db *gorm.DB) *gorm.DB {
+	if err := r.dbFrom(ctx).Preload("Workouts", func(db *gorm.DB) *gorm.DB {
 		return db.Preload("WorkoutExercises.IndividualExercise.MuscleGroup").Preload("WorkoutExercises.IndividualExercise.Exercise").Preload("WorkoutExercises.WorkoutSets").Order("index ASC").Order("id ASC")
 	}).First(&wc, id).Error; err != nil {
 		return nil, err
@@ -33,7 +41,7 @@ func (r *WorkoutCycleRepo) GetByID(ctx context.Context, id uint) (*workout.Worko
 
 func (r *WorkoutCycleRepo) GetByPlanIDAndWeek(ctx context.Context, planID uint, week int) (*workout.WorkoutCycle, error) {
 	var cycle workout.WorkoutCycle
-	err := r.db.WithContext(ctx).
+	err := r.dbFrom(ctx).
 		Preload("Workouts", func(db *gorm.DB) *gorm.DB { return db.Order("index ASC").Order("id ASC") }).
 		Preload("Workouts.WorkoutExercises").
 		Where("workout_plan_id = ? AND week_number = ?", planID, week).
@@ -44,7 +52,7 @@ func (r *WorkoutCycleRepo) GetByPlanIDAndWeek(ctx context.Context, planID uint, 
 
 func (r *WorkoutCycleRepo) GetByWorkoutPlanID(ctx context.Context, workoutPlanID uint) ([]*workout.WorkoutCycle, error) {
 	var workoutCycles []*workout.WorkoutCycle
-	if err := r.db.WithContext(ctx).Where("workout_plan_id = ?", workoutPlanID).Find(&workoutCycles).Error; err != nil {
+	if err := r.dbFrom(ctx).Where("workout_plan_id = ?", workoutPlanID).Find(&workoutCycles).Error; err != nil {
 		return nil, err
 	}
 	return workoutCycles, nil
@@ -52,7 +60,7 @@ func (r *WorkoutCycleRepo) GetByWorkoutPlanID(ctx context.Context, workoutPlanID
 
 func (r *WorkoutCycleRepo) GetMaxWeekNumberByPlanID(ctx context.Context, planID uint) (int, error) {
 	var max int
-	err := r.db.WithContext(ctx).
+	err := r.dbFrom(ctx).
 		Model(&workout.WorkoutCycle{}).
 		Where("workout_plan_id = ?", planID).
 		Select("COALESCE(MAX(week_number), 0)").
@@ -62,7 +70,7 @@ func (r *WorkoutCycleRepo) GetMaxWeekNumberByPlanID(ctx context.Context, planID 
 }
 
 func (r *WorkoutCycleRepo) Update(ctx context.Context, id uint, updates map[string]any) error {
-	res := r.db.WithContext(ctx).
+	res := r.dbFrom(ctx).
 		Model(&workout.WorkoutCycle{}).
 		Where("id = ?", id).
 		Updates(updates)
@@ -77,7 +85,7 @@ func (r *WorkoutCycleRepo) Update(ctx context.Context, id uint, updates map[stri
 
 func (r *WorkoutCycleRepo) UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*workout.WorkoutCycle, error) {
 	var wc workout.WorkoutCycle
-	tx := r.db.WithContext(ctx)
+	tx := r.dbFrom(ctx)
 
 	res := tx.Model(&wc).
 		Where("id = ?", id).
@@ -101,19 +109,26 @@ func (r *WorkoutCycleRepo) UpdateReturning(ctx context.Context, id uint, updates
 }
 
 func (r *WorkoutCycleRepo) Delete(ctx context.Context, id uint) error {
-	return r.db.WithContext(ctx).Delete(&workout.WorkoutCycle{}, id).Error
+	res := r.dbFrom(ctx).Delete(&workout.WorkoutCycle{}, id)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return custom_err.ErrNotFound
+	}
+	return nil
 }
 
 func (r *WorkoutCycleRepo) ClearData(ctx context.Context, id uint) error {
 	// Delete all workouts attached to this cycle
-	if err := r.db.WithContext(ctx).
+	if err := r.dbFrom(ctx).
 		Where("workout_cycle_id = ?", id).
 		Delete(&workout.Workout{}).Error; err != nil {
 		return err
 	}
 
 	// Set Completed to false
-	if err := r.db.WithContext(ctx).
+	if err := r.dbFrom(ctx).
 		Model(&workout.WorkoutCycle{}).
 		Where("id = ?", id).
 		Update("completed", false).Error; err != nil {
@@ -121,4 +136,19 @@ func (r *WorkoutCycleRepo) ClearData(ctx context.Context, id uint) error {
 	}
 
 	return nil
+}
+
+func (r *WorkoutCycleRepo) LockByIDForUpdate(ctx context.Context, id uint) error {
+	var wc workout.WorkoutCycle
+	return r.dbFrom(ctx).Clauses(clause.Locking{Strength: "UPDATE"}).First(&wc, id).Error
+}
+
+func (r *WorkoutCycleRepo) GetByIDForUpdate(ctx context.Context, id uint) (*workout.WorkoutCycle, error) {
+	var wc workout.WorkoutCycle
+	if err := r.dbFrom(ctx).Preload("Workouts", func(db *gorm.DB) *gorm.DB {
+		return db.Preload("WorkoutExercises.IndividualExercise.MuscleGroup").Preload("WorkoutExercises.IndividualExercise.Exercise").Preload("WorkoutExercises.WorkoutSets").Order("index ASC").Order("id ASC")
+	}).Clauses(clause.Locking{Strength: "UPDATE"}).First(&wc, id).Error; err != nil {
+		return nil, err
+	}
+	return &wc, nil
 }

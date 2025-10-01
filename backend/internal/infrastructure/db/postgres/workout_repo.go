@@ -6,11 +6,11 @@ import (
 
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
+	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/txctx"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
-// WorkoutRepo implements workout.Repository using PostgreSQL.
 type WorkoutRepo struct {
 	db *gorm.DB
 }
@@ -19,17 +19,24 @@ func NewWorkoutRepo(db *gorm.DB) workout.WorkoutRepository {
 	return &WorkoutRepo{db: db}
 }
 
+func (r *WorkoutRepo) dbFrom(ctx context.Context) *gorm.DB {
+	if tx, ok := txctx.From(ctx); ok {
+		return tx.WithContext(ctx)
+	}
+	return r.db.WithContext(ctx)
+}
+
 func (r *WorkoutRepo) Create(ctx context.Context, w *workout.Workout) error {
-	return r.db.WithContext(ctx).Create(w).Error
+	return r.dbFrom(ctx).Create(w).Error
 }
 
 func (r *WorkoutRepo) BulkCreate(ctx context.Context, workouts []*workout.Workout) error {
-	return r.db.WithContext(ctx).Create(&workouts).Error
+	return r.dbFrom(ctx).Create(&workouts).Error
 }
 
 func (r *WorkoutRepo) GetByID(ctx context.Context, id uint) (*workout.Workout, error) {
 	var w workout.Workout
-	if err := r.db.WithContext(ctx).
+	if err := r.dbFrom(ctx).
 		Preload("WorkoutExercises.IndividualExercise").
 		Preload("WorkoutExercises.WorkoutSets").
 		First(&w, id).
@@ -44,7 +51,7 @@ func (r *WorkoutRepo) GetByID(ctx context.Context, id uint) (*workout.Workout, e
 
 func (r *WorkoutRepo) GetByWorkoutCycleID(ctx context.Context, workoutCycleID uint) ([]*workout.Workout, error) {
 	var workouts []*workout.Workout
-	if err := r.db.WithContext(ctx).
+	if err := r.dbFrom(ctx).
 		Where("workout_cycle_id = ?", workoutCycleID).
 		Find(&workouts).
 		Error; err != nil {
@@ -57,7 +64,7 @@ func (r *WorkoutRepo) GetByWorkoutCycleID(ctx context.Context, workoutCycleID ui
 }
 
 func (r *WorkoutRepo) Update(ctx context.Context, id uint, updates map[string]any) error {
-	res := r.db.WithContext(ctx).
+	res := r.dbFrom(ctx).
 		Model(&workout.Workout{}).
 		Where("id = ?", id).
 		Updates(updates)
@@ -72,7 +79,7 @@ func (r *WorkoutRepo) Update(ctx context.Context, id uint, updates map[string]an
 
 func (r *WorkoutRepo) UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*workout.Workout, error) {
 	var w workout.Workout
-	tx := r.db.WithContext(ctx)
+	tx := r.dbFrom(ctx)
 
 	res := tx.Model(&w).
 		Where("id = ?", id).
@@ -96,7 +103,7 @@ func (r *WorkoutRepo) UpdateReturning(ctx context.Context, id uint, updates map[
 }
 
 func (r *WorkoutRepo) Delete(ctx context.Context, id uint) error {
-	res := r.db.WithContext(ctx).
+	res := r.dbFrom(ctx).
 		Delete(&workout.Workout{}, id)
 	if res.Error != nil {
 		return res.Error
@@ -109,7 +116,7 @@ func (r *WorkoutRepo) Delete(ctx context.Context, id uint) error {
 
 func (r *WorkoutRepo) GetIncompleteWorkoutsCount(ctx context.Context, workoutCycleID uint) (int64, error) {
 	var count int64
-	if err := r.db.WithContext(ctx).
+	if err := r.dbFrom(ctx).
 		Model(&workout.Workout{}).
 		Where("workout_cycle_id = ? AND completed = false", workoutCycleID).
 		Count(&count).
@@ -119,22 +126,18 @@ func (r *WorkoutRepo) GetIncompleteWorkoutsCount(ctx context.Context, workoutCyc
 	return count, nil
 }
 
-func (r *WorkoutRepo) GetMaxWorkoutIndexByWorkoutCycleID(ctx context.Context, workoutCycleID uint) (int, error) {
+func (r *WorkoutRepo) GetMaxWorkoutIndexByWorkoutCycleID(ctx context.Context, cycleID uint) (int, error) {
 	var max int
-	err := r.db.WithContext(ctx).
+	err := r.dbFrom(ctx).
 		Model(&workout.Workout{}).
-		Where("workout_cycle_id = ?", workoutCycleID).
+		Where("workout_cycle_id = ?", cycleID).
 		Select("COALESCE(MAX(index), 0)").
 		Scan(&max).Error
-
-	if err != nil {
-		return 0, err
-	}
-	return max, nil
+	return max, err
 }
 
 func (r *WorkoutRepo) DecrementIndexesAfterWorkout(ctx context.Context, workoutCycleID uint, deletedIndex int) error {
-	return r.db.WithContext(ctx).
+	return r.dbFrom(ctx).
 		Model(&workout.Workout{}).
 		Where("workout_cycle_id = ? AND index > ?", workoutCycleID, deletedIndex).
 		Update("index", gorm.Expr("index - 1")).
@@ -142,32 +145,54 @@ func (r *WorkoutRepo) DecrementIndexesAfterWorkout(ctx context.Context, workoutC
 }
 
 func (r *WorkoutRepo) SwapWorkoutsByIndex(ctx context.Context, workoutCycleID uint, index1, index2 int) error {
-	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		var w1, w2 workout.Workout
-		if err := tx.Where("workout_cycle_id = ? AND index = ?", workoutCycleID, index1).First(&w1).Error; err != nil {
-			return err
-		}
-		if err := tx.Where("workout_cycle_id = ? AND index = ?", workoutCycleID, index2).First(&w2).Error; err != nil {
-			return err
-		}
-		w1.Index, w2.Index = w2.Index, w1.Index
-		if err := tx.Save(&w1).Error; err != nil {
-			return err
-		}
-		if err := tx.Save(&w2).Error; err != nil {
-			return err
-		}
+	if index1 == index2 {
 		return nil
-	})
+	}
+	db := r.dbFrom(ctx)
+	var workouts []workout.Workout
+	if err := db.Where("workout_cycle_id = ? AND index IN (?, ?)", workoutCycleID, index1, index2).
+		Order("id ASC").
+		Clauses(clause.Locking{Strength: "UPDATE"}).
+		Find(&workouts).Error; err != nil {
+		return err
+	}
+	if len(workouts) != 2 {
+		return custom_err.ErrNotFound
+	}
+
+	idA, idxA := workouts[0].ID, workouts[0].Index
+	idB, idxB := workouts[1].ID, workouts[1].Index
+
+	return db.Model(&workout.Workout{}).
+		Where("id IN (?, ?)", idA, idB).
+		Updates(map[string]any{
+			"index": gorm.Expr("CASE WHEN id = ? THEN ? WHEN id = ? THEN ? ELSE index END", idA, idxB, idB, idxA),
+		}).Error
 }
 
 func (r *WorkoutRepo) GetSkippedWorkoutsCount(ctx context.Context, workoutCycleID uint) (int64, error) {
 	var count int64
-	if err := r.db.WithContext(ctx).Model(&workout.Workout{}).
+	if err := r.dbFrom(ctx).Model(&workout.Workout{}).
 		Where("workout_cycle_id = ? AND skipped = true", workoutCycleID).
 		Count(&count).
 		Error; err != nil {
 		return 0, err
 	}
 	return count, nil
+}
+
+func (r *WorkoutRepo) LockByIDForUpdate(ctx context.Context, id uint) error {
+	var w workout.Workout
+	return r.dbFrom(ctx).Clauses(clause.Locking{Strength: "UPDATE"}).First(&w, id).Error
+}
+
+func (r *WorkoutRepo) GetByIDForUpdate(ctx context.Context, id uint) (*workout.Workout, error) {
+	var w workout.Workout
+	if err := r.dbFrom(ctx).
+		Preload("WorkoutExercises.IndividualExercise").
+		Preload("WorkoutExercises.WorkoutSets").
+		Clauses(clause.Locking{Strength: "UPDATE"}).First(&w, id).Error; err != nil {
+		return nil, err
+	}
+	return &w, nil
 }

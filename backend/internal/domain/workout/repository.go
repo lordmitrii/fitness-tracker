@@ -13,6 +13,8 @@ type WorkoutPlanRepository interface {
 	UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*WorkoutPlan, error)
 	Delete(ctx context.Context, id uint) error
 	DeactivateOthers(ctx context.Context, userID uint, exceptID uint) error
+	GetByIDForUpdate(ctx context.Context, id uint) (*WorkoutPlan, error)
+	LockByIDForUpdate(ctx context.Context, id uint) error
 }
 
 type WorkoutCycleRepository interface {
@@ -25,6 +27,8 @@ type WorkoutCycleRepository interface {
 	UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*WorkoutCycle, error)
 	Delete(ctx context.Context, id uint) error
 	ClearData(ctx context.Context, id uint) error
+	LockByIDForUpdate(ctx context.Context, id uint) error
+	GetByIDForUpdate(ctx context.Context, id uint) (*WorkoutCycle, error)
 }
 
 type WorkoutRepository interface {
@@ -40,6 +44,8 @@ type WorkoutRepository interface {
 	GetMaxWorkoutIndexByWorkoutCycleID(ctx context.Context, workoutCycleID uint) (int, error)
 	DecrementIndexesAfterWorkout(ctx context.Context, workoutCycleID uint, deletedIndex int) error
 	SwapWorkoutsByIndex(ctx context.Context, workoutCycleID uint, index1, index2 int) error
+	LockByIDForUpdate(ctx context.Context, id uint) error
+	GetByIDForUpdate(ctx context.Context, id uint) (*Workout, error)
 }
 
 type WorkoutExerciseRepository interface {
@@ -56,6 +62,8 @@ type WorkoutExerciseRepository interface {
 	DecrementIndexesAfter(ctx context.Context, workoutID uint, deletedIndex int) error
 	IncrementIndexesAfter(ctx context.Context, workoutID uint, index int) error
 	SwapWorkoutExercisesByIndex(ctx context.Context, workoutID uint, index1, index2 int) error
+	LockByIDForUpdate(ctx context.Context, id uint) error
+	GetByIDForUpdate(ctx context.Context, id uint) (*WorkoutExercise, error)
 }
 
 type WorkoutSetRepository interface {
@@ -71,6 +79,7 @@ type WorkoutSetRepository interface {
 	DecrementIndexesAfter(ctx context.Context, workoutExerciseID uint, deletedIndex int) error
 	IncrementIndexesAfter(ctx context.Context, workoutExerciseID uint, index int) error
 	SwapWorkoutSetsByIndex(ctx context.Context, workoutExerciseID uint, index1, index2 int) error
+	GetByIDForUpdate(ctx context.Context, id uint) (*WorkoutSet, error)
 }
 
 type ExerciseRepository interface {

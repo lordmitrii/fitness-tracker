@@ -2,21 +2,56 @@ package workout
 
 import (
 	"time"
+
+	"github.com/lordmitrii/golang-web-gin/internal/domain/shared/domainevt"
 )
 
+type WorkoutCompleted struct {
+	WorkoutID uint
+	At        time.Time
+}
+
+func (e WorkoutCompleted) EventType() string { return "WorkoutCompleted" }
+
 type Workout struct {
-	ID               uint       `gorm:"primaryKey"`
-	Name             string     `gorm:"not null"`
-	WorkoutCycleID   uint       `gorm:"not null"`
-	Date             *time.Time `example:"2010-10-01T10:00:00Z"`
-	Index            int       `gorm:"not null"`
-	WorkoutExercises []*WorkoutExercise `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-
-	Completed bool `gorm:"default:false"`
-	Skipped   bool `gorm:"default:false"`
-
+	ID                uint   `gorm:"primaryKey"`
+	Name              string `gorm:"not null"`
+	WorkoutCycleID    uint   `gorm:"not null"`
+	Date              *time.Time
+	Index             int
+	WorkoutExercises  []*WorkoutExercise `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Completed         bool               `gorm:"default:false"`
+	Skipped           bool               `gorm:"default:false"`
 	PreviousWorkoutID *uint
+	CreatedAt         *time.Time
+	UpdatedAt         *time.Time
 
-	CreatedAt *time.Time `example:"2010-10-01T10:00:00Z"`
-	UpdatedAt *time.Time `example:"2010-10-01T10:00:00Z"`
+	domainevt.EventsMixin `gorm:"-"`
+}
+
+func (w *Workout) MarkCompletedDirect(now time.Time) {
+	if w.Completed {
+		return
+	}
+	w.Completed = true
+	w.Skipped = false
+	w.Raise(WorkoutCompleted{WorkoutID: w.ID, At: now})
+}
+
+func (w *Workout) MarkSkipped() {
+	if w.Completed {
+		return
+	}
+	w.Skipped = true
+}
+
+func (w *Workout) OnSetCompleted(total, done int, now time.Time) {
+	if w.Completed {
+		return
+	}
+	if total > 0 && done >= total {
+		w.Completed = true
+		w.Skipped = false
+		w.Raise(WorkoutCompleted{WorkoutID: w.ID, At: now})
+	}
 }
