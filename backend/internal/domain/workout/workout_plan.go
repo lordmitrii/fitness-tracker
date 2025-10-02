@@ -12,13 +12,13 @@ type WorkoutPlan struct {
 	Name   string `gorm:"not null"`
 	Active bool   `gorm:"default:false"`
 
-	UserID uint      `gorm:"not null"`
+	UserID uint      `gorm:"not null;index"` 
 	User   user.User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
 	WorkoutCycles  []*WorkoutCycle `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	CurrentCycleID *uint  
+	CurrentCycleID *uint           `gorm:"index"` 
 
-	CreatedAt *time.Time     `example:"2010-10-01T10:00:00Z"`
-	UpdatedAt *time.Time     `example:"2010-10-01T10:00:00Z"`
+	CreatedAt *time.Time
+	UpdatedAt *time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 }

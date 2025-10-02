@@ -16,10 +16,10 @@
 package main
 
 import (
-	"os"
-
+	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/ai"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/email"
+	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/eventbus"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/translations"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/admin"
@@ -30,7 +30,8 @@ import (
 	translations_usecase "github.com/lordmitrii/golang-web-gin/internal/usecase/translations"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/user"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/versions"
-	"github.com/lordmitrii/golang-web-gin/internal/usecase/workout"
+	workout_usecase "github.com/lordmitrii/golang-web-gin/internal/usecase/workout"
+	"os"
 
 	// "github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/inmemory"
 	"context"
@@ -59,7 +60,12 @@ func main() {
 	if err := postgres.AutoMigrate(db); err != nil {
 		panic(err)
 	}
-
+	if err := postgres.AddUserIndexes(db, true); err != nil {
+		panic(err)
+	}
+	if err := postgres.AddWorkoutIndex(db, true); err != nil {
+		panic(err)
+	}
 	if err := postgres.SeedRBAC(db); err != nil {
 		panic(err)
 	}
@@ -120,8 +126,15 @@ func main() {
 		1.0, // temperature
 	)
 
+	bus := eventbus.NewInproc()
+	bus.Subscribe("WorkoutCompleted", func(ctx context.Context, e any) error {
+		ev := e.(workout.WorkoutCompleted)
+		log.Printf("Workout %d completed at %v\n", ev.WorkoutID, ev.At)
+		return nil
+	})
+
 	var exerciseService usecase.ExerciseService = exercise.NewExerciseService(exerciseRepo, muscleGroupRepo, translator, translationRepo, versionRepo)
-	var workoutService usecase.WorkoutService = workout.NewWorkoutService(workoutPlanRepo, workoutCycleRepo, workoutRepo, workoutExerciseRepo, workoutSetRepo, individualExerciseRepo, exerciseRepo)
+	var workoutService usecase.WorkoutService = workout_usecase.NewWorkoutService(workoutPlanRepo, workoutCycleRepo, workoutRepo, workoutExerciseRepo, workoutSetRepo, individualExerciseRepo, exerciseRepo, db, bus)
 	var userService usecase.UserService = user.NewUserService(userRepo, profileRepo, userConsentRepo, roleRepo, permissionRepo, userSettingsRepo)
 	var aiService usecase.AIService = ai_usecase.NewAIService(workoutService, userService, openai)
 	var emailService usecase.EmailService = email_usecase.NewEmailService(userRepo, roleRepo, emailSender, emailTokenRepo)

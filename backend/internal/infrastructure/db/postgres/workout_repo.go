@@ -6,11 +6,11 @@ import (
 
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
+	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/txctx"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
-// WorkoutRepo implements workout.Repository using PostgreSQL.
 type WorkoutRepo struct {
 	db *gorm.DB
 }
@@ -19,21 +19,66 @@ func NewWorkoutRepo(db *gorm.DB) workout.WorkoutRepository {
 	return &WorkoutRepo{db: db}
 }
 
-func (r *WorkoutRepo) Create(ctx context.Context, w *workout.Workout) error {
-	return r.db.WithContext(ctx).Create(w).Error
+func (r *WorkoutRepo) dbFrom(ctx context.Context) *gorm.DB {
+	if tx, ok := txctx.From(ctx); ok {
+		return tx.WithContext(ctx)
+	}
+	return r.db.WithContext(ctx)
 }
 
-func (r *WorkoutRepo) BulkCreate(ctx context.Context, workouts []*workout.Workout) error {
-	return r.db.WithContext(ctx).Create(&workouts).Error
+func (r *WorkoutRepo) Create(ctx context.Context, userId, planId, cycleId uint, w *workout.Workout) error {
+	db := r.dbFrom(ctx)
+
+	// Verify cycle belongs to user/plan
+	cid := cycleId
+	cSub := SubqCycles(db, userId, planId, &cid)
+
+	var cnt int64
+	if err := db.Table("(?) AS wc", cSub).Count(&cnt).Error; err != nil {
+		return err
+	}
+	if cnt == 0 {
+		return custom_err.ErrNotFound
+	}
+
+	w.WorkoutCycleID = cycleId
+	return db.Create(w).Error
 }
 
-func (r *WorkoutRepo) GetByID(ctx context.Context, id uint) (*workout.Workout, error) {
+func (r *WorkoutRepo) BulkCreate(ctx context.Context, userId, planId, cycleId uint, workouts []*workout.Workout) error {
+	db := r.dbFrom(ctx)
+
+	// Verify cycle belongs to user/plan
+	cid := cycleId
+	cSub := SubqCycles(db, userId, planId, &cid)
+
+	var cnt int64
+	if err := db.Table("(?) AS wc", cSub).Count(&cnt).Error; err != nil {
+		return err
+	}
+	if cnt == 0 {
+		return custom_err.ErrNotFound
+	}
+
+	for _, it := range workouts {
+		it.WorkoutCycleID = cycleId
+	}
+	return db.Create(&workouts).Error
+}
+
+func (r *WorkoutRepo) GetByID(ctx context.Context, userId, planId, cycleId, id uint) (*workout.Workout, error) {
+	db := r.dbFrom(ctx)
+
+	// Scope by exact workout in the user's chain
+	wid := id
+	wSub := SubqWorkouts(db, userId, planId, cycleId, &wid)
+
 	var w workout.Workout
-	if err := r.db.WithContext(ctx).
-		Preload("WorkoutExercises.IndividualExercise").
-		Preload("WorkoutExercises.WorkoutSets").
-		First(&w, id).
-		Error; err != nil {
+	err := db.Model(&workout.Workout{}).
+		Where("workouts.id IN (?)", wSub).
+		Scopes(PreloadWorkoutFull).
+		First(&w).Error
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, custom_err.ErrNotFound
 		}
@@ -42,12 +87,17 @@ func (r *WorkoutRepo) GetByID(ctx context.Context, id uint) (*workout.Workout, e
 	return &w, nil
 }
 
-func (r *WorkoutRepo) GetByWorkoutCycleID(ctx context.Context, workoutCycleID uint) ([]*workout.Workout, error) {
+func (r *WorkoutRepo) GetByWorkoutCycleID(ctx context.Context, userId, planId, cycleId uint) ([]*workout.Workout, error) {
+	db := r.dbFrom(ctx)
+
+	cid := cycleId
+	cSub := SubqCycles(db, userId, planId, &cid)
+
 	var workouts []*workout.Workout
-	if err := r.db.WithContext(ctx).
-		Where("workout_cycle_id = ?", workoutCycleID).
-		Find(&workouts).
-		Error; err != nil {
+	err := db.Model(&workout.Workout{}).
+		Where("workout_cycle_id IN (?)", cSub).
+		Find(&workouts).Error
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, custom_err.ErrNotFound
 		}
@@ -56,10 +106,14 @@ func (r *WorkoutRepo) GetByWorkoutCycleID(ctx context.Context, workoutCycleID ui
 	return workouts, nil
 }
 
-func (r *WorkoutRepo) Update(ctx context.Context, id uint, updates map[string]any) error {
-	res := r.db.WithContext(ctx).
-		Model(&workout.Workout{}).
-		Where("id = ?", id).
+func (r *WorkoutRepo) Update(ctx context.Context, userId, planId, cycleId, id uint, updates map[string]any) error {
+	db := r.dbFrom(ctx)
+
+	cid := cycleId
+	cSub := SubqCycles(db, userId, planId, &cid)
+
+	res := db.Model(&workout.Workout{}).
+		Where("id = ? AND workout_cycle_id IN (?)", id, cSub).
 		Updates(updates)
 	if res.Error != nil {
 		return res.Error
@@ -70,12 +124,15 @@ func (r *WorkoutRepo) Update(ctx context.Context, id uint, updates map[string]an
 	return nil
 }
 
-func (r *WorkoutRepo) UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*workout.Workout, error) {
-	var w workout.Workout
-	tx := r.db.WithContext(ctx)
+func (r *WorkoutRepo) UpdateReturning(ctx context.Context, userId, planId, cycleId, id uint, updates map[string]any) (*workout.Workout, error) {
+	db := r.dbFrom(ctx)
 
-	res := tx.Model(&w).
-		Where("id = ?", id).
+	cid := cycleId
+	cSub := SubqCycles(db, userId, planId, &cid)
+
+	var w workout.Workout
+	res := db.Model(&w).
+		Where("id = ? AND workout_cycle_id IN (?)", id, cSub).
 		Clauses(clause.Returning{}).
 		Updates(updates)
 	if res.Error != nil {
@@ -85,8 +142,8 @@ func (r *WorkoutRepo) UpdateReturning(ctx context.Context, id uint, updates map[
 		return nil, custom_err.ErrNotFound
 	}
 
-	if err := tx.
-		Model(&workout.WorkoutExercise{}).
+	// Reload children ordered
+	if err := db.Model(&workout.WorkoutExercise{}).
 		Where("workout_id = ?", id).
 		Order("index ASC").
 		Find(&w.WorkoutExercises).Error; err != nil {
@@ -95,9 +152,13 @@ func (r *WorkoutRepo) UpdateReturning(ctx context.Context, id uint, updates map[
 	return &w, nil
 }
 
-func (r *WorkoutRepo) Delete(ctx context.Context, id uint) error {
-	res := r.db.WithContext(ctx).
-		Delete(&workout.Workout{}, id)
+func (r *WorkoutRepo) Delete(ctx context.Context, userId, planId, cycleId, id uint) error {
+	db := r.dbFrom(ctx)
+
+	wid := id
+	wSub := SubqWorkouts(db, userId, planId, cycleId, &wid)
+
+	res := db.Where("id IN (?)", wSub).Delete(&workout.Workout{})
 	if res.Error != nil {
 		return res.Error
 	}
@@ -107,67 +168,115 @@ func (r *WorkoutRepo) Delete(ctx context.Context, id uint) error {
 	return nil
 }
 
-func (r *WorkoutRepo) GetIncompleteWorkoutsCount(ctx context.Context, workoutCycleID uint) (int64, error) {
+func (r *WorkoutRepo) GetIncompleteWorkoutsCount(ctx context.Context, userId, planId, cycleId uint) (int64, error) {
+	db := r.dbFrom(ctx)
+
+	cid := cycleId
+	cSub := SubqCycles(db, userId, planId, &cid)
+
 	var count int64
-	if err := r.db.WithContext(ctx).
-		Model(&workout.Workout{}).
-		Where("workout_cycle_id = ? AND completed = false", workoutCycleID).
-		Count(&count).
-		Error; err != nil {
-		return 0, err
-	}
-	return count, nil
+	err := db.Model(&workout.Workout{}).
+		Where("workout_cycle_id IN (?) AND completed = FALSE", cSub).
+		Count(&count).Error
+	return count, err
 }
 
-func (r *WorkoutRepo) GetMaxWorkoutIndexByWorkoutCycleID(ctx context.Context, workoutCycleID uint) (int, error) {
+func (r *WorkoutRepo) GetSkippedWorkoutsCount(ctx context.Context, userId, planId, cycleId uint) (int64, error) {
+	db := r.dbFrom(ctx)
+
+	cid := cycleId
+	cSub := SubqCycles(db, userId, planId, &cid)
+
+	var count int64
+	err := db.Model(&workout.Workout{}).
+		Where("workout_cycle_id IN (?) AND skipped = TRUE", cSub).
+		Count(&count).Error
+	return count, err
+}
+
+func (r *WorkoutRepo) GetMaxWorkoutIndexByWorkoutCycleID(ctx context.Context, userId, planId, cycleId uint) (int, error) {
+	db := r.dbFrom(ctx)
+
+	cid := cycleId
+	cSub := SubqCycles(db, userId, planId, &cid)
+
 	var max int
-	err := r.db.WithContext(ctx).
-		Model(&workout.Workout{}).
-		Where("workout_cycle_id = ?", workoutCycleID).
+	err := db.Model(&workout.Workout{}).
 		Select("COALESCE(MAX(index), 0)").
+		Where("workout_cycle_id IN (?)", cSub).
 		Scan(&max).Error
-
-	if err != nil {
-		return 0, err
-	}
-	return max, nil
+	return max, err
 }
 
-func (r *WorkoutRepo) DecrementIndexesAfterWorkout(ctx context.Context, workoutCycleID uint, deletedIndex int) error {
-	return r.db.WithContext(ctx).
-		Model(&workout.Workout{}).
-		Where("workout_cycle_id = ? AND index > ?", workoutCycleID, deletedIndex).
-		Update("index", gorm.Expr("index - 1")).
-		Error
+func (r *WorkoutRepo) DecrementIndexesAfterWorkout(ctx context.Context, userId, planId, cycleId uint, deletedIndex int) error {
+	db := r.dbFrom(ctx)
+
+	cid := cycleId
+	cSub := SubqCycles(db, userId, planId, &cid)
+
+	return db.Model(&workout.Workout{}).
+		Where("workout_cycle_id IN (?) AND index > ?", cSub, deletedIndex).
+		Update("index", gorm.Expr("index - 1")).Error
 }
 
-func (r *WorkoutRepo) SwapWorkoutsByIndex(ctx context.Context, workoutCycleID uint, index1, index2 int) error {
-	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		var w1, w2 workout.Workout
-		if err := tx.Where("workout_cycle_id = ? AND index = ?", workoutCycleID, index1).First(&w1).Error; err != nil {
-			return err
-		}
-		if err := tx.Where("workout_cycle_id = ? AND index = ?", workoutCycleID, index2).First(&w2).Error; err != nil {
-			return err
-		}
-		w1.Index, w2.Index = w2.Index, w1.Index
-		if err := tx.Save(&w1).Error; err != nil {
-			return err
-		}
-		if err := tx.Save(&w2).Error; err != nil {
-			return err
-		}
+func (r *WorkoutRepo) SwapWorkoutsByIndex(ctx context.Context, userId, planId, cycleId uint, index1, index2 int) error {
+	if index1 == index2 {
 		return nil
-	})
+	}
+
+	db := r.dbFrom(ctx)
+
+	cid := cycleId
+	cSub := SubqCycles(db, userId, planId, &cid)
+
+	var workouts []workout.Workout
+	if err := db.Where("workout_cycle_id IN (?) AND index IN (?, ?)", cSub, index1, index2).
+		Order("id ASC").
+		Clauses(clause.Locking{Strength: "UPDATE"}).
+		Find(&workouts).Error; err != nil {
+		return err
+	}
+	if len(workouts) != 2 {
+		return custom_err.ErrNotFound
+	}
+
+	idA, idxA := workouts[0].ID, workouts[0].Index
+	idB, idxB := workouts[1].ID, workouts[1].Index
+
+	return db.Model(&workout.Workout{}).
+		Where("id IN (?, ?)", idA, idB).
+		Updates(map[string]any{
+			"index": gorm.Expr("CASE WHEN id = ? THEN ? WHEN id = ? THEN ? ELSE index END", idA, idxB, idB, idxA),
+		}).Error
 }
 
-func (r *WorkoutRepo) GetSkippedWorkoutsCount(ctx context.Context, workoutCycleID uint) (int64, error) {
-	var count int64
-	if err := r.db.WithContext(ctx).Model(&workout.Workout{}).
-		Where("workout_cycle_id = ? AND skipped = true", workoutCycleID).
-		Count(&count).
-		Error; err != nil {
-		return 0, err
+func (r *WorkoutRepo) LockByIDForUpdate(ctx context.Context, userId, planId, cycleId uint, id uint) error {
+	db := r.dbFrom(ctx)
+
+	wid := id
+	wSub := SubqWorkouts(db, userId, planId, cycleId, &wid)
+
+	var w workout.Workout
+	return db.Model(&workout.Workout{}).
+		Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("workouts.id IN (?)", wSub).
+		First(&w).Error
+}
+
+func (r *WorkoutRepo) GetByIDForUpdate(ctx context.Context, userId, planId, cycleId uint, id uint) (*workout.Workout, error) {
+	db := r.dbFrom(ctx)
+
+	wid := id
+	wSub := SubqWorkouts(db, userId, planId, cycleId, &wid)
+
+	var w workout.Workout
+	err := db.Model(&workout.Workout{}).
+		Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("workouts.id IN (?)", wSub).
+		Scopes(PreloadWorkoutFull).
+		First(&w).Error
+	if err != nil {
+		return nil, err
 	}
-	return count, nil
+	return &w, nil
 }
