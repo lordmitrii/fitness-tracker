@@ -25,23 +25,30 @@ func (r *WorkoutPlanRepo) dbFrom(ctx context.Context) *gorm.DB {
 	return r.db.WithContext(ctx)
 }
 
-func (r *WorkoutPlanRepo) Create(ctx context.Context, wp *workout.WorkoutPlan) error {
+func (r *WorkoutPlanRepo) Create(ctx context.Context, userId uint, wp *workout.WorkoutPlan) error {
+	wp.UserID = userId
 	return r.dbFrom(ctx).Create(wp).Error
 }
 
-func (r *WorkoutPlanRepo) CreateReturning(ctx context.Context, wp *workout.WorkoutPlan) (*workout.WorkoutPlan, error) {
-	res := r.dbFrom(ctx).
-		Clauses(clause.Returning{}).
-		Create(wp)
+func (r *WorkoutPlanRepo) CreateReturning(ctx context.Context, userId uint, wp *workout.WorkoutPlan) (*workout.WorkoutPlan, error) {
+	wp.UserID = userId
+	res := r.dbFrom(ctx).Clauses(clause.Returning{}).Create(wp)
 	if res.Error != nil {
 		return nil, res.Error
 	}
 	return wp, nil
 }
 
-func (r *WorkoutPlanRepo) GetByID(ctx context.Context, id uint) (*workout.WorkoutPlan, error) {
+func (r *WorkoutPlanRepo) GetByID(ctx context.Context, userId, id uint) (*workout.WorkoutPlan, error) {
+	db := r.dbFrom(ctx)
+
+	pid := id
+	pSub := SubqPlans(db, userId, &pid)
+
 	var wp workout.WorkoutPlan
-	if err := r.dbFrom(ctx).First(&wp, id).Error; err != nil {
+	if err := db.Model(&workout.WorkoutPlan{}).
+		Where("workout_plans.id IN (?)", pSub).
+		First(&wp).Error; err != nil {
 		return nil, err
 	}
 	return &wp, nil
@@ -49,16 +56,22 @@ func (r *WorkoutPlanRepo) GetByID(ctx context.Context, id uint) (*workout.Workou
 
 func (r *WorkoutPlanRepo) GetByUserID(ctx context.Context, userID uint) ([]*workout.WorkoutPlan, error) {
 	var workoutPlans []*workout.WorkoutPlan
-	if err := r.dbFrom(ctx).Where("user_id = ?", userID).Find(&workoutPlans).Error; err != nil {
+	if err := r.dbFrom(ctx).
+		Where("user_id = ?", userID).
+		Find(&workoutPlans).Error; err != nil {
 		return nil, err
 	}
 	return workoutPlans, nil
 }
 
-func (r *WorkoutPlanRepo) Update(ctx context.Context, id uint, updates map[string]any) error {
-	res := r.dbFrom(ctx).
-		Model(&workout.WorkoutPlan{}).
-		Where("id = ?", id).
+func (r *WorkoutPlanRepo) Update(ctx context.Context, userId, id uint, updates map[string]any) error {
+	db := r.dbFrom(ctx)
+
+	pid := id
+	pSub := SubqPlans(db, userId, &pid)
+
+	res := db.Model(&workout.WorkoutPlan{}).
+		Where("id IN (?)", pSub).
 		Updates(updates)
 	if res.Error != nil {
 		return res.Error
@@ -69,12 +82,15 @@ func (r *WorkoutPlanRepo) Update(ctx context.Context, id uint, updates map[strin
 	return nil
 }
 
-func (r *WorkoutPlanRepo) UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*workout.WorkoutPlan, error) {
-	var wp workout.WorkoutPlan
+func (r *WorkoutPlanRepo) UpdateReturning(ctx context.Context, userId, id uint, updates map[string]any) (*workout.WorkoutPlan, error) {
 	db := r.dbFrom(ctx)
 
+	pid := id
+	pSub := SubqPlans(db, userId, &pid)
+
+	var wp workout.WorkoutPlan
 	res := db.Model(&wp).
-		Where("id = ?", id).
+		Where("id IN (?)", pSub).
 		Clauses(clause.Returning{}).
 		Updates(updates)
 	if res.Error != nil {
@@ -94,8 +110,13 @@ func (r *WorkoutPlanRepo) UpdateReturning(ctx context.Context, id uint, updates 
 	return &wp, nil
 }
 
-func (r *WorkoutPlanRepo) Delete(ctx context.Context, id uint) error {
-	res := r.dbFrom(ctx).Delete(&workout.WorkoutPlan{}, id)
+func (r *WorkoutPlanRepo) Delete(ctx context.Context, userId, id uint) error {
+	db := r.dbFrom(ctx)
+
+	pid := id
+	pSub := SubqPlans(db, userId, &pid)
+
+	res := db.Where("id IN (?)", pSub).Delete(&workout.WorkoutPlan{})
 	if res.Error != nil {
 		return res.Error
 	}
@@ -105,22 +126,38 @@ func (r *WorkoutPlanRepo) Delete(ctx context.Context, id uint) error {
 	return nil
 }
 
-func (r *WorkoutPlanRepo) DeactivateOthers(ctx context.Context, userID, keepID uint) error {
+func (r *WorkoutPlanRepo) DeactivateOthers(ctx context.Context, userID, exceptID uint) error {
 	return r.dbFrom(ctx).
 		Model(&workout.WorkoutPlan{}).
-		Where("user_id = ? AND active = TRUE AND id <> ?", userID, keepID).
+		Where("user_id = ? AND active = TRUE AND id <> ?", userID, exceptID).
 		Update("active", false).Error
 }
 
-func (s *WorkoutPlanRepo) GetByIDForUpdate(ctx context.Context, id uint) (*workout.WorkoutPlan, error) {
+func (r *WorkoutPlanRepo) GetByIDForUpdate(ctx context.Context, userId, id uint) (*workout.WorkoutPlan, error) {
+	db := r.dbFrom(ctx)
+
+	pid := id
+	pSub := SubqPlans(db, userId, &pid)
+
 	var wp workout.WorkoutPlan
-	if err := s.dbFrom(ctx).Clauses(clause.Locking{Strength: "UPDATE"}).First(&wp, id).Error; err != nil {
+	if err := db.Model(&workout.WorkoutPlan{}).
+		Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("workout_plans.id IN (?)", pSub).
+		First(&wp).Error; err != nil {
 		return nil, err
 	}
 	return &wp, nil
 }
 
-func (r *WorkoutPlanRepo) LockByIDForUpdate(ctx context.Context, id uint) error {
+func (r *WorkoutPlanRepo) LockByIDForUpdate(ctx context.Context, userId, id uint) error {
+	db := r.dbFrom(ctx)
+
+	pid := id
+	pSub := SubqPlans(db, userId, &pid)
+
 	var wp workout.WorkoutPlan
-	return r.dbFrom(ctx).Clauses(clause.Locking{Strength: "UPDATE"}).First(&wp, id).Error
+	return db.Model(&workout.WorkoutPlan{}).
+		Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("workout_plans.id IN (?)", pSub).
+		First(&wp).Error
 }

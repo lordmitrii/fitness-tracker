@@ -14,53 +14,53 @@ import (
 
 type (
 	WorkoutService interface {
-		CreateWorkoutPlan(ctx context.Context, wp *workout.WorkoutPlan) (*workout.WorkoutPlan, error)
-		GetWorkoutPlanByID(ctx context.Context, id uint) (*workout.WorkoutPlan, error)
-		GetWorkoutPlansByUserID(ctx context.Context, userID uint) ([]*workout.WorkoutPlan, error)
-		UpdateWorkoutPlan(ctx context.Context, id uint, updates map[string]any) (*workout.WorkoutPlan, error)
-		DeleteWorkoutPlan(ctx context.Context, id uint) error
-		SetActiveWorkoutPlan(ctx context.Context, id uint, active bool) (*workout.WorkoutPlan, error)
-		GetActivePlanByUserID(ctx context.Context, userID uint) (*workout.WorkoutPlan, error)
+		CreateWorkoutPlan(ctx context.Context, userId uint, wp *workout.WorkoutPlan) (*workout.WorkoutPlan, error)
+		GetWorkoutPlanByID(ctx context.Context, userId, id uint) (*workout.WorkoutPlan, error)
+		GetWorkoutPlansByUserID(ctx context.Context, userId uint) ([]*workout.WorkoutPlan, error)
+		UpdateWorkoutPlan(ctx context.Context, userId, id uint, updates map[string]any) (*workout.WorkoutPlan, error)
+		DeleteWorkoutPlan(ctx context.Context, userId, id uint) error
+		SetActiveWorkoutPlan(ctx context.Context, userId, id uint, active bool) (*workout.WorkoutPlan, error)
+		GetActivePlanByUserID(ctx context.Context, userId uint) (*workout.WorkoutPlan, error)
 
-		CreateWorkoutCycle(ctx context.Context, wc *workout.WorkoutCycle) error
-		GetWorkoutCycleByID(ctx context.Context, id uint) (*workout.WorkoutCycle, error)
-		GetWorkoutCyclesByWorkoutPlanID(ctx context.Context, workoutPlanID uint) ([]*workout.WorkoutCycle, error)
-		UpdateWorkoutCycle(ctx context.Context, id uint, updates map[string]any) (*workout.WorkoutCycle, error)
-		DeleteWorkoutCycle(ctx context.Context, planId, id uint) error
-		CompleteWorkoutCycle(ctx context.Context, planId, id uint, completed, skipped bool) (*workout.WorkoutCycle, error)
-		GetCurrentWorkoutCycle(ctx context.Context, userID uint) (*workout.WorkoutCycle, error)
+		CreateWorkoutCycle(ctx context.Context, userId, planId uint, wc *workout.WorkoutCycle) error
+		GetWorkoutCycleByID(ctx context.Context, userId, planId, id uint) (*workout.WorkoutCycle, error)
+		GetWorkoutCyclesByWorkoutPlanID(ctx context.Context, userId, planId uint) ([]*workout.WorkoutCycle, error)
+		UpdateWorkoutCycle(ctx context.Context, userId, planId, id uint, updates map[string]any) (*workout.WorkoutCycle, error)
+		DeleteWorkoutCycle(ctx context.Context, userId, planId, id uint) error
+		CompleteWorkoutCycle(ctx context.Context, userId, planId, id uint, completed, skipped bool) (*workout.WorkoutCycle, error)
+		GetCurrentWorkoutCycle(ctx context.Context, userId uint) (*workout.WorkoutCycle, error)
 
-		CreateWorkout(ctx context.Context, w *workout.Workout) error
-		CreateMultipleWorkouts(ctx context.Context, cycleID uint, workouts []*workout.Workout) error
-		GetWorkoutByID(ctx context.Context, id uint) (*workout.Workout, error)
-		GetWorkoutsByWorkoutCycleID(ctx context.Context, workoutPlanID uint) ([]*workout.Workout, error)
-		UpdateWorkout(ctx context.Context, id uint, updates map[string]any) (*workout.Workout, error)
-		DeleteWorkout(ctx context.Context, cycleId, id uint) error
-		CompleteWorkout(ctx context.Context, cycleId, id uint, completed, skipped bool) (*workout.Workout, error)
-		MoveWorkout(ctx context.Context, workoutID, cycleID uint, direction string) error
+		CreateWorkout(ctx context.Context, userId, planId, cycleId uint, w *workout.Workout) error
+		CreateMultipleWorkouts(ctx context.Context, userId, planId, cycleId uint, workouts []*workout.Workout) error
+		GetWorkoutByID(ctx context.Context, userId, planId, cycleId, id uint) (*workout.Workout, error)
+		GetWorkoutsByWorkoutCycleID(ctx context.Context, userId, planId, cycleId uint) ([]*workout.Workout, error)
+		UpdateWorkout(ctx context.Context, userId, planId, cycleId, id uint, updates map[string]any) (*workout.Workout, error)
+		DeleteWorkout(ctx context.Context, userId, planId, cycleId, id uint) error
+		CompleteWorkout(ctx context.Context, userId, planId, cycleId, id uint, completed, skipped bool) (*workout.Workout, error)
+		MoveWorkout(ctx context.Context, userId, planId, cycleId, id uint, direction string) error
 
-		CreateWorkoutExercise(ctx context.Context, e *workout.WorkoutExercise) error
-		GetWorkoutExerciseByID(ctx context.Context, id uint) (*workout.WorkoutExercise, error)
-		GetWorkoutExercisesByWorkoutID(ctx context.Context, workoutID uint) ([]*workout.WorkoutExercise, error)
-		UpdateWorkoutExercise(ctx context.Context, id uint, updates map[string]any) (*workout.WorkoutExercise, error)
-		CompleteWorkoutExercise(ctx context.Context, workoutId, id uint, completed, skipped bool) (*workout.WorkoutExercise, error)
-		DeleteWorkoutExercise(ctx context.Context, workoutID, id uint) error
-		MoveWorkoutExercise(ctx context.Context, workoutID, exerciseID uint, direction string) error
-		ReplaceWorkoutExercise(ctx context.Context, workoutID, exerciseID, individualExerciseID uint, sets int64) (*workout.WorkoutExercise, error)
+		CreateWorkoutExercise(ctx context.Context, userId, planId, cycleId, workoutId uint, e *workout.WorkoutExercise) error
+		GetWorkoutExerciseByID(ctx context.Context, userId, planId, cycleId, workoutId, id uint) (*workout.WorkoutExercise, error)
+		GetWorkoutExercisesByWorkoutID(ctx context.Context, userId, planId, cycleId, workoutID uint) ([]*workout.WorkoutExercise, error)
+		UpdateWorkoutExercise(ctx context.Context, userId, planId, cycleId, workoutId, id uint, updates map[string]any) (*workout.WorkoutExercise, error)
+		CompleteWorkoutExercise(ctx context.Context, userId, planId, cycleId, workoutId, id uint, completed, skipped bool) (*workout.WorkoutExercise, error)
+		DeleteWorkoutExercise(ctx context.Context, userId, planId, cycleId, workoutID, id uint) error
+		MoveWorkoutExercise(ctx context.Context, userId, planId, cycleId, workoutID, id uint, direction string) error
+		ReplaceWorkoutExercise(ctx context.Context, userId, planId, cycleId, workoutID, exerciseID, individualExerciseID uint, setsQt int64) (*workout.WorkoutExercise, error)
 
-		CreateWorkoutSet(ctx context.Context, workoutId, weId uint, ws *workout.WorkoutSet) error
-		GetWorkoutSetByID(ctx context.Context, id uint) (*workout.WorkoutSet, error)
-		GetWorkoutSetsByWorkoutExerciseID(ctx context.Context, workoutExerciseID uint) ([]*workout.WorkoutSet, error)
-		UpdateWorkoutSet(ctx context.Context, workoutId, weId, id uint, updates map[string]any) (*workout.WorkoutSet, error)
-		CompleteWorkoutSet(ctx context.Context, workoutId, weId, id uint, completed, skipped bool) (*workout.WorkoutSet, error)
-		DeleteWorkoutSet(ctx context.Context, workoutId, weID, id uint) error
-		GetIncompleteSetsCount(ctx context.Context, workoutExerciseID uint) (int64, error)
-		MoveWorkoutSet(ctx context.Context, weID, setID uint, direction string) error
-		GetPreviousSets(ctx context.Context, individualExerciseID uint, qt int64) ([]*workout.WorkoutSet, error)
+		CreateWorkoutSet(ctx context.Context, userId, planId, cycleId, workoutId, weId uint, ws *workout.WorkoutSet) error
+		GetWorkoutSetByID(ctx context.Context, userId, planId, cycleId, workoutId, weId, id uint) (*workout.WorkoutSet, error)
+		GetWorkoutSetsByWorkoutExerciseID(ctx context.Context, userId, planId, cycleId, workoutId, weId uint) ([]*workout.WorkoutSet, error)
+		UpdateWorkoutSet(ctx context.Context, userId, planId, cycleId, workoutId, weId, id uint, updates map[string]any) (*workout.WorkoutSet, error)
+		CompleteWorkoutSet(ctx context.Context, userId, planId, cycleId, workoutId, weId, id uint, completed, skipped bool) (*workout.WorkoutSet, error)
+		DeleteWorkoutSet(ctx context.Context, userId, planId, cycleId, workoutId, weId, id uint) error
+		GetIncompleteSetsCount(ctx context.Context, userId, planId, cycleId, workoutId, weId uint) (int64, error)
+		MoveWorkoutSet(ctx context.Context, userId, planId, cycleId, workoutId, weId, id uint, direction string) error
+		GetPreviousSets(ctx context.Context, userId, individualExerciseID uint, qt int64) ([]*workout.WorkoutSet, error)
 
-		GetIndividualExercisesByUserID(ctx context.Context, userID uint) ([]*workout.IndividualExercise, error)
-		GetOrCreateIndividualExercise(ctx context.Context, individualExercise *workout.IndividualExercise) (*workout.IndividualExercise, error)
-		GetIndividualExerciseStats(ctx context.Context, userID uint) ([]*workout.IndividualExercise, error)
+		GetIndividualExercisesByUserID(ctx context.Context, userId uint) ([]*workout.IndividualExercise, error)
+		GetOrCreateIndividualExercise(ctx context.Context, userId uint, individualExercise *workout.IndividualExercise) (*workout.IndividualExercise, error)
+		GetIndividualExerciseStats(ctx context.Context, userId uint) ([]*workout.IndividualExercise, error)
 	}
 
 	ExerciseService interface {

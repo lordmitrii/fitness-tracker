@@ -14,17 +14,19 @@ type WorkoutCompleted struct {
 func (e WorkoutCompleted) EventType() string { return "WorkoutCompleted" }
 
 type Workout struct {
-	ID                uint   `gorm:"primaryKey"`
-	Name              string `gorm:"not null"`
-	WorkoutCycleID    uint   `gorm:"not null"`
-	Date              *time.Time
-	Index             int
+	ID             uint       `gorm:"primaryKey"`
+	Name           string     `gorm:"not null"`
+	WorkoutCycleID uint       `gorm:"not null;index:idx_workout_cycle__index,priority:1;index"`
+	Date           *time.Time // `gorm:"index"` // optional if sort/filter by date in the future
+	Index          int        `gorm:"index:idx_workout_cycle__index,priority:2"`
+
 	WorkoutExercises  []*WorkoutExercise `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	Completed         bool               `gorm:"default:false"`
 	Skipped           bool               `gorm:"default:false"`
-	PreviousWorkoutID *uint
-	CreatedAt         *time.Time
-	UpdatedAt         *time.Time
+	PreviousWorkoutID *uint              `gorm:"index"`
+
+	CreatedAt *time.Time
+	UpdatedAt *time.Time
 
 	domainevt.EventsMixin `gorm:"-"`
 }

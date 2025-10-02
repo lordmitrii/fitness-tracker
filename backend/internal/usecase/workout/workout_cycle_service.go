@@ -10,18 +10,18 @@ import (
 
 // Order of locks used:
 // 1. workout_cycles
-func (s *workoutServiceImpl) CreateWorkoutCycle(ctx context.Context, wc *workout.WorkoutCycle) error {
+func (s *workoutServiceImpl) CreateWorkoutCycle(ctx context.Context, userId, planId uint, wc *workout.WorkoutCycle) error {
 	return uow.Do(ctx, s.db, func(ctx context.Context) error {
-		return s.workoutCycleRepo.Create(ctx, wc)
+		return s.workoutCycleRepo.Create(ctx, userId, planId, wc)
 	})
 }
 
 // Order of locks used:
 // 1. workout_cycles
 // 2. workout_exercises
-func (s *workoutServiceImpl) GetWorkoutCycleByID(ctx context.Context, id uint) (*workout.WorkoutCycle, error) {
+func (s *workoutServiceImpl) GetWorkoutCycleByID(ctx context.Context, userId, planId, id uint) (*workout.WorkoutCycle, error) {
 	return uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.WorkoutCycle, error) {
-		cycle, err := s.workoutCycleRepo.GetByIDForUpdate(ctx, id)
+		cycle, err := s.workoutCycleRepo.GetByIDForUpdate(ctx, userId, planId, id)
 		if err != nil {
 			return nil, err
 		}
@@ -30,7 +30,7 @@ func (s *workoutServiceImpl) GetWorkoutCycleByID(ctx context.Context, id uint) (
 			return cycle, nil
 		}
 
-		prevCycle, err := s.workoutCycleRepo.GetByID(ctx, *cycle.PreviousCycleID)
+		prevCycle, err := s.workoutCycleRepo.GetByID(ctx, userId, planId, *cycle.PreviousCycleID)
 		if err != nil {
 			return nil, err
 		}
@@ -82,12 +82,12 @@ func (s *workoutServiceImpl) GetWorkoutCycleByID(ctx context.Context, id uint) (
 		}
 
 		// Save new workouts
-		if err := s.workoutRepo.BulkCreate(ctx, newWorkouts); err != nil {
+		if err := s.workoutRepo.BulkCreate(ctx, userId, planId, id, newWorkouts); err != nil {
 			return nil, err
 		}
 
 		// Reload cycle with workouts
-		cycle, err = s.workoutCycleRepo.GetByID(ctx, id)
+		cycle, err = s.workoutCycleRepo.GetByID(ctx, userId, planId, id)
 		if err != nil {
 			return nil, err
 		}
@@ -96,26 +96,26 @@ func (s *workoutServiceImpl) GetWorkoutCycleByID(ctx context.Context, id uint) (
 	})
 }
 
-func (s *workoutServiceImpl) GetWorkoutCyclesByWorkoutPlanID(ctx context.Context, workoutPlanID uint) ([]*workout.WorkoutCycle, error) {
-	return s.workoutCycleRepo.GetByWorkoutPlanID(ctx, workoutPlanID)
+func (s *workoutServiceImpl) GetWorkoutCyclesByWorkoutPlanID(ctx context.Context, userId, planId uint) ([]*workout.WorkoutCycle, error) {
+	return s.workoutCycleRepo.GetByWorkoutPlanID(ctx, userId, planId)
 }
 
-func (s *workoutServiceImpl) UpdateWorkoutCycle(ctx context.Context, id uint, updates map[string]any) (*workout.WorkoutCycle, error) {
+func (s *workoutServiceImpl) UpdateWorkoutCycle(ctx context.Context, userId, planId, id uint, updates map[string]any) (*workout.WorkoutCycle, error) {
 	return uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.WorkoutCycle, error) {
-		return s.workoutCycleRepo.UpdateReturning(ctx, id, updates)
+		return s.workoutCycleRepo.UpdateReturning(ctx, userId, planId, id, updates)
 	})
 }
 
 // Order of locks used:
 // 1. workout_plans
 // 2. workout_cycles
-func (s *workoutServiceImpl) CompleteWorkoutCycle(ctx context.Context, planId, id uint, completed, skipped bool) (*workout.WorkoutCycle, error) {
+func (s *workoutServiceImpl) CompleteWorkoutCycle(ctx context.Context, userId, planId, id uint, completed, skipped bool) (*workout.WorkoutCycle, error) {
 	return uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.WorkoutCycle, error) {
-		wp, err := s.workoutPlanRepo.GetByIDForUpdate(ctx, planId)
+		wp, err := s.workoutPlanRepo.GetByIDForUpdate(ctx, userId, planId)
 		if err != nil {
 			return nil, err
 		}
-		wc, err := s.workoutCycleRepo.UpdateReturning(ctx, id, map[string]any{"completed": completed, "skipped": skipped})
+		wc, err := s.workoutCycleRepo.UpdateReturning(ctx, userId, planId, id, map[string]any{"completed": completed, "skipped": skipped})
 		if err != nil {
 			return nil, err
 		}
@@ -135,17 +135,17 @@ func (s *workoutServiceImpl) CompleteWorkoutCycle(ctx context.Context, planId, i
 				PreviousCycleID: &wc.ID,
 			}
 
-			if err := s.workoutCycleRepo.Create(ctx, newCycle); err != nil {
+			if err := s.workoutCycleRepo.Create(ctx, userId, wp.ID, newCycle); err != nil {
 				return nil, err
 			}
 
-			if err := s.workoutCycleRepo.Update(ctx, wc.ID, map[string]any{"next_cycle_id": newCycle.ID}); err != nil {
+			if err := s.workoutCycleRepo.Update(ctx, userId, planId, wc.ID, map[string]any{"next_cycle_id": newCycle.ID}); err != nil {
 				return nil, err
 			}
 
 			wc.NextCycleID = &newCycle.ID
 
-			if err := s.workoutPlanRepo.Update(ctx, wp.ID, map[string]any{"current_cycle_id": newCycle.ID}); err != nil {
+			if err := s.workoutPlanRepo.Update(ctx, userId, wp.ID, map[string]any{"current_cycle_id": newCycle.ID}); err != nil {
 				return nil, err
 			}
 		}
@@ -157,13 +157,13 @@ func (s *workoutServiceImpl) CompleteWorkoutCycle(ctx context.Context, planId, i
 // Order of locks used:
 // 1. workout_plans
 // 2. workout_cycles
-func (s *workoutServiceImpl) DeleteWorkoutCycle(ctx context.Context, planId, id uint) error {
+func (s *workoutServiceImpl) DeleteWorkoutCycle(ctx context.Context, userId, planId, id uint) error {
 	return uow.Do(ctx, s.db, func(ctx context.Context) error {
-		plan, err := s.workoutPlanRepo.GetByIDForUpdate(ctx, planId); 
+		plan, err := s.workoutPlanRepo.GetByIDForUpdate(ctx, userId, planId);
 		if err != nil {
 			return err
 		}
-		cycle, err := s.workoutCycleRepo.GetByIDForUpdate(ctx, id)
+		cycle, err := s.workoutCycleRepo.GetByIDForUpdate(ctx, userId, planId, id)
 		if err != nil {
 			return err
 		}
@@ -182,16 +182,16 @@ func (s *workoutServiceImpl) DeleteWorkoutCycle(ctx context.Context, planId, id 
 
 		if hasNext {
 			// Bridge prev <--> next around the node being deleted.
-			if err := s.workoutCycleRepo.Update(ctx, prevID, map[string]any{"next_cycle_id": nextID}); err != nil {
+			if err := s.workoutCycleRepo.Update(ctx, userId, planId, prevID, map[string]any{"next_cycle_id": nextID}); err != nil {
 				return err
 			}
-			if err := s.workoutCycleRepo.Update(ctx, nextID, map[string]any{"previous_cycle_id": &prevID}); err != nil {
+			if err := s.workoutCycleRepo.Update(ctx, userId, planId, nextID, map[string]any{"previous_cycle_id": &prevID}); err != nil {
 				return err
 			}
 
 			// If deleting the current cycle, then current -> next.
 			if plan.CurrentCycleID != nil && *plan.CurrentCycleID == cycle.ID {
-				if err := s.workoutPlanRepo.Update(ctx, plan.ID, map[string]any{
+				if err := s.workoutPlanRepo.Update(ctx, userId, plan.ID, map[string]any{
 					"current_cycle_id": nextID,
 				}); err != nil {
 					return err
@@ -200,18 +200,18 @@ func (s *workoutServiceImpl) DeleteWorkoutCycle(ctx context.Context, planId, id 
 		} else {
 			// Tail deletion:
 			// Mark previous cycle incomplete
-			if err := s.workoutCycleRepo.Update(ctx, prevID, map[string]any{"completed": false}); err != nil {
+			if err := s.workoutCycleRepo.Update(ctx, userId, planId, prevID, map[string]any{"completed": false}); err != nil {
 				return err
 			}
 
 			// Detach prev.next
-			if err := s.workoutCycleRepo.Update(ctx, prevID, map[string]any{"next_cycle_id": nil}); err != nil {
+			if err := s.workoutCycleRepo.Update(ctx, userId, planId, prevID, map[string]any{"next_cycle_id": nil}); err != nil {
 				return err
 			}
 
 			// If current == deleted tail, move current back to prev.
 			if plan.CurrentCycleID != nil && *plan.CurrentCycleID == cycle.ID {
-				if err := s.workoutPlanRepo.Update(ctx, plan.ID, map[string]any{
+				if err := s.workoutPlanRepo.Update(ctx, userId, plan.ID, map[string]any{
 					"current_cycle_id": prevID,
 				}); err != nil {
 					return err
@@ -220,12 +220,12 @@ func (s *workoutServiceImpl) DeleteWorkoutCycle(ctx context.Context, planId, id 
 		}
 
 		// Delete the node.
-		return s.workoutCycleRepo.Delete(ctx, id)
+		return s.workoutCycleRepo.Delete(ctx, userId, planId, id)
 	})
 }
 
-func (s *workoutServiceImpl) GetCurrentWorkoutCycle(ctx context.Context, userID uint) (*workout.WorkoutCycle, error) {
-	plans, err := s.workoutPlanRepo.GetByUserID(ctx, userID)
+func (s *workoutServiceImpl) GetCurrentWorkoutCycle(ctx context.Context, userId uint) (*workout.WorkoutCycle, error) {
+	plans, err := s.workoutPlanRepo.GetByUserID(ctx, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -246,7 +246,7 @@ func (s *workoutServiceImpl) GetCurrentWorkoutCycle(ctx context.Context, userID 
 		return nil, nil
 	}
 
-	cycle, err := s.workoutCycleRepo.GetByID(ctx, *activePlan.CurrentCycleID)
+	cycle, err := s.workoutCycleRepo.GetByID(ctx, userId, activePlan.ID, *activePlan.CurrentCycleID)
 	if err != nil {
 		return nil, err
 	}

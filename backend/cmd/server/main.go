@@ -60,7 +60,9 @@ func main() {
 	if err := postgres.AutoMigrate(db); err != nil {
 		panic(err)
 	}
-
+	if err := postgres.AddPostgresIndexes(db, true); err != nil {
+		panic(err)
+	}
 	if err := postgres.SeedRBAC(db); err != nil {
 		panic(err)
 	}

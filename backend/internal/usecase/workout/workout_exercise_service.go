@@ -12,12 +12,12 @@ import (
 // 2. workout_exercises
 // 3. individual_exercises
 // 4. workout_sets
-func (s *workoutServiceImpl) CreateWorkoutExercise(ctx context.Context, e *workout.WorkoutExercise) error {
+func (s *workoutServiceImpl) CreateWorkoutExercise(ctx context.Context, userId, planId, cycleId, workoutId uint, e *workout.WorkoutExercise) error {
 	return uow.Do(ctx, s.db, func(ctx context.Context) error {
-		if err := s.workoutRepo.LockByIDForUpdate(ctx, e.WorkoutID); err != nil {
+		if err := s.workoutRepo.LockByIDForUpdate(ctx, userId, planId, cycleId, workoutId); err != nil {
 			return err
 		}
-		maxIndex, err := s.workoutExerciseRepo.GetMaxIndexByWorkoutID(ctx, e.WorkoutID)
+		maxIndex, err := s.workoutExerciseRepo.GetMaxIndexByWorkoutID(ctx, userId, planId, cycleId, workoutId)
 		if err != nil {
 			return err
 		}
@@ -25,7 +25,7 @@ func (s *workoutServiceImpl) CreateWorkoutExercise(ctx context.Context, e *worko
 		if e.Index <= 0 {
 			e.Index = maxIndex + 1
 		} else {
-			if err := s.workoutExerciseRepo.IncrementIndexesAfter(ctx, e.WorkoutID, e.Index); err != nil {
+			if err := s.workoutExerciseRepo.IncrementIndexesAfter(ctx, userId, planId, cycleId, workoutId, e.Index); err != nil {
 				return err
 			}
 		}
@@ -38,7 +38,7 @@ func (s *workoutServiceImpl) CreateWorkoutExercise(ctx context.Context, e *worko
 			return fmt.Errorf("sets quantity must not exceed 20")
 		}
 
-		prevSets, err := s.GetPreviousSets(ctx, e.IndividualExerciseID, e.SetsQt)
+		prevSets, err := s.GetPreviousSets(ctx, userId, e.IndividualExerciseID, e.SetsQt)
 		if err != nil {
 			return err
 		}
@@ -56,26 +56,26 @@ func (s *workoutServiceImpl) CreateWorkoutExercise(ctx context.Context, e *worko
 			e.WorkoutSets = append(e.WorkoutSets, set)
 		}
 
-		if err := s.workoutRepo.Update(ctx, e.WorkoutID, map[string]any{"completed": false}); err != nil {
+		if err := s.workoutRepo.Update(ctx, userId, planId, cycleId, e.WorkoutID, map[string]any{"completed": false}); err != nil {
 			return err
 		}
 
-		return s.workoutExerciseRepo.Create(ctx, e)
+		return s.workoutExerciseRepo.Create(ctx, userId, planId, cycleId, workoutId, e)
 	})
 }
 
-func (s *workoutServiceImpl) GetWorkoutExerciseByID(ctx context.Context, id uint) (*workout.WorkoutExercise, error) {
-	return s.workoutExerciseRepo.GetByID(ctx, id)
+func (s *workoutServiceImpl) GetWorkoutExerciseByID(ctx context.Context, userId, planId, cycleId, workoutId, id uint) (*workout.WorkoutExercise, error) {
+	return s.workoutExerciseRepo.GetByID(ctx, userId, planId, cycleId, workoutId, id)
 }
-func (s *workoutServiceImpl) GetWorkoutExercisesByWorkoutID(ctx context.Context, workoutID uint) ([]*workout.WorkoutExercise, error) {
-	return s.workoutExerciseRepo.GetByWorkoutID(ctx, workoutID)
+func (s *workoutServiceImpl) GetWorkoutExercisesByWorkoutID(ctx context.Context, userId, planId, cycleId, workoutId uint) ([]*workout.WorkoutExercise, error) {
+	return s.workoutExerciseRepo.GetByWorkoutID(ctx, userId, planId, cycleId, workoutId)
 }
 
 // Order of locks used:
 // 1. workout_exercises
-func (s *workoutServiceImpl) UpdateWorkoutExercise(ctx context.Context, id uint, updates map[string]any) (*workout.WorkoutExercise, error) {
+func (s *workoutServiceImpl) UpdateWorkoutExercise(ctx context.Context, userId, planId, cycleId, workoutId, id uint, updates map[string]any) (*workout.WorkoutExercise, error) {
 	return uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.WorkoutExercise, error) {
-		return s.workoutExerciseRepo.UpdateReturning(ctx, id, updates)
+		return s.workoutExerciseRepo.UpdateReturning(ctx, userId, planId, cycleId, workoutId, id, updates)
 	})
 }
 
@@ -83,12 +83,12 @@ func (s *workoutServiceImpl) UpdateWorkoutExercise(ctx context.Context, id uint,
 // 1. workouts
 // 2. workout_exercises
 // 3. workout_sets
-func (s *workoutServiceImpl) CompleteWorkoutExercise(ctx context.Context, workoutId, id uint, completed, skipped bool) (*workout.WorkoutExercise, error) {
+func (s *workoutServiceImpl) CompleteWorkoutExercise(ctx context.Context, userId, planId, cycleId, workoutId, id uint, completed, skipped bool) (*workout.WorkoutExercise, error) {
 	return uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.WorkoutExercise, error) {
-		if err := s.workoutRepo.LockByIDForUpdate(ctx, workoutId); err != nil {
+		if err := s.workoutRepo.LockByIDForUpdate(ctx, userId, planId, cycleId, workoutId); err != nil {
 			return nil, err
 		}
-		we, err := s.workoutExerciseRepo.UpdateReturning(ctx, id, map[string]any{"completed": completed, "skipped": skipped})
+		we, err := s.workoutExerciseRepo.UpdateReturning(ctx, userId, planId, cycleId, workoutId, id, map[string]any{"completed": completed, "skipped": skipped})
 		if err != nil {
 			return nil, err
 		}
@@ -96,19 +96,19 @@ func (s *workoutServiceImpl) CompleteWorkoutExercise(ctx context.Context, workou
 		if we.Skipped {
 			for _, set := range we.WorkoutSets {
 				if !set.Completed {
-					if err := s.workoutSetRepo.Update(ctx, set.ID, map[string]any{"skipped": true}); err != nil {
+					if err := s.workoutSetRepo.Update(ctx, userId, planId, cycleId, workoutId, id, set.ID, map[string]any{"skipped": true}); err != nil {
 						return nil, err
 					}
 				}
 			}
 		}
 
-		incompletedExercisesCount, err := s.workoutExerciseRepo.GetIncompleteExercisesCount(ctx, we.WorkoutID)
+		incompletedExercisesCount, err := s.workoutExerciseRepo.GetIncompleteExercisesCount(ctx, userId, planId, cycleId, we.WorkoutID)
 		if err != nil {
 			return nil, err
 		}
 
-		if err := s.workoutRepo.Update(ctx, workoutId, map[string]any{"completed": incompletedExercisesCount == 0}); err != nil {
+		if err := s.workoutRepo.Update(ctx, userId, planId, cycleId, workoutId, map[string]any{"completed": incompletedExercisesCount == 0}); err != nil {
 			return nil, err
 		}
 
@@ -119,13 +119,13 @@ func (s *workoutServiceImpl) CompleteWorkoutExercise(ctx context.Context, workou
 // Order of locks used:
 // 1. workouts
 // 2. workout_exercises
-func (s *workoutServiceImpl) MoveWorkoutExercise(ctx context.Context, workoutID, exerciseID uint, direction string) error {
+func (s *workoutServiceImpl) MoveWorkoutExercise(ctx context.Context, userId, planId, cycleId, workoutID, exerciseID uint, direction string) error {
 	return uow.DoIfNotInTx(ctx, s.db, func(ctx context.Context) error {
-		if err := s.workoutRepo.LockByIDForUpdate(ctx, workoutID); err != nil {
+		if err := s.workoutRepo.LockByIDForUpdate(ctx, userId, planId, cycleId, workoutID); err != nil {
 			return err
 		}
 
-		workoutExercise, err := s.workoutExerciseRepo.GetByIDForUpdate(ctx, exerciseID)
+		workoutExercise, err := s.workoutExerciseRepo.GetByIDForUpdate(ctx, userId, planId, cycleId, workoutID, exerciseID)
 		if err != nil {
 			return err
 		}
@@ -148,7 +148,7 @@ func (s *workoutServiceImpl) MoveWorkoutExercise(ctx context.Context, workoutID,
 			return fmt.Errorf("cannot move exercise further %s", direction)
 		}
 
-		if err := s.workoutExerciseRepo.SwapWorkoutExercisesByIndex(ctx, workoutID, workoutExercise.Index, neighborIndex); err != nil {
+		if err := s.workoutExerciseRepo.SwapWorkoutExercisesByIndex(ctx, userId, planId, cycleId, workoutID, workoutExercise.Index, neighborIndex); err != nil {
 			return err
 		}
 
@@ -161,17 +161,17 @@ func (s *workoutServiceImpl) MoveWorkoutExercise(ctx context.Context, workoutID,
 // 2. workout_exercises
 // 3. individual_exercises
 // 4. workout_sets
-func (s *workoutServiceImpl) ReplaceWorkoutExercise(ctx context.Context, workoutID, exerciseID, individualExerciseID uint, sets int64) (*workout.WorkoutExercise, error) {
+func (s *workoutServiceImpl) ReplaceWorkoutExercise(ctx context.Context, userId, planId, cycleId, workoutID, exerciseID, individualExerciseID uint, sets int64) (*workout.WorkoutExercise, error) {
 	return uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.WorkoutExercise, error) {
 		if sets <= 0 {
 			return nil, fmt.Errorf("sets quantity must be greater than 0")
 		}
 
-		if err := s.workoutRepo.LockByIDForUpdate(ctx, workoutID); err != nil {
+		if err := s.workoutRepo.LockByIDForUpdate(ctx, userId, planId, cycleId, workoutID); err != nil {
 			return nil, err
 		}
 
-		workoutExercise, err := s.workoutExerciseRepo.GetByIDForUpdate(ctx, exerciseID)
+		workoutExercise, err := s.workoutExerciseRepo.GetByIDForUpdate(ctx, userId, planId, cycleId, workoutID, exerciseID)
 		if err != nil {
 			return nil, err
 		}
@@ -180,7 +180,7 @@ func (s *workoutServiceImpl) ReplaceWorkoutExercise(ctx context.Context, workout
 			return nil, fmt.Errorf("workout exercise %d does not belong to workout %d", exerciseID, workoutID)
 		}
 
-		if err := s.workoutExerciseRepo.Delete(ctx, exerciseID); err != nil {
+		if err := s.workoutExerciseRepo.Delete(ctx, userId, planId, cycleId, workoutID, exerciseID); err != nil {
 			return nil, err
 		}
 
@@ -192,7 +192,7 @@ func (s *workoutServiceImpl) ReplaceWorkoutExercise(ctx context.Context, workout
 			WorkoutSets:          make([]*workout.WorkoutSet, 0, sets),
 		}
 
-		prevSets, err := s.GetPreviousSets(ctx, individualExerciseID, sets)
+		prevSets, err := s.GetPreviousSets(ctx, userId, individualExerciseID, sets)
 		if err != nil {
 			return nil, err
 		}
@@ -212,11 +212,11 @@ func (s *workoutServiceImpl) ReplaceWorkoutExercise(ctx context.Context, workout
 			newExercise.WorkoutSets = append(newExercise.WorkoutSets, set)
 		}
 
-		if err := s.workoutExerciseRepo.Create(ctx, newExercise); err != nil {
+		if err := s.workoutExerciseRepo.Create(ctx, userId, planId, cycleId, workoutID, newExercise); err != nil {
 			return nil, err
 		}
 
-		if err := s.workoutRepo.Update(ctx, workoutExercise.WorkoutID, map[string]any{"completed": false}); err != nil {
+		if err := s.workoutRepo.Update(ctx, userId, planId, cycleId, workoutExercise.WorkoutID, map[string]any{"completed": false}); err != nil {
 			return nil, err
 		}
 
@@ -227,12 +227,12 @@ func (s *workoutServiceImpl) ReplaceWorkoutExercise(ctx context.Context, workout
 // 1. workouts
 // 2. workout_exercises
 // 3. individual_exercises
-func (s *workoutServiceImpl) DeleteWorkoutExercise(ctx context.Context, workoutID, id uint) error {
+func (s *workoutServiceImpl) DeleteWorkoutExercise(ctx context.Context, userId, planId, cycleId, workoutID, id uint) error {
 	return uow.Do(ctx, s.db, func(ctx context.Context) error {
-		if err := s.workoutRepo.LockByIDForUpdate(ctx, workoutID); err != nil {
+		if err := s.workoutRepo.LockByIDForUpdate(ctx, userId, planId, cycleId, workoutID); err != nil {
 			return err
 		}
-		workoutExercise, err := s.workoutExerciseRepo.GetByIDForUpdate(ctx, id)
+		workoutExercise, err := s.workoutExerciseRepo.GetByIDForUpdate(ctx, userId, planId, cycleId, workoutID, id)
 		if err != nil {
 			return err
 		}
@@ -243,20 +243,20 @@ func (s *workoutServiceImpl) DeleteWorkoutExercise(ctx context.Context, workoutI
 			}
 		}
 
-		if err := s.workoutExerciseRepo.Delete(ctx, id); err != nil {
+		if err := s.workoutExerciseRepo.Delete(ctx, userId, planId, cycleId, workoutID, id); err != nil {
 			return err
 		}
 
-		if err := s.workoutExerciseRepo.DecrementIndexesAfter(ctx, workoutID, workoutExercise.Index); err != nil {
+		if err := s.workoutExerciseRepo.DecrementIndexesAfter(ctx, userId, planId, cycleId, workoutID, workoutExercise.Index); err != nil {
 			return err
 		}
 
-		incompletedExercisesCount, err := s.workoutExerciseRepo.GetIncompleteExercisesCount(ctx, workoutID)
+		incompletedExercisesCount, err := s.workoutExerciseRepo.GetIncompleteExercisesCount(ctx, userId, planId, cycleId, workoutID)
 		if err != nil {
 			return err
 		}
 
-		if err := s.workoutRepo.Update(ctx, workoutID, map[string]any{"completed": incompletedExercisesCount == 0}); err != nil {
+		if err := s.workoutRepo.Update(ctx, userId, planId, cycleId, workoutID, map[string]any{"completed": incompletedExercisesCount == 0}); err != nil {
 			return err
 		}
 

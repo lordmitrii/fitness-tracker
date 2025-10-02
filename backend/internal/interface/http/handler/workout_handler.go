@@ -91,7 +91,7 @@ func NewWorkoutHandler(r *gin.RouterGroup, svc usecase.WorkoutService) {
 // @Failure      500   {object}  dto.MessageResponse
 // @Router       /workout-plans [post]
 func (h *WorkoutHandler) CreateWorkoutPlan(c *gin.Context) {
-	userID, exists := currentUserID(c)
+	userId, exists := currentUserID(c)
 	if !exists {
 		return
 	}
@@ -104,11 +104,11 @@ func (h *WorkoutHandler) CreateWorkoutPlan(c *gin.Context) {
 
 	in := &workout.WorkoutPlan{
 		Name:   req.Name,
-		UserID: userID,
+		UserID: userId,
 		Active: req.Active,
 	}
 
-	wp, err := h.svc.CreateWorkoutPlan(c.Request.Context(), in)
+	wp, err := h.svc.CreateWorkoutPlan(c.Request.Context(), userId, in)
 	if err != nil || wp == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -129,12 +129,16 @@ func (h *WorkoutHandler) CreateWorkoutPlan(c *gin.Context) {
 // @Failure      404  {object}  dto.MessageResponse
 // @Router       /workout-plans/{id} [get]
 func (h *WorkoutHandler) GetWorkoutPlan(c *gin.Context) {
+	userId, exists := currentUserID(c)
+	if !exists {
+		return
+	}
 	id := parseUint(c.Param("id"), 0)
 	if id == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Plan ID is required"})
 		return
 	}
-	wp, err := h.svc.GetWorkoutPlanByID(c.Request.Context(), uint(id))
+	wp, err := h.svc.GetWorkoutPlanByID(c.Request.Context(), userId, id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
@@ -153,11 +157,11 @@ func (h *WorkoutHandler) GetWorkoutPlan(c *gin.Context) {
 // @Failure      404  {object}  dto.MessageResponse
 // @Router       /workout-plans [get]
 func (h *WorkoutHandler) GetWorkoutPlansByUserID(c *gin.Context) {
-	userID, exists := currentUserID(c)
+	userId, exists := currentUserID(c)
 	if !exists {
 		return
 	}
-	wps, err := h.svc.GetWorkoutPlansByUserID(c.Request.Context(), userID)
+	wps, err := h.svc.GetWorkoutPlansByUserID(c.Request.Context(), userId)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
@@ -185,6 +189,10 @@ func (h *WorkoutHandler) GetWorkoutPlansByUserID(c *gin.Context) {
 // @Failure      500   {object}  dto.MessageResponse
 // @Router       /workout-plans/{id} [patch]
 func (h *WorkoutHandler) UpdateWorkoutPlan(c *gin.Context) {
+	userId, exists := currentUserID(c)
+	if !exists {
+		return
+	}
 	id := parseUint(c.Param("id"), 0)
 	if id == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Plan ID is required"})
@@ -198,7 +206,7 @@ func (h *WorkoutHandler) UpdateWorkoutPlan(c *gin.Context) {
 
 	updates := dto.BuildUpdatesFromPatchDTO(&req)
 
-	wp, err := h.svc.UpdateWorkoutPlan(c.Request.Context(), id, updates)
+	wp, err := h.svc.UpdateWorkoutPlan(c.Request.Context(), userId, id, updates)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -219,12 +227,16 @@ func (h *WorkoutHandler) UpdateWorkoutPlan(c *gin.Context) {
 // @Failure      500  {object}  dto.MessageResponse
 // @Router       /workout-plans/{id} [delete]
 func (h *WorkoutHandler) DeleteWorkoutPlan(c *gin.Context) {
+	userId, exists := currentUserID(c)
+	if !exists {
+		return
+	}
 	id := parseUint(c.Param("id"), 0)
 	if id == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Plan ID is required"})
 		return
 	}
-	if err := h.svc.DeleteWorkoutPlan(c.Request.Context(), uint(id)); err != nil {
+	if err := h.svc.DeleteWorkoutPlan(c.Request.Context(), userId, id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -245,6 +257,10 @@ func (h *WorkoutHandler) DeleteWorkoutPlan(c *gin.Context) {
 // @Failure      500   {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/set-active [patch]
 func (h *WorkoutHandler) SetActiveWorkoutPlan(c *gin.Context) {
+	userId, exists := currentUserID(c)
+	if !exists {
+		return
+	}
 	id := parseUint(c.Param("id"), 0)
 	if id == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Plan ID is required"})
@@ -255,7 +271,7 @@ func (h *WorkoutHandler) SetActiveWorkoutPlan(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	wp, err := h.svc.SetActiveWorkoutPlan(c.Request.Context(), uint(id), req.Active)
+	wp, err := h.svc.SetActiveWorkoutPlan(c.Request.Context(), userId, id, req.Active)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -277,6 +293,10 @@ func (h *WorkoutHandler) SetActiveWorkoutPlan(c *gin.Context) {
 // @Failure      500   {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles [post]
 func (h *WorkoutHandler) AddWorkoutCycleToWorkoutPlan(c *gin.Context) {
+	userId, exists := currentUserID(c)
+	if !exists {
+		return
+	}
 	id := parseUint(c.Param("id"), 0)
 	if id == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Plan ID is required"})
@@ -292,10 +312,10 @@ func (h *WorkoutHandler) AddWorkoutCycleToWorkoutPlan(c *gin.Context) {
 	wc := &workout.WorkoutCycle{
 		Name:          req.Name,
 		WeekNumber:    req.WeekNumber,
-		WorkoutPlanID: uint(id),
+		WorkoutPlanID: id,
 	}
 
-	if err := h.svc.CreateWorkoutCycle(c.Request.Context(), wc); err != nil {
+	if err := h.svc.CreateWorkoutCycle(c.Request.Context(), userId, id, wc); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -315,13 +335,17 @@ func (h *WorkoutHandler) AddWorkoutCycleToWorkoutPlan(c *gin.Context) {
 // @Failure      404  {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles [get]
 func (h *WorkoutHandler) GetWorkoutCyclesByWorkoutPlanID(c *gin.Context) {
+	userId, exists := currentUserID(c)
+	if !exists {
+		return
+	}
 	id := parseUint(c.Param("id"), 0)
 	if id == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Plan ID is required"})
 		return
 	}
 
-	workouts, err := h.svc.GetWorkoutCyclesByWorkoutPlanID(c.Request.Context(), uint(id))
+	workouts, err := h.svc.GetWorkoutCyclesByWorkoutPlanID(c.Request.Context(), userId, id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
@@ -348,13 +372,18 @@ func (h *WorkoutHandler) GetWorkoutCyclesByWorkoutPlanID(c *gin.Context) {
 // @Failure      404  {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID} [get]
 func (h *WorkoutHandler) GetWorkoutCycleByID(c *gin.Context) {
+	userId, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+	planId := parseUint(c.Param("id"), 0)
 	id := parseUint(c.Param("cycleID"), 0)
-	if id == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Cycle ID is required"})
+	if planId == 0 || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 
-	workoutCycle, err := h.svc.GetWorkoutCycleByID(c.Request.Context(), uint(id))
+	workoutCycle, err := h.svc.GetWorkoutCycleByID(c.Request.Context(), userId, planId, id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
@@ -377,9 +406,14 @@ func (h *WorkoutHandler) GetWorkoutCycleByID(c *gin.Context) {
 // @Failure      500      {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID} [patch]
 func (h *WorkoutHandler) UpdateWorkoutCycle(c *gin.Context) {
+	userId, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+	planId := parseUint(c.Param("id"), 0)
 	id := parseUint(c.Param("cycleID"), 0)
-	if id == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Cycle ID is required"})
+	if planId == 0 || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 
@@ -391,7 +425,7 @@ func (h *WorkoutHandler) UpdateWorkoutCycle(c *gin.Context) {
 
 	updates := dto.BuildUpdatesFromPatchDTO(&req)
 
-	wc, err := h.svc.UpdateWorkoutCycle(c.Request.Context(), id, updates)
+	wc, err := h.svc.UpdateWorkoutCycle(c.Request.Context(), userId, planId, id, updates)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -399,6 +433,7 @@ func (h *WorkoutHandler) UpdateWorkoutCycle(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ToWorkoutCycleResponse(wc))
 }
+
 // DeleteWorkoutCycle godoc
 // @Summary      Delete cycle
 // @Tags         workout-cycles
@@ -412,18 +447,18 @@ func (h *WorkoutHandler) UpdateWorkoutCycle(c *gin.Context) {
 // @Failure      500  {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID} [delete]
 func (h *WorkoutHandler) DeleteWorkoutCycle(c *gin.Context) {
-	planId := parseUint(c.Param("id"), 0)
-	if planId == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Plan ID is required"})
+	userId, exists := currentUserID(c)
+	if !exists {
 		return
 	}
+	planId := parseUint(c.Param("id"), 0)
 	id := parseUint(c.Param("cycleID"), 0)
-	if id == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Cycle ID is required"})
+	if planId == 0 || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 
-	if err := h.svc.DeleteWorkoutCycle(c.Request.Context(), planId, id); err != nil {
+	if err := h.svc.DeleteWorkoutCycle(c.Request.Context(), userId, planId, id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -445,14 +480,14 @@ func (h *WorkoutHandler) DeleteWorkoutCycle(c *gin.Context) {
 // @Failure      500      {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID}/update-complete [patch]
 func (h *WorkoutHandler) CompleteWorkoutCycle(c *gin.Context) {
-	planId := parseUint(c.Param("id"), 0)
-	if planId == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Plan ID is required"})
+	userId, exists := currentUserID(c)
+	if !exists {
 		return
 	}
+	planId := parseUint(c.Param("id"), 0)
 	cycleID := parseUint(c.Param("cycleID"), 0)
-	if cycleID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Cycle ID is required"})
+	if planId == 0 || cycleID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 
@@ -462,7 +497,7 @@ func (h *WorkoutHandler) CompleteWorkoutCycle(c *gin.Context) {
 		return
 	}
 
-	wc, err := h.svc.CompleteWorkoutCycle(c.Request.Context(), planId, cycleID, req.Completed, req.Skipped)
+	wc, err := h.svc.CompleteWorkoutCycle(c.Request.Context(), userId, planId, cycleID, req.Completed, req.Skipped)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -487,9 +522,14 @@ func (h *WorkoutHandler) CompleteWorkoutCycle(c *gin.Context) {
 // @Failure      500      {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts [post]
 func (h *WorkoutHandler) AddWorkoutToWorkoutCycle(c *gin.Context) {
+	userId, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+	planId := parseUint(c.Param("id"), 0)
 	id := parseUint(c.Param("cycleID"), 0)
-	if id == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Cycle ID is required"})
+	if planId == 0 || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 
@@ -503,16 +543,17 @@ func (h *WorkoutHandler) AddWorkoutToWorkoutCycle(c *gin.Context) {
 		Name:           req.Name,
 		Date:           req.Date,
 		Index:          req.Index,
-		WorkoutCycleID: uint(id),
+		WorkoutCycleID: id,
 	}
 
-	if err := h.svc.CreateWorkout(c.Request.Context(), w); err != nil {
+	if err := h.svc.CreateWorkout(c.Request.Context(), userId, planId, id, w); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusCreated, dto.ToWorkoutResponse(w))
 }
+
 // GetWorkoutsByWorkoutCycleID godoc
 // @Summary      List workouts in a cycle
 // @Tags         workouts
@@ -526,13 +567,18 @@ func (h *WorkoutHandler) AddWorkoutToWorkoutCycle(c *gin.Context) {
 // @Failure      404      {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts [get]
 func (h *WorkoutHandler) GetWorkoutsByWorkoutCycleID(c *gin.Context) {
+	userId, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+	planId := parseUint(c.Param("id"), 0)
 	id := parseUint(c.Param("cycleID"), 0)
-	if id == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Cycle ID is required"})
+	if planId == 0 || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 
-	workouts, err := h.svc.GetWorkoutsByWorkoutCycleID(c.Request.Context(), uint(id))
+	workouts, err := h.svc.GetWorkoutsByWorkoutCycleID(c.Request.Context(), userId, planId, id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
@@ -561,9 +607,14 @@ func (h *WorkoutHandler) GetWorkoutsByWorkoutCycleID(c *gin.Context) {
 // @Failure      500      {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/create-multiple [post]
 func (h *WorkoutHandler) CreateMultipleWorkouts(c *gin.Context) {
+	userId, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+	planId := parseUint(c.Param("id"), 0)
 	id := parseUint(c.Param("cycleID"), 0)
-	if id == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Cycle ID is required"})
+	if planId == 0 || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 
@@ -579,7 +630,7 @@ func (h *WorkoutHandler) CreateMultipleWorkouts(c *gin.Context) {
 			Name:           r.Name,
 			Date:           r.Date,
 			Index:          r.Index,
-			WorkoutCycleID: uint(id),
+			WorkoutCycleID: id,
 		}
 		if len(r.WorkoutExercises) > 0 {
 			w.WorkoutExercises = make([]*workout.WorkoutExercise, 0, len(r.WorkoutExercises))
@@ -595,12 +646,13 @@ func (h *WorkoutHandler) CreateMultipleWorkouts(c *gin.Context) {
 		workouts = append(workouts, w)
 	}
 
-	if err := h.svc.CreateMultipleWorkouts(c.Request.Context(), uint(id), workouts); err != nil {
+	if err := h.svc.CreateMultipleWorkouts(c.Request.Context(), userId, planId, id, workouts); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusCreated, dto.MessageResponse{Message: "Workouts created successfully"})
 }
+
 // GetWorkoutByID godoc
 // @Summary      Get workout
 // @Tags         workouts
@@ -615,19 +667,26 @@ func (h *WorkoutHandler) CreateMultipleWorkouts(c *gin.Context) {
 // @Failure      404  {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID} [get]
 func (h *WorkoutHandler) GetWorkoutByID(c *gin.Context) {
+	userId, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+	planId := parseUint(c.Param("id"), 0)
+	cycleID := parseUint(c.Param("cycleID"), 0)
 	id := parseUint(c.Param("workoutID"), 0)
-	if id == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout ID is required"})
+	if planId == 0 || cycleID == 0 || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 
-	workout, err := h.svc.GetWorkoutByID(c.Request.Context(), uint(id))
+	workout, err := h.svc.GetWorkoutByID(c.Request.Context(), userId, planId, cycleID, id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}
 	c.JSON(http.StatusOK, dto.ToWorkoutResponse(workout))
 }
+
 // UpdateWorkout godoc
 // @Summary      Update workout
 // @Tags         workouts
@@ -644,9 +703,15 @@ func (h *WorkoutHandler) GetWorkoutByID(c *gin.Context) {
 // @Failure      500        {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID} [patch]
 func (h *WorkoutHandler) UpdateWorkout(c *gin.Context) {
+	userId, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+	planId := parseUint(c.Param("id"), 0)
+	cycleID := parseUint(c.Param("cycleID"), 0)
 	id := parseUint(c.Param("workoutID"), 0)
-	if id == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout ID is required"})
+	if planId == 0 || cycleID == 0 || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 
@@ -658,7 +723,7 @@ func (h *WorkoutHandler) UpdateWorkout(c *gin.Context) {
 
 	updates := dto.BuildUpdatesFromPatchDTO(&req)
 
-	w, err := h.svc.UpdateWorkout(c.Request.Context(), id, updates)
+	w, err := h.svc.UpdateWorkout(c.Request.Context(), userId, planId, cycleID, id, updates)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -666,6 +731,7 @@ func (h *WorkoutHandler) UpdateWorkout(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ToWorkoutResponse(w))
 }
+
 // DeleteWorkout godoc
 // @Summary      Delete workout
 // @Tags         workouts
@@ -680,19 +746,19 @@ func (h *WorkoutHandler) UpdateWorkout(c *gin.Context) {
 // @Failure      500  {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID} [delete]
 func (h *WorkoutHandler) DeleteWorkout(c *gin.Context) {
+	userId, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+	planId := parseUint(c.Param("id"), 0)
 	cycleID := parseUint(c.Param("cycleID"), 0)
-	if cycleID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Cycle ID is required"})
-		return
-	}
-
 	id := parseUint(c.Param("workoutID"), 0)
-	if id == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout ID is required"})
+	if planId == 0 || cycleID == 0 || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 
-	if err := h.svc.DeleteWorkout(c.Request.Context(), cycleID, id); err != nil {
+	if err := h.svc.DeleteWorkout(c.Request.Context(), userId, planId, cycleID, id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -715,15 +781,15 @@ func (h *WorkoutHandler) DeleteWorkout(c *gin.Context) {
 // @Failure      500        {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/update-complete [patch]
 func (h *WorkoutHandler) CompleteWorkout(c *gin.Context) {
-	id := parseUint(c.Param("workoutID"), 0)
-	if id == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout ID is required"})
+	userId, exists := currentUserID(c)
+	if !exists {
 		return
 	}
-
+	planId := parseUint(c.Param("id"), 0)
 	cycleID := parseUint(c.Param("cycleID"), 0)
-	if cycleID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Cycle ID is required"})
+	id := parseUint(c.Param("workoutID"), 0)
+	if planId == 0 || cycleID == 0 || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 
@@ -733,7 +799,7 @@ func (h *WorkoutHandler) CompleteWorkout(c *gin.Context) {
 		return
 	}
 
-	w, err := h.svc.CompleteWorkout(c.Request.Context(), cycleID, id, req.Completed, req.Skipped)
+	w, err := h.svc.CompleteWorkout(c.Request.Context(), userId, planId, cycleID, id, req.Completed, req.Skipped)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -741,6 +807,7 @@ func (h *WorkoutHandler) CompleteWorkout(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ToWorkoutResponse(w))
 }
+
 // MoveWorkout godoc
 // @Summary      Move workout position within cycle
 // @Tags         workouts
@@ -757,15 +824,15 @@ func (h *WorkoutHandler) CompleteWorkout(c *gin.Context) {
 // @Failure      500        {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/move [post]
 func (h *WorkoutHandler) MoveWorkout(c *gin.Context) {
-	id := parseUint(c.Param("workoutID"), 0)
-	if id == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout ID is required"})
+	userId, exists := currentUserID(c)
+	if !exists {
 		return
 	}
-
+	planId := parseUint(c.Param("id"), 0)
 	cycleID := parseUint(c.Param("cycleID"), 0)
-	if cycleID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Cycle ID is required"})
+	id := parseUint(c.Param("workoutID"), 0)
+	if planId == 0 || cycleID == 0 || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 
@@ -775,12 +842,13 @@ func (h *WorkoutHandler) MoveWorkout(c *gin.Context) {
 		return
 	}
 
-	if err := h.svc.MoveWorkout(c.Request.Context(), uint(id), uint(cycleID), req.Direction); err != nil {
+	if err := h.svc.MoveWorkout(c.Request.Context(), userId, planId, cycleID, id, req.Direction); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, dto.MessageResponse{Message: "Workout moved successfully"})
 }
+
 // AddWorkoutExerciseToWorkout godoc
 // @Summary      Add exercise to workout
 // @Tags         workout-exercises
@@ -797,9 +865,15 @@ func (h *WorkoutHandler) MoveWorkout(c *gin.Context) {
 // @Failure      500        {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises [post]
 func (h *WorkoutHandler) AddWorkoutExerciseToWorkout(c *gin.Context) {
+	userId, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+	planId := parseUint(c.Param("id"), 0)
+	cycleID := parseUint(c.Param("cycleID"), 0)
 	id := parseUint(c.Param("workoutID"), 0)
-	if id == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout ID is required"})
+	if planId == 0 || cycleID == 0 || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 
@@ -810,13 +884,13 @@ func (h *WorkoutHandler) AddWorkoutExerciseToWorkout(c *gin.Context) {
 	}
 
 	we := &workout.WorkoutExercise{
-		WorkoutID:            uint(id),
+		WorkoutID:            id,
 		IndividualExerciseID: req.IndividualExerciseID,
 		Index:                req.Index,
 		SetsQt:               req.SetsQt,
 	}
 
-	err := h.svc.CreateWorkoutExercise(c.Request.Context(), we)
+	err := h.svc.CreateWorkoutExercise(c.Request.Context(), userId, planId, cycleID, id, we)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -824,6 +898,7 @@ func (h *WorkoutHandler) AddWorkoutExerciseToWorkout(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, dto.ToWorkoutExerciseResponse(we))
 }
+
 // GetWorkoutExercisesByWorkoutID godoc
 // @Summary      List exercises in a workout
 // @Tags         workout-exercises
@@ -838,13 +913,19 @@ func (h *WorkoutHandler) AddWorkoutExerciseToWorkout(c *gin.Context) {
 // @Failure      404  {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises [get]
 func (h *WorkoutHandler) GetWorkoutExercisesByWorkoutID(c *gin.Context) {
+	userId, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+	planId := parseUint(c.Param("id"), 0)
+	cycleID := parseUint(c.Param("cycleID"), 0)
 	id := parseUint(c.Param("workoutID"), 0)
-	if id == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout ID is required"})
+	if planId == 0 || cycleID == 0 || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 
-	exercises, err := h.svc.GetWorkoutExercisesByWorkoutID(c.Request.Context(), uint(id))
+	exercises, err := h.svc.GetWorkoutExercisesByWorkoutID(c.Request.Context(), userId, planId, cycleID, id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
@@ -857,6 +938,7 @@ func (h *WorkoutHandler) GetWorkoutExercisesByWorkoutID(c *gin.Context) {
 
 	c.JSON(http.StatusOK, resp)
 }
+
 // GetWorkoutExerciseByID godoc
 // @Summary      Get workout exercise
 // @Tags         workout-exercises
@@ -872,19 +954,27 @@ func (h *WorkoutHandler) GetWorkoutExercisesByWorkoutID(c *gin.Context) {
 // @Failure      404  {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises/{weID} [get]
 func (h *WorkoutHandler) GetWorkoutExerciseByID(c *gin.Context) {
+	userId, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+	planId := parseUint(c.Param("id"), 0)
+	cycleID := parseUint(c.Param("cycleID"), 0)
+	workoutID := parseUint(c.Param("workoutID"), 0)
 	id := parseUint(c.Param("weID"), 0)
-	if id == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
+	if planId == 0 || cycleID == 0 || workoutID == 0 || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 
-	exercise, err := h.svc.GetWorkoutExerciseByID(c.Request.Context(), uint(id))
+	exercise, err := h.svc.GetWorkoutExerciseByID(c.Request.Context(), userId, planId, cycleID, workoutID, id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}
 	c.JSON(http.StatusOK, dto.ToWorkoutExerciseResponse(exercise))
 }
+
 // UpdateWorkoutExercise godoc
 // @Summary      Update workout exercise
 // @Tags         workout-exercises
@@ -902,9 +992,17 @@ func (h *WorkoutHandler) GetWorkoutExerciseByID(c *gin.Context) {
 // @Failure      500        {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises/{weID} [patch]
 func (h *WorkoutHandler) UpdateWorkoutExercise(c *gin.Context) {
+	userId, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+
+	planId := parseUint(c.Param("id"), 0)
+	cycleID := parseUint(c.Param("cycleID"), 0)
+	workoutID := parseUint(c.Param("workoutID"), 0)
 	id := parseUint(c.Param("weID"), 0)
-	if id == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
+	if planId == 0 || cycleID == 0 || workoutID == 0 || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 
@@ -916,7 +1014,7 @@ func (h *WorkoutHandler) UpdateWorkoutExercise(c *gin.Context) {
 
 	updates := dto.BuildUpdatesFromPatchDTO(&req)
 
-	we, err := h.svc.UpdateWorkoutExercise(c.Request.Context(), id, updates)
+	we, err := h.svc.UpdateWorkoutExercise(c.Request.Context(), userId, planId, cycleID, workoutID, id, updates)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -924,6 +1022,7 @@ func (h *WorkoutHandler) UpdateWorkoutExercise(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ToWorkoutExerciseResponse(we))
 }
+
 // CompleteWorkoutExercise godoc
 // @Summary      Mark workout exercise completed/skipped
 // @Tags         workout-exercises
@@ -941,14 +1040,16 @@ func (h *WorkoutHandler) UpdateWorkoutExercise(c *gin.Context) {
 // @Failure      500        {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises/{weID}/update-complete [patch]
 func (h *WorkoutHandler) CompleteWorkoutExercise(c *gin.Context) {
-	workoutID := parseUint(c.Param("workoutID"), 0)
-	if workoutID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout ID is required"})
+	userId, exists := currentUserID(c)
+	if !exists {
 		return
 	}
+	planId := parseUint(c.Param("id"), 0)
+	cycleID := parseUint(c.Param("cycleID"), 0)
+	workoutID := parseUint(c.Param("workoutID"), 0)
 	id := parseUint(c.Param("weID"), 0)
-	if id == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
+	if planId == 0 || cycleID == 0 || workoutID == 0 || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 	var req dto.WorkoutExerciseCompleteRequest
@@ -957,7 +1058,7 @@ func (h *WorkoutHandler) CompleteWorkoutExercise(c *gin.Context) {
 		return
 	}
 
-	we, err := h.svc.CompleteWorkoutExercise(c.Request.Context(), workoutID, id, req.Completed, req.Skipped)
+	we, err := h.svc.CompleteWorkoutExercise(c.Request.Context(), userId, planId, cycleID, workoutID, id, req.Completed, req.Skipped)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -965,6 +1066,7 @@ func (h *WorkoutHandler) CompleteWorkoutExercise(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ToWorkoutExerciseResponse(we))
 }
+
 // MoveWorkoutExercise godoc
 // @Summary      Move workout exercise position
 // @Tags         workout-exercises
@@ -982,14 +1084,16 @@ func (h *WorkoutHandler) CompleteWorkoutExercise(c *gin.Context) {
 // @Failure      500        {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises/{weID}/move [post]
 func (h *WorkoutHandler) MoveWorkoutExercise(c *gin.Context) {
-	id := parseUint(c.Param("workoutID"), 0)
-	if id == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout ID is required"})
+	userId, exists := currentUserID(c)
+	if !exists {
 		return
 	}
-	weID := parseUint(c.Param("weID"), 0)
-	if weID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
+	planId := parseUint(c.Param("id"), 0)
+	cycleId := parseUint(c.Param("cycleID"), 0)
+	workoutID := parseUint(c.Param("workoutID"), 0)
+	id := parseUint(c.Param("weID"), 0)
+	if planId == 0 || cycleId == 0 || workoutID == 0 || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 
@@ -999,13 +1103,14 @@ func (h *WorkoutHandler) MoveWorkoutExercise(c *gin.Context) {
 		return
 	}
 
-	if err := h.svc.MoveWorkoutExercise(c.Request.Context(), uint(id), uint(weID), req.Direction); err != nil {
+	if err := h.svc.MoveWorkoutExercise(c.Request.Context(), userId, planId, cycleId, workoutID, id, req.Direction); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, dto.MessageResponse{Message: "Exercise moved successfully"})
 }
+
 // ReplaceWorkoutExercise godoc
 // @Summary      Replace workout exercise
 // @Tags         workout-exercises
@@ -1023,14 +1128,17 @@ func (h *WorkoutHandler) MoveWorkoutExercise(c *gin.Context) {
 // @Failure      500        {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises/{weID}/replace [post]
 func (h *WorkoutHandler) ReplaceWorkoutExercise(c *gin.Context) {
-	id := parseUint(c.Param("workoutID"), 0)
-	if id == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout ID is required"})
+	userId, exists := currentUserID(c)
+	if !exists {
 		return
 	}
-	weID := parseUint(c.Param("weID"), 0)
-	if weID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
+
+	planId := parseUint(c.Param("id"), 0)
+	cycleId := parseUint(c.Param("cycleID"), 0)
+	workoutId := parseUint(c.Param("workoutID"), 0)
+	id := parseUint(c.Param("weID"), 0)
+	if planId == 0 || cycleId == 0 || workoutId == 0 || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 
@@ -1040,7 +1148,7 @@ func (h *WorkoutHandler) ReplaceWorkoutExercise(c *gin.Context) {
 		return
 	}
 
-	we, err := h.svc.ReplaceWorkoutExercise(c.Request.Context(), uint(id), uint(weID), req.IndividualExerciseID, req.SetsQt)
+	we, err := h.svc.ReplaceWorkoutExercise(c.Request.Context(), userId, planId, cycleId, workoutId, id, req.IndividualExerciseID, req.SetsQt)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -1048,6 +1156,7 @@ func (h *WorkoutHandler) ReplaceWorkoutExercise(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ToWorkoutExerciseResponse(we))
 }
+
 // DeleteWorkoutExercise godoc
 // @Summary      Delete workout exercise
 // @Tags         workout-exercises
@@ -1063,23 +1172,26 @@ func (h *WorkoutHandler) ReplaceWorkoutExercise(c *gin.Context) {
 // @Failure      500  {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises/{weID} [delete]
 func (h *WorkoutHandler) DeleteWorkoutExercise(c *gin.Context) {
-	workoutID := parseUint(c.Param("workoutID"), 0)
-	if workoutID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout ID is required"})
+	userId, exists := currentUserID(c)
+	if !exists {
 		return
 	}
+	planId := parseUint(c.Param("id"), 0)
+	cycleID := parseUint(c.Param("cycleID"), 0)
+	workoutID := parseUint(c.Param("workoutID"), 0)
 	id := parseUint(c.Param("weID"), 0)
-	if id == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
+	if planId == 0 || cycleID == 0 || workoutID == 0 || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 
-	if err := h.svc.DeleteWorkoutExercise(c.Request.Context(), workoutID, id); err != nil {
+	if err := h.svc.DeleteWorkoutExercise(c.Request.Context(), userId, planId, cycleID, workoutID, id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.Status(http.StatusNoContent)
 }
+
 // AddWorkoutSetToWorkoutExercise godoc
 // @Summary      Add set to workout exercise
 // @Tags         workout-sets
@@ -1097,14 +1209,16 @@ func (h *WorkoutHandler) DeleteWorkoutExercise(c *gin.Context) {
 // @Failure      500        {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises/{weID}/workout-sets [post]
 func (h *WorkoutHandler) AddWorkoutSetToWorkoutExercise(c *gin.Context) {
-	workoutID := parseUint(c.Param("workoutID"), 0)
-	if workoutID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout ID is required"})
+	userId, exists := currentUserID(c)
+	if !exists {
 		return
 	}
-	weID := parseUint(c.Param("weID"), 0)
-	if weID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
+	planId := parseUint(c.Param("id"), 0)
+	cycleID := parseUint(c.Param("cycleID"), 0)
+	workoutID := parseUint(c.Param("workoutID"), 0)
+	id := parseUint(c.Param("weID"), 0)
+	if planId == 0 || cycleID == 0 || workoutID == 0 || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 
@@ -1115,7 +1229,7 @@ func (h *WorkoutHandler) AddWorkoutSetToWorkoutExercise(c *gin.Context) {
 	}
 
 	ws := &workout.WorkoutSet{
-		WorkoutExerciseID: uint(weID),
+		WorkoutExerciseID: id,
 		Index:             req.Index,
 		Weight:            req.Weight,
 		Reps:              req.Reps,
@@ -1123,13 +1237,14 @@ func (h *WorkoutHandler) AddWorkoutSetToWorkoutExercise(c *gin.Context) {
 		PreviousReps:      req.PreviousReps,
 	}
 
-	if err := h.svc.CreateWorkoutSet(c.Request.Context(), workoutID, weID, ws); err != nil {
+	if err := h.svc.CreateWorkoutSet(c.Request.Context(), userId, planId, cycleID, workoutID, id, ws); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusCreated, dto.ToWorkoutSetResponse(ws))
 }
+
 // GetWorkoutSetsByWorkoutExerciseID godoc
 // @Summary      List sets of a workout exercise
 // @Tags         workout-sets
@@ -1145,13 +1260,20 @@ func (h *WorkoutHandler) AddWorkoutSetToWorkoutExercise(c *gin.Context) {
 // @Failure      404  {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises/{weID}/workout-sets [get]
 func (h *WorkoutHandler) GetWorkoutSetsByWorkoutExerciseID(c *gin.Context) {
-	weID := parseUint(c.Param("weID"), 0)
-	if weID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
+	userId, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+	planId := parseUint(c.Param("id"), 0)
+	cycleID := parseUint(c.Param("cycleID"), 0)
+	workoutID := parseUint(c.Param("workoutID"), 0)
+	id := parseUint(c.Param("weID"), 0)
+	if planId == 0 || cycleID == 0 || workoutID == 0 || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 
-	sets, err := h.svc.GetWorkoutSetsByWorkoutExerciseID(c.Request.Context(), uint(weID))
+	sets, err := h.svc.GetWorkoutSetsByWorkoutExerciseID(c.Request.Context(), userId, planId, cycleID, workoutID, id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
@@ -1163,6 +1285,7 @@ func (h *WorkoutHandler) GetWorkoutSetsByWorkoutExerciseID(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, resp)
 }
+
 // DeleteWorkoutSet godoc
 // @Summary      Delete a set
 // @Tags         workout-sets
@@ -1179,28 +1302,27 @@ func (h *WorkoutHandler) GetWorkoutSetsByWorkoutExerciseID(c *gin.Context) {
 // @Failure      500  {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises/{weID}/workout-sets/{setID} [delete]
 func (h *WorkoutHandler) DeleteWorkoutSet(c *gin.Context) {
+	userId, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+	planId := parseUint(c.Param("id"), 0)
+	cycleID := parseUint(c.Param("cycleID"), 0)
 	workoutID := parseUint(c.Param("workoutID"), 0)
-	if workoutID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout ID is required"})
-		return
-	}
 	weId := parseUint(c.Param("weID"), 0)
-	if weId == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
-		return
-	}
-	setID := parseUint(c.Param("setID"), 0)
-	if setID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Set ID is required"})
+	id := parseUint(c.Param("setID"), 0)
+	if planId == 0 || cycleID == 0 || workoutID == 0 || weId == 0 || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 
-	if err := h.svc.DeleteWorkoutSet(c.Request.Context(), workoutID, weId, setID); err != nil {
+	if err := h.svc.DeleteWorkoutSet(c.Request.Context(), userId, planId, cycleID, workoutID, weId, id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.Status(http.StatusNoContent)
 }
+
 // GetWorkoutSetByID godoc
 // @Summary      Get a set
 // @Tags         workout-sets
@@ -1217,13 +1339,21 @@ func (h *WorkoutHandler) DeleteWorkoutSet(c *gin.Context) {
 // @Failure      404  {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises/{weID}/workout-sets/{setID} [get]
 func (h *WorkoutHandler) GetWorkoutSetByID(c *gin.Context) {
-	setID := parseUint(c.Param("setID"), 0)
-	if setID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Set ID is required"})
+	userId, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+	planId := parseUint(c.Param("id"), 0)
+	cycleID := parseUint(c.Param("cycleID"), 0)
+	workoutID := parseUint(c.Param("workoutID"), 0)
+	weId := parseUint(c.Param("weID"), 0)
+	id := parseUint(c.Param("setID"), 0)
+	if planId == 0 || cycleID == 0 || workoutID == 0 || weId == 0 || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 
-	set, err := h.svc.GetWorkoutSetByID(c.Request.Context(), uint(setID))
+	set, err := h.svc.GetWorkoutSetByID(c.Request.Context(), userId, planId, cycleID, workoutID, weId, id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
@@ -1231,6 +1361,7 @@ func (h *WorkoutHandler) GetWorkoutSetByID(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ToWorkoutSetResponse(set))
 }
+
 // UpdateWorkoutSet godoc
 // @Summary      Update a set
 // @Tags         workout-sets
@@ -1249,19 +1380,17 @@ func (h *WorkoutHandler) GetWorkoutSetByID(c *gin.Context) {
 // @Failure      500        {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises/{weID}/workout-sets/{setID} [patch]
 func (h *WorkoutHandler) UpdateWorkoutSet(c *gin.Context) {
+	userId, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+	planId := parseUint(c.Param("id"), 0)
+	cycleID := parseUint(c.Param("cycleID"), 0)
 	workoutID := parseUint(c.Param("workoutID"), 0)
-	if workoutID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout ID is required"})
-		return
-	}
 	weId := parseUint(c.Param("weID"), 0)
-	if weId == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
-		return
-	}
 	id := parseUint(c.Param("setID"), 0)
-	if id == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Set ID is required"})
+	if planId == 0 || cycleID == 0 || workoutID == 0 || weId == 0 || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 
@@ -1273,7 +1402,7 @@ func (h *WorkoutHandler) UpdateWorkoutSet(c *gin.Context) {
 
 	updates := dto.BuildUpdatesFromPatchDTO(&req)
 
-	ws, err := h.svc.UpdateWorkoutSet(c.Request.Context(), workoutID, weId, id, updates)
+	ws, err := h.svc.UpdateWorkoutSet(c.Request.Context(), userId, planId, cycleID, workoutID, weId, id, updates)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -1281,6 +1410,7 @@ func (h *WorkoutHandler) UpdateWorkoutSet(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ToWorkoutSetResponse(ws))
 }
+
 // CompleteWorkoutSet godoc
 // @Summary      Mark set completed/skipped
 // @Tags         workout-sets
@@ -1299,19 +1429,17 @@ func (h *WorkoutHandler) UpdateWorkoutSet(c *gin.Context) {
 // @Failure      500        {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises/{weID}/workout-sets/{setID}/update-complete [patch]
 func (h *WorkoutHandler) CompleteWorkoutSet(c *gin.Context) {
+	userId, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+	planId := parseUint(c.Param("id"), 0)
+	cycleID := parseUint(c.Param("cycleID"), 0)
 	workoutID := parseUint(c.Param("workoutID"), 0)
-	if workoutID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout ID is required"})
-		return
-	}
 	weId := parseUint(c.Param("weID"), 0)
-	if weId == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
-		return
-	}
 	id := parseUint(c.Param("setID"), 0)
-	if id == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Set ID is required"})
+	if planId == 0 || cycleID == 0 || workoutID == 0 || weId == 0 || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 
@@ -1321,7 +1449,7 @@ func (h *WorkoutHandler) CompleteWorkoutSet(c *gin.Context) {
 		return
 	}
 
-	ws, err := h.svc.CompleteWorkoutSet(c.Request.Context(), workoutID, weId, id, req.Completed, req.Skipped)
+	ws, err := h.svc.CompleteWorkoutSet(c.Request.Context(), userId, planId, cycleID, workoutID, weId, id, req.Completed, req.Skipped)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -1329,6 +1457,7 @@ func (h *WorkoutHandler) CompleteWorkoutSet(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ToWorkoutSetResponse(ws))
 }
+
 // MoveWorkoutSet godoc
 // @Summary      Move set position
 // @Tags         workout-sets
@@ -1347,14 +1476,17 @@ func (h *WorkoutHandler) CompleteWorkoutSet(c *gin.Context) {
 // @Failure      500        {object}  dto.MessageResponse
 // @Router       /workout-plans/{id}/workout-cycles/{cycleID}/workouts/{workoutID}/workout-exercises/{weID}/workout-sets/{setID}/move [post]
 func (h *WorkoutHandler) MoveWorkoutSet(c *gin.Context) {
-	weID := parseUint(c.Param("weID"), 0)
-	if weID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Workout Exercise ID is required"})
+	userId, exists := currentUserID(c)
+	if !exists {
 		return
 	}
-	setID := parseUint(c.Param("setID"), 0)
-	if setID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Set ID is required"})
+	planId := parseUint(c.Param("id"), 0)
+	cycleId := parseUint(c.Param("cycleID"), 0)
+	workoutID := parseUint(c.Param("workoutID"), 0)
+	weID := parseUint(c.Param("weID"), 0)
+	id := parseUint(c.Param("setID"), 0)
+	if planId == 0 || cycleId == 0 || workoutID == 0 || weID == 0 || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
 		return
 	}
 
@@ -1364,7 +1496,7 @@ func (h *WorkoutHandler) MoveWorkoutSet(c *gin.Context) {
 		return
 	}
 
-	if err := h.svc.MoveWorkoutSet(c.Request.Context(), uint(weID), uint(setID), req.Direction); err != nil {
+	if err := h.svc.MoveWorkoutSet(c.Request.Context(), userId, planId, cycleId, workoutID, weID, id, req.Direction); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -1414,7 +1546,7 @@ func (h *WorkoutHandler) GetIndividualExercises(c *gin.Context) {
 // @Failure      500   {object}  dto.MessageResponse
 // @Router       /individual-exercises [post]
 func (h *WorkoutHandler) GetOrCreateIndividualExercise(c *gin.Context) {
-	userID, exists := currentUserID(c)
+	userId, exists := currentUserID(c)
 	if !exists {
 		return
 	}
@@ -1426,7 +1558,7 @@ func (h *WorkoutHandler) GetOrCreateIndividualExercise(c *gin.Context) {
 	}
 
 	d := &workout.IndividualExercise{
-		UserID:        userID,
+		UserID:        userId,
 		Name:          req.Name,
 		IsBodyweight:  req.IsBodyweight,
 		IsTimeBased:   req.IsTimeBased,
@@ -1434,7 +1566,7 @@ func (h *WorkoutHandler) GetOrCreateIndividualExercise(c *gin.Context) {
 		ExerciseID:    req.ExerciseID,
 	}
 
-	ie, err := h.svc.GetOrCreateIndividualExercise(c.Request.Context(), d)
+	ie, err := h.svc.GetOrCreateIndividualExercise(c.Request.Context(), userId, d)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -1470,6 +1602,7 @@ func (h *WorkoutHandler) GetIndividualExercisesStats(c *gin.Context) {
 
 	c.JSON(http.StatusOK, resp)
 }
+
 // GetCurrentWorkoutCycle godoc
 // @Summary      Get current workout cycle for user
 // @Tags         workout-cycles

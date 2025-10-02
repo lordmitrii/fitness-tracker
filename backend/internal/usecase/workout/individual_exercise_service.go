@@ -31,11 +31,11 @@ func (s *workoutServiceImpl) GetIndividualExercisesByUserID(ctx context.Context,
 //   "muscle_group_id": "",                      "muscle_group": "Chest",
 // }                                          }
 
-func (s *workoutServiceImpl) GetOrCreateIndividualExercise(ctx context.Context, individualExercise *workout.IndividualExercise) (*workout.IndividualExercise, error) {
+func (s *workoutServiceImpl) GetOrCreateIndividualExercise(ctx context.Context, userId uint, individualExercise *workout.IndividualExercise) (*workout.IndividualExercise, error) {
 	return uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.IndividualExercise, error) {
 		// Case 1 & 3: exerciseID is provided
 		if individualExercise.ExerciseID != nil {
-			existingIndividualExercise, err := s.individualExerciseRepo.GetByUserAndExerciseID(ctx, individualExercise.UserID, *individualExercise.ExerciseID)
+			existingIndividualExercise, err := s.individualExerciseRepo.GetByUserAndExerciseID(ctx, userId, *individualExercise.ExerciseID)
 			if err == nil {
 				// Case 1: Found existing individual exercise
 				return existingIndividualExercise, nil
@@ -81,8 +81,8 @@ func (s *workoutServiceImpl) GetOrCreateIndividualExercise(ctx context.Context, 
 	})
 }
 
-func (s *workoutServiceImpl) GetIndividualExerciseStats(ctx context.Context, userID uint) ([]*workout.IndividualExercise, error) {
-	individualExercise, err := s.individualExerciseRepo.GetByUserID(ctx, userID)
+func (s *workoutServiceImpl) GetIndividualExerciseStats(ctx context.Context, userId uint) ([]*workout.IndividualExercise, error) {
+	individualExercise, err := s.individualExerciseRepo.GetByUserID(ctx, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ func (s *workoutServiceImpl) GetIndividualExerciseStats(ctx context.Context, use
 	}
 
 	for _, ie := range individualExercise {
-		last5WorkoutExercises, err := s.workoutExerciseRepo.GetLast5ByIndividualExerciseID(ctx, ie.ID)
+		last5WorkoutExercises, err := s.workoutExerciseRepo.GetLast5ByIndividualExerciseID(ctx, userId, ie.ID)
 		if err != nil {
 			return nil, err
 		}

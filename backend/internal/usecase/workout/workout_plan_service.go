@@ -9,9 +9,9 @@ import (
 // Order of locks used:
 // 1. workout_plans
 // 2. workout_cycles
-func (s *workoutServiceImpl) CreateWorkoutPlan(ctx context.Context, in *workout.WorkoutPlan) (*workout.WorkoutPlan, error) {
+func (s *workoutServiceImpl) CreateWorkoutPlan(ctx context.Context, userId uint, in *workout.WorkoutPlan) (*workout.WorkoutPlan, error) {
 	return uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.WorkoutPlan, error) {
-		wp, err := s.workoutPlanRepo.CreateReturning(ctx, &workout.WorkoutPlan{
+		wp, err := s.workoutPlanRepo.CreateReturning(ctx, userId, &workout.WorkoutPlan{
 			Name:   in.Name,
 			UserID: in.UserID,
 			Active: false,
@@ -26,11 +26,11 @@ func (s *workoutServiceImpl) CreateWorkoutPlan(ctx context.Context, in *workout.
 			Name:          "Week #1",
 		}
 
-		if err := s.workoutCycleRepo.Create(ctx, firstCycle); err != nil {
+		if err := s.workoutCycleRepo.Create(ctx, userId, wp.ID, firstCycle); err != nil {
 			return nil, err
 		}
 
-		wp, err = s.workoutPlanRepo.UpdateReturning(ctx, wp.ID, map[string]any{
+		wp, err = s.workoutPlanRepo.UpdateReturning(ctx, userId, wp.ID, map[string]any{
 			"current_cycle_id": firstCycle.ID,
 		})
 		if err != nil {
@@ -41,7 +41,7 @@ func (s *workoutServiceImpl) CreateWorkoutPlan(ctx context.Context, in *workout.
 			if err := s.workoutPlanRepo.DeactivateOthers(ctx, wp.UserID, wp.ID); err != nil {
 				return nil, err
 			}
-			wp, err = s.workoutPlanRepo.UpdateReturning(ctx, wp.ID, map[string]any{
+			wp, err = s.workoutPlanRepo.UpdateReturning(ctx, userId, wp.ID, map[string]any{
 				"active": true,
 			})
 			if err != nil {
@@ -52,8 +52,8 @@ func (s *workoutServiceImpl) CreateWorkoutPlan(ctx context.Context, in *workout.
 	})
 }
 
-func (s *workoutServiceImpl) GetWorkoutPlanByID(ctx context.Context, id uint) (*workout.WorkoutPlan, error) {
-	return s.workoutPlanRepo.GetByID(ctx, id)
+func (s *workoutServiceImpl) GetWorkoutPlanByID(ctx context.Context, userId, id uint) (*workout.WorkoutPlan, error) {
+	return s.workoutPlanRepo.GetByID(ctx, userId, id)
 
 }
 
@@ -63,25 +63,25 @@ func (s *workoutServiceImpl) GetWorkoutPlansByUserID(ctx context.Context, userID
 
 // Order of locks used:
 // 1. workout_plans
-func (s *workoutServiceImpl) UpdateWorkoutPlan(ctx context.Context, id uint, updates map[string]any) (*workout.WorkoutPlan, error) {
+func (s *workoutServiceImpl) UpdateWorkoutPlan(ctx context.Context, userId, id uint, updates map[string]any) (*workout.WorkoutPlan, error) {
 	return uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.WorkoutPlan, error) {
-		return s.workoutPlanRepo.UpdateReturning(ctx, id, updates)
+		return s.workoutPlanRepo.UpdateReturning(ctx, userId, id, updates)
 	})
 }
 
 // Order of locks used:
 // 1. workout_plans
-func (s *workoutServiceImpl) DeleteWorkoutPlan(ctx context.Context, id uint) error {
+func (s *workoutServiceImpl) DeleteWorkoutPlan(ctx context.Context, userId, id uint) error {
 	return uow.Do(ctx, s.db, func(ctx context.Context) error {
-		return s.workoutPlanRepo.Delete(ctx, id)
+		return s.workoutPlanRepo.Delete(ctx, userId, id)
 	})
 }
 
 // Order of locks used:
 // 1. workout_plans
-func (s *workoutServiceImpl) SetActiveWorkoutPlan(ctx context.Context, id uint, active bool) (*workout.WorkoutPlan, error) {
+func (s *workoutServiceImpl) SetActiveWorkoutPlan(ctx context.Context, userId, id uint, active bool) (*workout.WorkoutPlan, error) {
 	return uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.WorkoutPlan, error) {
-		wp, err := s.workoutPlanRepo.GetByIDForUpdate(ctx, id)
+		wp, err := s.workoutPlanRepo.GetByIDForUpdate(ctx, userId, id)
 		if err != nil {
 			return nil, err
 		}
@@ -90,12 +90,12 @@ func (s *workoutServiceImpl) SetActiveWorkoutPlan(ctx context.Context, id uint, 
 			return wp, nil
 		}
 		if active {
-			if err := s.workoutPlanRepo.DeactivateOthers(ctx, wp.UserID, wp.ID); err != nil {
+			if err := s.workoutPlanRepo.DeactivateOthers(ctx, userId, wp.ID); err != nil {
 				return nil, err
 			}
 		}
 
-		return s.workoutPlanRepo.UpdateReturning(ctx, wp.ID, map[string]any{"active": active})
+		return s.workoutPlanRepo.UpdateReturning(ctx, userId, wp.ID, map[string]any{"active": active})
 	})
 }
 
