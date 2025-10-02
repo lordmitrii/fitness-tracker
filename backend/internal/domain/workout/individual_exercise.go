@@ -18,8 +18,12 @@ type IndividualExercise struct {
 	CurrentWeight int `gorm:"-"`
 	CurrentReps   int `gorm:"-"`
 
-	LastCompletedWorkoutExerciseID *uint
-	// LastCompletedWorkoutExercise   *WorkoutExercise `gorm:"foreignKey:LastCompletedWorkoutExerciseID;constraint:OnDelete:SET NULL,OnUpdate:CASCADE;"`
+	LastCompletedWorkoutExerciseID *uint 
+	// TODO: find a way to enable this without causing circular dependency
+	// Can't create the schema with this line because of circular dependency
+	// However this field is needed to create the relation in GORM so that LastCompletedWorkoutExerciseID 
+	// can get cascaded on delete of the referenced WorkoutExercise
+	// LastCompletedWorkoutExercise   *WorkoutExercise `gorm:"foreignKey:LastCompletedWorkoutExerciseID;constraint:OnDelete:SET NULL,OnUpdate:CASCADE;"` 
 
 	UserID uint      `gorm:"uniqueIndex:idx_name_user_id;not null"`
 	User   user.User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`

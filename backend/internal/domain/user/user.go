@@ -8,15 +8,14 @@ import (
 
 type User struct {
 	ID           uint   `gorm:"primaryKey"`
-	Username     string `gorm:"uniqueIndex; not null"` 
+	Username     string `gorm:"uniqueIndex;not null"`
 	Email        string `gorm:"uniqueIndex"`
 	PasswordHash string `gorm:"not null"`
 
 	Roles []rbac.Role `gorm:"many2many:user_roles"`
 
-	IsVerified bool `gorm:"default:false"`
-
-	LastSeenAt time.Time
+	IsVerified bool      `gorm:"default:false;index"`
+	LastSeenAt time.Time `gorm:"index"`
 	UpdatedAt  time.Time
 	CreatedAt  time.Time
 	DeletedAt  gorm.DeletedAt `gorm:"index"`

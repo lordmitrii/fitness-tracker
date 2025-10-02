@@ -64,7 +64,7 @@ const WorkoutExerciseRow = ({
     <div className="sm:rounded-2xl shadow-md bg-white sm:p-4 flex flex-col gap-4 sm:border sm:border-gray-100">
       <div>
         <div className="flex flex-row items-start sm:items-center justify-between gap-1">
-          <div className="font-medium text-body-blue">
+          <div className="font-medium text-body-blue" title={`${exercise.individual_exercise?.name ?? t("general.unknown")} (id: ${exercise.id})`}>
             {exercise.index}.{" "}
             {!!exercise.individual_exercise?.exercise?.slug
               ? t(`exercise.${exercise.individual_exercise.exercise.slug}`)

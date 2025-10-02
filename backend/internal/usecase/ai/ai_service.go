@@ -73,7 +73,7 @@ func (s *aiServiceImpl) AskWorkoutsQuestion(ctx context.Context, userID uint, qu
 		return s.openai.CallOpenAIChat(ctx, fullPrompt, previousResponseID, 256)
 	}
 
-	currentCycle, _ := s.workoutService.GetWorkoutCycleByID(ctx, *activePlan.CurrentCycleID)
+	currentCycle, _ := s.workoutService.GetWorkoutCycleByID(ctx, userID, activePlan.ID, *activePlan.CurrentCycleID)
 
 	processedCycle := BuildProcessedCycle(currentCycle)
 	cycleJson, _ := json.Marshal(processedCycle)

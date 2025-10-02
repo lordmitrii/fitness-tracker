@@ -288,7 +288,7 @@ const WorkoutSetRow = ({
   );
 
   return (
-    <div className="min-w-full grid grid-cols-[6dvw_minmax(20dvw,1fr)_minmax(20dvw,1fr)_minmax(0,6dvw)_1fr] sm:grid-cols-[36px_1fr_1fr_1fr_1fr_1fr] gap-4 items-center py-2">
+    <div title={`Set n${setItem.index} (id: ${setItem.id})`} className="min-w-full grid grid-cols-[6dvw_minmax(20dvw,1fr)_minmax(20dvw,1fr)_minmax(0,6dvw)_1fr] sm:grid-cols-[36px_1fr_1fr_1fr_1fr_1fr] gap-4 items-center py-2">
       <DropdownMenu
         dotsHidden={!isCurrentCycle}
         isLeft

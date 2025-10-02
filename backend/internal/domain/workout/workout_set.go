@@ -4,18 +4,18 @@ import "time"
 
 type WorkoutSet struct {
 	ID                uint `gorm:"primaryKey"`
-	WorkoutExerciseID uint
-	Index             int
+	WorkoutExerciseID uint `gorm:"index;index:idx_we__index,priority:1"`
+	Index             int  `gorm:"index:idx_we__index,priority:2"`
 
-	Completed bool `gorm:"default:false"`
-	Skipped   bool `gorm:"default:false"`
+	Completed bool `gorm:"default:false;index"` 
+	Skipped   bool `gorm:"default:false;index"`
 
 	Weight *int
-	Reps    *int
+	Reps   *int
 
 	PreviousWeight *int
-	PreviousReps    *int
+	PreviousReps   *int
 
-	CreatedAt *time.Time `example:"2010-10-01T10:00:00Z"`
-	UpdatedAt *time.Time `example:"2010-10-01T10:00:00Z"`
+	CreatedAt *time.Time
+	UpdatedAt *time.Time
 }

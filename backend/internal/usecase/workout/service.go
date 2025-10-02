@@ -2,7 +2,9 @@ package workout
 
 import (
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
+	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/eventbus"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
+	"gorm.io/gorm"
 )
 
 type workoutServiceImpl struct {
@@ -13,6 +15,9 @@ type workoutServiceImpl struct {
 	workoutSetRepo         workout.WorkoutSetRepository
 	individualExerciseRepo workout.IndividualExerciseRepository
 	exerciseRepo           workout.ExerciseRepository
+
+	db  *gorm.DB
+	bus eventbus.Bus
 }
 
 func NewWorkoutService(
@@ -23,6 +28,9 @@ func NewWorkoutService(
 	workoutSetRepo workout.WorkoutSetRepository,
 	individualExerciseRepo workout.IndividualExerciseRepository,
 	exerciseRepo workout.ExerciseRepository,
+
+	db *gorm.DB,
+	bus eventbus.Bus,
 ) usecase.WorkoutService {
 	return &workoutServiceImpl{
 		workoutPlanRepo:        workoutPlanRepo,
@@ -32,5 +40,7 @@ func NewWorkoutService(
 		workoutSetRepo:         workoutSetRepo,
 		individualExerciseRepo: individualExerciseRepo,
 		exerciseRepo:           exerciseRepo,
+		db:                     db,
+		bus:                    bus,
 	}
 }
