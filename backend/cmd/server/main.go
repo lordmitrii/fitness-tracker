@@ -60,7 +60,10 @@ func main() {
 	if err := postgres.AutoMigrate(db); err != nil {
 		panic(err)
 	}
-	if err := postgres.AddPostgresIndexes(db, true); err != nil {
+	if err := postgres.AddUserIndexes(db, true); err != nil {
+		panic(err)
+	}
+	if err := postgres.AddWorkoutIndex(db, true); err != nil {
 		panic(err)
 	}
 	if err := postgres.SeedRBAC(db); err != nil {
