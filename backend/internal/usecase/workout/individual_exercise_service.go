@@ -53,14 +53,14 @@ func (s *workoutServiceImpl) GetOrCreateIndividualExercise(ctx context.Context, 
 			// Set the name and muscle group from the exercise
 			individualExercise.Name = exercise.Name
 			individualExercise.MuscleGroupID = exercise.MuscleGroupID
-			if err := s.individualExerciseRepo.Create(ctx, individualExercise); err != nil {
+			if err := s.individualExerciseRepo.Create(ctx, userId, individualExercise); err != nil {
 				return nil, err
 			}
 			return individualExercise, nil
 		}
 
 		// Case 2 & 4: exerciseID is not provided (0)
-		existingIndividualExercise, err := s.individualExerciseRepo.GetByNameMuscleGroupAndUser(ctx, individualExercise.Name, individualExercise.MuscleGroupID, individualExercise.UserID)
+		existingIndividualExercise, err := s.individualExerciseRepo.GetByNameMuscleGroupAndUser(ctx, userId, individualExercise.Name, individualExercise.MuscleGroupID)
 		if err == nil {
 			// Case 2: Found existing individual exercise
 			return existingIndividualExercise, nil
@@ -74,7 +74,7 @@ func (s *workoutServiceImpl) GetOrCreateIndividualExercise(ctx context.Context, 
 		}
 
 		// Case 4: Not found, create a new individual exercise without linking it to an exercise
-		if err := s.individualExerciseRepo.Create(ctx, individualExercise); err != nil {
+		if err := s.individualExerciseRepo.Create(ctx, userId, individualExercise); err != nil {
 			return nil, err
 		}
 		return individualExercise, nil

@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"errors"
 
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
@@ -10,7 +11,6 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-// IndividualExerciseRepo implements workout.Repository using PostgreSQL.
 type IndividualExerciseRepo struct {
 	db *gorm.DB
 }
@@ -26,44 +26,82 @@ func (r *IndividualExerciseRepo) dbFrom(ctx context.Context) *gorm.DB {
 	return r.db.WithContext(ctx)
 }
 
-func (r *IndividualExerciseRepo) Create(ctx context.Context, pe *workout.IndividualExercise) error {
-	return r.dbFrom(ctx).Create(pe).Error
+func (r *IndividualExerciseRepo) Create(ctx context.Context, userId uint, ie *workout.IndividualExercise) error {
+	db := r.dbFrom(ctx)
+	ie.UserID = userId
+	return db.Create(ie).Error
 }
 
-func (r *IndividualExerciseRepo) GetByID(ctx context.Context, id uint) (*workout.IndividualExercise, error) {
-	var pe workout.IndividualExercise
-	if err := r.dbFrom(ctx).Preload("MuscleGroup").First(&pe, id).Error; err != nil {
+func (r *IndividualExerciseRepo) GetByID(ctx context.Context, userId, id uint) (*workout.IndividualExercise, error) {
+	db := r.dbFrom(ctx)
+
+	var ie workout.IndividualExercise
+	err := db.Model(&workout.IndividualExercise{}).
+		Where("id = ? AND user_id = ?", id, userId).
+		Preload("MuscleGroup").
+		Preload("Exercise").
+		First(&ie).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, custom_err.ErrIndividualExerciseNotFound
+		}
 		return nil, err
 	}
-	return &pe, nil
+	return &ie, nil
 }
 
-func (r *IndividualExerciseRepo) GetByUserID(ctx context.Context, userID uint) ([]*workout.IndividualExercise, error) {
-	var exercises []*workout.IndividualExercise
-	if err := r.dbFrom(ctx).Preload("MuscleGroup").Preload("Exercise").Where("user_id = ?", userID).Find(&exercises).Error; err != nil {
+func (r *IndividualExerciseRepo) GetByUserID(ctx context.Context, userId uint) ([]*workout.IndividualExercise, error) {
+	db := r.dbFrom(ctx)
+
+	var list []*workout.IndividualExercise
+	if err := db.
+		Where("user_id = ?", userId).
+		Preload("MuscleGroup").
+		Preload("Exercise").
+		Find(&list).Error; err != nil {
 		return nil, err
 	}
-	return exercises, nil
+	return list, nil
 }
 
-func (r *IndividualExerciseRepo) GetByUserAndExerciseID(ctx context.Context, userID, exerciseID uint) (*workout.IndividualExercise, error) {
-	var pe workout.IndividualExercise
-	if err := r.dbFrom(ctx).Preload("MuscleGroup").Preload("Exercise").Where("user_id = ? AND exercise_id = ?", userID, exerciseID).First(&pe).Error; err != nil {
+func (r *IndividualExerciseRepo) GetByUserAndExerciseID(ctx context.Context, userId, exerciseId uint) (*workout.IndividualExercise, error) {
+	db := r.dbFrom(ctx)
+
+	var ie workout.IndividualExercise
+	err := db.
+		Where("user_id = ? AND exercise_id = ?", userId, exerciseId).
+		Preload("MuscleGroup").
+		Preload("Exercise").
+		First(&ie).Error
+	if err != nil {
 		return nil, custom_err.ErrIndividualExerciseNotFound
 	}
-	return &pe, nil
+	return &ie, nil
 }
 
-func (r *IndividualExerciseRepo) GetByNameMuscleGroupAndUser(ctx context.Context, name string, muscleGroupID *uint, userID uint) (*workout.IndividualExercise, error) {
-	var pe workout.IndividualExercise
-	if err := r.dbFrom(ctx).Preload("MuscleGroup").Where("name = ? AND muscle_group_id = ? AND user_id = ?", name, muscleGroupID, userID).First(&pe).Error; err != nil {
+func (r *IndividualExerciseRepo) GetByNameMuscleGroupAndUser(ctx context.Context, userId uint, name string, muscleGroupID *uint) (*workout.IndividualExercise, error) {
+	db := r.dbFrom(ctx)
+
+	var ie workout.IndividualExercise
+	q := db.Where("name = ? AND user_id = ?", name, userId)
+	if muscleGroupID != nil {
+		q = q.Where("muscle_group_id = ?", *muscleGroupID)
+	}
+	err := q.Preload("MuscleGroup").
+		Preload("Exercise").
+		First(&ie).Error
+	if err != nil {
 		return nil, custom_err.ErrIndividualExerciseNotFound
 	}
-	return &pe, nil
+	return &ie, nil
 }
 
-func (r *IndividualExerciseRepo) Update(ctx context.Context, id uint, updates map[string]any) error {
-	res := r.dbFrom(ctx).Model(&workout.IndividualExercise{}).Where("id = ?", id).Updates(updates)
+func (r *IndividualExerciseRepo) Update(ctx context.Context, userId, id uint, updates map[string]any) error {
+	db := r.dbFrom(ctx)
+
+	res := db.Model(&workout.IndividualExercise{}).
+		Where("id = ? AND user_id = ?", id, userId).
+		Updates(updates)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -73,20 +111,42 @@ func (r *IndividualExerciseRepo) Update(ctx context.Context, id uint, updates ma
 	return nil
 }
 
-func (r *IndividualExerciseRepo) UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*workout.IndividualExercise, error) {
-	var pe workout.IndividualExercise
-	res := r.dbFrom(ctx).Model(&pe).Where("id = ?", id).Clauses(clause.Returning{}).Updates(updates)
+func (r *IndividualExerciseRepo) UpdateReturning(ctx context.Context, userId, id uint, updates map[string]any) (*workout.IndividualExercise, error) {
+	db := r.dbFrom(ctx)
+
+	var ie workout.IndividualExercise
+	res := db.Model(&ie).
+		Where("id = ? AND user_id = ?", id, userId).
+		Clauses(clause.Returning{}).
+		Updates(updates)
 	if res.Error != nil {
 		return nil, res.Error
 	}
 	if res.RowsAffected == 0 {
 		return nil, custom_err.ErrNotFound
 	}
-	return &pe, nil
+	return &ie, nil
 }
 
-func (r *IndividualExerciseRepo) Delete(ctx context.Context, id uint) error {
-	res := r.dbFrom(ctx).Delete(&workout.IndividualExercise{}, id)
+func (r *IndividualExerciseRepo) GetByIDForUpdate(ctx context.Context, userId, id uint) (*workout.IndividualExercise, error) {
+	db := r.dbFrom(ctx)
+
+	var ie workout.IndividualExercise
+	err := db.Model(&workout.IndividualExercise{}).
+		Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("id = ? AND user_id = ?", id, userId).
+		First(&ie).Error
+	if err != nil {
+		return nil, err
+	}
+	return &ie, nil
+}
+
+func (r *IndividualExerciseRepo) Delete(ctx context.Context, userId, id uint) error {
+	db := r.dbFrom(ctx)
+
+	res := db.Where("id = ? AND user_id = ?", id, userId).
+		Delete(&workout.IndividualExercise{})
 	if res.Error != nil {
 		return res.Error
 	}

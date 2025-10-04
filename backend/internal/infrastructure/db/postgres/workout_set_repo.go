@@ -27,20 +27,23 @@ func (r *WorkoutSetRepo) dbFrom(ctx context.Context) *gorm.DB {
 }
 
 func (r *WorkoutSetRepo) GetOnlyByWorkoutExerciseID(ctx context.Context, userId, workoutExerciseID uint) ([]*workout.WorkoutSet, error) {
-	db := r.dbFrom(ctx)
+  db := r.dbFrom(ctx)
+  chain := db.Table("workout_exercises AS we").
+    Select("1").
+    Joins("JOIN workouts w          ON w.id  = we.workout_id").
+    Joins("JOIN workout_cycles wc   ON wc.id = w.workout_cycle_id").
+    Joins("JOIN workout_plans  wp   ON wp.id = wc.workout_plan_id").
+    Where("we.id = ? AND wp.user_id = ?", workoutExerciseID, userId)
 
-	weID := workoutExerciseID
-	chain := SubqWorkoutExercises(db, userId, 0, 0, 0, &weID).Select("1")
-
-	var sets []*workout.WorkoutSet
-	err := db.Model(&workout.WorkoutSet{}).
-		Where("workout_sets.workout_exercise_id = ? AND EXISTS (?)", workoutExerciseID, chain).
-		Order("workout_sets.index ASC").
-		Find(&sets).Error
-	if err != nil {
-		return nil, err
-	}
-	return sets, nil
+  var sets []*workout.WorkoutSet
+  err := db.Model(&workout.WorkoutSet{}).
+    Where("workout_sets.workout_exercise_id = ? AND EXISTS (?)", workoutExerciseID, chain).
+    Order("workout_sets.index ASC").
+    Find(&sets).Error
+  if err != nil {
+    return nil, err
+  }
+  return sets, nil
 }
 
 func (r *WorkoutSetRepo) GetByWorkoutExerciseID(ctx context.Context, userId, planId, cycleId, workoutId, weId uint) ([]*workout.WorkoutSet, error) {

@@ -127,7 +127,7 @@ func (s *workoutServiceImpl) CompleteWorkoutSet(ctx context.Context, userId, pla
 			return nil, err
 		}
 
-		ie, err := s.individualExerciseRepo.GetByID(ctx, we.IndividualExerciseID)
+		ie, err := s.individualExerciseRepo.GetByID(ctx, userId, we.IndividualExerciseID)
 		if err != nil {
 			return nil, err
 		}
@@ -139,7 +139,7 @@ func (s *workoutServiceImpl) CompleteWorkoutSet(ctx context.Context, userId, pla
 		}
 
 		if ws.Completed {
-			if err := s.individualExerciseRepo.Update(ctx, ie.ID, map[string]any{"last_completed_workout_exercise_id": we.ID}); err != nil {
+			if err := s.individualExerciseRepo.Update(ctx, userId, ie.ID, map[string]any{"last_completed_workout_exercise_id": we.ID}); err != nil {
 				return nil, err
 			}
 		}
@@ -240,7 +240,7 @@ func (s *workoutServiceImpl) GetIncompleteSetsCount(ctx context.Context, userId,
 }
 
 func (s *workoutServiceImpl) GetPreviousSets(ctx context.Context, userId, individualExerciseID uint, qt int64) ([]*workout.WorkoutSet, error) {
-	ie, err := s.individualExerciseRepo.GetByID(ctx, individualExerciseID)
+	ie, err := s.individualExerciseRepo.GetByID(ctx, userId, individualExerciseID)
 	if err != nil {
 		return nil, err
 	}

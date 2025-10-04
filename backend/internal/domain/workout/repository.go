@@ -105,12 +105,13 @@ type MuscleGroupRepository interface {
 }
 
 type IndividualExerciseRepository interface {
-	Create(ctx context.Context, ie *IndividualExercise) error
-	GetByID(ctx context.Context, id uint) (*IndividualExercise, error)
-	GetByUserID(ctx context.Context, workoutPlanID uint) ([]*IndividualExercise, error)
-	GetByUserAndExerciseID(ctx context.Context, planID, exerciseID uint) (*IndividualExercise, error)
-	GetByNameMuscleGroupAndUser(ctx context.Context, name string, muscleGroupID *uint, userID uint) (*IndividualExercise, error)
-	Update(ctx context.Context, id uint, updates map[string]any) error
-	UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*IndividualExercise, error)
-	Delete(ctx context.Context, id uint) error
+	Create(ctx context.Context, userId uint, ie *IndividualExercise) error
+	GetByID(ctx context.Context, userId, id uint) (*IndividualExercise, error)
+	GetByIDForUpdate(ctx context.Context, userId, id uint) (*IndividualExercise, error)
+	GetByUserID(ctx context.Context, userId uint) ([]*IndividualExercise, error)
+	GetByUserAndExerciseID(ctx context.Context, userId, exerciseID uint) (*IndividualExercise, error)
+	GetByNameMuscleGroupAndUser(ctx context.Context, userId uint, name string, muscleGroupID *uint) (*IndividualExercise, error)
+	Update(ctx context.Context, userId, id uint, updates map[string]any) error
+	UpdateReturning(ctx context.Context, userId, id uint, updates map[string]any) (*IndividualExercise, error)
+	Delete(ctx context.Context, userId, id uint) error
 }
