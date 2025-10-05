@@ -2,13 +2,15 @@ package postgres
 
 import (
 	"fmt"
-	"github.com/lordmitrii/golang-web-gin/internal/domain/email"
-	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
-	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
-	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
-	"github.com/lordmitrii/golang-web-gin/internal/domain/translations"
-	"github.com/lordmitrii/golang-web-gin/internal/domain/versions"
 	"os"
+
+	"github.com/lordmitrii/golang-web-gin/internal/domain/email"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/events"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/rbac"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/translations"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/versions"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -37,6 +39,7 @@ func NewPostgresDB(dsn string) (*gorm.DB, error) {
 // AutoMigrate applies schema migrations for all models.
 func AutoMigrate(db *gorm.DB) error {
 	return db.AutoMigrate(
+		&events.HandlerLog{},
 		&versions.Version{},
 		&translations.Translation{},
 		&translations.MissingTranslation{},

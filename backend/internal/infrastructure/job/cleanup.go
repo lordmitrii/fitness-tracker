@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/lordmitrii/golang-web-gin/internal/domain/email"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/events"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 )
 
@@ -26,6 +27,7 @@ func (j *CleanupJob) Run(ctx context.Context, interval time.Duration) {
 	runOnce := func() {
 		j.CleanTokens(ctx)
 		j.CleanSoftDeletedUsers(ctx)
+		j.CleanOldHandlerLogs(ctx)
 	}
 
 	// Run immediately
@@ -92,5 +94,38 @@ func (j *CleanupJob) CleanSoftDeletedUsers(ctx context.Context) (int64, error) {
 		default:
 		}
 	}
+	return totalDeleted, nil
+}
+
+func (j *CleanupJob) CleanOldHandlerLogs(ctx context.Context) (int64, error) {
+	const batchSize = 1000
+	cutoff := time.Now().UTC().Add(-30 * 24 * time.Hour) // 30 days
+	var totalDeleted int64
+	
+	for {
+		res := j.db.WithContext(ctx).
+			Where("created_at < ?", cutoff).
+			Limit(batchSize).
+			Delete(&events.HandlerLog{})
+		if res.Error != nil {
+			return totalDeleted, res.Error
+		}
+		
+		if res.RowsAffected == 0 {
+			break
+		}
+		
+		totalDeleted += res.RowsAffected
+		log.Printf("Deleted %d old handler logs in batch (total: %d)\n", res.RowsAffected, totalDeleted)
+		
+		time.Sleep(100 * time.Millisecond)
+		
+		select {
+		case <-ctx.Done():
+			return totalDeleted, ctx.Err()
+		default:
+		}
+	}
+	
 	return totalDeleted, nil
 }

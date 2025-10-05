@@ -16,7 +16,8 @@
 package main
 
 import (
-	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
+	// "github.com/lordmitrii/golang-web-gin/internal/domain/workout"
+	"github.com/lordmitrii/golang-web-gin/internal/events"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/ai"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/email"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/eventbus"
@@ -127,14 +128,9 @@ func main() {
 	)
 
 	bus := eventbus.NewInproc()
-	bus.Subscribe("WorkoutCompleted", func(ctx context.Context, e any) error {
-		ev := e.(workout.WorkoutCompleted)
-		log.Printf("Workout %d completed at %v\n", ev.WorkoutID, ev.At)
-		return nil
-	})
 
 	var exerciseService usecase.ExerciseService = exercise.NewExerciseService(exerciseRepo, muscleGroupRepo, translator, translationRepo, versionRepo)
-	var workoutService usecase.WorkoutService = workout_usecase.NewWorkoutService(workoutPlanRepo, workoutCycleRepo, workoutRepo, workoutExerciseRepo, workoutSetRepo, individualExerciseRepo, exerciseRepo, db, bus)
+	var workoutService usecase.WorkoutService = workout_usecase.NewWorkoutService(profileRepo, workoutPlanRepo, workoutCycleRepo, workoutRepo, workoutExerciseRepo, workoutSetRepo, individualExerciseRepo, exerciseRepo, db, bus)
 	var userService usecase.UserService = user.NewUserService(userRepo, profileRepo, userConsentRepo, roleRepo, permissionRepo, userSettingsRepo)
 	var aiService usecase.AIService = ai_usecase.NewAIService(workoutService, userService, openai)
 	var emailService usecase.EmailService = email_usecase.NewEmailService(userRepo, roleRepo, emailSender, emailTokenRepo)
@@ -142,6 +138,17 @@ func main() {
 	var adminService usecase.AdminService = admin.NewAdminService(userRepo, roleRepo, emailService)
 	var translationService usecase.TranslationService = translations_usecase.NewTranslationService(translationRepo, missingTranslationRepo, versionRepo)
 	var versionsService usecase.VersionsService = versions.NewVersionsService(versionRepo)
+
+	events.RegisterAll(
+		context.Background(),
+		events.Deps{
+			DB:             db,
+			Bus:            bus,
+			WorkoutService: workoutService,
+			// AnalyticsSvc: analyticsSvc,
+			// BadgeSvc:     badgeSvc,
+		},
+	)
 
 	if os.Getenv("DEVELOPMENT_MODE") == "false" {
 		cleanupJob := job.NewCleanupJob(db)

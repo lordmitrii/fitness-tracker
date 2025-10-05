@@ -32,6 +32,7 @@ type WorkoutCycleRepository interface {
 }
 
 type WorkoutRepository interface {
+	GetOnlyByID(ctx context.Context, userId, id uint) (*Workout, error)
 	Create(ctx context.Context, userId, planId, cycleId uint, w *Workout) error
 	BulkCreate(ctx context.Context, userId, planId, cycleId uint, workouts []*Workout) error
 	GetByID(ctx context.Context, userId, planId, cycleId, id uint) (*Workout, error)

@@ -26,6 +26,24 @@ func (r *WorkoutRepo) dbFrom(ctx context.Context) *gorm.DB {
 	return r.db.WithContext(ctx)
 }
 
+func (r *WorkoutRepo) GetOnlyByID(ctx context.Context, userId, id uint) (*workout.Workout, error) {
+	db := r.dbFrom(ctx)
+	var w workout.Workout
+	err := db.Model(&workout.Workout{}).
+		Joins("JOIN workout_cycles wc ON wc.id = workouts.workout_cycle_id").
+		Joins("JOIN workout_plans  wp ON wp.id = wc.workout_plan_id").
+		Where("workouts.id = ? AND wp.user_id = ?", id, userId).
+		Preload("WorkoutExercises.WorkoutSets").
+		First(&w).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, custom_err.ErrNotFound
+		}
+		return nil, err
+	}
+	return &w, nil
+}
+
 func (r *WorkoutRepo) Create(ctx context.Context, userId, planId, cycleId uint, w *workout.Workout) error {
 	db := r.dbFrom(ctx)
 

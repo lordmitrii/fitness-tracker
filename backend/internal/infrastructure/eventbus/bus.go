@@ -2,31 +2,29 @@ package eventbus
 
 import "context"
 
-type Handler func(ctx context.Context, e any) error
+type Handler func(context.Context, any) error
 
 type Bus interface {
-	Subscribe(eventType string, h Handler)
-	Publish(ctx context.Context, events ...any) error
+	Subscribe(string, Handler)
+	Publish(context.Context, ...any) error
 }
-
 type inproc struct{ hs map[string][]Handler }
 
-func NewInproc() Bus { return &inproc{hs: map[string][]Handler{}} }
-
-func (b *inproc) Subscribe(eventType string, h Handler) {
-	b.hs[eventType] = append(b.hs[eventType], h)
+func NewInproc() Bus {
+	return &inproc{hs: map[string][]Handler{}}
 }
 
-func (b *inproc) Publish(ctx context.Context, events ...any) error {
-	for _, ev := range events {
+func (b *inproc) Subscribe(t string, h Handler) {
+	b.hs[t] = append(b.hs[t], h)
+}
+func (b *inproc) Publish(ctx context.Context, evs ...any) error {
+	for _, ev := range evs {
 		et, ok := ev.(interface{ EventType() string })
 		if !ok {
 			continue
 		}
-		hs := b.hs[et.EventType()]
-		for _, h := range hs {
+		for _, h := range b.hs[et.EventType()] {
 			if err := h(ctx, ev); err != nil {
-				// rn its fail fast, can add logging or something later
 				return err
 			}
 		}

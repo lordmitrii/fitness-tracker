@@ -3,6 +3,8 @@ package workout
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/uow"
 )
@@ -84,8 +86,11 @@ func (s *workoutServiceImpl) UpdateWorkoutExercise(ctx context.Context, userId, 
 // 2. workout_exercises
 // 3. workout_sets
 func (s *workoutServiceImpl) CompleteWorkoutExercise(ctx context.Context, userId, planId, cycleId, workoutId, id uint, completed, skipped bool) (*workout.WorkoutExercise, error) {
-	return uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.WorkoutExercise, error) {
-		if err := s.workoutRepo.LockByIDForUpdate(ctx, userId, planId, cycleId, workoutId); err != nil {
+	acc := &uow.EventAccumulator{}
+	now := time.Now()
+	res, err := uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.WorkoutExercise, error) {
+		workout, err := s.workoutRepo.GetByIDForUpdate(ctx, userId, planId, cycleId, workoutId)
+		if err != nil {
 			return nil, err
 		}
 		we, err := s.workoutExerciseRepo.UpdateReturning(ctx, userId, planId, cycleId, workoutId, id, map[string]any{"completed": completed, "skipped": skipped})
@@ -112,8 +117,27 @@ func (s *workoutServiceImpl) CompleteWorkoutExercise(ctx context.Context, userId
 			return nil, err
 		}
 
+		if incompletedExercisesCount == 0 {
+			workout.Complete(now, userId)
+		}
+
+		acc.Add(toAnySlice(workout.PendingEvents())...)
+		workout.ClearPendingEvents()
+
 		return we, nil
 	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if evs := acc.Drain(); len(evs) > 0 {
+		if err := s.bus.Publish(ctx, evs...); err != nil {
+			return nil, err
+		}
+	}
+
+	return res, nil
 }
 
 // Order of locks used:
@@ -223,13 +247,17 @@ func (s *workoutServiceImpl) ReplaceWorkoutExercise(ctx context.Context, userId,
 		return newExercise, nil
 	})
 }
+
 // Order of locks used:
 // 1. workouts
 // 2. workout_exercises
 // 3. individual_exercises
 func (s *workoutServiceImpl) DeleteWorkoutExercise(ctx context.Context, userId, planId, cycleId, workoutID, id uint) error {
-	return uow.Do(ctx, s.db, func(ctx context.Context) error {
-		if err := s.workoutRepo.LockByIDForUpdate(ctx, userId, planId, cycleId, workoutID); err != nil {
+	acc := &uow.EventAccumulator{}
+	now := time.Now()
+	err := uow.Do(ctx, s.db, func(ctx context.Context) error {
+		workout, err := s.workoutRepo.GetByIDForUpdate(ctx, userId, planId, cycleId, workoutID)
+		if err != nil {
 			return err
 		}
 		workoutExercise, err := s.workoutExerciseRepo.GetByIDForUpdate(ctx, userId, planId, cycleId, workoutID, id)
@@ -259,7 +287,25 @@ func (s *workoutServiceImpl) DeleteWorkoutExercise(ctx context.Context, userId, 
 		if err := s.workoutRepo.Update(ctx, userId, planId, cycleId, workoutID, map[string]any{"completed": incompletedExercisesCount == 0}); err != nil {
 			return err
 		}
+		if incompletedExercisesCount == 0 {
+			workout.Complete(now, userId)
+		}
+
+		acc.Add(toAnySlice(workout.PendingEvents())...)
+		workout.ClearPendingEvents()
 
 		return nil
 	})
+
+	if err != nil {
+		return err
+	}
+
+	if evs := acc.Drain(); len(evs) > 0 {
+		if err := s.bus.Publish(ctx, evs...); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

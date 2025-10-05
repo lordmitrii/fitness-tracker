@@ -3,6 +3,8 @@ package workout
 import (
 	"context"
 	"fmt"
+	"time"
+
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/uow"
@@ -91,10 +93,14 @@ func (s *workoutServiceImpl) UpdateWorkoutSet(ctx context.Context, userId, planI
 // 3. workout_sets
 // 4. individual_exercises
 func (s *workoutServiceImpl) CompleteWorkoutSet(ctx context.Context, userId, planId, cycleId, workoutId, weId, id uint, completed, skipped bool) (*workout.WorkoutSet, error) {
-	return uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.WorkoutSet, error) {
-		if err := s.workoutRepo.LockByIDForUpdate(ctx, userId, planId, cycleId, workoutId); err != nil {
+	acc := &uow.EventAccumulator{}
+	now := time.Now()
+	res, err := uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.WorkoutSet, error) {
+		workout, err := s.workoutRepo.GetByIDForUpdate(ctx, userId, planId, cycleId, workoutId)
+		if err != nil {
 			return nil, err
 		}
+
 		if err := s.workoutExerciseRepo.LockByIDForUpdate(ctx, userId, planId, cycleId, workoutId, weId); err != nil {
 			return nil, err
 		}
@@ -127,6 +133,10 @@ func (s *workoutServiceImpl) CompleteWorkoutSet(ctx context.Context, userId, pla
 			return nil, err
 		}
 
+		if incompletedExercisesCount-skippedExercisesCount == 0 {
+			workout.Complete(now, userId)
+		}
+
 		ie, err := s.individualExerciseRepo.GetByID(ctx, userId, we.IndividualExerciseID)
 		if err != nil {
 			return nil, err
@@ -144,8 +154,21 @@ func (s *workoutServiceImpl) CompleteWorkoutSet(ctx context.Context, userId, pla
 			}
 		}
 
+		acc.Add(toAnySlice(workout.PendingEvents())...)
+		workout.ClearPendingEvents()
+
 		return ws, nil
 	})
+	if err != nil {
+		return nil, err
+	}
+	if evs := acc.Drain(); len(evs) > 0 {
+		if err := s.bus.Publish(ctx, evs...); err != nil {
+			return nil, err
+		}
+	}
+
+	return res, nil
 }
 
 // Order of locks used:
@@ -193,8 +216,11 @@ func (s *workoutServiceImpl) MoveWorkoutSet(ctx context.Context, userId, planId,
 // 2. workout_exercises
 // 3. workout_sets
 func (s *workoutServiceImpl) DeleteWorkoutSet(ctx context.Context, userId, planId, cycleId, workoutId, weId, id uint) error {
-	return uow.Do(ctx, s.db, func(ctx context.Context) error {
-		if err := s.workoutRepo.LockByIDForUpdate(ctx, userId, planId, cycleId, workoutId); err != nil {
+	acc := &uow.EventAccumulator{}
+	now := time.Now()
+	err := uow.Do(ctx, s.db, func(ctx context.Context) error {
+		workout, err := s.workoutRepo.GetByIDForUpdate(ctx, userId, planId, cycleId, workoutId)
+		if err != nil {
 			return err
 		}
 		if err := s.workoutExerciseRepo.LockByIDForUpdate(ctx, userId, planId, cycleId, workoutId, weId); err != nil {
@@ -230,9 +256,25 @@ func (s *workoutServiceImpl) DeleteWorkoutSet(ctx context.Context, userId, planI
 		if err := s.workoutRepo.Update(ctx, userId, planId, cycleId, workoutId, map[string]any{"completed": incompletedExercisesCount == 0}); err != nil {
 			return err
 		}
+		if incompletedExercisesCount == 0 {
+			workout.Complete(now, userId)
+		}
+
+		acc.Add(toAnySlice(workout.PendingEvents())...)
+		workout.ClearPendingEvents()
 
 		return nil
 	})
+	if err != nil {
+		return err
+	}
+	if evs := acc.Drain(); len(evs) > 0 {
+		if err := s.bus.Publish(ctx, evs...); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s *workoutServiceImpl) GetIncompleteSetsCount(ctx context.Context, userId, planId, cycleId, workoutId, weId uint) (int64, error) {

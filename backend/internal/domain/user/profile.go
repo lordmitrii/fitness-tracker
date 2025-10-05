@@ -4,6 +4,11 @@ import (
 	"time"
 )
 
+const (
+	SexMale   = "male"
+	SexFemale = "female"
+)
+
 type Profile struct {
 	ID     uint `gorm:"primaryKey"`
 	UserID uint `gorm:"uniqueIndex;not null"`

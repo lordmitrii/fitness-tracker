@@ -3,7 +3,11 @@ package workout
 import (
 	"context"
 	"fmt"
+	"math"
+	"strings"
+	"time"
 
+	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/uow"
 )
@@ -123,15 +127,28 @@ func (s *workoutServiceImpl) DeleteWorkout(ctx context.Context, userId, planId, 
 // 2. workouts
 // 3. workout_exercises
 func (s *workoutServiceImpl) CompleteWorkout(ctx context.Context, userId, planId, cycleId, id uint, completed, skipped bool) (*workout.Workout, error) {
-	return uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.Workout, error) {
+	acc := &uow.EventAccumulator{}
+	now := time.Now()
+	res, err := uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.Workout, error) {
 		if err := s.workoutCycleRepo.LockByIDForUpdate(ctx, userId, planId, cycleId); err != nil {
 			return nil, err
 		}
 
-		w, err := s.workoutRepo.UpdateReturning(ctx, userId, planId, cycleId, id, map[string]any{
-			"completed": completed, "skipped": skipped,
-		})
+		w, err := s.workoutRepo.GetByID(ctx, userId, planId, cycleId, id)
 		if err != nil {
+			return nil, err
+		}
+
+		switch {
+		case completed:
+			w.Complete(now, userId)
+		case skipped:
+			w.MarkSkipped()
+		default:
+			// do nothing
+		}
+
+		if err := s.workoutRepo.Update(ctx, userId, planId, cycleId, id, map[string]any{"completed": w.Completed, "skipped": w.Skipped}); err != nil {
 			return nil, err
 		}
 
@@ -144,8 +161,28 @@ func (s *workoutServiceImpl) CompleteWorkout(ctx context.Context, userId, planId
 				}
 			}
 		}
+
+		acc.Add(toAnySlice(w.PendingEvents())...)
+		w.ClearPendingEvents()
+
+		w, err = s.workoutRepo.GetByID(ctx, userId, planId, cycleId, id)
+		if err != nil {
+			return nil, err
+		}
+
 		return w, nil
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	if evs := acc.Drain(); len(evs) > 0 {
+		if err := s.bus.Publish(ctx, evs...); err != nil {
+			return nil, err
+		}
+	}
+
+	return res, nil
 }
 
 // Order of locks used:
@@ -187,3 +224,68 @@ func (s *workoutServiceImpl) MoveWorkout(ctx context.Context, userId, planId, cy
 		return nil
 	})
 }
+
+func (s *workoutServiceImpl) CalculateWorkoutSummary(ctx context.Context, userID, workoutID uint) error {
+	err := uow.DoIfNotInTx(ctx, s.db, func(ctx context.Context) error {
+		profile, err := s.profileRepo.GetByUserID(ctx, userID)
+		if err != nil && err != custom_err.ErrProfileNotFound {
+			return err
+		}
+		// fallback defaults
+		var (
+			userWeightKg float64 = 70
+			userAge      int     = 30
+			userSex      string  = ""
+		)
+		if profile != nil {
+			if profile.Weight > 0 {
+				userWeightKg = float64(profile.Weight) / 1000.0
+			}
+			userAge = profile.Age
+			userSex = strings.ToLower(profile.Sex)
+		}
+
+		w, err := s.workoutRepo.GetOnlyByID(ctx, userID, workoutID)
+		if err != nil {
+			return err
+		}
+		var totalCalories, totalActiveMin, totalRestMin float64
+
+		for _, we := range w.WorkoutExercises {
+			if we == nil {
+				continue
+			}
+			ie, err := s.individualExerciseRepo.GetByID(ctx, userID, we.IndividualExerciseID)
+			if err != nil {
+				if err == custom_err.ErrNotFound {
+					continue
+				}
+				return err
+			}
+
+			exCal, _, exActiveMin, exRestMin := s.estimateExerciseEnergy(ie, we, userWeightKg)
+			for _, set := range we.WorkoutSets {
+				if set == nil {
+					continue
+				}
+			}
+
+			totalCalories += exCal
+			totalActiveMin += exActiveMin
+			totalRestMin += exRestMin
+		}
+
+		totalCalories = adjustCaloriesForUser(totalCalories, userAge, userSex)
+		caloriesRounded := math.Round(totalCalories*10) / 10.0
+		totalModeledMin := totalActiveMin + totalRestMin
+
+		fmt.Printf("[DEBUG] Estimated calories for workout #%d: %.1f kcal (active %.1f min, rest %.1f min, total ~%.1f min)\n", workoutID, caloriesRounded, totalActiveMin, totalRestMin, totalModeledMin)
+
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+

@@ -38,6 +38,7 @@ type (
 		DeleteWorkout(ctx context.Context, userId, planId, cycleId, id uint) error
 		CompleteWorkout(ctx context.Context, userId, planId, cycleId, id uint, completed, skipped bool) (*workout.Workout, error)
 		MoveWorkout(ctx context.Context, userId, planId, cycleId, id uint, direction string) error
+		CalculateWorkoutSummary(ctx context.Context, userId, workoutID uint) error
 
 		CreateWorkoutExercise(ctx context.Context, userId, planId, cycleId, workoutId uint, e *workout.WorkoutExercise) error
 		GetWorkoutExerciseByID(ctx context.Context, userId, planId, cycleId, workoutId, id uint) (*workout.WorkoutExercise, error)
