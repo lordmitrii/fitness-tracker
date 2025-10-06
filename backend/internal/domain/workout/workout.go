@@ -21,6 +21,10 @@ type Workout struct {
 	CreatedAt *time.Time
 	UpdatedAt *time.Time
 
+	EstimatedCalories float64  `gorm:"default:0"` // in kcal
+	EstimatedActiveMin float64 `gorm:"default:0"` // in minutes
+	EstimatedRestMin  float64  `gorm:"default:0"` // in minutes
+
 	domainevt.EventsMixin `gorm:"-"`
 }
 

@@ -44,6 +44,24 @@ func (r *WorkoutRepo) GetOnlyByID(ctx context.Context, userId, id uint) (*workou
 	return &w, nil
 }
 
+func (r *WorkoutRepo) UpdateOnlyById(ctx context.Context, userId, id uint, updates map[string]any) error {
+	db := r.dbFrom(ctx)
+	q := db.Table("workout_cycles AS wc").
+		Select("wc.id").
+		Joins("JOIN workout_plans AS wp ON wp.id = wc.workout_plan_id").
+		Where("wp.user_id = ?", userId)
+	res := db.Model(&workout.Workout{}).
+		Where("id = ? AND workout_cycle_id IN (?)", id, q).
+		Updates(updates)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return custom_err.ErrNotFound
+	}
+	return nil
+}
+
 func (r *WorkoutRepo) Create(ctx context.Context, userId, planId, cycleId uint, w *workout.Workout) error {
 	db := r.dbFrom(ctx)
 

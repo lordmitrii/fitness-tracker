@@ -36,7 +36,12 @@ func (h *Handlers) onWorkoutCompleted(ctx context.Context, e any) error {
 			if h.workout == nil {
 				return nil
 			}
-			h.workout.CalculateWorkoutSummary(ctx, ev.UserID, ev.WorkoutID) // suppress error
+			// Do something here
+			// E.g.
+			// err := h.workout.CalculateWorkoutSummary(ctx, ev.UserID, ev.WorkoutID)
+			// if err != nil {
+			// 	return err
+			// }
 			return nil
 		})
 }

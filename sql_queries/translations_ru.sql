@@ -155,6 +155,7 @@ VALUES
 ('translation', 'ru', 'workout_plan_single.validation.weight_required','Вес обязателен.', NOW(), NOW()),
 ('translation', 'ru', 'workout_plan_single.validation.weight_number','Вес должен быть числом.', NOW(), NOW()),
 ('translation', 'ru', 'workout_plan_single.validation.weight_range','Вес должен быть от {{min}} до {{max}} {{unit}}.', NOW(), NOW()),
+('translation', 'ru', 'workout_plan_single.estimated_calories_burned','Оценка сожженных калорий', NOW(), NOW()),
 ('translation', 'ru', 'error_state.oops_message','Ой! Что-то пошло не так', NOW(), NOW()),
 ('translation', 'ru', 'error_state.description','Приложение столкнулось с ошибкой. Вы можете перезагрузить страницу или поделиться деталями с поддержкой.', NOW(), NOW()),
 ('translation', 'ru', 'error_state.try_again','Попробовать снова', NOW(), NOW()),
@@ -554,7 +555,9 @@ VALUES
 ('translation', 'ru', 'settings.beta_opt_in.title','Бета-функции', NOW(), NOW()),
 ('translation', 'ru', 'settings.beta_opt_in.hint','Подключитесь к доступу к новым функциям до их официального выпуска.', NOW(), NOW()),
 ('translation', 'ru', 'settings.email_notifications.title','Email-уведомления', NOW(), NOW()),
-('translation', 'ru', 'settings.email_notifications.hint','Разрешить email-уведомления о важных обновлениях и новостях.', NOW(), NOW())
+('translation', 'ru', 'settings.email_notifications.hint','Разрешить email-уведомления о важных обновлениях и новостях.', NOW(), NOW()),
+('translation', 'ru', 'settings.calculate_calories.title','Расчет калорий', NOW(), NOW()),
+('translation', 'ru', 'settings.calculate_calories.hint','Разрешить приложению рассчитывать примерное количество сожженных калорий во время тренировок.', NOW(), NOW())
 ON CONFLICT (namespace, locale, key) DO UPDATE
 SET value = EXCLUDED.value,
     updated_at = NOW();

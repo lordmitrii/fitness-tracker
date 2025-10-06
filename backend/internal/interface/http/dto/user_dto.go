@@ -60,6 +60,7 @@ type UserSettingsCreateRequest struct {
 	UnitSystem         string `json:"unit_system"         binding:"oneof=metric imperial" example:"metric"`
 	BetaOptIn          bool   `json:"beta_opt_in"         example:"false"`
 	EmailNotifications bool   `json:"email_notifications" example:"true"`
+	CalculateCalories  bool   `json:"calculate_calories"  example:"true"`
 }
 
 // swagger:model
@@ -67,6 +68,7 @@ type UserSettingsUpdateRequest struct {
 	UnitSystem         *string `json:"unit_system"         binding:"omitempty,oneof=metric imperial" example:"imperial"`
 	BetaOptIn          *bool   `json:"beta_opt_in"         binding:"omitempty" example:"true"`
 	EmailNotifications *bool   `json:"email_notifications" binding:"omitempty" example:"false"`
+	CalculateCalories  *bool   `json:"calculate_calories"  binding:"omitempty" example:"false"`
 }
 
 // swagger:model
@@ -108,6 +110,7 @@ type UserSettingsResponse struct {
 	UnitSystem         string `json:"unit_system"         example:"metric"`
 	BetaOptIn          bool   `json:"beta_opt_in"         example:"false"`
 	EmailNotifications bool   `json:"email_notifications" example:"true"`
+	CalculateCalories  bool   `json:"calculate_calories"  example:"true"`
 }
 
 // swagger:model

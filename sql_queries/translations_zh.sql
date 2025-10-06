@@ -155,6 +155,7 @@ VALUES
 ('translation', 'zh', 'workout_plan_single.validation.weight_required','重量为必填项。', NOW(), NOW()),
 ('translation', 'zh', 'workout_plan_single.validation.weight_number','重量必须是数字。', NOW(), NOW()),
 ('translation', 'zh', 'workout_plan_single.validation.weight_range','重量必须在 {{min}} 到 {{max}} {{unit}} 之间。', NOW(), NOW()),
+('translation', 'zh', 'workout_plan_single.estimated_calories_burned','估计燃烧的卡路里', NOW(), NOW()),
 ('translation', 'zh', 'error_state.oops_message','抱歉！发生了错误', NOW(), NOW()),
 ('translation', 'zh', 'error_state.description','应用程序遇到错误。您可以重新加载或与支持团队分享详细信息。', NOW(), NOW()),
 ('translation', 'zh', 'error_state.try_again','重试', NOW(), NOW()),
@@ -554,7 +555,9 @@ VALUES
 ('translation', 'zh', 'settings.beta_opt_in.title','贝塔功能', NOW(), NOW()),
 ('translation', 'zh', 'settings.beta_opt_in.hint','选择加入以在正式发布之前访问新功能。', NOW(), NOW()),
 ('translation', 'zh', 'settings.email_notifications.title','电子邮件通知', NOW(), NOW()),
-('translation', 'zh', 'settings.email_notifications.hint','允许电子邮件通知以获取重要更新和新闻。', NOW(), NOW())
+('translation', 'zh', 'settings.email_notifications.hint','允许电子邮件通知以获取重要更新和新闻。', NOW(), NOW()),
+('translation', 'zh', 'settings.calculate_calories.title','计算卡路里', NOW(), NOW()),
+('translation', 'zh', 'settings.calculate_calories.hint','允许应用程序计算锻炼期间估计的卡路里消耗。', NOW(), NOW())
 ON CONFLICT (namespace, locale, key) DO UPDATE
 SET value = EXCLUDED.value,
     updated_at = NOW();

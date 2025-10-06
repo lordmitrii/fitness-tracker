@@ -126,40 +126,86 @@ func (s *workoutServiceImpl) DeleteWorkout(ctx context.Context, userId, planId, 
 // 1. workout_cycles
 // 2. workouts
 // 3. workout_exercises
-func (s *workoutServiceImpl) CompleteWorkout(ctx context.Context, userId, planId, cycleId, id uint, completed, skipped bool) (*workout.Workout, error) {
+func (s *workoutServiceImpl) CompleteWorkout(ctx context.Context, userId, planId, cycleId, id uint, completed, skipped bool) (*workout.Workout, float64, error) {
 	acc := &uow.EventAccumulator{}
 	now := time.Now()
-	res, err := uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.Workout, error) {
+	var resKcal float64
+	if completed {
+		skipped = false
+	} else if skipped {
+		completed = false
+	}
+	resWorkout, err := uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.Workout, error) {
 		if err := s.workoutCycleRepo.LockByIDForUpdate(ctx, userId, planId, cycleId); err != nil {
 			return nil, err
 		}
 
-		w, err := s.workoutRepo.GetByID(ctx, userId, planId, cycleId, id)
+		w, err := s.workoutRepo.GetByIDForUpdate(ctx, userId, planId, cycleId, id)
 		if err != nil {
 			return nil, err
 		}
 
 		switch {
 		case completed:
-			w.Complete(now, userId)
+			if err := s.workoutExerciseRepo.MarkAllExercisesCompleted(ctx, userId, planId, cycleId, id); err != nil {
+				return nil, err
+			}
+			// Mark all sets completed, not skipped
+			if err := s.workoutSetRepo.MarkAllSetsCompletedByWorkoutID(ctx, userId, planId, cycleId, id); err != nil {
+				return nil, err
+			}
 		case skipped:
-			w.MarkSkipped()
+			if err := s.workoutExerciseRepo.MarkAllPendingExercisesSkipped(ctx, userId, planId, cycleId, id); err != nil {
+				return nil, err
+			}
+			// Mark all *pending* sets skipped (don’t touch completed ones)
+			if err := s.workoutSetRepo.MarkAllPendingSetsSkippedByWorkoutID(ctx, userId, planId, cycleId, id); err != nil {
+				return nil, err
+			}
 		default:
-			// do nothing
+			if err := s.workoutExerciseRepo.MarkAllExercisesPending(ctx, userId, planId, cycleId, id); err != nil {
+				return nil, err
+			}
+			if err := s.workoutSetRepo.MarkAllSetsPendingByWorkoutID(ctx, userId, planId, cycleId, id); err != nil {
+				return nil, err
+			}
 		}
 
-		if err := s.workoutRepo.Update(ctx, userId, planId, cycleId, id, map[string]any{"completed": w.Completed, "skipped": w.Skipped}); err != nil {
+		pendingExercises, err := s.workoutExerciseRepo.GetPendingExercisesCount(ctx, userId, planId, cycleId, id)
+		if err != nil {
+			return nil, err
+		}
+		skippedExercises, err := s.workoutExerciseRepo.GetSkippedExercisesCount(ctx, userId, planId, cycleId, id)
+		if err != nil {
+			return nil, err
+		}
+		totalExercises, err := s.workoutExerciseRepo.GetTotalExercisesCount(ctx, userId, planId, cycleId, id)
+		if err != nil {
 			return nil, err
 		}
 
-		if w.Skipped {
-			for _, we := range w.WorkoutExercises {
-				if !we.Completed {
-					if err := s.workoutExerciseRepo.Update(ctx, userId, planId, cycleId, w.ID, we.ID, map[string]any{"skipped": true}); err != nil {
-						return nil, err
-					}
-				}
-			}
+		var wkCompleted, wkSkipped bool
+		if totalExercises == 0 {
+			// Empty workout stays pending for consistency with delete flows
+			wkCompleted, wkSkipped = false, false
+		} else {
+			wkCompleted = (pendingExercises == 0)
+			wkSkipped = wkCompleted && (skippedExercises == totalExercises)
+		}
+
+		if wkCompleted {
+			w.Complete(now, userId)
+			resKcal, _, _, _ = s.CalculateWorkoutSummary(ctx, userId, w.ID)
+		} else if wkSkipped {
+			w.MarkSkipped()
+		} else {
+			w.Completed = false
+			w.Skipped = false
+		}
+
+		if err := s.workoutRepo.Update(ctx, userId, planId, cycleId, id,
+			map[string]any{"completed": w.Completed, "skipped": w.Skipped}); err != nil {
+			return nil, err
 		}
 
 		acc.Add(toAnySlice(w.PendingEvents())...)
@@ -173,16 +219,16 @@ func (s *workoutServiceImpl) CompleteWorkout(ctx context.Context, userId, planId
 		return w, nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	if evs := acc.Drain(); len(evs) > 0 {
 		if err := s.bus.Publish(ctx, evs...); err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 	}
 
-	return res, nil
+	return resWorkout, resKcal, nil
 }
 
 // Order of locks used:
@@ -225,11 +271,11 @@ func (s *workoutServiceImpl) MoveWorkout(ctx context.Context, userId, planId, cy
 	})
 }
 
-func (s *workoutServiceImpl) CalculateWorkoutSummary(ctx context.Context, userID, workoutID uint) error {
-	err := uow.DoIfNotInTx(ctx, s.db, func(ctx context.Context) error {
+func (s *workoutServiceImpl) CalculateWorkoutSummary(ctx context.Context, userID, workoutID uint) (float64, float64, float64, error) {
+	res, err := uow.DoRIfNotInTx(ctx, s.db, func(ctx context.Context) (map[string]float64, error) {
 		profile, err := s.profileRepo.GetByUserID(ctx, userID)
 		if err != nil && err != custom_err.ErrProfileNotFound {
-			return err
+			return nil, err
 		}
 		// fallback defaults
 		var (
@@ -247,7 +293,7 @@ func (s *workoutServiceImpl) CalculateWorkoutSummary(ctx context.Context, userID
 
 		w, err := s.workoutRepo.GetOnlyByID(ctx, userID, workoutID)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		var totalCalories, totalActiveMin, totalRestMin float64
 
@@ -260,7 +306,7 @@ func (s *workoutServiceImpl) CalculateWorkoutSummary(ctx context.Context, userID
 				if err == custom_err.ErrNotFound {
 					continue
 				}
-				return err
+				return nil, err
 			}
 
 			exCal, _, exActiveMin, exRestMin := s.estimateExerciseEnergy(ie, we, userWeightKg)
@@ -276,16 +322,23 @@ func (s *workoutServiceImpl) CalculateWorkoutSummary(ctx context.Context, userID
 		}
 
 		totalCalories = adjustCaloriesForUser(totalCalories, userAge, userSex)
-		caloriesRounded := math.Round(totalCalories*10) / 10.0
-		totalModeledMin := totalActiveMin + totalRestMin
+		res := map[string]float64{
+			"calories":   math.Round(totalCalories*10) / 10.0,
+			"active_min": math.Round(totalActiveMin*10) / 10.0,
+			"rest_min":   math.Round(totalRestMin*10) / 10.0,
+		}
 
-		fmt.Printf("[DEBUG] Estimated calories for workout #%d: %.1f kcal (active %.1f min, rest %.1f min, total ~%.1f min)\n", workoutID, caloriesRounded, totalActiveMin, totalRestMin, totalModeledMin)
-
-		return nil
+		if err := s.workoutRepo.UpdateOnlyById(ctx, userID, workoutID, map[string]any{
+			"estimated_calories":   res["calories"],
+			"estimated_active_min": res["active_min"],
+			"estimated_rest_min":   res["rest_min"],
+		}); err != nil {
+			return nil, err
+		}
+		return res, nil
 	})
 	if err != nil {
-		return err
+		return 0, 0, 0, err
 	}
-	return nil
+	return res["calories"], res["active_min"], res["rest_min"], nil
 }
-

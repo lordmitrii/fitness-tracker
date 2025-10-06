@@ -184,6 +184,7 @@ const WorkoutCycle = () => {
                         onOpenAddExercise={openAddExercise}
                         onOpenReplaceExercise={openReplaceExercise}
                         unitSystem={settings?.unit_system}
+                        calculateCalories={settings?.calculate_calories}
                       />
                     </div>
                   ))}
