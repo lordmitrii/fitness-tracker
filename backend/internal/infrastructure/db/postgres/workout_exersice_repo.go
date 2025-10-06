@@ -174,7 +174,7 @@ func (r *WorkoutExerciseRepo) Delete(ctx context.Context, userId, planId, cycleI
 	return nil
 }
 
-func (r *WorkoutExerciseRepo) GetIncompleteExercisesCount(ctx context.Context, userId, planId, cycleId, workoutId uint) (int64, error) {
+func (r *WorkoutExerciseRepo) GetPendingExercisesCount(ctx context.Context, userId, planId, cycleId, workoutId uint) (int64, error) {
 	db := r.dbFrom(ctx)
 
 	wid := workoutId
@@ -182,7 +182,19 @@ func (r *WorkoutExerciseRepo) GetIncompleteExercisesCount(ctx context.Context, u
 
 	var count int64
 	err := db.Model(&workout.WorkoutExercise{}).
-		Where("workout_id IN (?) AND completed = FALSE", wSub).
+		Where("workout_id IN (?) AND completed = FALSE AND skipped = FALSE", wSub).
+		Count(&count).Error
+	return count, err
+}
+
+func (r *WorkoutExerciseRepo) GetTotalExercisesCount(ctx context.Context, userId, planId, cycleId, workoutId uint) (int64, error) {
+	db := r.dbFrom(ctx)
+
+	wid := workoutId
+	wSub := SubqWorkouts(db, userId, planId, cycleId, &wid)
+	var count int64
+	err := db.Model(&workout.WorkoutExercise{}).
+		Where("workout_id IN (?)", wSub).
 		Count(&count).Error
 	return count, err
 }
@@ -314,4 +326,43 @@ func (r *WorkoutExerciseRepo) GetByIDForUpdate(ctx context.Context, userId, plan
 		return nil, err
 	}
 	return &we, nil
+}
+
+func (r *WorkoutExerciseRepo) MarkAllExercisesPending(ctx context.Context, userId, planId, cycleId, workoutId uint) error {
+	db := r.dbFrom(ctx)
+
+	wid := workoutId
+	wSub := SubqWorkouts(db, userId, planId, cycleId, &wid)
+
+	return db.Model(&workout.WorkoutExercise{}).
+		Where("workout_id IN (?)", wSub).
+		Updates(map[string]any{
+			"completed": false,
+			"skipped":   false,
+		}).Error
+}
+
+func (r *WorkoutExerciseRepo) MarkAllPendingExercisesSkipped(ctx context.Context, userId, planId, cycleId, workoutId uint) error {
+	db := r.dbFrom(ctx)
+
+	wid := workoutId
+	wSub := SubqWorkouts(db, userId, planId, cycleId, &wid)
+
+	return db.Model(&workout.WorkoutExercise{}).
+		Where("workout_id IN (?) AND completed = FALSE AND skipped = FALSE", wSub).
+		Update("skipped", true).Error
+}
+
+func (r *WorkoutExerciseRepo) MarkAllExercisesCompleted(ctx context.Context, userId, planId, cycleId, workoutId uint) error {
+	db := r.dbFrom(ctx)
+
+	wid := workoutId
+	wSub := SubqWorkouts(db, userId, planId, cycleId, &wid)
+
+	return db.Model(&workout.WorkoutExercise{}).
+		Where("workout_id IN (?)", wSub).
+		Updates(map[string]any{
+			"completed": true,
+			"skipped":   false,
+		}).Error
 }

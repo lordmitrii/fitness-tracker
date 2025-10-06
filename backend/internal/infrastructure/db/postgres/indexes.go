@@ -53,6 +53,15 @@ func AddWorkoutIndex(db *gorm.DB, concurrently bool) error {
 		fmt.Sprintf(`CREATE INDEX%s IF NOT EXISTS idx_sets_we_has_values
 			ON workout_sets (workout_exercise_id)
 			WHERE reps IS NOT NULL AND weight IS NOT NULL`, cc),
+		
+		fmt.Sprintf(`CREATE INDEX%s IF NOT EXISTS idx_indiv_ex_user_id_id
+			ON individual_exercises (user_id, id)`, cc),
+		
+		fmt.Sprintf(`CREATE INDEX%s IF NOT EXISTS idx_indiv_ex_user_exercise
+			ON individual_exercises (user_id, exercise_id)`, cc),
+
+		fmt.Sprintf(`CREATE INDEX%s IF NOT EXISTS idx_indiv_ex_user_name_mgroup
+			ON individual_exercises (user_id, name, muscle_group_id)`, cc),
 	}
 
 	for _, raw := range stmts {

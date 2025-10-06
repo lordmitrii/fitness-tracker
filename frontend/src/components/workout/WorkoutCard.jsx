@@ -12,6 +12,7 @@ const WorkoutCard = ({
   onOpenAddExercise,
   onOpenReplaceExercise,
   unitSystem = "metric",
+  calculateCalories = true,
 }) => {
   const { t, i18n } = useTranslation();
 
@@ -42,7 +43,10 @@ const WorkoutCard = ({
     <div className="sm:rounded-2xl shadow-lg bg-white sm:border sm:border-gray-200 p-6 sm:hover:shadow-lg transition flex flex-col gap-3">
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between gap-2 min-w-0 relative">
-          <h1 title={`Workout ${workout.name} (id: ${workout.id})`} className="text-body-blue font-extrabold truncate">
+          <h1
+            title={`Workout ${workout.name} (id: ${workout.id})`}
+            className="text-body-blue font-extrabold truncate"
+          >
             {workout.name}
           </h1>
           <DropdownMenu
@@ -67,6 +71,17 @@ const WorkoutCard = ({
               {t("general.no")}
             </span>
           )}
+          {workout.completed &&
+            calculateCalories &&
+            workout.estimated_calories && (
+              <>
+                <br />
+                <span className="text-gray-600">
+                  {t("workout_plan_single.estimated_calories_burned")}: ~
+                  {workout.estimated_calories}
+                </span>
+              </>
+            )}
         </div>
       </div>
       {workout.workout_exercises && workout.workout_exercises.length > 0 && (

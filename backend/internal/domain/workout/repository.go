@@ -32,6 +32,8 @@ type WorkoutCycleRepository interface {
 }
 
 type WorkoutRepository interface {
+	GetOnlyByID(ctx context.Context, userId, id uint) (*Workout, error)
+	UpdateOnlyById(ctx context.Context, userId, id uint, updates map[string]any) error
 	Create(ctx context.Context, userId, planId, cycleId uint, w *Workout) error
 	BulkCreate(ctx context.Context, userId, planId, cycleId uint, workouts []*Workout) error
 	GetByID(ctx context.Context, userId, planId, cycleId, id uint) (*Workout, error)
@@ -56,7 +58,8 @@ type WorkoutExerciseRepository interface {
 	Update(ctx context.Context, userId, planId, cycleId, workoutId, id uint, updates map[string]any) error
 	UpdateReturning(ctx context.Context, userId, planId, cycleId, workoutId, id uint, updates map[string]any) (*WorkoutExercise, error)
 	Delete(ctx context.Context, userId, planId, cycleId, workoutId, id uint) error
-	GetIncompleteExercisesCount(ctx context.Context, userId, planId, cycleId, workoutId uint) (int64, error)
+	GetPendingExercisesCount(ctx context.Context, userId, planId, cycleId, workoutId uint) (int64, error)
+	GetTotalExercisesCount(ctx context.Context, userId, planId, cycleId, workoutId uint) (int64, error)
 	GetSkippedExercisesCount(ctx context.Context, userId, planId, cycleId, workoutId uint) (int64, error)
 	GetLast5ByIndividualExerciseID(ctx context.Context, userId, individualExerciseIDs uint) ([]*WorkoutExercise, error)
 	GetMaxIndexByWorkoutID(ctx context.Context, userId, planId, cycleId, workoutId uint) (int, error)
@@ -65,6 +68,9 @@ type WorkoutExerciseRepository interface {
 	SwapWorkoutExercisesByIndex(ctx context.Context, userId, planId, cycleId, workoutId uint, index1, index2 int) error
 	LockByIDForUpdate(ctx context.Context, userId, planId, cycleId, workoutId uint, id uint) error
 	GetByIDForUpdate(ctx context.Context, userId, planId, cycleId, workoutId uint, id uint) (*WorkoutExercise, error)
+	MarkAllExercisesPending(ctx context.Context, userId, planId, cycleId, workoutId uint) error
+	MarkAllPendingExercisesSkipped(ctx context.Context, userId, planId, cycleId, workoutId uint) error
+	MarkAllExercisesCompleted(ctx context.Context, userId, planId, cycleId, workoutId uint) error
 }
 
 type WorkoutSetRepository interface {
@@ -75,13 +81,20 @@ type WorkoutSetRepository interface {
 	Update(ctx context.Context, userId, planId, cycleId, workoutId, weId, id uint, updates map[string]any) error
 	UpdateReturning(ctx context.Context, userId, planId, cycleId, workoutId, weId, id uint, updates map[string]any) (*WorkoutSet, error)
 	Delete(ctx context.Context, userId, planId, cycleId, workoutId, weId, id uint) error
-	GetIncompleteSetsCount(ctx context.Context, userId, planId, cycleId, workoutId, weId uint) (int64, error)
+	GetPendingSetsCount(ctx context.Context, userId, planId, cycleId, workoutId, weId uint) (int64, error)
+	GetTotalSetsCount(ctx context.Context, userId, planId, cycleId, workoutId, weId uint) (int64, error)
 	GetSkippedSetsCount(ctx context.Context, userId, planId, cycleId, workoutId, weId uint) (int64, error)
 	GetMaxIndexByWorkoutExerciseID(ctx context.Context, userId, planId, cycleId, workoutId, weId uint) (int, error)
 	DecrementIndexesAfter(ctx context.Context, userId, planId, cycleId, workoutId, weId uint, deletedIndex int) error
 	IncrementIndexesAfter(ctx context.Context, userId, planId, cycleId, workoutId, weId uint, index int) error
 	SwapWorkoutSetsByIndex(ctx context.Context, userId, planId, cycleId, workoutId, weId uint, index1, index2 int) error
 	GetByIDForUpdate(ctx context.Context, userId, planId, cycleId, workoutId, weId uint, id uint) (*WorkoutSet, error)
+	MarkAllSetsCompleted(ctx context.Context, userId, planId, cycleId, workoutId, weId uint) error
+	MarkAllPendingSetsSkipped(ctx context.Context, userId, planId, cycleId, workoutId, weId uint) error
+	MarkAllSetsPending(ctx context.Context, userId, planId, cycleId, workoutId, weId uint) error
+	MarkAllSetsPendingByWorkoutID(ctx context.Context, userId, planId, cycleId, workoutId uint) error
+	MarkAllSetsCompletedByWorkoutID(ctx context.Context, userId, planId, cycleId, workoutId uint) error
+	MarkAllPendingSetsSkippedByWorkoutID(ctx context.Context, userId, planId, cycleId, workoutId uint) error
 }
 
 type ExerciseRepository interface {
@@ -105,12 +118,13 @@ type MuscleGroupRepository interface {
 }
 
 type IndividualExerciseRepository interface {
-	Create(ctx context.Context, ie *IndividualExercise) error
-	GetByID(ctx context.Context, id uint) (*IndividualExercise, error)
-	GetByUserID(ctx context.Context, workoutPlanID uint) ([]*IndividualExercise, error)
-	GetByUserAndExerciseID(ctx context.Context, planID, exerciseID uint) (*IndividualExercise, error)
-	GetByNameMuscleGroupAndUser(ctx context.Context, name string, muscleGroupID *uint, userID uint) (*IndividualExercise, error)
-	Update(ctx context.Context, id uint, updates map[string]any) error
-	UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*IndividualExercise, error)
-	Delete(ctx context.Context, id uint) error
+	Create(ctx context.Context, userId uint, ie *IndividualExercise) error
+	GetByID(ctx context.Context, userId, id uint) (*IndividualExercise, error)
+	GetByIDForUpdate(ctx context.Context, userId, id uint) (*IndividualExercise, error)
+	GetByUserID(ctx context.Context, userId uint) ([]*IndividualExercise, error)
+	GetByUserAndExerciseID(ctx context.Context, userId, exerciseID uint) (*IndividualExercise, error)
+	GetByNameMuscleGroupAndUser(ctx context.Context, userId uint, name string, muscleGroupID *uint) (*IndividualExercise, error)
+	Update(ctx context.Context, userId, id uint, updates map[string]any) error
+	UpdateReturning(ctx context.Context, userId, id uint, updates map[string]any) (*IndividualExercise, error)
+	Delete(ctx context.Context, userId, id uint) error
 }

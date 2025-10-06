@@ -144,7 +144,6 @@ type IndividualExerciseCreateOrGetRequest struct {
 	ExerciseID    *uint  `json:"exercise_id"                            example:"12"`
 }
 
-
 // swagger:model
 type WorkoutPlanResponse struct {
 	ID             uint                   `json:"id,omitempty"              example:"1"`
@@ -174,17 +173,20 @@ type WorkoutCycleResponse struct {
 
 // swagger:model
 type WorkoutResponse struct {
-	ID                uint                      `json:"id,omitempty"                 example:"100"`
-	Name              string                    `json:"name,omitempty"               example:"Upper Body A"`
-	WorkoutCycleID    uint                      `json:"workout_cycle_id,omitempty"   example:"12"`
-	Date              *time.Time                `json:"date,omitempty"               example:"2025-09-25T10:00:00Z"`
-	Index             int                       `json:"index,omitempty"              example:"1"`
-	Completed         bool                      `json:"completed,omitempty"          example:"true"`
-	Skipped           bool                      `json:"skipped,omitempty"            example:"false"`
-	PreviousWorkoutID *uint                     `json:"previous_workout_id,omitempty" example:"99"`
-	WorkoutExercises  []WorkoutExerciseResponse `json:"workout_exercises,omitempty"`
-	CreatedAt         *time.Time                `json:"created_at"                   example:"2025-09-20T12:34:56Z"`
-	UpdatedAt         *time.Time                `json:"updated_at"                   example:"2025-09-25T12:34:56Z"`
+	ID                 uint                      `json:"id,omitempty"                 example:"100"`
+	Name               string                    `json:"name,omitempty"               example:"Upper Body A"`
+	WorkoutCycleID     uint                      `json:"workout_cycle_id,omitempty"   example:"12"`
+	Date               *time.Time                `json:"date,omitempty"               example:"2025-09-25T10:00:00Z"`
+	Index              int                       `json:"index,omitempty"              example:"1"`
+	Completed          bool                      `json:"completed,omitempty"          example:"true"`
+	Skipped            bool                      `json:"skipped,omitempty"            example:"false"`
+	PreviousWorkoutID  *uint                     `json:"previous_workout_id,omitempty" example:"99"`
+	WorkoutExercises   []WorkoutExerciseResponse `json:"workout_exercises,omitempty"`
+	CreatedAt          *time.Time                `json:"created_at"                   example:"2025-09-20T12:34:56Z"`
+	UpdatedAt          *time.Time                `json:"updated_at"                   example:"2025-09-25T12:34:56Z"`
+	EstimatedCalories  float64                   `json:"estimated_calories,omitempty" example:"200.5"`
+	EstimatedActiveMin float64                   `json:"estimated_active_min,omitempty" example:"10.0"`
+	EstimatedRestMin   float64                   `json:"estimated_rest_min,omitempty" example:"30.0"`
 }
 
 // swagger:model
@@ -238,22 +240,50 @@ type WorkoutSetResponse struct {
 
 // swagger:model
 type IndividualExerciseStatsResponse struct {
-	ID           uint   `json:"id,omitempty"           example:"101"`
-	Name         string `json:"name,omitempty"         example:"Dumbbell Row"`
-	IsBodyweight bool   `json:"is_bodyweight,omitempty" example:"false"`
-	IsTimeBased  bool   `json:"is_time_based,omitempty" example:"false"`
-	MuscleGroupID *uint              `json:"muscle_group_id,omitempty" example:"3"`
+	ID            uint                `json:"id,omitempty"           example:"101"`
+	Name          string              `json:"name,omitempty"         example:"Dumbbell Row"`
+	IsBodyweight  bool                `json:"is_bodyweight,omitempty" example:"false"`
+	IsTimeBased   bool                `json:"is_time_based,omitempty" example:"false"`
+	MuscleGroupID *uint               `json:"muscle_group_id,omitempty" example:"3"`
 	MuscleGroup   MuscleGroupResponse `json:"muscle_group"`
 	ExerciseID    *uint               `json:"exercise_id,omitempty"    example:"12"`
 	Exercise      ExerciseResponse    `json:"exercise"`
-	CurrentWeight int `json:"current_weight,omitempty" example:"60000"`
-	CurrentReps   int `json:"current_reps,omitempty"   example:"10"`
-	CreatedAt *time.Time `json:"created_at" example:"2025-09-20T12:34:56Z"`
-	UpdatedAt *time.Time `json:"updated_at" example:"2025-09-25T12:34:56Z"`
+	CurrentWeight int                 `json:"current_weight,omitempty" example:"60000"`
+	CurrentReps   int                 `json:"current_reps,omitempty"   example:"10"`
+	CreatedAt     *time.Time          `json:"created_at" example:"2025-09-20T12:34:56Z"`
+	UpdatedAt     *time.Time          `json:"updated_at" example:"2025-09-25T12:34:56Z"`
 }
 
 // swagger:model
 type CurrentCycleResponse struct {
 	ID            uint `json:"id,omitempty"             example:"12"`
 	WorkoutPlanID uint `json:"workout_plan_id,omitempty" example:"1"`
+}
+
+// swagger:model
+type WorkoutCompleteResponse struct {
+	Workout           WorkoutResponse `json:"workout"`
+	EstimatedCalories float64         `json:"estimated_calories,omitempty" example:"200.5"`
+}
+
+// swagger:model
+type WorkoutExerciseCompleteResponse struct {
+	WorkoutExercise   WorkoutExerciseResponse `json:"workout_exercise"`
+	EstimatedCalories float64                 `json:"estimated_calories,omitempty" example:"50.0"`
+}
+
+// swagger:model
+type WorkoutSetCompleteResponse struct {
+	WorkoutSet        WorkoutSetResponse `json:"workout_set"`
+	EstimatedCalories float64            `json:"estimated_calories,omitempty" example:"50.0"`
+}
+
+// swagger:model
+type WorkoutExerciseDeleteResponse struct {
+	EstimatedCalories float64 `json:"estimated_calories,omitempty" example:"100.2"`
+}
+
+// swagger:model
+type SetDeleteResponse struct {
+	EstimatedCalories float64 `json:"estimated_calories,omitempty" example:"203.0"`
 }

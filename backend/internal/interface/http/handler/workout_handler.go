@@ -775,7 +775,7 @@ func (h *WorkoutHandler) DeleteWorkout(c *gin.Context) {
 // @Param        cycleID    path      uint                       true  "Cycle ID"        example(12)
 // @Param        workoutID  path      uint                       true  "Workout ID"      example(100)
 // @Param        body       body      dto.WorkoutCompleteRequest true  "Complete payload"
-// @Success      200        {object}  dto.WorkoutResponse
+// @Success      200        {object}  dto.WorkoutCompleteResponse
 // @Failure      400        {object}  dto.MessageResponse
 // @Failure      401        {object}  dto.MessageResponse
 // @Failure      500        {object}  dto.MessageResponse
@@ -799,13 +799,13 @@ func (h *WorkoutHandler) CompleteWorkout(c *gin.Context) {
 		return
 	}
 
-	w, err := h.svc.CompleteWorkout(c.Request.Context(), userId, planId, cycleID, id, req.Completed, req.Skipped)
+	w, kcal, err := h.svc.CompleteWorkout(c.Request.Context(), userId, planId, cycleID, id, req.Completed, req.Skipped)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.ToWorkoutResponse(w))
+	c.JSON(http.StatusOK, dto.ToWorkoutCompleteResponse(w, kcal))
 }
 
 // MoveWorkout godoc
@@ -1034,7 +1034,7 @@ func (h *WorkoutHandler) UpdateWorkoutExercise(c *gin.Context) {
 // @Param        workoutID  path      uint                             true  "Workout ID"      example(100)
 // @Param        weID       path      uint                             true  "Workout Exercise ID" example(500)
 // @Param        body       body      dto.WorkoutExerciseCompleteRequest true "Complete payload"
-// @Success      200        {object}  dto.WorkoutExerciseResponse
+// @Success      200        {object}  dto.WorkoutExerciseCompleteResponse
 // @Failure      400        {object}  dto.MessageResponse
 // @Failure      401        {object}  dto.MessageResponse
 // @Failure      500        {object}  dto.MessageResponse
@@ -1058,13 +1058,13 @@ func (h *WorkoutHandler) CompleteWorkoutExercise(c *gin.Context) {
 		return
 	}
 
-	we, err := h.svc.CompleteWorkoutExercise(c.Request.Context(), userId, planId, cycleID, workoutID, id, req.Completed, req.Skipped)
+	we, kcal, err := h.svc.CompleteWorkoutExercise(c.Request.Context(), userId, planId, cycleID, workoutID, id, req.Completed, req.Skipped)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.ToWorkoutExerciseResponse(we))
+	c.JSON(http.StatusOK, dto.ToWorkoutExerciseCompleteResponse(we, kcal))
 }
 
 // MoveWorkoutExercise godoc
@@ -1166,7 +1166,7 @@ func (h *WorkoutHandler) ReplaceWorkoutExercise(c *gin.Context) {
 // @Param        cycleID    path      uint  true  "Cycle ID"        example(12)
 // @Param        workoutID  path      uint  true  "Workout ID"      example(100)
 // @Param        weID       path      uint  true  "Workout Exercise ID" example(500)
-// @Success      204  {string}  string "No Content"
+// @Success      200  {object}  dto.WorkoutExerciseDeleteResponse
 // @Failure      400  {object}  dto.MessageResponse
 // @Failure      401  {object}  dto.MessageResponse
 // @Failure      500  {object}  dto.MessageResponse
@@ -1185,11 +1185,12 @@ func (h *WorkoutHandler) DeleteWorkoutExercise(c *gin.Context) {
 		return
 	}
 
-	if err := h.svc.DeleteWorkoutExercise(c.Request.Context(), userId, planId, cycleID, workoutID, id); err != nil {
+	resKcal, err := h.svc.DeleteWorkoutExercise(c.Request.Context(), userId, planId, cycleID, workoutID, id); 
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.Status(http.StatusNoContent)
+	c.JSON(http.StatusOK, dto.ToWorkoutExerciseDeleteResponse(resKcal))
 }
 
 // AddWorkoutSetToWorkoutExercise godoc
@@ -1296,7 +1297,7 @@ func (h *WorkoutHandler) GetWorkoutSetsByWorkoutExerciseID(c *gin.Context) {
 // @Param        workoutID  path      uint  true  "Workout ID"      example(100)
 // @Param        weID       path      uint  true  "Workout Exercise ID" example(500)
 // @Param        setID      path      uint  true  "Set ID"          example(700)
-// @Success      204  {string}  string "No Content"
+// @Success      200  {object}  dto.SetDeleteResponse
 // @Failure      400  {object}  dto.MessageResponse
 // @Failure      401  {object}  dto.MessageResponse
 // @Failure      500  {object}  dto.MessageResponse
@@ -1316,11 +1317,12 @@ func (h *WorkoutHandler) DeleteWorkoutSet(c *gin.Context) {
 		return
 	}
 
-	if err := h.svc.DeleteWorkoutSet(c.Request.Context(), userId, planId, cycleID, workoutID, weId, id); err != nil {
+	resKcal, err := h.svc.DeleteWorkoutSet(c.Request.Context(), userId, planId, cycleID, workoutID, weId, id); 
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.Status(http.StatusNoContent)
+	c.JSON(http.StatusOK, dto.ToSetDeleteResponse(resKcal))
 }
 
 // GetWorkoutSetByID godoc
@@ -1423,7 +1425,7 @@ func (h *WorkoutHandler) UpdateWorkoutSet(c *gin.Context) {
 // @Param        weID       path      uint                         true  "Workout Exercise ID" example(500)
 // @Param        setID      path      uint                         true  "Set ID"          example(700)
 // @Param        body       body      dto.WorkoutSetCompleteRequest true "Complete payload"
-// @Success      200        {object}  dto.WorkoutSetResponse
+// @Success      200        {object}  dto.WorkoutSetCompleteResponse
 // @Failure      400        {object}  dto.MessageResponse
 // @Failure      401        {object}  dto.MessageResponse
 // @Failure      500        {object}  dto.MessageResponse
@@ -1449,13 +1451,13 @@ func (h *WorkoutHandler) CompleteWorkoutSet(c *gin.Context) {
 		return
 	}
 
-	ws, err := h.svc.CompleteWorkoutSet(c.Request.Context(), userId, planId, cycleID, workoutID, weId, id, req.Completed, req.Skipped)
+	ws, kcal, err := h.svc.CompleteWorkoutSet(c.Request.Context(), userId, planId, cycleID, workoutID, weId, id, req.Completed, req.Skipped)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.ToWorkoutSetResponse(ws))
+	c.JSON(http.StatusOK, dto.ToWorkoutSetCompleteResponse(ws, kcal))
 }
 
 // MoveWorkoutSet godoc

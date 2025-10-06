@@ -65,6 +65,13 @@ const Settings = () => {
         toBool: (v) => Boolean(v),
         fromBool: (b) => Boolean(b),
       },
+      calculate_calories: {
+        type: "switch",
+        title: t("settings.calculate_calories.title"),
+        description: t("settings.calculate_calories.hint"),
+        toBool: (v) => Boolean(v),
+        fromBool: (b) => Boolean(b),
+      },
     }),
     [t]
   );

@@ -27,20 +27,23 @@ func (r *WorkoutSetRepo) dbFrom(ctx context.Context) *gorm.DB {
 }
 
 func (r *WorkoutSetRepo) GetOnlyByWorkoutExerciseID(ctx context.Context, userId, workoutExerciseID uint) ([]*workout.WorkoutSet, error) {
-	db := r.dbFrom(ctx)
+  db := r.dbFrom(ctx)
+  chain := db.Table("workout_exercises AS we").
+    Select("1").
+    Joins("JOIN workouts w          ON w.id  = we.workout_id").
+    Joins("JOIN workout_cycles wc   ON wc.id = w.workout_cycle_id").
+    Joins("JOIN workout_plans  wp   ON wp.id = wc.workout_plan_id").
+    Where("we.id = ? AND wp.user_id = ?", workoutExerciseID, userId)
 
-	weID := workoutExerciseID
-	chain := SubqWorkoutExercises(db, userId, 0, 0, 0, &weID).Select("1")
-
-	var sets []*workout.WorkoutSet
-	err := db.Model(&workout.WorkoutSet{}).
-		Where("workout_sets.workout_exercise_id = ? AND EXISTS (?)", workoutExerciseID, chain).
-		Order("workout_sets.index ASC").
-		Find(&sets).Error
-	if err != nil {
-		return nil, err
-	}
-	return sets, nil
+  var sets []*workout.WorkoutSet
+  err := db.Model(&workout.WorkoutSet{}).
+    Where("workout_sets.workout_exercise_id = ? AND EXISTS (?)", workoutExerciseID, chain).
+    Order("workout_sets.index ASC").
+    Find(&sets).Error
+  if err != nil {
+    return nil, err
+  }
+  return sets, nil
 }
 
 func (r *WorkoutSetRepo) GetByWorkoutExerciseID(ctx context.Context, userId, planId, cycleId, workoutId, weId uint) ([]*workout.WorkoutSet, error) {
@@ -156,14 +159,26 @@ func (r *WorkoutSetRepo) Delete(ctx context.Context, userId, planId, cycleId, wo
 	return nil
 }
 
-func (r *WorkoutSetRepo) GetIncompleteSetsCount(ctx context.Context, userId, planId, cycleId, workoutId, weId uint) (int64, error) {
+func (r *WorkoutSetRepo) GetPendingSetsCount(ctx context.Context, userId, planId, cycleId, workoutId, weId uint) (int64, error) {
 	db := r.dbFrom(ctx)
 
 	chain := SubqWorkoutExercises(db, userId, planId, cycleId, workoutId, &weId).Select("1")
 
 	var count int64
 	err := db.Model(&workout.WorkoutSet{}).
-		Where("workout_exercise_id = ? AND completed = FALSE AND EXISTS (?)", weId, chain).
+		Where("workout_exercise_id = ? AND completed = FALSE AND skipped = FALSE AND EXISTS (?)", weId, chain).
+		Count(&count).Error
+	return count, err
+}
+
+func (r *WorkoutSetRepo) GetTotalSetsCount(ctx context.Context, userId, planId, cycleId, workoutId, weId uint) (int64, error) {
+	db := r.dbFrom(ctx)
+
+	chain := SubqWorkoutExercises(db, userId, planId, cycleId, workoutId, &weId).Select("1")
+
+	var count int64
+	err := db.Model(&workout.WorkoutSet{}).
+		Where("workout_exercise_id = ? AND EXISTS (?)", weId, chain).
 		Count(&count).Error
 	return count, err
 }
@@ -258,4 +273,84 @@ func (r *WorkoutSetRepo) GetByIDForUpdate(ctx context.Context, userId, planId, c
 		return nil, err
 	}
 	return &ws, nil
+}
+
+
+func (r *WorkoutSetRepo) MarkAllSetsCompleted(ctx context.Context, userId, planId, cycleId, workoutId, weId uint) error {
+	db := r.dbFrom(ctx)
+
+	chain := SubqWorkoutExercises(db, userId, planId, cycleId, workoutId, &weId).Select("1")
+
+	return db.Model(&workout.WorkoutSet{}).
+		Where("workout_exercise_id = ? AND EXISTS (?)", weId, chain).
+		Updates(map[string]any{
+			"completed": true,
+			"skipped":   false,
+		}).Error
+}
+
+func (r *WorkoutSetRepo) MarkAllPendingSetsSkipped(ctx context.Context, userId, planId, cycleId, workoutId, weId uint) error {
+	db := r.dbFrom(ctx)
+
+	chain := SubqWorkoutExercises(db, userId, planId, cycleId, workoutId, &weId).Select("1")
+
+	return db.Model(&workout.WorkoutSet{}).
+		Where("workout_exercise_id = ? AND completed = FALSE AND skipped = FALSE AND EXISTS (?)", weId, chain).
+		Updates(map[string]any{
+			"skipped": true,
+		}).Error
+}
+
+func (r *WorkoutSetRepo) MarkAllSetsPending(ctx context.Context, userId, planId, cycleId, workoutId, weId uint) error {
+	db := r.dbFrom(ctx)
+
+	chain := SubqWorkoutExercises(db, userId, planId, cycleId, workoutId, &weId).Select("1")
+
+	return db.Model(&workout.WorkoutSet{}).
+		Where("workout_exercise_id = ? AND EXISTS (?)", weId, chain).
+		Updates(map[string]any{
+			"completed": false,
+			"skipped":   false,
+		}).Error
+}
+
+func (r *WorkoutSetRepo) MarkAllSetsPendingByWorkoutID(ctx context.Context, userId, planId, cycleId, workoutId uint) error {
+	db := r.dbFrom(ctx)
+
+	chain := SubqWorkouts(db, userId, planId, cycleId, &workoutId).Select("1")
+
+	return db.Model(&workout.WorkoutSet{}).
+		Joins("JOIN workout_exercises we ON we.id = workout_sets.workout_exercise_id").
+		Where("we.workout_id = ? AND EXISTS (?)", workoutId, chain).
+		Updates(map[string]any{
+			"completed": false,
+			"skipped":   false,
+		}).Error
+}
+
+func (r *WorkoutSetRepo) MarkAllSetsCompletedByWorkoutID(ctx context.Context, userId, planId, cycleId, workoutId uint) error {
+	db := r.dbFrom(ctx)
+
+	chain := SubqWorkouts(db, userId, planId, cycleId, &workoutId).Select("1")
+
+	return db.Model(&workout.WorkoutSet{}).
+		Joins("JOIN workout_exercises we ON we.id = workout_sets.workout_exercise_id").
+		Where("we.workout_id = ? AND EXISTS (?)", workoutId, chain).
+		Updates(map[string]any{
+			"completed": true,
+			"skipped":   false,
+		}).Error
+}
+
+func (r *WorkoutSetRepo) MarkAllPendingSetsSkippedByWorkoutID(ctx context.Context, userId, planId, cycleId, workoutId uint) error {
+	db := r.dbFrom(ctx)
+
+	chain := SubqWorkouts(db, userId, planId, cycleId, &workoutId).Select("1")
+
+	return db.Model(&workout.WorkoutSet{}).
+		Joins("JOIN workout_exercises we ON we.id = workout_sets.workout_exercise_id").
+		Where("we.workout_id = ? AND workout_sets.completed = FALSE AND workout_sets.skipped = FALSE AND EXISTS (?)", workoutId, chain).
+		Updates(map[string]any{
+			"skipped": true,
+		}).Error
 }

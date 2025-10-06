@@ -155,6 +155,7 @@ VALUES
 ('translation', 'en', 'workout_plan_single.validation.weight_required','Weight is required.', NOW(), NOW()),
 ('translation', 'en', 'workout_plan_single.validation.weight_number','Weight must be a number.', NOW(), NOW()),
 ('translation', 'en', 'workout_plan_single.validation.weight_range','Weight must be between {{min}} and {{max}} {{unit}}.', NOW(), NOW()),
+('translation', 'en', 'workout_plan_single.estimated_calories_burned','Estimated calories burned', NOW(), NOW()),
 ('translation', 'en', 'error_state.oops_message','Oops! Something went wrong', NOW(), NOW()),
 ('translation', 'en', 'error_state.description','The app hit an error. You can reload, or share details with support.', NOW(), NOW()),
 ('translation', 'en', 'error_state.try_again','Try Again', NOW(), NOW()),
@@ -554,7 +555,9 @@ VALUES
 ('translation', 'en', 'settings.beta_opt_in.title','Beta Features', NOW(), NOW()),
 ('translation', 'en', 'settings.beta_opt_in.hint','Opt-in to access new features before they are officially released.', NOW(), NOW()),
 ('translation', 'en', 'settings.email_notifications.title','Email Notifications', NOW(), NOW()),
-('translation', 'en', 'settings.email_notifications.hint','Allow email notifications for important updates and news.', NOW(), NOW())
+('translation', 'en', 'settings.email_notifications.hint','Allow email notifications for important updates and news.', NOW(), NOW()),
+('translation', 'en', 'settings.calculate_calories.title','Calculate Calories', NOW(), NOW()),
+('translation', 'en', 'settings.calculate_calories.hint','Allow the app to calculate estimated calories burned during workouts.', NOW(), NOW())
 ON CONFLICT (namespace, locale, key) DO UPDATE
 SET value = EXCLUDED.value,
     updated_at = NOW();

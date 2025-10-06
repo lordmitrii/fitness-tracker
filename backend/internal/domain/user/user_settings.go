@@ -7,4 +7,5 @@ type UserSettings struct {
 	UnitSystem         string `gorm:"default:'metric'"`
 	BetaOptIn          bool   `gorm:"default:false"`
 	EmailNotifications bool   `gorm:"default:false"`
+	CalculateCalories  bool   `gorm:"default:true"`
 }

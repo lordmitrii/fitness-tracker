@@ -113,16 +113,19 @@ func ToWorkoutCycleResponse(wc *workout.WorkoutCycle) WorkoutCycleResponse {
 
 func ToWorkoutResponse(w *workout.Workout) WorkoutResponse {
 	resp := WorkoutResponse{
-		ID:                w.ID,
-		Name:              w.Name,
-		WorkoutCycleID:    w.WorkoutCycleID,
-		Date:              w.Date,
-		Index:             w.Index,
-		Completed:         w.Completed,
-		Skipped:           w.Skipped,
-		PreviousWorkoutID: w.PreviousWorkoutID,
-		CreatedAt:         w.CreatedAt,
-		UpdatedAt:         w.UpdatedAt,
+		ID:                 w.ID,
+		Name:               w.Name,
+		WorkoutCycleID:     w.WorkoutCycleID,
+		Date:               w.Date,
+		Index:              w.Index,
+		Completed:          w.Completed,
+		Skipped:            w.Skipped,
+		PreviousWorkoutID:  w.PreviousWorkoutID,
+		CreatedAt:          w.CreatedAt,
+		UpdatedAt:          w.UpdatedAt,
+		EstimatedCalories:  w.EstimatedCalories,
+		EstimatedActiveMin: w.EstimatedActiveMin,
+		EstimatedRestMin:   w.EstimatedRestMin,
 	}
 	if len(w.WorkoutExercises) > 0 {
 		resp.WorkoutExercises = make([]WorkoutExerciseResponse, 0, len(w.WorkoutExercises))
@@ -246,6 +249,7 @@ func ToUserSettingsResponse(us *user.UserSettings) UserSettingsResponse {
 		UnitSystem:         us.UnitSystem,
 		BetaOptIn:          us.BetaOptIn,
 		EmailNotifications: us.EmailNotifications,
+		CalculateCalories:  us.CalculateCalories,
 	}
 }
 
@@ -280,4 +284,37 @@ func ToVersionsMultipleResponse(versions []*versions.Version) []VersionResponse 
 		resp = append(resp, ToVersionsResponse(v))
 	}
 	return resp
+}
+
+func ToWorkoutCompleteResponse(w *workout.Workout, kcal float64) WorkoutCompleteResponse {
+	return WorkoutCompleteResponse{
+		Workout:           ToWorkoutResponse(w),
+		EstimatedCalories: kcal,
+	}
+}
+
+func ToWorkoutExerciseCompleteResponse(we *workout.WorkoutExercise, kcal float64) WorkoutExerciseCompleteResponse {
+	return WorkoutExerciseCompleteResponse{
+		WorkoutExercise:   ToWorkoutExerciseResponse(we),
+		EstimatedCalories: kcal,
+	}
+}
+
+func ToWorkoutSetCompleteResponse(s *workout.WorkoutSet, kcal float64) WorkoutSetCompleteResponse {
+	return WorkoutSetCompleteResponse{
+		WorkoutSet:        ToWorkoutSetResponse(s),
+		EstimatedCalories: kcal,
+	}
+}
+
+func ToSetDeleteResponse(kcal float64) SetDeleteResponse {
+	return SetDeleteResponse{
+		EstimatedCalories: kcal,
+	}
+}
+
+func ToWorkoutExerciseDeleteResponse(kcal float64) WorkoutExerciseDeleteResponse {
+	return WorkoutExerciseDeleteResponse{
+		EstimatedCalories: kcal,
+	}
 }

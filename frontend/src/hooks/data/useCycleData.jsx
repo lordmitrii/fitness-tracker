@@ -329,7 +329,17 @@ export default function useCycleData({
       }));
       return ctx;
     },
-    onSuccess: withStatsInvalidation(() => {}),
+    onSuccess: withStatsInvalidation((data, vars) => {
+      if (!data || !data.estimated_calories) return;
+      setCycleCache((cycle) => ({
+        ...cycle,
+        workouts: (cycle.workouts || []).map((w) =>
+          String(w.id) === String(vars.workoutID)
+            ? { ...w, estimated_calories: data?.estimated_calories }
+            : w
+        ),
+      }));
+    }),
   });
 
   const addWorkout = useMutation({
@@ -348,7 +358,10 @@ export default function useCycleData({
       const tempId = `__temp_wk_${Date.now()}`;
       setCycleCache((cycle) => ({
         ...cycle,
-        workouts: (cycle.workouts || []).concat({ ...vars.payload, id: tempId }),
+        workouts: (cycle.workouts || []).concat({
+          ...vars.payload,
+          id: tempId,
+        }),
       }));
       return { ...ctx, tempId };
     },
@@ -772,6 +785,17 @@ export default function useCycleData({
         queryClient.setQueryData(QK.cycle(planID, cycleID), ctx.previous);
       }
     },
+    onSuccess(data, vars) {
+      if (!data || !data.estimated_calories) return;
+      setCycleCache((cycle) => ({
+        ...cycle,
+        workouts: (cycle.workouts || []).map((w) =>
+          String(w.id) === String(vars.workoutID)
+            ? { ...w, estimated_calories: data?.estimated_calories }
+            : w
+        ),
+      }));
+    },
   });
 
   // 11) Delete exercise
@@ -814,7 +838,17 @@ export default function useCycleData({
         queryClient.setQueryData(QK.cycle(planID, cycleID), ctx.previous);
       }
     },
-    onSuccess: withStatsInvalidation(() => {}),
+    onSuccess: withStatsInvalidation((data, vars) => {
+      if (!data || !data.estimated_calories) return;
+      setCycleCache((cycle) => ({
+        ...cycle,
+        workouts: (cycle.workouts || []).map((w) =>
+          String(w.id) === String(vars.workoutID)
+            ? { ...w, estimated_calories: data?.estimated_calories }
+            : w
+        ),
+      }));
+    }),
   });
 
   // 12) Move set up/down within an exercise
@@ -999,6 +1033,17 @@ export default function useCycleData({
         queryClient.setQueryData(QK.cycle(planID, cycleID), ctx.previous);
       }
     },
+    onSuccess(data, vars) {
+      if (!data || !data.estimated_calories) return;
+      setCycleCache((cycle) => ({
+        ...cycle,
+        workouts: (cycle.workouts || []).map((w) =>
+          String(w.id) === String(vars.workoutID)
+            ? { ...w, estimated_calories: data?.estimated_calories }
+            : w
+        ),
+      }));
+    },
   });
 
   // 15) Delete a set
@@ -1039,12 +1084,22 @@ export default function useCycleData({
 
       return { previous };
     },
-    onSuccess: withStatsInvalidation(() => {}),
     onError: (_e, _vars, ctx) => {
       if (ctx?.previous !== undefined) {
         queryClient.setQueryData(QK.cycle(planID, cycleID), ctx.previous);
       }
     },
+    onSuccess: withStatsInvalidation((data, vars) => {
+      if (!data || !data.estimated_calories) return;
+      setCycleCache((cycle) => ({
+        ...cycle,
+        workouts: (cycle.workouts || []).map((w) =>
+          String(w.id) === String(vars.workoutID)
+            ? { ...w, estimated_calories: data?.estimated_calories }
+            : w
+        ),
+      }));
+    }),
   });
 
   // UI
