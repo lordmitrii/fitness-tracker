@@ -298,7 +298,7 @@ func (s *workoutServiceImpl) CalculateWorkoutSummary(ctx context.Context, userID
 		var totalCalories, totalActiveMin, totalRestMin float64
 
 		for _, we := range w.WorkoutExercises {
-			if we == nil {
+			if we == nil || we.Skipped || !we.Completed {
 				continue
 			}
 			ie, err := s.individualExerciseRepo.GetByID(ctx, userID, we.IndividualExerciseID)

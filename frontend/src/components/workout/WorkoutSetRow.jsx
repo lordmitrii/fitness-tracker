@@ -5,12 +5,14 @@ import CheckBox from "../CheckBox";
 import { getExerciseProgressBadge } from "../../utils/exerciseUtils";
 import { useTranslation } from "react-i18next";
 import {
-  toNumberOrEmpty,
+  toNumOrNull,
   toNullIfEmpty,
   toDisplayWeight,
   fromDisplayWeight,
   displayWeightMax,
   displayWeightMin,
+  INTEGER_INPUT_RE,
+  DECIMAL_INPUT_RE,
 } from "../../utils/numberUtils";
 import { SET_LIMITS } from "../../config/constants";
 import { ChartEqualIcon } from "../../icons/ChartIcon";
@@ -33,6 +35,23 @@ const WorkoutSetRow = ({
     cycleID,
     skipQuery: true,
   });
+
+  const [weightDraft, setWeightDraft] = useState(() =>
+    (toDisplayWeight(setItem.weight, unitSystem, 2) ?? "").toString()
+  );
+  const [repsDraft, setRepsDraft] = useState(() =>
+    (setItem.reps ?? "").toString()
+  );
+
+  useEffect(() => {
+    setWeightDraft(
+      (toDisplayWeight(setItem.weight, unitSystem, 2) ?? "").toString()
+    );
+  }, [setItem.weight, unitSystem]);
+
+  useEffect(() => {
+    setRepsDraft((setItem.reps ?? "").toString());
+  }, [setItem.reps]);
 
   const lastSavedRef = useRef({
     reps: toNullIfEmpty(setItem?.reps),
@@ -87,7 +106,10 @@ const WorkoutSetRow = ({
         errors.weight = t("workout_plan_single.validation.weight_range", {
           min: displayWeightMin(SET_LIMITS.weight.min, unitSystem, 2),
           max: displayWeightMax(SET_LIMITS.weight.max, unitSystem, 2),
-          unit: unitSystem === "imperial" ? t("measurements.weight_lb") : t("measurements.weight_kg"),
+          unit:
+            unitSystem === "imperial"
+              ? t("measurements.weight_lb")
+              : t("measurements.weight_kg"),
         });
       }
 
@@ -130,114 +152,157 @@ const WorkoutSetRow = ({
     [exerciseID, setItem.id, workoutID, mutations.toggleSetCompleted]
   );
 
-  // This should do soft checks on every change, set exercises as not completed (send request as well) but value change will be handled on blur only
-  const onChangeWeight = useCallback(
-    async (value) => {
-      const clamped =
-        value === ""
-          ? ""
-          : Math.max(
-              SET_LIMITS.weight.min,
-              Math.min(value, SET_LIMITS.weight.max)
-            );
+  const commitWeight = useCallback(async () => {
+    const num = toNumOrNull(weightDraft);
+    const rounded = num == null ? "" : Math.round(num * 100) / 100;
+    const base = rounded === "" ? "" : fromDisplayWeight(rounded, unitSystem);
+    const clampedBase =
+      base === ""
+        ? ""
+        : Math.max(
+            SET_LIMITS.weight.min,
+            Math.min(base, SET_LIMITS.weight.max)
+          );
 
-      if (setItem.completed || setItem.skipped) {
-        try {
-          await patchCompleted({ completed: false, skipped: false });
-        } catch (error) {
-          console.error("Error unchecking completed set:", error);
-        }
-      }
-
-      validateSet(
-        { ...setItem, weight: clamped, completed: false, skipped: false },
-        { softCheck: true }
+    const prev = lastSavedRef.current?.weight ?? null;
+    const next = toNullIfEmpty(clampedBase);
+    if (prev === next) {
+      setWeightDraft(
+        (toDisplayWeight(clampedBase, unitSystem, 2) ?? "").toString()
       );
-      ui.patchSetFieldsUI({
-        workoutID,
-        exerciseID,
-        setID: setItem.id,
-        weight: clamped,
-        reps: setItem.reps,
-        completed: false,
-        skipped: false,
-      });
-    },
-    [setItem, patchCompleted, validateSet, ui.patchSetFieldsUI]
-  );
-
-  // Same here
-  const onChangeReps = useCallback(
-    async (value) => {
-      const clamped =
-        value === ""
-          ? ""
-          : Math.max(SET_LIMITS.reps.min, Math.min(value, SET_LIMITS.reps.max));
-
-      if (setItem.completed || setItem.skipped) {
-        try {
-          await patchCompleted({ completed: false, skipped: false });
-        } catch (error) {
-          console.error("Error unchecking completed set:", error);
-        }
-      }
-
-      validateSet(
-        { ...setItem, reps: clamped, completed: false, skipped: false },
-        { softCheck: true }
-      );
-      ui.patchSetFieldsUI({
-        workoutID,
-        exerciseID,
-        setID: setItem.id,
-        weight: setItem.weight,
-        reps: clamped,
-        completed: false,
-        skipped: false,
-      });
-    },
-    [setItem, patchCompleted, validateSet, ui.patchSetFieldsUI]
-  );
-
-  // Should do a soft check on errors and send patch to backend with updated fields (this shouldn't toggle completed if value hasn't changed)
-  const handleBlur = useCallback(async () => {
-    const { ok, errors } = validateSet({ ...setItem }, { softCheck: true });
-    if (!ok) {
-      setErrors(errors);
       return;
     }
 
-    const next = {
-      reps: toNullIfEmpty(setItem.reps),
-      weight: toNullIfEmpty(setItem.weight),
+    const candidate = {
+      ...setItem,
+      weight: clampedBase,
+      completed: false,
+      skipped: false,
     };
-    const prev = lastSavedRef.current;
+    const { ok, errors: es } = validateSet(candidate, { softCheck: true }); // soft here; hard happens on complete toggle
+    if (!ok) {
+      setErrors((prev) => ({ ...prev, ...es }));
+      return;
+    }
 
-    const hasChanged = next.reps !== prev.reps || next.weight !== prev.weight;
-
-    if (!hasChanged) return;
-
-    setErrors({});
+    ui.patchSetFieldsUI({
+      workoutID,
+      exerciseID,
+      setID: setItem.id,
+      weight: clampedBase,
+      reps: setItem.reps,
+      completed: false,
+      skipped: false,
+    });
 
     try {
-      await patchSetFields({ reps: setItem.reps, weight: setItem.weight });
-    } catch (error) {
-      console.error("Error patching fields on blur:", error);
+      await patchSetFields({ reps: setItem.reps, weight: clampedBase });
+      setErrors((prev) => ({ ...prev, weight: "" }));
+      setWeightDraft(
+        (toDisplayWeight(clampedBase, unitSystem, 2) ?? "").toString()
+      );
+    } catch (err) {
+      console.error("Error patching weight:", err);
     }
-  }, [setItem, validateSet, patchSetFields]);
+  }, [
+    weightDraft,
+    unitSystem,
+    setItem,
+    ui,
+    patchSetFields,
+    workoutID,
+    exerciseID,
+    validateSet,
+  ]);
 
-  // Can be checked only if passes hard checks and sends patch request to backend to complete set
-  // Can also be unchecked without validation and sends patch request to backend to uncomplete set
+  const commitReps = useCallback(async () => {
+    const num = toNumOrNull(repsDraft);
+    const intVal = num == null ? "" : Math.round(num);
+
+    const clamped =
+      intVal === ""
+        ? ""
+        : Math.max(SET_LIMITS.reps.min, Math.min(intVal, SET_LIMITS.reps.max));
+
+    const prev = lastSavedRef.current?.reps ?? null;
+    const next = toNullIfEmpty(clamped);
+    if (prev === next) {
+      setRepsDraft((clamped ?? "").toString());
+      return;
+    }
+
+    const candidate = {
+      ...setItem,
+      reps: clamped,
+      completed: false,
+      skipped: false,
+    };
+    const { ok, errors: es } = validateSet(candidate, { softCheck: true });
+    if (!ok) {
+      setErrors((prev) => ({ ...prev, ...es }));
+      return;
+    }
+
+    ui.patchSetFieldsUI({
+      workoutID,
+      exerciseID,
+      setID: setItem.id,
+      weight: setItem.weight,
+      reps: clamped,
+      completed: false,
+      skipped: false,
+    });
+
+    try {
+      await patchSetFields({ reps: clamped, weight: setItem.weight });
+      setErrors((prev) => ({ ...prev, reps: "" }));
+      setRepsDraft((clamped ?? "").toString());
+    } catch (err) {
+      console.error("Error patching reps:", err);
+    }
+  }, [
+    repsDraft,
+    setItem,
+    ui,
+    patchSetFields,
+    workoutID,
+    exerciseID,
+    validateSet,
+  ]);
+
   const handleToggle = useCallback(
     async (e) => {
       const checked = e.target.checked;
+
       if (checked) {
-        const { ok, errors } = validateSet(setItem, { softCheck: false });
+        const weightNum = toNumOrNull(weightDraft);
+        const weightRounded =
+          weightNum == null ? "" : Math.round(weightNum * 100) / 100;
+        const weightBase =
+          weightRounded === ""
+            ? ""
+            : fromDisplayWeight(weightRounded, unitSystem);
+
+        const repsNum = toNumOrNull(repsDraft);
+        const repsRounded = repsNum == null ? "" : Math.round(repsNum);
+
+        const candidate = {
+          ...setItem,
+          weight: weightBase === "" ? "" : weightBase,
+          reps: repsRounded === "" ? "" : repsRounded,
+          completed: true,
+          skipped: false,
+        };
+
+        const { ok, errors } = validateSet(candidate, { softCheck: false });
         if (!ok) {
           setErrors(errors);
           alert(t("workout_plan_single.validation.please_check_fields"));
           return;
         }
+
+        await commitReps();
+        await commitWeight();
       }
       setErrors({});
       try {
@@ -246,7 +311,17 @@ const WorkoutSetRow = ({
         console.error("Error toggling sets:", error);
       }
     },
-    [t, setItem, patchCompleted, validateSet]
+    [
+      t,
+      setItem,
+      patchCompleted,
+      validateSet,
+      weightDraft,
+      repsDraft,
+      unitSystem,
+      commitReps,
+      commitWeight,
+    ]
   );
 
   const renderSetDetailsMenu = useCallback(
@@ -288,7 +363,10 @@ const WorkoutSetRow = ({
   );
 
   return (
-    <div title={`Set n${setItem.index} (id: ${setItem.id})`} className="min-w-full grid grid-cols-[6dvw_minmax(20dvw,1fr)_minmax(20dvw,1fr)_minmax(0,6dvw)_1fr] sm:grid-cols-[36px_1fr_1fr_1fr_1fr_1fr] gap-4 items-center py-2">
+    <div
+      title={`Set n${setItem.index} (id: ${setItem.id})`}
+      className="min-w-full grid grid-cols-[6dvw_minmax(20dvw,1fr)_minmax(20dvw,1fr)_minmax(0,6dvw)_1fr] sm:grid-cols-[36px_1fr_1fr_1fr_1fr_1fr] gap-4 items-center py-2"
+    >
       <DropdownMenu
         dotsHidden={!isCurrentCycle}
         isLeft
@@ -299,25 +377,43 @@ const WorkoutSetRow = ({
       </div>
 
       <input
-        type="number"
+        type="text"
+        inputMode="decimal"
         placeholder={
           toDisplayWeight(setItem.previous_weight, unitSystem, 2) ||
           t("general.n_a")
         }
-        value={toDisplayWeight(setItem.weight, unitSystem, 2)}
-        step={0.01}
-        min={displayWeightMin(SET_LIMITS.weight.min, unitSystem, 2)}
-        max={displayWeightMax(SET_LIMITS.weight.max, unitSystem, 2)}
-        inputMode="decimal"
+        value={weightDraft}
         autoComplete="off"
         onFocus={() => setErrors((prev) => ({ ...prev, weight: "" }))}
-        onBlur={handleBlur}
-        onChange={(e) => {
-          const raw = toNumberOrEmpty(e.target.value);
-          const next = raw === "" ? "" : Math.round(raw * 100) / 100;
-          const nextBase = fromDisplayWeight(next, unitSystem);
-          onChangeWeight(nextBase);
+        onChange={async (e) => {
+          const v = e.target.value;
+          if (!DECIMAL_INPUT_RE.test(v)) return;
+          setWeightDraft(v);
+
+          if (setItem.completed || setItem.skipped) {
+            try {
+              await patchCompleted({ completed: false, skipped: false });
+            } catch (err) {
+              console.error(err);
+            }
+          }
+
+          const num = toNumOrNull(v);
+          const rounded = num == null ? "" : Math.round(num * 100) / 100;
+          const base =
+            rounded === "" ? "" : fromDisplayWeight(rounded, unitSystem);
+          validateSet(
+            {
+              ...setItem,
+              weight: base === "" ? "" : base,
+              completed: false,
+              skipped: false,
+            },
+            { softCheck: true }
+          );
         }}
+        onBlur={commitWeight}
         className={`input-style placeholder:italic 
             ${errors.weight ? "!border-2 !border-red-600" : ""}
             ${
@@ -330,21 +426,38 @@ const WorkoutSetRow = ({
       />
 
       <input
-        type="number"
-        placeholder={setItem.previous_reps ?? t("general.n_a")}
-        value={setItem.reps ?? ""}
-        min={SET_LIMITS.reps.min}
-        max={SET_LIMITS.reps.max}
+        type="text"
         inputMode="numeric"
         autoComplete="off"
-        step={1}
+        placeholder={setItem.previous_reps ?? t("general.n_a")}
+        value={repsDraft}
         onFocus={() => setErrors((prev) => ({ ...prev, reps: "" }))}
-        onBlur={handleBlur}
-        onChange={(e) => {
-          const raw = toNumberOrEmpty(e.target.value);
-          const next = raw === "" ? "" : Math.round(raw);
-          onChangeReps(next);
+        onChange={async (e) => {
+          const v = e.target.value;
+          if (!INTEGER_INPUT_RE.test(v)) return;
+          setRepsDraft(v);
+
+          if (setItem.completed || setItem.skipped) {
+            try {
+              await patchCompleted({ completed: false, skipped: false });
+            } catch (err) {
+              console.error(err);
+            }
+          }
+
+          const num = toNumOrNull(v);
+          const rounded = num == null ? "" : Math.round(num);
+          validateSet(
+            {
+              ...setItem,
+              reps: rounded === "" ? "" : rounded,
+              completed: false,
+              skipped: false,
+            },
+            { softCheck: true }
+          );
         }}
+        onBlur={commitReps}
         className={`input-style placeholder:italic
             ${errors.reps ? "!border-2 !border-red-600" : ""}
             ${

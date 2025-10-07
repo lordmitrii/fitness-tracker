@@ -1,11 +1,10 @@
-import { useState, useCallback, memo } from "react";
+import { useState, useCallback, memo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import LoadingState from "../../states/LoadingState";
 import ErrorState from "../../states/ErrorState";
 import { useTranslation } from "react-i18next";
 import useProfileData from "../../hooks/data/useProfileData";
 import { PROFILE_LIMITS } from "../../config/constants";
-import { toNumberOrEmpty } from "../../utils/numberUtils";
 import { usePullToRefreshOverride } from "../../context/PullToRefreshContext";
 import { useLocation } from "react-router-dom";
 import {
@@ -17,9 +16,10 @@ import {
   displayHeightMin,
   displayWeightMax,
   displayWeightMin,
+  INTEGER_INPUT_RE,
+  DECIMAL_INPUT_RE,
+  toNumOrNull,
 } from "../../utils/numberUtils";
-
-const NUMBER_FIELDS = new Set(["age", "weight", "height"]);
 
 const ProfileForm = memo(function ProfileForm({
   initialData,
@@ -30,7 +30,7 @@ const ProfileForm = memo(function ProfileForm({
   unitSystem = "metric",
 }) {
   const { t } = useTranslation();
-
+  const [formErrors, setFormErrors] = useState({});
   const [formData, setFormData] = useState(
     initialData || {
       age: "",
@@ -39,8 +39,6 @@ const ProfileForm = memo(function ProfileForm({
       sex: "",
     }
   );
-
-  const [formErrors, setFormErrors] = useState({});
 
   const validateField = useCallback(
     (name, value) => {
@@ -64,7 +62,10 @@ const ProfileForm = memo(function ProfileForm({
             return t("profile_form.weight_out_of_range", {
               min: displayWeightMin(PROFILE_LIMITS.weight.min, unitSystem),
               max: displayWeightMax(PROFILE_LIMITS.weight.max, unitSystem),
-              unit: unitSystem === "metric" ? t("measurements.weight.kg") : t("measurements.weight.lbs_of"),
+              unit:
+                unitSystem === "metric"
+                  ? t("measurements.weight.kg")
+                  : t("measurements.weight.lbs_of"),
             });
           return;
         case "height":
@@ -77,7 +78,10 @@ const ProfileForm = memo(function ProfileForm({
             return t("profile_form.height_out_of_range", {
               min: displayHeightMin(PROFILE_LIMITS.height.min, unitSystem),
               max: displayHeightMax(PROFILE_LIMITS.height.max, unitSystem),
-              unit: unitSystem === "metric" ? t("measurements.height.cm") : t("measurements.height.ft_of"),
+              unit:
+                unitSystem === "metric"
+                  ? t("measurements.height.cm")
+                  : t("measurements.height.ft_of"),
             });
           return;
         case "sex":
@@ -89,55 +93,154 @@ const ProfileForm = memo(function ProfileForm({
     [t, unitSystem]
   );
 
-  const handleBlur = useCallback(
-    (e) => {
-      const { name } = e.target;
-      const err = validateField(name, formData[name]);
-      setFormErrors((prev) => ({ ...prev, [name]: err }));
-    },
-    [formData, validateField]
+  const [ageDraft, setAgeDraft] = useState(() =>
+    (initialData?.age ?? "").toString()
+  );
+  const [weightDraft, setWeightDraft] = useState(() =>
+    (toDisplayWeight(initialData?.weight, unitSystem) ?? "").toString()
+  );
+  const [heightDraft, setHeightDraft] = useState(() =>
+    (toDisplayHeight(initialData?.height, unitSystem) ?? "").toString()
   );
 
+  const [sexDraft, setSexDraft] = useState(() => initialData?.sex ?? "");
+
+  useEffect(() => {
+    setAgeDraft((formData.age ?? "").toString());
+  }, [formData.age]);
+
+  useEffect(() => {
+    setWeightDraft(
+      (toDisplayWeight(formData.weight, unitSystem) ?? "").toString()
+    );
+  }, [formData.weight, unitSystem]);
+
+  useEffect(() => {
+    setHeightDraft(
+      (toDisplayHeight(formData.height, unitSystem) ?? "").toString()
+    );
+  }, [formData.height, unitSystem]);
+
+  useEffect(() => {
+    setSexDraft(formData.sex ?? "");
+  }, [formData.sex]);
+
+  const commitAge = useCallback(() => {
+    const n = toNumOrNull(ageDraft);
+    const intVal = n == null ? "" : Math.round(n);
+    const err = validateField("age", intVal);
+    setFormErrors((p) => ({ ...p, age: err }));
+
+    if (!err) {
+      setFormData((prev) => ({ ...prev, age: intVal }));
+      setAgeDraft((intVal ?? "").toString());
+    }
+  }, [ageDraft, validateField]);
+
+  const commitWeight = useCallback(() => {
+    const n = toNumOrNull(weightDraft);
+    const rounded = n == null ? "" : Math.round(n * 10) / 10;
+    const base = rounded === "" ? "" : fromDisplayWeight(rounded, unitSystem);
+
+    const clamped =
+      base === ""
+        ? ""
+        : Math.max(
+            PROFILE_LIMITS.weight.min,
+            Math.min(base, PROFILE_LIMITS.weight.max)
+          );
+
+    const err = validateField("weight", clamped);
+    setFormErrors((p) => ({ ...p, weight: err }));
+
+    if (!err) {
+      setFormData((prev) => ({ ...prev, weight: clamped }));
+      setWeightDraft((toDisplayWeight(clamped, unitSystem) ?? "").toString());
+    }
+  }, [weightDraft, unitSystem, validateField]);
+
+  const commitHeight = useCallback(() => {
+    const n = toNumOrNull(heightDraft);
+    const rounded = n == null ? "" : Math.round(n * 10) / 10;
+    const base = rounded === "" ? "" : fromDisplayHeight(rounded, unitSystem);
+
+    const clamped =
+      base === ""
+        ? ""
+        : Math.max(
+            PROFILE_LIMITS.height.min,
+            Math.min(base, PROFILE_LIMITS.height.max)
+          );
+
+    const err = validateField("height", clamped);
+    setFormErrors((p) => ({ ...p, height: err }));
+
+    if (!err) {
+      setFormData((prev) => ({ ...prev, height: clamped }));
+      setHeightDraft((toDisplayHeight(clamped, unitSystem) ?? "").toString());
+    }
+  }, [heightDraft, unitSystem, validateField]);
+
+  const commitSex = useCallback(() => {
+    const err = validateField("sex", sexDraft);
+    setFormErrors((p) => ({ ...p, sex: err }));
+
+    if (!err) {
+      setFormData((prev) => ({ ...prev, sex: sexDraft }));
+    }
+  }, [sexDraft, validateField]);
+
+  const commitAllDrafts = useCallback(() => {
+    commitAge();
+    commitWeight();
+    commitHeight();
+    commitSex();
+  }, [commitAge, commitWeight, commitHeight, commitSex]);
+
   const validate = useCallback(() => {
+    const ageNum = toNumOrNull(ageDraft);
+    const ageInt = ageNum == null ? "" : Math.round(ageNum);
+
+    const wNum = toNumOrNull(weightDraft);
+    const wRounded = wNum == null ? "" : Math.round(wNum * 10) / 10;
+    const wBase =
+      wRounded === "" ? "" : fromDisplayWeight(wRounded, unitSystem);
+
+    const hNum = toNumOrNull(heightDraft);
+    const hRounded = hNum == null ? "" : Math.round(hNum * 10) / 10;
+    const hBase =
+      hRounded === "" ? "" : fromDisplayHeight(hRounded, unitSystem);
+
+    const candidate = {
+      age: ageInt,
+      weight: wBase,
+      height: hBase,
+      sex: sexDraft,
+    };
+
     const fields = ["age", "weight", "height", "sex"];
     const errs = {};
     for (const name of fields) {
-      const err = validateField(name, formData[name]);
+      const err = validateField(name, candidate[name]);
       if (err) errs[name] = err;
     }
-    return errs;
-  }, [formData, validateField]);
-
-  const handleChange = useCallback((e) => {
-    const { name, value } = e.target;
-    const nextValue = NUMBER_FIELDS.has(name) ? toNumberOrEmpty(value) : value;
-
-    setFormData((prev) => ({ ...prev, [name]: nextValue }));
-
-    setFormErrors((prev) =>
-      prev[name] ? { ...prev, [name]: undefined } : prev
-    );
-  }, []);
+    return { errs, candidate };
+  }, [validateField, ageDraft, weightDraft, heightDraft, sexDraft, unitSystem]);
 
   const handleSubmit = useCallback(
     (e) => {
       e.preventDefault();
-      const validationErrors = validate();
-      if (Object.keys(validationErrors).length) {
-        setFormErrors(validationErrors);
+      commitAllDrafts();
+
+      const { errs, candidate } = validate();
+      if (Object.keys(errs).length) {
+        setFormErrors(errs);
         return;
       }
 
-      const payload = {
-        age: formData.age, // already a number
-        weight: formData.weight,
-        height: formData.height,
-        sex: formData.sex,
-      };
-
-      onSubmit(payload);
+      onSubmit(candidate);
     },
-    [formData, onSubmit, validate]
+    [commitAllDrafts, validate, onSubmit]
   );
 
   return (
@@ -149,21 +252,24 @@ const ProfileForm = memo(function ProfileForm({
             {t("profile_form.age_label")}
           </label>
           <input
-            type="number"
+            type="text"
             inputMode="numeric"
             autoComplete="off"
             name="age"
             id="age"
-            min={PROFILE_LIMITS.age.min}
-            max={PROFILE_LIMITS.age.max}
-            step="1"
-            required
             placeholder={t("profile_form.age_placeholder")}
-            value={formData.age}
-            onChange={handleChange}
-            onBlur={handleBlur}
+            value={ageDraft}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (!INTEGER_INPUT_RE.test(v)) return;
+              setAgeDraft(v);
+              if (formErrors.age)
+                setFormErrors((p) => ({ ...p, age: undefined }));
+            }}
+            onBlur={commitAge}
             className="input-style"
           />
+
           {formErrors.age && (
             <p className="text-caption-red mt-1">{formErrors.age}</p>
           )}
@@ -178,15 +284,11 @@ const ProfileForm = memo(function ProfileForm({
             )
           </label>
           <input
-            type="number"
+            type="text"
             inputMode="decimal"
             autoComplete="off"
             name="weight"
             id="weight"
-            min={displayWeightMin(PROFILE_LIMITS.weight.min, unitSystem)}
-            max={displayWeightMax(PROFILE_LIMITS.weight.max, unitSystem)}
-            step="0.1"
-            required
             placeholder={
               t("profile_form.weight_placeholder") +
               " " +
@@ -196,19 +298,18 @@ const ProfileForm = memo(function ProfileForm({
                   : "measurements.weight.lbs_of"
               )
             }
-            value={toDisplayWeight(formData.weight, unitSystem)}
+            value={weightDraft}
             onChange={(e) => {
-              const raw = toNumberOrEmpty(e.target.value); 
-              const displayVal = raw === "" ? "" : Math.round(raw * 10) / 10; 
-              const baseVal = fromDisplayWeight(displayVal, unitSystem);
-              setFormData((prev) => ({ ...prev, weight: baseVal }));
-              setFormErrors((prev) =>
-                prev.weight ? { ...prev, weight: undefined } : prev
-              );
+              const v = e.target.value;
+              if (!DECIMAL_INPUT_RE.test(v)) return;
+              setWeightDraft(v);
+              if (formErrors.weight)
+                setFormErrors((p) => ({ ...p, weight: undefined }));
             }}
-            onBlur={handleBlur}
+            onBlur={commitWeight}
             className="input-style"
           />
+
           {formErrors.weight && (
             <p className="text-caption-red mt-1">{formErrors.weight}</p>
           )}
@@ -223,15 +324,11 @@ const ProfileForm = memo(function ProfileForm({
             )
           </label>
           <input
-            type="number"
+            type="text"
             inputMode="decimal"
             autoComplete="off"
             name="height"
             id="height"
-            min={displayHeightMin(PROFILE_LIMITS.height.min, unitSystem)}
-            max={displayHeightMax(PROFILE_LIMITS.height.max, unitSystem)}
-            step="0.1"
-            required
             placeholder={
               t("profile_form.height_placeholder") +
               " " +
@@ -241,19 +338,15 @@ const ProfileForm = memo(function ProfileForm({
                   : "measurements.height.ft_of"
               )
             }
-            value={toDisplayHeight(formData.height, unitSystem)}
-            onChange={
-              (e) => {
-                const raw = toNumberOrEmpty(e.target.value); 
-                const displayVal = raw === "" ? "" : Math.round(raw * 10) / 10; 
-                const baseVal = fromDisplayHeight(displayVal, unitSystem);
-                setFormData((prev) => ({ ...prev, height: baseVal }));
-                setFormErrors((prev) =>
-                  prev.height ? { ...prev, height: undefined } : prev
-                );
-              }
-            }
-            onBlur={handleBlur}
+            value={heightDraft}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (!DECIMAL_INPUT_RE.test(v)) return;
+              setHeightDraft(v);
+              if (formErrors.height)
+                setFormErrors((p) => ({ ...p, height: undefined }));
+            }}
+            onBlur={commitHeight}
             className="input-style"
           />
           {formErrors.height && (
@@ -272,10 +365,14 @@ const ProfileForm = memo(function ProfileForm({
                   type="radio"
                   name="sex"
                   value={key}
+                  checked={sexDraft === key}
+                  onChange={(e) => {
+                    setSexDraft(e.target.value);
+                    if (formErrors.sex)
+                      setFormErrors((p) => ({ ...p, sex: undefined }));
+                  }}
+                  onBlur={commitSex}
                   required
-                  checked={formData.sex === key}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
                   className="accent-blue-600"
                 />
                 <span className="ml-2 text-body">
