@@ -48,7 +48,7 @@ func (s *workoutServiceImpl) estimateExerciseEnergy(
 	)
 
 	for _, set := range we.WorkoutSets {
-		if set == nil {
+		if set == nil || set.Skipped || !set.Completed {
 			continue
 		}
 		totalSets++

@@ -4,21 +4,6 @@ const pow10 = (p) => Math.pow(10, p);
 const roundDown = (x, p) => Math.floor(x * pow10(p)) / pow10(p);
 const roundUp = (x, p) => Math.ceil(x * pow10(p)) / pow10(p);
 
-export const toNumberOrEmpty = (v) => {
-  if (v === "" || (typeof v === "string" && v.trim() === "")) return "";
-
-  const s = String(v)
-    .replace(/\u00A0/g, "")          
-    .replace(/[，]/g, ",")              
-    .replace(/[٫،٬]/g, ",")         
-    .replace(/[．｡]/g, ".")             
-    .replace(",", ".");                
-
-  if (s === "-" || s === "." || s === "-.") return "";
-
-  const n = Number(s);
-  return Number.isFinite(n) ? n : "";
-};
 
 export const toNullIfEmpty = (v) =>
   v === "" || v === undefined || v === null ? null : v;
@@ -98,4 +83,23 @@ export const displayHeightMax = (
 ) => {
   const v = system === "metric" ? baseMaxMM / MM_PER_CM : baseMaxMM / MM_PER_FT;
   return Number.isInteger(v) ? v : roundUp(v, precision);
+};
+
+export const DECIMAL_INPUT_RE = /^-?\d*(?:[.,]\d*)?$/;
+export const INTEGER_INPUT_RE = /^-?\d*$/;
+
+export const toNumOrNull = (s) => {
+  if (s == null) return null;
+  const trimmed = s.trim();
+  if (
+    trimmed === "" ||
+    trimmed === "." ||
+    trimmed === "," ||
+    trimmed === "-" ||
+    trimmed === "-." ||
+    trimmed === "-,"
+  )
+    return null;
+  const n = Number(trimmed.replace(",", "."));
+  return Number.isFinite(n) ? n : null;
 };

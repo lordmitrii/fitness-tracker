@@ -41,6 +41,11 @@ backend/
 │   │   ├── ai/
 │   │   ├── email/
 │   │   ├── errors/                            # Custom error definitions
+│   │   ├── events/ 
+│   │   │   └── handlelog.go                   # Handle log definition
+│   │   ├── shared/   
+│   │   │   └── domainevt
+│   │   │       └── domain.go                  # Domain event definition
 │   │   ├── user/
 │   │   │   ├── profile.go                     # Domain definition of entity
 │   │   │   ├── repository.go                  # Domain definition of repository
@@ -49,7 +54,7 @@ backend/
 │   │   ├── rbac/
 │   │   ├── translations/
 │   │   └── workout/
-│
+│   │
 │   ├── infrastructure/
 │   │   ├── ai/                                # AIs
 │   │   │   └── openai.go
@@ -60,15 +65,29 @@ backend/
 │   │   │   │   ├── exercise_repo.go
 │   │   │   │   ├── user_repo.go
 │   │   │   │   └── ...
+│   │   │   ├── txctx/
+│   │   │       └── txctx.go                   # Helper to pick up transactions 
 │   │   │   └── redis/                         # Rate limiter
 │   │   │       └── limiter.go
 │   │   ├── email/                             # Email bots, etc.
 │   │   │   └── gmail_sender.go
 │   │   ├── translations/                      # Translations APIs
 │   │   │   └── deepl_translator.go
+│   │   ├── eventbus/  
+│   │   │   └── bus.go
+│   │   ├── uow/  
+│   │   │   ├── accumulator.go                 # Events accumulator
+│   │   │   └── uow.go                         # Transactions helper
 │   │   └── job/                               # Cleanups
 │   │       └── cleanup.go
-│
+│   │
+│   ├── events/
+│   │   │── idem/                              
+│   │   │   └── try_process.go                 # Idempotency logic (events logging)
+│   │   │── workout/                              
+│   │   │   └── handler.go                     # Subscriptions for workouts
+│   │   └── registry.go                        # Registry of all subscriptions 
+│   │
 │   ├── interface/http/
 │   │   ├── dto/                               # DTOs
 │   │   │   ├── mappers.go
@@ -86,7 +105,7 @@ backend/
 │   │   │   ├── rbac.go
 │   │   │   └── rate_limit.go
 │   │   └── server.go                          # Server file that registers all handlers
-│
+│   |
 │   └── usecase/                               # Service layer of the app
 │       ├── contracts.go                       # Definition of service structures
 │       ├── user/
