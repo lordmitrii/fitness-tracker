@@ -68,3 +68,7 @@ func (s *exerciseServiceImpl) UpdateExercise(ctx context.Context, id uint, updat
 func (s *exerciseServiceImpl) DeleteExercise(ctx context.Context, id uint) error {
 	return s.exerciseRepo.Delete(ctx, id)
 }
+
+func (s *exerciseServiceImpl) GetExerciseNamesByMuscleName(ctx context.Context, muscleName string, limit, offset int) ([]*workout.Exercise, error) {
+	return s.exerciseRepo.GetExerciseNamesByMuscleName(ctx, muscleName, limit, offset)
+}

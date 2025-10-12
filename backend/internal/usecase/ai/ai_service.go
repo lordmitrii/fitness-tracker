@@ -4,8 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-)
 
+	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
+)
 
 func (s *aiServiceImpl) AskStatsQuestion(ctx context.Context, userID uint, question, lang, previousResponseID string) (string, string, error) {
 	userSettings, err := s.userService.GetUserSettings(ctx, userID)
@@ -105,4 +106,75 @@ func (s *aiServiceImpl) AskGeneralQuestion(ctx context.Context, userID uint, que
 
 	return s.openai.CallOpenAIChat(ctx, fullPrompt, previousResponseID, 256)
 	// return fmt.Sprintf("General question: %s", question), fmt.Sprintf("previous_response_id: %s", previousResponseID), nil
+}
+
+func (s *aiServiceImpl) GenerateWorkoutPlan(ctx context.Context, userID uint, prompt string, days int, lang string) (*workout.WorkoutPlan, error) {
+	profile, _ := s.userService.GetProfile(ctx, userID)
+
+	exercises, err := s.exerciseService.GetAllExercises(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var fullPrompt string
+	if profile != nil {
+		fullPrompt = fmt.Sprintf(
+			"Generate a workout plan based on the following prompt: %s\nUser profile: Age %d, Height %d mm, Weight %d g. User prefers %d days per week workouts.",
+			prompt, profile.Age, profile.Height, profile.Weight, days,
+		)
+	} else {
+		fullPrompt = fmt.Sprintf(
+			"Generate a workout plan based on the following prompt: %s\nUser profile: Unknown. User prefers %d days per week workouts. User language: %s.",
+			prompt, days, lang,
+		)
+	}
+
+	return s.openai.GenerateWorkoutPlan(ctx, fullPrompt, exercises, 2048)
+}
+
+func (s *aiServiceImpl) GenerateWorkoutPlanWithDB(ctx context.Context, userID uint, prompt string, days int, lang string) (*workout.WorkoutPlan, error) {
+	profile, _ := s.userService.GetProfile(ctx, userID)
+
+	var fullPrompt string
+	if profile != nil {
+		fullPrompt = fmt.Sprintf(
+			"Generate a workout plan based on the following prompt: %s\nUser profile: Age %d, Height %d mm, Weight %d g. User prefers %d days per week workouts.",
+			prompt, profile.Age, profile.Height, profile.Weight, days,
+		)
+	} else {
+		fullPrompt = fmt.Sprintf(
+			"Generate a workout plan based on the following prompt: %s\nUser profile: Unknown. User prefers %d days per week workouts.",
+			prompt, days,
+		)
+	}
+
+	listMG := func(ctx context.Context, limit int) ([]string, error) {
+
+		mgs, err := s.exerciseService.GetAllMuscleGroups(ctx)
+		if err != nil {
+			return nil, err
+		}
+		out := make([]string, 0, len(mgs))
+		for i, mg := range mgs {
+			if i >= limit {
+				break
+			}
+			out = append(out, mg.Name)
+		}
+		return out, nil
+	}
+
+	searchEx := func(ctx context.Context, groupQuery string, limit, offset int) ([]map[string]any, error) {
+		rows, err := s.exerciseService.GetExerciseNamesByMuscleName(ctx, groupQuery, limit, offset)
+		if err != nil {
+			return nil, err
+		}
+		out := make([]map[string]any, 0, len(rows))
+		for _, r := range rows {
+			out = append(out, map[string]any{"slug": r.Slug, "name": r.Name})
+		}
+		return out, nil
+	}
+
+	return s.openai.GenerateWorkoutPlanWithDB(ctx, fullPrompt, 8192, listMG, searchEx)
 }

@@ -1,23 +1,26 @@
 package ai
 
 import (
-	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/ai"
+	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 )
 
 type aiServiceImpl struct {
-	workoutService usecase.WorkoutService
-	userService    usecase.UserService
-	openai         ai.OpenAI
+	workoutService  usecase.WorkoutService
+	exerciseService usecase.ExerciseService
+	userService     usecase.UserService
+	openai          ai.OpenAI
 }
 
 func NewAIService(
 	workoutService usecase.WorkoutService,
+	exerciseService usecase.ExerciseService,
 	userService usecase.UserService,
-	openai ai.OpenAI,	
+	openai ai.OpenAI,
 ) usecase.AIService {
 	return &aiServiceImpl{
-		workoutService: workoutService,
+		workoutService:  workoutService,
+		exerciseService: exerciseService,
 		userService:    userService,
 		openai:         openai,
 	}
