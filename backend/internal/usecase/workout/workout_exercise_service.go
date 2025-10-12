@@ -334,14 +334,8 @@ func (s *workoutServiceImpl) DeleteWorkoutExercise(ctx context.Context, userId, 
 			return err
 		}
 
-		if workoutExercise.PreviousExerciseID != nil {
-			if err := s.individualExerciseRepo.Update(ctx, userId, workoutExercise.IndividualExerciseID, map[string]any{"last_completed_workout_exercise_id": workoutExercise.PreviousExerciseID}); err != nil {
-				return err
-			}
-		} else {
-			if err := s.individualExerciseRepo.Update(ctx, userId, workoutExercise.IndividualExerciseID, map[string]any{"last_completed_workout_exercise_id": nil}); err != nil {
-				return err
-			}
+		if err := s.individualExerciseRepo.RewireLastCompletedWorkoutExercise(ctx, userId, workoutExercise.ID, workoutExercise.PreviousExerciseID); err != nil {
+			return err
 		}
 
 		if err := s.workoutExerciseRepo.Delete(ctx, userId, planId, cycleId, workoutID, id); err != nil {

@@ -111,6 +111,12 @@ func (s *workoutServiceImpl) DeleteWorkout(ctx context.Context, userId, planId, 
 		workoutCycleID := workout.WorkoutCycleID
 		deletedIndex := workout.Index
 
+		for _, we := range workout.WorkoutExercises {
+			if err := s.individualExerciseRepo.RewireLastCompletedWorkoutExercise(ctx, userId, we.ID, we.PreviousExerciseID); err != nil {
+				return err
+			}
+		}
+
 		if err := s.workoutRepo.Delete(ctx, userId, planId, cycleId, id); err != nil {
 			return err
 		}

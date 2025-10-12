@@ -127,4 +127,5 @@ type IndividualExerciseRepository interface {
 	Update(ctx context.Context, userId, id uint, updates map[string]any) error
 	UpdateReturning(ctx context.Context, userId, id uint, updates map[string]any) (*IndividualExercise, error)
 	Delete(ctx context.Context, userId, id uint) error
+	RewireLastCompletedWorkoutExercise(ctx context.Context, userId, id uint, newLastCompletedWorkoutExerciseID *uint) error
 }
