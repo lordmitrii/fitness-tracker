@@ -132,7 +132,7 @@ func main() {
 	var exerciseService usecase.ExerciseService = exercise.NewExerciseService(exerciseRepo, muscleGroupRepo, translator, translationRepo, versionRepo)
 	var workoutService usecase.WorkoutService = workout_usecase.NewWorkoutService(profileRepo, workoutPlanRepo, workoutCycleRepo, workoutRepo, workoutExerciseRepo, workoutSetRepo, individualExerciseRepo, exerciseRepo, db, bus)
 	var userService usecase.UserService = user.NewUserService(userRepo, profileRepo, userConsentRepo, roleRepo, permissionRepo, userSettingsRepo)
-	var aiService usecase.AIService = ai_usecase.NewAIService(workoutService, userService, openai)
+	var aiService usecase.AIService = ai_usecase.NewAIService(workoutService, exerciseService, userService, openai)
 	var emailService usecase.EmailService = email_usecase.NewEmailService(userRepo, roleRepo, emailSender, emailTokenRepo)
 	var rbacService usecase.RBACService = rbac.NewRBACService(roleRepo, permissionRepo, userRepo)
 	var adminService usecase.AdminService = admin.NewAdminService(userRepo, roleRepo, emailService)

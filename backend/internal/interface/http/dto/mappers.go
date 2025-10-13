@@ -318,3 +318,12 @@ func ToWorkoutExerciseDeleteResponse(kcal float64) WorkoutExerciseDeleteResponse
 		EstimatedCalories: kcal,
 	}
 }
+
+func ToAiWorkoutPlanResponse(plan *workout.WorkoutPlan) AIWorkoutPlanResponse {
+	if plan == nil {
+		return AIWorkoutPlanResponse{}
+	}
+	return AIWorkoutPlanResponse{
+		Plan: ToWorkoutPlanResponse(plan),
+	}
+}

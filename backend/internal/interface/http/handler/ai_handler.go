@@ -26,6 +26,7 @@ func NewAIHandler(r *gin.RouterGroup, svc usecase.AIService, rateLimiter usecase
 		ai.POST("/ask-general", h.AskGeneralQuestion)
 		ai.POST("/ask-stats", h.AskStatsQuestion)
 		ai.POST("/ask-workouts", h.AskWorkoutsQuestion)
+		ai.POST("/generate-workout-plan", h.GenerateWorkoutPlan)
 	}
 }
 
@@ -147,4 +148,41 @@ func (h *AIHandler) AskGeneralQuestion(c *gin.Context) {
 		Answer:     resp,
 		ResponseID: prevRespID,
 	})
+}
+
+// GenerateWorkoutPlan godoc
+// @Summary      Generate a workout plan
+// @Description  Generates a personalized workout plan based on user input.
+// @Tags         ai
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.AIWorkoutPlanRequest  true  "Workout plan request payload"
+// @Success      200   {object}  dto.AIWorkoutPlanResponse
+// @Failure      400   {object}  dto.MessageResponse
+// @Failure      401   {object}  dto.MessageResponse
+// @Failure      403   {object}  dto.MessageResponse
+// @Failure      429   {object}  dto.MessageResponse  "Rate limited"
+// @Failure      500   {object}  dto.MessageResponse
+// @Router       /ai/generate-workout-plan [post]
+func (h *AIHandler) GenerateWorkoutPlan(c *gin.Context) {
+	userID, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+
+	var req dto.AIWorkoutPlanRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	plan, err := h.svc.GenerateWorkoutPlan(c.Request.Context(), userID, req.Prompt, req.Days, req.Language)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.ToAiWorkoutPlanResponse(plan))
 }
