@@ -124,8 +124,8 @@ func (s *aiServiceImpl) GenerateWorkoutPlan(ctx context.Context, userID uint, pr
 		)
 	} else {
 		fullPrompt = fmt.Sprintf(
-			"Generate a workout plan based on the following prompt: %s\nUser profile: Unknown. User prefers %d days per week workouts. User language: %s.",
-			prompt, days, lang,
+			"Generate a workout plan based on the following prompt: %s\nUser profile: Unknown. User prefers %d days per week workouts.",
+			prompt, days,
 		)
 	}
 

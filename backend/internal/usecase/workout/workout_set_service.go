@@ -202,9 +202,6 @@ func (s *workoutServiceImpl) CompleteWorkoutSet(ctx context.Context, userId, pla
 			return nil, 0, err
 		}
 	}
-
-	fmt.Println("[DEBUG] resKcal:", resKcal)
-
 	return resSet, resKcal, nil
 }
 

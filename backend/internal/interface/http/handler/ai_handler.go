@@ -27,6 +27,7 @@ func NewAIHandler(r *gin.RouterGroup, svc usecase.AIService, rateLimiter usecase
 		ai.POST("/ask-stats", h.AskStatsQuestion)
 		ai.POST("/ask-workouts", h.AskWorkoutsQuestion)
 		ai.POST("/generate-workout-plan", h.GenerateWorkoutPlan)
+		// ai.POST("/generate-workout-plan-db", h.GenerateWorkoutPlanWithDB) // TODO: remove this
 	}
 }
 
@@ -179,6 +180,28 @@ func (h *AIHandler) GenerateWorkoutPlan(c *gin.Context) {
 	}
 
 	plan, err := h.svc.GenerateWorkoutPlan(c.Request.Context(), userID, req.Prompt, req.Days, req.Language)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.ToAiWorkoutPlanResponse(plan))
+}
+
+func (h *AIHandler) GenerateWorkoutPlanWithDB(c *gin.Context) {
+	userID, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+
+	var req dto.AIWorkoutPlanRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	plan, err := h.svc.GenerateWorkoutPlanWithDB(c.Request.Context(), userID, req.Prompt, req.Days, req.Language)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"slices"
 	"strings"
 
 	"github.com/lordmitrii/golang-web-gin/internal/domain/ai"
@@ -148,6 +147,21 @@ type exerciseWithSlugDto struct {
 	Slug string `json:"slug"`
 }
 
+type state struct {
+	lastMuscleGroups   []string
+	lastMuscleGroupsLC []string
+	selectedGroups     map[string]struct{}
+	sawValidSearch     bool
+	hadListThisHop     bool
+	hadSearchError     bool
+}
+
+const (
+	model             = openai.ChatModelGPT5Nano
+	maxHops           = 15
+	minDistinctGroups = 4
+)
+
 func (o *OpenAI) GenerateWorkoutPlanWithDB(
 	ctx context.Context,
 	input string,
@@ -160,8 +174,23 @@ func (o *OpenAI) GenerateWorkoutPlanWithDB(
 	}
 	client := openai.NewClient(option.WithAPIKey(o.APIKey))
 
-	tools := []any{
-		map[string]any{
+	schemaStrict := func() []option.RequestOption {
+		return []option.RequestOption{
+			option.WithJSONSet("text.format.type", "json_schema"),
+			option.WithJSONSet("text.format.name", "WorkoutPlan"),
+			option.WithJSONSet("text.format.schema", WorkoutPlanJSONSchema()),
+			option.WithJSONSet("text.format.strict", true),
+		}
+	}
+
+	schemaNone := func() []option.RequestOption {
+		return []option.RequestOption{
+			option.WithJSONSet("text.format.type", "text"),
+		}
+	}
+
+	toolList := func() any {
+		return map[string]any{
 			"type":        "function",
 			"name":        "list_muscle_groups",
 			"description": "Return a list of available muscle-group names.",
@@ -172,508 +201,346 @@ func (o *OpenAI) GenerateWorkoutPlanWithDB(
 					"limit": map[string]any{"type": "integer", "minimum": 1, "maximum": 100},
 				},
 			},
-		},
-		map[string]any{
+		}
+	}
+	toolSearch := func(enumGroups []string) any {
+		params := map[string]any{
+			"type":                 "object",
+			"additionalProperties": false,
+			"required":             []any{"group_query"},
+			"properties": map[string]any{
+				"group_query": map[string]any{"type": "string"},
+				"limit":       map[string]any{"type": "integer", "minimum": 1, "maximum": 20},
+				"offset":      map[string]any{"type": "integer", "minimum": 0},
+			},
+		}
+		if len(enumGroups) > 0 {
+			params["properties"].(map[string]any)["group_query"] = map[string]any{
+				"type": "string", "enum": toAnySlice(enumGroups),
+			}
+		}
+		return map[string]any{
 			"type":        "function",
 			"name":        "search_exercises_by_muscle_group",
 			"description": "Find exercises by muscle-group name filter (e.g., 'chest'). Returns a small list.",
-			"parameters": map[string]any{
-				"type":                 "object",
-				"additionalProperties": false,
-				"required":             []any{"group_query"},
-				"properties": map[string]any{
-					"group_query": map[string]any{"type": "string"},
-					"limit":       map[string]any{"type": "integer", "minimum": 1, "maximum": 20},
-					"offset":      map[string]any{"type": "integer", "minimum": 0},
-				},
-			},
-		},
+			"parameters":  params,
+		}
 	}
+	baseTools := []any{toolList(), toolSearch(nil)}
 
-	params := responses.ResponseNewParams{
-		Model: openai.ChatModelGPT5Nano,
-		// Temperature:     openai.Float(0.55),
+	// start the conversation with the user prompt
+	startParams := responses.ResponseNewParams{
+		Model: model,
 		// MaxOutputTokens: openai.Int(maxTokens),
 		Input: responses.ResponseNewParamsInputUnion{OfString: openai.String(input)},
 		Instructions: openai.String(
 			"You are a certified strength coach. " +
-				"You need to create a workout plan using a mix of exercises for different muscle groups (depending on user prompt) from a database. " +
+				"Create a workout plan using exercises from a DB. " +
 				"First, call list_muscle_groups (limit 100) to see available groups (returns { muscle_groups: string[] }). " +
 				"When selecting exercises, ALWAYS call search_exercises_by_muscle_group (limit 20) (returns { exercises: {name:string,slug:string}[] }). " +
 				"Finally, output ONLY JSON valid to the provided JSON Schema.",
 		),
-		// Reasoning: shared.ReasoningParam{
-		// 	Effort: shared.ReasoningEffortLow,
-		// },
-		// Text: responses.ResponseTextConfigParam{
-		// 	Verbosity: responses.ResponseTextConfigVerbosityMedium,
-		// },
-		Store: openai.Bool(true),
+		Reasoning: shared.ReasoningParam{Effort: shared.ReasoningEffortLow},
+		Text:      responses.ResponseTextConfigParam{Verbosity: responses.ResponseTextConfigVerbosityMedium},
+		Store:     openai.Bool(true),
 	}
-
 	resp, err := client.Responses.New(
-		ctx, params,
-		option.WithJSONSet("tools", tools),
-		option.WithJSONSet("tool_choice", "auto"),
-		option.WithJSONSet("parallel_tool_calls", false),
-		option.WithJSONSet("text.format.type", "json_schema"),
-		option.WithJSONSet("text.format.name", "WorkoutPlan"),
-		option.WithJSONSet("text.format.schema", WorkoutPlanJSONSchema()),
-		option.WithJSONSet("text.format.strict", true),
+		ctx, startParams,
+		append(schemaNone(),
+			option.WithJSONSet("tools", baseTools),
+			option.WithJSONSet("tool_choice", "auto"),
+			option.WithJSONSet("parallel_tool_calls", false),
+		)...,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("openai error: %w", err)
 	}
 
-	var (
-		lastMuscleGroups   []string
-		lastMuscleGroupsLC []string
-		hadSearchError     bool
-		sawValidSearch     bool
+	st := state{
+		selectedGroups: make(map[string]struct{}),
+	}
 
-		selectedGroups    = map[string]struct{}{}
-		minDistinctGroups = 4
-	)
+	neededDistinct := func() int {
+		return minInt(minDistinctGroups, len(st.lastMuscleGroups))
+	}
 
-	for range 15 { // max hops
-		out, _ := extractLastAssistantJSON(resp)
-		if out != "" {
-			var plan *workout.WorkoutPlan
-			if err := json.Unmarshal([]byte(out), &plan); err != nil {
-				return nil, fmt.Errorf("invalid JSON: %w; raw=%s", err, out)
-			}
+	// Follow up on tool calls, up to maxHops times
+	for range maxHops {
+		// If the api already produced final JSON, try to return (if constraints are satisfied)
+		if out, _ := extractLastAssistantJSON(resp); out != "" {
 
-			if !sawValidSearch {
-				resp, err = client.Responses.New(
-					ctx,
-					responses.ResponseNewParams{
-						Model:              openai.ChatModelGPT5Nano,
-						PreviousResponseID: openai.String(resp.ID),
-						// Reasoning: shared.ReasoningParam{
-						// 	Effort: shared.ReasoningEffortLow,
-						// },
-						// Text: responses.ResponseTextConfigParam{
-						// 	Verbosity: responses.ResponseTextConfigVerbosityLow,
-						// },
-					},
-					option.WithJSONSet("input", []any{
-						map[string]any{
-							"type": "message", "role": "system",
-							"content": "Before producing the final JSON, call search_exercises_by_muscle_group at least once.",
-						},
-					}),
-					option.WithJSONSet("tools", tools),
-					option.WithJSONSet("tool_choice", map[string]any{"type": "function", "name": "search_exercises_by_muscle_group"}),
-					option.WithJSONSet("text.format.type", "json_schema"),
-					option.WithJSONSet("text.format.name", "WorkoutPlan"),
-					option.WithJSONSet("text.format.schema", WorkoutPlanJSONSchema()),
-					option.WithJSONSet("text.format.strict", true),
-				)
-				if err != nil {
-					return nil, fmt.Errorf("openai error (retry enforce search): %w", err)
-				}
-				continue
-			}
+			if len(st.selectedGroups) < neededDistinct() || !st.sawValidSearch || neededDistinct() == 0 {
 
-			needed := minInt(minDistinctGroups, len(lastMuscleGroups))
-			if needed == 0 {
-				resp, err = client.Responses.New(
-					ctx,
-					responses.ResponseNewParams{
-						Model:              openai.ChatModelGPT5Nano,
-						PreviousResponseID: openai.String(resp.ID),
-						// Reasoning: shared.ReasoningParam{
-						// 	Effort: shared.ReasoningEffortLow,
-						// },
-						// Text: responses.ResponseTextConfigParam{
-						// 	Verbosity: responses.ResponseTextConfigVerbosityLow,
-						// },
-					},
-					option.WithJSONSet("input", []any{
-						map[string]any{
-							"type": "message", "role": "system",
-							"content": "Call list_muscle_groups first, then iteratively search distinct groups.",
-						},
-					}),
-					option.WithJSONSet("tools", []any{tools[0]}),
-					option.WithJSONSet("tool_choice", map[string]any{"type": "function", "name": "list_muscle_groups"}),
-					option.WithJSONSet("text.format.type", "json_schema"),
-					option.WithJSONSet("text.format.name", "WorkoutPlan"),
-					option.WithJSONSet("text.format.schema", WorkoutPlanJSONSchema()),
-					option.WithJSONSet("text.format.strict", true),
-				)
-				if err != nil {
-					return nil, fmt.Errorf("openai error (enforce list first): %w", err)
-				}
-				continue
-			}
-
-			if len(selectedGroups) < needed {
-				done := make([]string, 0, len(selectedGroups))
-				doneSet := map[string]struct{}{}
-				for g := range selectedGroups {
-					done = append(done, g)
-					doneSet[g] = struct{}{}
-				}
-
-				var remaining []string
-				for _, g := range lastMuscleGroups {
-					if _, ok := doneSet[strings.ToLower(g)]; !ok {
-						remaining = append(remaining, g)
+				// Rule 1: At least one search must have happened before accepting JSON
+				if !st.sawValidSearch {
+					resp, err = forceAtLeastOneSearch(ctx, client, resp.ID, schemaNone(), baseTools)
+					if err != nil {
+						return nil, fmt.Errorf("openai error (retry enforce search): %w", err)
 					}
+					continue
 				}
-				resp, err = client.Responses.New(
-					ctx,
-					responses.ResponseNewParams{
-						Model:              openai.ChatModelGPT5Nano,
-						PreviousResponseID: openai.String(resp.ID),
-						// Reasoning: shared.ReasoningParam{
-						// 	Effort: shared.ReasoningEffortLow,
-						// },
-						// Text: responses.ResponseTextConfigParam{
-						// 	Verbosity: responses.ResponseTextConfigVerbosityLow,
-						// },
-					},
-					option.WithJSONSet("input", []any{
-						map[string]any{
-							"type": "message", "role": "system",
-							"content": fmt.Sprintf(
-								"You have searched %d distinct muscle groups: %v. "+
-									"Search more DISTINCT groups until you reach at least %d in total. "+
-									"Pick your next group from: %v",
-								len(done), done, needed, remaining),
-						},
-					}),
-					option.WithJSONSet("tools", []any{
-						map[string]any{
-							"type":        "function",
-							"name":        "search_exercises_by_muscle_group",
-							"description": "Find exercises by muscle-group name filter (e.g., 'chest'). Returns a small list.",
-							"parameters": map[string]any{
-								"type":                 "object",
-								"additionalProperties": false,
-								"required":             []any{"group_query"},
-								"properties": map[string]any{
-									"group_query": map[string]any{"type": "string", "enum": toAnySlice(remaining)},
-									"limit":       map[string]any{"type": "integer", "minimum": 1, "maximum": 20},
-									"offset":      map[string]any{"type": "integer", "minimum": 0},
-								},
-							},
-						},
-					}),
-					option.WithJSONSet("tool_choice", map[string]any{"type": "function", "name": "search_exercises_by_muscle_group"}),
-					option.WithJSONSet("text.format.type", "json_schema"),
-					option.WithJSONSet("text.format.name", "WorkoutPlan"),
-					option.WithJSONSet("text.format.schema", WorkoutPlanJSONSchema()),
-					option.WithJSONSet("text.format.strict", true),
-				)
-				if err != nil {
-					return nil, fmt.Errorf("openai error (enforce multi-group search): %w", err)
+
+				// Rule 2: We must have n distinct groups searched (if we never listed groups, ask to list first)
+				if neededDistinct() == 0 {
+					resp, err = forceListThenSearch(ctx, client, resp.ID, schemaNone(), toolList())
+					if err != nil {
+						return nil, fmt.Errorf("openai error (enforce list first): %w", err)
+					}
+					continue
 				}
-				continue
+				// If we have not yet searched all distinct groups, we need to keep going
+				if len(st.selectedGroups) < neededDistinct() {
+					remaining := remainingGroups(st.lastMuscleGroups, st.selectedGroups)
+					msg := sysMsg(fmt.Sprintf(
+						"Do NOT produce the final JSON yet. "+
+							"You must search at least %d DISTINCT muscle groups; you have %d. "+
+							"Pick your NEXT group from this list and call search_exercises_by_muscle_group: %v",
+						neededDistinct(), len(st.selectedGroups), remaining,
+					))
+					resp, err = client.Responses.New(
+						ctx,
+						responses.ResponseNewParams{
+							Model:              model,
+							PreviousResponseID: openai.String(resp.ID),
+							Reasoning:          shared.ReasoningParam{Effort: shared.ReasoningEffortLow},
+							Text:               responses.ResponseTextConfigParam{Verbosity: responses.ResponseTextConfigVerbosityLow},
+						},
+						append(schemaNone(),
+							option.WithJSONSet("input", []any{msg}),
+							option.WithJSONSet("tools", []any{toolSearch(remaining)}),
+							option.WithJSONSet("tool_choice", map[string]any{
+								"type": "function", "name": "search_exercises_by_muscle_group",
+							}),
+						)...,
+					)
+					if err != nil {
+						return nil, fmt.Errorf("openai error (enforce multi-group search): %w", err)
+					}
+					continue
+				}
+			}
+			// All good, finalize
+			finalMsg := sysMsg("You now have enough distinct groups. Produce EXACTLY ONE final JSON object that conforms to the WorkoutPlan schema. Do not include any extra text.")
+			resp, err = client.Responses.New(
+				ctx,
+				responses.ResponseNewParams{
+					Model:              model,
+					PreviousResponseID: openai.String(resp.ID),
+					Reasoning:          shared.ReasoningParam{Effort: shared.ReasoningEffortLow},
+					Text:               responses.ResponseTextConfigParam{Verbosity: responses.ResponseTextConfigVerbosityLow},
+				},
+				append(schemaStrict(),
+					option.WithJSONSet("input", []any{finalMsg}),
+					option.WithJSONSet("tool_choice", "none"),
+				)...,
+			)
+			if err != nil {
+				return nil, fmt.Errorf("openai error (finalize): %w", err)
 			}
 
-			if len(selectedGroups) < minDistinctGroups {
-				continue
+			var plan workout.WorkoutPlan
+			out, _ := extractLastAssistantJSON(resp)
+			if err := UnmarshalLastJSONObject(out, &plan); err != nil {
+				return nil, fmt.Errorf("invalid JSON (final): %w; raw=%s", err, out)
 			}
-
-			return plan, nil
+			return &plan, nil
 		}
 
-		var raw map[string]any
-		b, _ := json.Marshal(resp)
-		_ = json.Unmarshal(b, &raw)
+		// Otherwise check for tool calls in the response
+		raw := make(map[string]any)
+		_ = json.Unmarshal(mustJSON(resp), &raw)
 		toolCalls := collectToolCalls(raw)
 		if len(toolCalls) == 0 {
 			return nil, fmt.Errorf("no output and no tool calls in response")
 		}
 
-		var inputItems []map[string]any
-		hadList := false
-		hadSearchError = false
+		inputItems, followUpTools, toolChoice := handleToolCalls(
+			ctx, toolCalls, &st, toolSearch, listMuscleGroups, searchExercises,
+		)
 
-		for _, tc := range toolCalls {
-			name := tc["name"].(string)
-			args := tc["arguments"].(map[string]any)
-			callID := firstNonEmpty(tc["call_id"], tc["id"])
-
-			switch name {
-			case "list_muscle_groups":
-				hadList = true
-				limit := intFrom(args["limit"], 100)
-				names, err := listMuscleGroups(ctx, limit)
-				if err != nil {
-					return nil, err
-				}
-				lastMuscleGroups = names
-				lastMuscleGroupsLC = toLowerSlice(names)
-
-				payload := map[string]any{"muscle_groups": names}
-				inputItems = append(inputItems, map[string]any{
-					"type": "function_call_output", "call_id": callID, "output": string(mustJSON(payload)),
-				})
-				inputItems = append(inputItems, map[string]any{
-					"type": "message", "role": "system",
-					"content": fmt.Sprintf(
-						"Iteratively call search_exercises_by_muscle_group for DISTINCT muscle groups from this list. "+
-							"Gather enough exercises to assemble a complete multi-day plan. Pick one group at a time, then repeat. "+
-							"Available groups: %v", lastMuscleGroups),
-				})
-
-			case "search_exercises_by_muscle_group":
-				q := strings.TrimSpace(strings.ToLower(stringFrom(args["group_query"], "")))
-				limit := intFrom(args["limit"], 10)
-				offset := intFrom(args["offset"], 0)
-
-				if !containsLower(lastMuscleGroupsLC, q) {
-					hadSearchError = true
-					errPayload := map[string]any{
-						"error":                 "unknown_muscle_group",
-						"message":               "Pick a muscle_group from the provided list.",
-						"allowed_muscle_groups": lastMuscleGroups,
-						"received":              stringFrom(args["group_query"], ""),
-					}
-					inputItems = append(inputItems, map[string]any{
-						"type": "function_call_output", "call_id": callID, "output": string(mustJSON(errPayload)),
-					})
-					continue
-				}
-
-				rows, err := searchExercises(ctx, q, limit, offset)
-				rowsClean := make([]*exerciseWithSlugDto, 0, len(rows))
-				for _, r := range rows {
-					rowsClean = append(rowsClean, &exerciseWithSlugDto{
-						Name: r["name"].(string),
-						Slug: r["slug"].(string),
-					})
-				}
-
-				if err != nil {
-					return nil, err
-				}
-				sawValidSearch = true
-				selectedGroups[q] = struct{}{}
-
-				payload := map[string]any{"exercises": rowsClean}
-				inputItems = append(inputItems, map[string]any{
-					"type": "function_call_output", "call_id": callID, "output": string(mustJSON(payload)),
-				})
-
-			default:
-				// noop
-			}
-		}
-
-		followupOpts := []option.RequestOption{
+		// Make follow-up request
+		opts := []option.RequestOption{
 			option.WithJSONSet("input", inputItems),
-			option.WithJSONSet("text.format.type", "json_schema"),
-			option.WithJSONSet("text.format.name", "WorkoutPlan"),
-			option.WithJSONSet("text.format.schema", WorkoutPlanJSONSchema()),
-			option.WithJSONSet("text.format.strict", true),
+			option.WithJSONSet("tool_choice", toolChoice),
 		}
-
-		needed := minInt(minDistinctGroups, len(lastMuscleGroups))
-		if hadSearchError && len(lastMuscleGroups) > 0 {
-			restrictedSearchTool := []any{
-				map[string]any{
-					"type":        "function",
-					"name":        "search_exercises_by_muscle_group",
-					"description": "Find exercises by muscle-group name filter (e.g., 'chest'). Returns a small list.",
-					"parameters": map[string]any{
-						"type":                 "object",
-						"additionalProperties": false,
-						"required":             []any{"group_query"},
-						"properties": map[string]any{
-							"group_query": map[string]any{"type": "string", "enum": toAnySlice(lastMuscleGroups)},
-							"limit":       map[string]any{"type": "integer", "minimum": 1, "maximum": 20},
-							"offset":      map[string]any{"type": "integer", "minimum": 0},
-						},
-					},
-				},
-			}
-			followupOpts = append(
-				followupOpts,
-				option.WithJSONSet("tools", restrictedSearchTool),
-				option.WithJSONSet("tool_choice", map[string]any{"type": "function", "name": "search_exercises_by_muscle_group"}),
-			)
-		} else if hadList && len(selectedGroups) < needed {
-			var remaining []string
-			for _, g := range lastMuscleGroups {
-				if _, ok := selectedGroups[strings.ToLower(g)]; !ok {
-					remaining = append(remaining, g)
-				}
-			}
-			restrictedSearchTool := []any{
-				map[string]any{
-					"type":        "function",
-					"name":        "search_exercises_by_muscle_group",
-					"description": "Find exercises by muscle-group name filter (e.g., 'chest'). Returns a small list.",
-					"parameters": map[string]any{
-						"type":                 "object",
-						"additionalProperties": false,
-						"required":             []any{"group_query"},
-						"properties": map[string]any{
-							"group_query": map[string]any{"type": "string", "enum": toAnySlice(remaining)},
-							"limit":       map[string]any{"type": "integer", "minimum": 1, "maximum": 20},
-							"offset":      map[string]any{"type": "integer", "minimum": 0},
-						},
-					},
-				},
-			}
-			followupOpts = append(
-				followupOpts,
-				option.WithJSONSet("tools", restrictedSearchTool),
-				option.WithJSONSet("tool_choice", map[string]any{"type": "function", "name": "search_exercises_by_muscle_group"}),
-			)
-		} else {
-			followupOpts = append(followupOpts, option.WithJSONSet("tool_choice", "auto"))
+		if len(followUpTools) > 0 {
+			opts = append(opts, option.WithJSONSet("tools", followUpTools))
 		}
+		opts = append(opts, schemaNone()...)
 
 		resp, err = client.Responses.New(
 			ctx,
 			responses.ResponseNewParams{
-				Model:              openai.ChatModelGPT5Nano,
+				Model:              model,
 				PreviousResponseID: openai.String(resp.ID),
-				Reasoning: shared.ReasoningParam{
-					Effort: shared.ReasoningEffortLow,
-				},
-				Text: responses.ResponseTextConfigParam{
-					Verbosity: responses.ResponseTextConfigVerbosityLow,
-				},
+				Reasoning:          shared.ReasoningParam{Effort: shared.ReasoningEffortLow},
+				Text:               responses.ResponseTextConfigParam{Verbosity: responses.ResponseTextConfigVerbosityLow},
 			},
-			followupOpts...,
+			opts...,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("openai error (input): %w", err)
 		}
+
 	}
 
+	// If we reach here, we exceeded maxHops
 	return nil, fmt.Errorf("too many tool-call hops without final output")
 }
 
-func toAnySlice(ss []string) []any {
-	out := make([]any, len(ss))
-	for i, s := range ss {
-		out[i] = s
-	}
-	return out
-}
+func handleToolCalls(
+	ctx context.Context,
+	toolCalls []map[string]any,
+	st *state,
+	toolSearch func(enumGroups []string) any,
+	listMuscleGroups func(ctx context.Context, limit int) ([]string, error),
+	searchExercises func(ctx context.Context, groupQuery string, limit, offset int) ([]map[string]any, error),
+) (inputItems []map[string]any, followUpTools []any, toolChoice any) {
+	inputItems = make([]map[string]any, 0, len(toolCalls)+1)
+	st.hadListThisHop = false
+	st.hadSearchError = false
 
-func toLowerSlice(ss []string) []string {
-	out := make([]string, len(ss))
-	for i, s := range ss {
-		out[i] = strings.ToLower(s)
-	}
-	return out
-}
+	for _, tc := range toolCalls {
+		name := tc["name"].(string)
+		args := tc["arguments"].(map[string]any)
+		callID := firstNonEmpty(tc["call_id"], tc["id"])
 
-func containsLower(ssLC []string, sLC string) bool {
-	return slices.Contains(ssLC, sLC)
-}
+		switch name {
+		case "list_muscle_groups":
+			st.hadListThisHop = true
+			limit := intFrom(args["limit"], 100)
 
-func minInt(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
+			names, err := listMuscleGroups(ctx, limit)
+			if err != nil {
+				inputItems = append(inputItems, toolErr(callID, "list_muscle_groups_failed", err.Error()))
+				continue
+			}
+			st.lastMuscleGroups = names
+			st.lastMuscleGroupsLC = toLowerSlice(names)
 
-func collectToolCalls(raw map[string]any) (calls []map[string]any) {
-	out, _ := raw["output"].([]any)
-	for _, item := range out {
-		im, _ := item.(map[string]any)
+			payload := map[string]any{"muscle_groups": names}
+			inputItems = append(inputItems, toolOK(callID, payload))
+			inputItems = append(inputItems, sysMsg(
+				"Iteratively call search_exercises_by_muscle_group for DISTINCT muscle groups from this list. "+
+					"Gather enough exercises to assemble a complete multi-day plan. Pick one group at a time, then repeat. "+
+					fmt.Sprintf("Available groups: %v", st.lastMuscleGroups)),
+			)
 
-		if im["type"] == "function_call" && im["name"] != nil {
-			name, _ := im["name"].(string)
-			callID, _ := im["call_id"].(string)
-			args := im["arguments"]
+		case "search_exercises_by_muscle_group":
+			q := strings.TrimSpace(strings.ToLower(stringFrom(args["group_query"], "")))
+			limit := intFrom(args["limit"], 10)
+			offset := intFrom(args["offset"], 0)
 
-			var argMap map[string]any
-			switch a := args.(type) {
-			case string:
-				_ = json.Unmarshal([]byte(a), &argMap)
-			case map[string]any:
-				argMap = a
-			case nil:
-				argMap = map[string]any{}
+			// Validate against last muscle groups
+			if !containsLower(st.lastMuscleGroupsLC, q) {
+				st.hadSearchError = true
+				inputItems = append(inputItems, toolOK(callID, map[string]any{
+					"error":                 "unknown_muscle_group",
+					"message":               "Pick a muscle_group from the provided list.",
+					"allowed_muscle_groups": st.lastMuscleGroups,
+					"received":              stringFrom(args["group_query"], ""),
+				}))
+				continue
 			}
 
-			calls = append(calls, map[string]any{
-				"name":      name,
-				"id":        callID,
-				"call_id":   callID,
-				"arguments": argMap,
-			})
-			continue
-		}
-
-		if content, ok := im["content"].([]any); ok {
-			for _, p := range content {
-				pm, _ := p.(map[string]any)
-				if pm["type"] == "tool_call" {
-					body, _ := pm["tool_call"].(map[string]any)
-					if body != nil && body["name"] != nil {
-						switch a := body["arguments"].(type) {
-						case string:
-							var obj map[string]any
-							_ = json.Unmarshal([]byte(a), &obj)
-							body["arguments"] = obj
-						case nil:
-							body["arguments"] = map[string]any{}
-						}
-						calls = append(calls, body)
-					}
-				}
+			rows, err := searchExercises(ctx, q, limit, offset)
+			if err != nil {
+				inputItems = append(inputItems, toolErr(callID, "search_exercises_failed", err.Error()))
+				continue
 			}
+			clean := make([]*exerciseWithSlugDto, 0, len(rows))
+			for _, r := range rows {
+				clean = append(clean, &exerciseWithSlugDto{
+					Name: r["name"].(string),
+					Slug: r["slug"].(string),
+				})
+			}
+			inputItems = append(inputItems, toolOK(callID, map[string]any{"exercises": clean}))
+			st.sawValidSearch = true
+			st.selectedGroups[q] = struct{}{}
+
+		default:
+			// noop for unknown tools
 		}
 	}
-	return
-}
 
-func intFrom(v any, def int) int {
-	switch t := v.(type) {
-	case float64:
-		return int(t)
-	case int:
-		return t
+	needed := minInt(minDistinctGroups, len(st.lastMuscleGroups))
+	switch {
+	case st.hadSearchError && len(st.lastMuscleGroups) > 0:
+		followUpTools = []any{toolSearch(st.lastMuscleGroups)}
+		toolChoice = map[string]any{"type": "function", "name": "search_exercises_by_muscle_group"}
+
+	case st.hadListThisHop && len(st.selectedGroups) < needed:
+		remaining := remainingGroups(st.lastMuscleGroups, st.selectedGroups)
+		followUpTools = []any{toolSearch(remaining)}
+		toolChoice = map[string]any{"type": "function", "name": "search_exercises_by_muscle_group"}
+
 	default:
-		return def
+		toolChoice = "auto"
 	}
+
+	return inputItems, followUpTools, toolChoice
 }
 
-func stringFrom(v any, def string) string {
-	if s, ok := v.(string); ok {
-		return s
-	}
-	return def
+func forceAtLeastOneSearch(
+	ctx context.Context,
+	client openai.Client,
+	prevID string,
+	schemaOpts []option.RequestOption,
+	tools []any,
+) (*responses.Response, error) {
+	return client.Responses.New(
+		ctx,
+		responses.ResponseNewParams{
+			Model:              openai.ChatModelGPT5Nano,
+			PreviousResponseID: openai.String(prevID),
+			Reasoning:          shared.ReasoningParam{Effort: shared.ReasoningEffortLow},
+			Text:               responses.ResponseTextConfigParam{Verbosity: responses.ResponseTextConfigVerbosityLow},
+		},
+		append(schemaOpts,
+			option.WithJSONSet("input", []any{
+				sysMsg("Before producing the final JSON, call search_exercises_by_muscle_group at least once."),
+			}),
+			option.WithJSONSet("tools", tools),
+			option.WithJSONSet("tool_choice", map[string]any{"type": "function", "name": "search_exercises_by_muscle_group"}),
+		)...,
+	)
 }
 
-func firstNonEmpty(vals ...any) string {
-	for _, v := range vals {
-		if s, ok := v.(string); ok && s != "" {
-			return s
-		}
-	}
-	return ""
+func forceListThenSearch(
+	ctx context.Context,
+	client openai.Client,
+	prevID string,
+	schemaOpts []option.RequestOption,
+	listTool any,
+) (*responses.Response, error) {
+	return client.Responses.New(
+		ctx,
+		responses.ResponseNewParams{
+			Model:              openai.ChatModelGPT5Nano,
+			PreviousResponseID: openai.String(prevID),
+			Reasoning:          shared.ReasoningParam{Effort: shared.ReasoningEffortLow},
+			Text:               responses.ResponseTextConfigParam{Verbosity: responses.ResponseTextConfigVerbosityLow},
+		},
+		append(schemaOpts,
+			option.WithJSONSet("input", []any{
+				sysMsg("Call list_muscle_groups first, then iteratively search distinct groups."),
+			}),
+			option.WithJSONSet("tools", []any{listTool}),
+			option.WithJSONSet("tool_choice", map[string]any{"type": "function", "name": "list_muscle_groups"}),
+		)...,
+	)
 }
 
-func mustJSON(v any) []byte {
-	b, _ := json.Marshal(v)
-	return b
-}
-
-// extractLastAssistantJSON returns the last assistant JSON text block, if any.
 func extractLastAssistantJSON(resp *responses.Response) (string, error) {
 	if resp == nil {
 		return "", fmt.Errorf("nil response")
 	}
 
-	// Shortcut: OpenAI SDK usually gives the final assistant text here
 	if txt := resp.OutputText(); txt != "" {
 		return strings.TrimSpace(txt), nil
 	}
 
-	// Fallback: walk the raw "output" array
 	var raw map[string]any
 	b, _ := json.Marshal(resp)
 	_ = json.Unmarshal(b, &raw)
@@ -690,7 +557,6 @@ func extractLastAssistantJSON(resp *responses.Response) (string, error) {
 			continue
 		}
 
-		// Each assistant message can have several "content" parts
 		content, _ := m["content"].([]any)
 		for _, c := range content {
 			cm, _ := c.(map[string]any)
