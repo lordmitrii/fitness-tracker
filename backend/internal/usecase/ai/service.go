@@ -21,7 +21,7 @@ func NewAIService(
 	return &aiServiceImpl{
 		workoutService:  workoutService,
 		exerciseService: exerciseService,
-		userService:    userService,
-		openai:         openai,
+		userService:     userService,
+		openai:          openai,
 	}
 }

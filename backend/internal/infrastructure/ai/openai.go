@@ -74,7 +74,7 @@ func (o *OpenAI) GenerateWorkoutPlan(
 	input string,
 	exercises []*workout.Exercise,
 	maxTokens int64,
-) (*workout.WorkoutPlan, error) {
+) (*ai.WorkoutPlanDto, error) {
 	if o.APIKey == "" {
 		return nil, fmt.Errorf("api key not set for OpenAI")
 	}
@@ -134,7 +134,7 @@ func (o *OpenAI) GenerateWorkoutPlan(
 		return nil, fmt.Errorf("empty model output")
 	}
 
-	var plan *workout.WorkoutPlan
+	var plan *ai.WorkoutPlanDto
 	if err := json.Unmarshal([]byte(raw), &plan); err != nil {
 		return nil, fmt.Errorf("invalid JSON: %w; raw=%s", err, raw)
 	}
@@ -168,7 +168,7 @@ func (o *OpenAI) GenerateWorkoutPlanWithDB(
 	maxTokens int64,
 	listMuscleGroups func(ctx context.Context, limit int) ([]string, error),
 	searchExercises func(ctx context.Context, groupQuery string, limit, offset int) ([]map[string]any, error),
-) (*workout.WorkoutPlan, error) {
+) (*ai.WorkoutPlanDto, error) {
 	if o.APIKey == "" {
 		return nil, fmt.Errorf("api key not set for OpenAI")
 	}
@@ -338,7 +338,7 @@ func (o *OpenAI) GenerateWorkoutPlanWithDB(
 				return nil, fmt.Errorf("openai error (finalize): %w", err)
 			}
 
-			var plan workout.WorkoutPlan
+			var plan ai.WorkoutPlanDto
 			out, _ := extractLastAssistantJSON(resp)
 			if err := UnmarshalLastJSONObject(out, &plan); err != nil {
 				return nil, fmt.Errorf("invalid JSON (final): %w; raw=%s", err, out)

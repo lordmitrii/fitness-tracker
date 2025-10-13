@@ -72,3 +72,7 @@ func (s *exerciseServiceImpl) DeleteExercise(ctx context.Context, id uint) error
 func (s *exerciseServiceImpl) GetExerciseNamesByMuscleName(ctx context.Context, muscleName string, limit, offset int) ([]*workout.Exercise, error) {
 	return s.exerciseRepo.GetExerciseNamesByMuscleName(ctx, muscleName, limit, offset)
 }
+
+func (s *exerciseServiceImpl) GetExerciseBySlug(ctx context.Context, slug string) (*workout.Exercise, error) {
+	return s.exerciseRepo.GetBySlug(ctx, slug)
+}

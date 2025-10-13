@@ -2,7 +2,7 @@ package ai
 
 func WorkoutPlanJSONSchema() map[string]any {
 	return map[string]any{
-		"description":          "A structured workout plan organized by numbered cycle days.",
+		"description":          "A structured workout plan with a single cycle ('Week 1') containing workouts (days).",
 		"type":                 "object",
 		"additionalProperties": false,
 		"properties": map[string]any{
@@ -11,80 +11,79 @@ func WorkoutPlanJSONSchema() map[string]any {
 				"description": "Name of the workout plan",
 				"minLength":   1,
 			},
-			"days_per_cycle": map[string]any{
-				"type":        "integer",
-				"description": "Number of days in each workout cycle",
-				"minimum":     1,
-			},
-			"workouts_in_a_cycle": map[string]any{
-				"type":          "object",
-				"description":   "Map of day-number (as a string) to day details.",
-				"patternProperties": map[string]any{
-					"^[1-9]\\d*$": map[string]any{
-						"type":                 "object",
-						"additionalProperties": false,
-						"properties": map[string]any{
-							"name": map[string]any{
-								"type":        "string",
-								"description": "Display name of the day (e.g., 'Day 1')",
-								"minLength":   1,
-							},
-							"exercises": map[string]any{
-								"type":        "array",
-								"description": "Ordered list of exercises for the day",
-								"minItems":    1,
-								"items": map[string]any{
-									"type":                 "object",
-									"additionalProperties": false,
-									"properties": map[string]any{
-										"slug": map[string]any{
-											"type":        "string",
-											"description": "Exercise slug",
-										},
-										"sets": map[string]any{
-											"type":        "integer",
-											"description": "Number of sets for the exercise",
-											"minimum":     1,
+			"workout_cycles": map[string]any{
+				"type":        "array",
+				"description": "Exactly one cycle named 'Week 1'.",
+				"minItems":    1,
+				"maxItems":    1,
+				"items": map[string]any{
+					"type":                 "object",
+					"additionalProperties": false,
+					"properties": map[string]any{
+						"name": map[string]any{
+							"type":  "string",
+							"const": "Week 1",
+						},
+						"workouts": map[string]any{
+							"type":        "array",
+							"description": "Ordered list of workouts (days) in Week 1.",
+							"minItems":    1,
+							"items": map[string]any{
+								"type":                 "object",
+								"additionalProperties": false,
+								"properties": map[string]any{
+									"name": map[string]any{
+										"type":        "string",
+										"description": "Workout name (e.g., 'Day 1')",
+										"minLength":   1,
+									},
+									"workout_exercises": map[string]any{
+										"type":        "array",
+										"description": "Ordered list of exercises for this workout.",
+										"minItems":    1,
+										"items": map[string]any{
+											"type":                 "object",
+											"additionalProperties": false,
+											"properties": map[string]any{
+												"slug": map[string]any{
+													"type":        "string",
+													"description": "Exercise slug",
+													"minLength":   1,
+												},
+												"sets_qt": map[string]any{
+													"type":        "integer",
+													"description": "Number of sets for the exercise",
+													"minimum":     1,
+												},
+											},
+											"required": []any{"slug", "sets_qt"},
 										},
 									},
-									"required": []any{"slug", "sets"},
 								},
+								"required": []any{"name", "workout_exercises"},
 							},
 						},
-						"required": []any{"name", "exercises"},
 					},
+					"required": []any{"name", "workouts"},
 				},
-				"properties":           map[string]any{},
-				"required":             []any{},
-				"additionalProperties": false,
+				"additionalItems": false, // for older drafts; harmless alongside maxItems
 			},
 		},
-		"required": []any{"name", "days_per_cycle", "workouts_in_a_cycle"},
+		"required": []any{"name", "workout_cycles"},
 		"examples": []any{
 			map[string]any{
-				"name":           "Fat Loss Workout Plan",
-				"days_per_cycle": 2,
-				"workouts_in_a_cycle": map[string]any{
-					"1": map[string]any{
-						"name": "Day 1",
-						"exercises": []any{
-							map[string]any{"id": 2, "sets": 1},
-							map[string]any{"id": 52, "sets": 3},
-							map[string]any{"id": 12, "sets": 3},
-							map[string]any{"id": 22, "sets": 3},
-							map[string]any{"id": 32, "sets": 3},
-							map[string]any{"id": 42, "sets": 1},
-						},
-					},
-					"2": map[string]any{
-						"name": "Day 2",
-						"exercises": []any{
-							map[string]any{"id": 2, "sets": 1},
-							map[string]any{"id": 52, "sets": 3},
-							map[string]any{"id": 12, "sets": 3},
-							map[string]any{"id": 22, "sets": 3},
-							map[string]any{"id": 32, "sets": 3},
-							map[string]any{"id": 42, "sets": 1},
+				"name": "Biceps Focus (3-day)",
+				"workout_cycles": []any{
+					map[string]any{
+						"name": "Week 1",
+						"workouts": []any{
+							map[string]any{
+								"name": "Day 1",
+								"workout_exercises": []any{
+									map[string]any{"slug": "barbell-curl", "sets_qt": 3},
+									map[string]any{"slug": "incline-dumbbell-curl", "sets_qt": 3},
+								},
+							},
 						},
 					},
 				},

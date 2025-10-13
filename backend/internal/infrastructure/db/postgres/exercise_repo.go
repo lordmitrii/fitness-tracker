@@ -96,3 +96,10 @@ func (r *ExerciseRepo) GetExerciseNamesByMuscleName(ctx context.Context, muscleN
 	return exercises, nil
 }
 
+func (r *ExerciseRepo) GetBySlug(ctx context.Context, slug string) (*workout.Exercise, error) {
+	var e workout.Exercise
+	if err := r.db.WithContext(ctx).Preload("MuscleGroup").Where("slug = ?", slug).First(&e).Error; err != nil {
+		return nil, err
+	}
+	return &e, nil
+}

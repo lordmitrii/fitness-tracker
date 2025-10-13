@@ -72,6 +72,7 @@ type (
 		UpdateExercise(ctx context.Context, id uint, updates map[string]any) (*workout.Exercise, error)
 		DeleteExercise(ctx context.Context, id uint) error
 		GetExerciseNamesByMuscleName(ctx context.Context, muscleName string, limit, offset int) ([]*workout.Exercise, error)
+		GetExerciseBySlug(ctx context.Context, slug string) (*workout.Exercise, error)
 
 		CreateMuscleGroup(ctx context.Context, mg *workout.MuscleGroup, autoTranslate bool) error
 		GetMuscleGroupByID(ctx context.Context, id uint) (*workout.MuscleGroup, error)

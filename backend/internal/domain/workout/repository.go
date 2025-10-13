@@ -100,6 +100,7 @@ type WorkoutSetRepository interface {
 type ExerciseRepository interface {
 	Create(ctx context.Context, e *Exercise) error
 	GetByID(ctx context.Context, id uint) (*Exercise, error)
+	GetBySlug(ctx context.Context, slug string) (*Exercise, error)
 	GetByMuscleGroupID(ctx context.Context, muscleGroupID *uint) ([]*Exercise, error)
 	GetAll(ctx context.Context) ([]*Exercise, error)
 	Update(ctx context.Context, id uint, updates map[string]any) error

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/lordmitrii/golang-web-gin/internal/domain/ai"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 )
 
@@ -108,6 +109,19 @@ func (s *aiServiceImpl) AskGeneralQuestion(ctx context.Context, userID uint, que
 	// return fmt.Sprintf("General question: %s", question), fmt.Sprintf("previous_response_id: %s", previousResponseID), nil
 }
 
+func (s *aiServiceImpl) lookupExerciseBySlug(ctx context.Context, userID uint, slug string) (*workout.IndividualExercise, error) {
+	ex, err := s.exerciseService.GetExerciseBySlug(ctx, slug)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.workoutService.GetOrCreateIndividualExercise(ctx, userID, &workout.IndividualExercise{
+		ExerciseID:    &ex.ID,
+		Name:          ex.Name,
+		MuscleGroupID: ex.MuscleGroupID,
+	})
+}
+
 func (s *aiServiceImpl) GenerateWorkoutPlan(ctx context.Context, userID uint, prompt string, days int, lang string) (*workout.WorkoutPlan, error) {
 	profile, _ := s.userService.GetProfile(ctx, userID)
 
@@ -129,7 +143,15 @@ func (s *aiServiceImpl) GenerateWorkoutPlan(ctx context.Context, userID uint, pr
 		)
 	}
 
-	return s.openai.GenerateWorkoutPlan(ctx, fullPrompt, exercises, 2048)
+	res, err := s.openai.GenerateWorkoutPlan(ctx, fullPrompt, exercises, 2048)
+	if err != nil {
+		return nil, err
+	}
+	wp, err := ConvertWorkoutPlanDtoToModel(ctx, s.lookupExerciseBySlug, res, userID)
+	if err != nil {
+		return nil, err
+	}
+	return &wp, nil
 }
 
 func (s *aiServiceImpl) GenerateWorkoutPlanWithDB(ctx context.Context, userID uint, prompt string, days int, lang string) (*workout.WorkoutPlan, error) {
@@ -176,5 +198,71 @@ func (s *aiServiceImpl) GenerateWorkoutPlanWithDB(ctx context.Context, userID ui
 		return out, nil
 	}
 
-	return s.openai.GenerateWorkoutPlanWithDB(ctx, fullPrompt, 8192, listMG, searchEx)
+	res, err := s.openai.GenerateWorkoutPlanWithDB(ctx, fullPrompt, 8192, listMG, searchEx)
+	if err != nil {
+		return nil, err
+	}
+	wp, err := ConvertWorkoutPlanDtoToModel(ctx, s.lookupExerciseBySlug, res, userID)
+	if err != nil {
+		return nil, err
+	}
+	return &wp, nil
+}
+
+func ConvertWorkoutPlanDtoToModel(
+	ctx context.Context,
+	lookup func(ctx context.Context, userID uint, slug string) (*workout.IndividualExercise, error),
+	dto *ai.WorkoutPlanDto,
+	userID uint,
+) (workout.WorkoutPlan, error) {
+	if dto == nil {
+		return workout.WorkoutPlan{}, fmt.Errorf("nil dto")
+	}
+
+	wp := workout.WorkoutPlan{
+		Name:          dto.Name,
+		Active:        false,
+		UserID:        userID,
+		WorkoutCycles: make([]*workout.WorkoutCycle, 0, len(dto.WorkoutCycles)),
+	}
+
+	for _, cycleDto := range dto.WorkoutCycles {
+		wc := workout.WorkoutCycle{
+			Name:     cycleDto.Name, // "Week 1"
+			Workouts: make([]*workout.Workout, 0, len(cycleDto.Workouts)),
+		}
+
+		for _, wDto := range cycleDto.Workouts {
+			w := &workout.Workout{
+				Name:             wDto.Name, // "Day 1"
+				WorkoutExercises: make([]*workout.WorkoutExercise, 0, len(wDto.WorkoutExercises)),
+			}
+
+			for exIdx, item := range wDto.WorkoutExercises {
+				ie, err := lookup(ctx, userID, item.Slug)
+				if err != nil {
+					return workout.WorkoutPlan{}, fmt.Errorf("exercise with slug '%s' not found: %w", item.Slug, err)
+				}
+
+				we := &workout.WorkoutExercise{
+					IndividualExerciseID: ie.ID,
+					Index:                exIdx + 1,
+				}
+
+				for setIdx := 0; setIdx < item.SetsQt; setIdx++ {
+					we.WorkoutSets = append(we.WorkoutSets, &workout.WorkoutSet{
+						Index: setIdx + 1,
+					})
+				}
+
+				w.WorkoutExercises = append(w.WorkoutExercises, we)
+			}
+
+			wc.Workouts = append(wc.Workouts, w)
+		}
+
+		wp.WorkoutCycles = append(wp.WorkoutCycles, &wc)
+	}
+
+	return wp, nil
 }
