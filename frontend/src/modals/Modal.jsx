@@ -12,7 +12,6 @@ const Modal = ({ onRequestClose, children, teleportTo = "modal-root" }) => {
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onRequestClose]);
-  
 
   return createPortal(
     <div className="fixed inset-0 z-40 overflow-hidden h-[100vh]">
@@ -21,7 +20,7 @@ const Modal = ({ onRequestClose, children, teleportTo = "modal-root" }) => {
         onClick={onRequestClose}
       />
 
-      <div className="absolute inset-0 flex items-center justify-center">
+      <div className="absolute inset-0 flex items-center justify-center h-[100dvh] pb-[env(safe-area-inset-bottom)]">
         <div
           ref={modalContentRef}
           className="relative bg-white rounded-xl shadow-xl p-6 mx-2 max-w-3xl w-full max-h-[90vh] modal-content"

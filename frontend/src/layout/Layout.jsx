@@ -101,7 +101,7 @@ const Layout = ({ children }) => {
       )}
 
       <HeaderContext.Provider value={ctxValue}>
-        <div className="flex h-dvh min-h-screen flex-col overflow-hidden pt-[env(safe-area-inset-top)] bg-white">
+        <div className="flex h-dvh  flex-col overflow-hidden pt-[env(safe-area-inset-top)] bg-white">
           <NetworkStatusBanner />
 
           <div className="flex-1 min-h-0 flex flex-col sm:flex-row">

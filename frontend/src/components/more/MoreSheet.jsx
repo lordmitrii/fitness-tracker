@@ -62,9 +62,8 @@ const MoreSheet = ({ open, onClose }) => {
 
   const sheetBase = `
     fixed inset-x-0 bottom-0 z-50
-    bg-white shadow-2xl
+    bg-transparent shadow-2xl
     pt-[env(safe-area-inset-top)]
-    pb-[env(safe-area-inset-bottom)]
     sm:max-w-md sm:mx-auto w-full
     h-full overflow-auto
     transform-gpu will-change-transform
