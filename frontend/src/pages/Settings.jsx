@@ -77,7 +77,7 @@ const Settings = () => {
   );
 
   if (loading) return <LoadingState message={t("settings.loading")} />;
-  if (error) return <ErrorState message={error} onRetry={refetch} />;
+  if (error) return <ErrorState error={error} onRetry={refetch} />;
 
   return (
     <>

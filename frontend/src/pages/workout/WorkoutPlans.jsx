@@ -32,7 +32,8 @@ const WorkoutPlans = () => {
     if (searchParams.get("showCurrent") === "true" && plans.length) {
       if (currentCycle) {
         navigate(
-          `/workout-plans/${currentCycle.workout_plan_id}/workout-cycles/${currentCycle.id}`, { replace: true }
+          `/workout-plans/${currentCycle.workout_plan_id}/workout-cycles/${currentCycle.id}`,
+          { replace: true }
         );
       }
     }
@@ -58,7 +59,7 @@ const WorkoutPlans = () => {
           </h1>
           {plans.length > 0 && (
             <button
-              className="btn btn-primary h-fit"
+              className="btn btn-primary h-8 !py-1"
               onClick={() => navigate("/create-workout-plan")}
             >
               <span className="whitespace-nowrap">+ {t("general.create")}</span>

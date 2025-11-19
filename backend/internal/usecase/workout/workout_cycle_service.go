@@ -159,7 +159,7 @@ func (s *workoutServiceImpl) CompleteWorkoutCycle(ctx context.Context, userId, p
 // 2. workout_cycles
 func (s *workoutServiceImpl) DeleteWorkoutCycle(ctx context.Context, userId, planId, id uint) error {
 	return uow.Do(ctx, s.db, func(ctx context.Context) error {
-		plan, err := s.workoutPlanRepo.GetByIDForUpdate(ctx, userId, planId);
+		plan, err := s.workoutPlanRepo.GetByIDForUpdate(ctx, userId, planId)
 		if err != nil {
 			return err
 		}
@@ -171,7 +171,6 @@ func (s *workoutServiceImpl) DeleteWorkoutCycle(ctx context.Context, userId, pla
 		if cycle.PreviousCycleID == nil {
 			return fmt.Errorf("cannot delete the first cycle of a workout plan")
 		}
-
 
 		prevID := *cycle.PreviousCycleID
 		var nextID uint
@@ -214,6 +213,14 @@ func (s *workoutServiceImpl) DeleteWorkoutCycle(ctx context.Context, userId, pla
 				if err := s.workoutPlanRepo.Update(ctx, userId, plan.ID, map[string]any{
 					"current_cycle_id": prevID,
 				}); err != nil {
+					return err
+				}
+			}
+		}
+
+		for _, w := range cycle.Workouts {
+			for _, we := range w.WorkoutExercises {
+				if err := s.individualExerciseRepo.RewireLastCompletedWorkoutExercise(ctx, userId, we.ID, we.PreviousExerciseID); err != nil {
 					return err
 				}
 			}

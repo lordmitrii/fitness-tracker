@@ -29,7 +29,9 @@ const Home = () => {
         <h1 className="sm:hidden text-title-blue-gradient via-blue-500 px-4 font-extrabold">
           Fitness Tracker
         </h1>
-        <h1 className="hidden sm:block text-title font-bold px-4">{t("general.home")}</h1>
+        <h1 className="hidden sm:block text-title font-bold px-4">
+          {t("general.home")}
+        </h1>
       </LayoutHeader>
       <div className="card flex flex-col items-center">
         <h1 className="text-title font-bold mb-8 text-center">

@@ -4,17 +4,24 @@ import api from "../../api";
 import { useCooldown } from "../../hooks/useCooldown";
 import { useNavigate, useSearchParams, Navigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import useStorageObject from "../../hooks/useStorageObject";
 
 const AccountVerification = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, refresh, isAuth, hasRole } = useAuth();
   const [email, setEmail] = useState(user?.email ?? "");
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
-  const [showInputField, setShowInputField] = useState(false);
   const [codeValue, setCodeValue] = useState("");
-  const { cooldown, start: startCooldown } = useCooldown();
+  const [persisted, setPersisted] = useStorageObject(
+    "accountVerification:state",
+    { showInputField: false }
+  );
+  const { cooldown, start: startCooldown } = useCooldown(
+    "cooldown:account-verification"
+  );
+  const showInputField = persisted.showInputField;
   const [pending, setPending] = useState(false);
 
   const [searchParams] = useSearchParams();
@@ -49,7 +56,7 @@ const AccountVerification = () => {
     }
 
     setPending(true);
-    setShowInputField(false);
+    setPersisted((prev) => ({ ...prev, showInputField: false }));
     try {
       await api.patch("users/accounts", { email });
       setEmail(email);
@@ -96,7 +103,7 @@ const AccountVerification = () => {
       if (response.status == 200) {
         setError(null);
         setSuccessMessage(t("account_verification.code_sent"));
-        setShowInputField(true);
+        setPersisted((prev) => ({ ...prev, showInputField: true }));
         startCooldown(60);
       } else {
         throw new Error(t("account_verification.error_sending_email"));
@@ -122,7 +129,7 @@ const AccountVerification = () => {
       if (response.status == 200) {
         await refresh();
         setSuccessMessage(t("account_verification.verification_success"));
-
+        setPersisted((prev) => ({ ...prev, showInputField: false }));
         // Registering path
         if (isRegistering) {
           //   // Try to login
@@ -182,7 +189,7 @@ const AccountVerification = () => {
           inputMode="email"
           value={email}
           onChange={(e) => {
-            setShowInputField(false);
+            setPersisted((prev) => ({ ...prev, showInputField: false }));
             setEmail(e.target.value);
           }}
           placeholder={t("account_verification.email_placeholder")}

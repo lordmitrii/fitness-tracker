@@ -71,6 +71,7 @@ type (
 		GetAllExercises(ctx context.Context) ([]*workout.Exercise, error)
 		UpdateExercise(ctx context.Context, id uint, updates map[string]any) (*workout.Exercise, error)
 		DeleteExercise(ctx context.Context, id uint) error
+		GetExerciseNamesByMuscleName(ctx context.Context, muscleName string, limit, offset int) ([]*workout.Exercise, error)
 
 		CreateMuscleGroup(ctx context.Context, mg *workout.MuscleGroup, autoTranslate bool) error
 		GetMuscleGroupByID(ctx context.Context, id uint) (*workout.MuscleGroup, error)
@@ -124,6 +125,8 @@ type AIService interface {
 	AskStatsQuestion(ctx context.Context, userID uint, question, lang, previousResponseID string) (string, string, error)
 	AskWorkoutsQuestion(ctx context.Context, userID uint, question, lang, previousResponseID string) (string, string, error)
 	AskGeneralQuestion(ctx context.Context, userID uint, question, lang, previousResponseID string) (string, string, error)
+	GenerateWorkoutPlan(ctx context.Context, userID uint, prompt string, days int, lang string) (*workout.WorkoutPlan, error)
+	GenerateWorkoutPlanWithDB(ctx context.Context, userID uint, prompt string, days int, lang string) (*workout.WorkoutPlan, error)
 }
 
 type EmailService interface {

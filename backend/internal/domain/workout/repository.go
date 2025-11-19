@@ -105,6 +105,7 @@ type ExerciseRepository interface {
 	Update(ctx context.Context, id uint, updates map[string]any) error
 	UpdateReturning(ctx context.Context, id uint, updates map[string]any) (*Exercise, error)
 	Delete(ctx context.Context, id uint) error
+	GetExerciseNamesByMuscleName(ctx context.Context, muscleName string, limit, offset int) ([]*Exercise, error)
 }
 
 type MuscleGroupRepository interface {
@@ -127,4 +128,5 @@ type IndividualExerciseRepository interface {
 	Update(ctx context.Context, userId, id uint, updates map[string]any) error
 	UpdateReturning(ctx context.Context, userId, id uint, updates map[string]any) (*IndividualExercise, error)
 	Delete(ctx context.Context, userId, id uint) error
+	RewireLastCompletedWorkoutExercise(ctx context.Context, userId, id uint, newLastCompletedWorkoutExerciseID *uint) error
 }

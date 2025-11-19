@@ -18,6 +18,7 @@ services:
     volumes:
       - certbot-etc:/etc/letsencrypt:ro
       - certbot-www:/var/www/certbot
+      - ./.htpasswd:/etc/nginx/.htpasswd:ro
     ports:
       - "80:80"
       - "443:443"

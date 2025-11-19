@@ -101,7 +101,7 @@ jobs:
             export DB_CONTAINER=ft-db-prod
             export POSTGRES_USER=root
             export POSTGRES_DB=fitness_tracker
-            BACKUP_DIR=~/db_backups
+            BACKUP_DIR=~/fitness-tracker/db_backups
             mkdir -p $BACKUP_DIR
             FILENAME="$BACKUP_DIR/db-backup-latest.sql"
             docker exec -t $DB_CONTAINER pg_dump -U $POSTGRES_USER $POSTGRES_DB > $FILENAME

@@ -3,39 +3,19 @@ import { useLayoutEffect } from "react";
 const useScrollLock = (isLocked) => {
   useLayoutEffect(() => {
     const body = document.body;
+    const originalOverflow = body.style.overflow;
+    const computedOverflow = window.getComputedStyle(body).overflow;
 
     if (isLocked) {
-      const scrollY = window.scrollY;
-      body.style.position = "fixed";
-      body.style.top = `-${scrollY}px`;
-      body.style.left = "0";
-      body.style.right = "0";
-      body.style.overflow = "hidden";
-      document.documentElement.style.height = "100vh";
-    } else {
-      const scrollY = body.style.top;
-      body.style.position = "";
-      body.style.top = "";
-      body.style.left = "";
-      body.style.right = "";
-      body.style.overflow = "";
-      document.documentElement.style.height = "100%";
-      if (scrollY) {
-        window.scrollTo(0, parseInt(scrollY || "0") * -1);
+      if (computedOverflow !== "hidden") {
+        body.style.overflow = "hidden";
       }
+    } else {
+      body.style.overflow = originalOverflow;
     }
 
     return () => {
-      const scrollY = body.style.top;
-      body.style.position = "";
-      body.style.top = "";
-      body.style.left = "";
-      body.style.right = "";
-      body.style.overflow = "";
-      document.documentElement.style.height = "100%";
-      if (scrollY) {
-        window.scrollTo(0, parseInt(scrollY || "0") * -1);
-      }
+      body.style.overflow = originalOverflow;
     };
   }, [isLocked]);
 };

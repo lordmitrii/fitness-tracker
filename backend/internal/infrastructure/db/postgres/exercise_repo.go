@@ -81,3 +81,18 @@ func (r *ExerciseRepo) Delete(ctx context.Context, id uint) error {
 
 	return nil
 }
+
+func (r *ExerciseRepo) GetExerciseNamesByMuscleName(ctx context.Context, muscleName string, limit, offset int) ([]*workout.Exercise, error) {
+	var exercises []*workout.Exercise
+	err := r.db.WithContext(ctx).Select("exercises.name", "exercises.slug").
+		Joins("JOIN muscle_groups ON muscle_groups.id = exercises.muscle_group_id").
+		Where("LOWER(muscle_groups.name) = LOWER(?)", muscleName).
+		Limit(limit).
+		Offset(offset).
+		Find(&exercises).Error
+	if err != nil {
+		return nil, err
+	}
+	return exercises, nil
+}
+

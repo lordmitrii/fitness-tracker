@@ -59,8 +59,8 @@ const MoreContent = ({ onDone, variant = "sheet" }) => {
   return (
     <div
       className={`${
-        isSheet ? "px-4" : "px-3"
-      } flex flex-col justify-between h-full`}
+        isSheet ? "px-4 rounded-t-4xl bg-white" : "px-3"
+      } flex flex-col justify-between h-full pb-[calc(env(safe-area-inset-bottom)+1rem)] mt-[1rem]`}
     >
       <div>
         <div className="flex items-center justify-between mt-4 mb-6">
@@ -151,7 +151,8 @@ const MoreContent = ({ onDone, variant = "sheet" }) => {
           </div>
           <div className="flex justify-center sm:justify-start items-center gap-2">
             <span>
-              {t("general.version")}: {getVersion("app") ? getVersion("app") : t("general.n_a")}{" "}
+              {t("general.version")}:{" "}
+              {getVersion("app") ? getVersion("app") : t("general.n_a")}{" "}
             </span>
           </div>
         </div>

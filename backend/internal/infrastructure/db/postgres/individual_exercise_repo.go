@@ -155,3 +155,15 @@ func (r *IndividualExerciseRepo) Delete(ctx context.Context, userId, id uint) er
 	}
 	return nil
 }
+
+func (r *IndividualExerciseRepo) RewireLastCompletedWorkoutExercise(ctx context.Context, userId, lastCompletedWorkoutExerciseId uint, newLastCompletedWorkoutExerciseId *uint) error {
+	db := r.dbFrom(ctx)
+
+	res := db.Model(&workout.IndividualExercise{}).
+		Where("last_completed_workout_exercise_id = ? AND user_id = ?", lastCompletedWorkoutExerciseId, userId).
+		Update("last_completed_workout_exercise_id", newLastCompletedWorkoutExerciseId)
+	if res.Error != nil {
+		return res.Error
+	}
+	return nil
+}
