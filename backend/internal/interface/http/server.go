@@ -2,7 +2,9 @@ package http
 
 import (
 	"os"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
 	_ "github.com/lordmitrii/golang-web-gin/docs"
@@ -21,6 +23,20 @@ func NewServer(exerciseService usecase.ExerciseService, workoutService usecase.W
 	}
 
 	r := gin.Default()
+
+	if os.Getenv("DEVELOPMENT_MODE") == "true" {
+		r.Use(cors.New(cors.Config{
+			AllowOriginFunc: func(origin string) bool {
+				return true
+			},
+			AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+			AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization", "X-Debug-Label", "X-HTTP-Method", "X-Route-Pattern", "Cache-Control"},
+			ExposeHeaders:    []string{"Content-Length"},
+			AllowCredentials: true,
+			MaxAge:           12 * time.Hour,
+		}))
+	}
+
 	api := r.Group("/api")
 	// api.Use(middleware.DebugHeaders())  // middleware to add debug headers to responses
 
