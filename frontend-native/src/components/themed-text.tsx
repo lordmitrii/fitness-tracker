@@ -1,8 +1,10 @@
-import { StyleSheet, Text, type TextProps } from 'react-native';
-
-import { useThemeColor } from '@/src/hooks/use-theme-color';
+import { Text, type TextProps } from 'react-native';
+import { useTheme } from '@/src/context/ThemeContext';
+import type { TypographyVariant } from '@/src/themes';
 
 export type ThemedTextProps = TextProps & {
+  variant?: TypographyVariant | 'default' | 'defaultSemiBold' | 'subtitle' | 'link';
+  // Legacy props for backward compatibility
   lightColor?: string;
   darkColor?: string;
   type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link';
@@ -10,51 +12,44 @@ export type ThemedTextProps = TextProps & {
 
 export function ThemedText({
   style,
+  variant,
   lightColor,
   darkColor,
-  type = 'default',
+  type,
   ...rest
 }: ThemedTextProps) {
-  const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
+  const { theme } = useTheme();
+
+  // Support both new variant prop and legacy type prop
+  const textVariant = variant || type || 'default';
+
+  // Map legacy types to new variants
+  const variantMap: Record<string, TypographyVariant | null> = {
+    default: 'body',
+    defaultSemiBold: 'body',
+    title: 'title',
+    subtitle: 'title',
+    link: 'bodyBlue',
+  };
+
+  const mappedVariant = variantMap[textVariant] || (textVariant as TypographyVariant);
+
+  // Get style from theme if variant exists, otherwise use custom color
+  const themeStyle = theme.typography[mappedVariant] || theme.typography.body;
+  
+  // Use custom color if provided (for backward compatibility)
+  const color = lightColor || darkColor || themeStyle.color;
 
   return (
     <Text
       style={[
-        { color },
-        type === 'default' ? styles.default : undefined,
-        type === 'title' ? styles.title : undefined,
-        type === 'defaultSemiBold' ? styles.defaultSemiBold : undefined,
-        type === 'subtitle' ? styles.subtitle : undefined,
-        type === 'link' ? styles.link : undefined,
+        themeStyle,
+        color && { color },
+        textVariant === 'defaultSemiBold' && { fontWeight: '600' },
+        textVariant === 'link' && { color: theme.colors.button.primary.background },
         style,
       ]}
       {...rest}
     />
   );
 }
-
-const styles = StyleSheet.create({
-  default: {
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  defaultSemiBold: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: '600',
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    lineHeight: 32,
-  },
-  subtitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  link: {
-    lineHeight: 30,
-    fontSize: 16,
-    color: '#0a7ea4',
-  },
-});

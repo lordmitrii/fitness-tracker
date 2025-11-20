@@ -1,0 +1,42 @@
+{
+  "general": {
+    "home": "Главная",
+    "plans": "Планы",
+    "workout": "Тренировка",
+    "profile": "Профиль",
+    "more": "Еще",
+    "settings": "Настройки",
+    "language": "Язык",
+    "login": "Войти",
+    "register": "Регистрация",
+    "logout": "Выйти",
+    "create": "Создать",
+    "update": "Обновить",
+    "delete": "Удалить",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "close": "Закрыть",
+    "back": "Назад",
+    "next": "Далее",
+    "prev": "Назад",
+    "loading": "Загрузка...",
+    "error": "Ошибка",
+    "success": "Успешно",
+    "active": "Активно",
+    "inactive": "Неактивно",
+    "n_a": "Н/Д",
+    "last_updated": "Последнее обновление",
+    "admin_panel": "Панель администратора",
+    "workout_plans": "Планы тренировок",
+    "ai_chat": "AI Чат",
+    "contact_support": "Связаться с поддержкой",
+    "version": "Версия",
+    "create_workout_plan": "Создать план тренировок",
+    "update_workout_plan": "Обновить план тренировок",
+    "users": "Пользователи",
+    "pagination": {
+      "page_of": "Страница {{page}} из {{pageCount}}"
+    }
+  }
+}
+

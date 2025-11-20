@@ -1,0 +1,42 @@
+{
+  "general": {
+    "home": "Home",
+    "plans": "Plans",
+    "workout": "Workout",
+    "profile": "Profile",
+    "more": "More",
+    "settings": "Settings",
+    "language": "Language",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "create": "Create",
+    "update": "Update",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "prev": "Previous",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "active": "Active",
+    "inactive": "Inactive",
+    "n_a": "N/A",
+    "last_updated": "Last updated",
+    "admin_panel": "Admin Panel",
+    "workout_plans": "Workout Plans",
+    "ai_chat": "AI Chat",
+    "contact_support": "Contact Support",
+    "version": "Version",
+    "create_workout_plan": "Create Workout Plan",
+    "update_workout_plan": "Update Workout Plan",
+    "users": "Users",
+    "pagination": {
+      "page_of": "Page {{page}} of {{pageCount}}"
+    }
+  }
+}
+

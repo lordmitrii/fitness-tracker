@@ -1,0 +1,42 @@
+{
+  "general": {
+    "home": "首页",
+    "plans": "计划",
+    "workout": "训练",
+    "profile": "个人资料",
+    "more": "更多",
+    "settings": "设置",
+    "language": "语言",
+    "login": "登录",
+    "register": "注册",
+    "logout": "退出",
+    "create": "创建",
+    "update": "更新",
+    "delete": "删除",
+    "save": "保存",
+    "cancel": "取消",
+    "close": "关闭",
+    "back": "返回",
+    "next": "下一步",
+    "prev": "上一步",
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "active": "活跃",
+    "inactive": "非活跃",
+    "n_a": "不适用",
+    "last_updated": "最后更新",
+    "admin_panel": "管理面板",
+    "workout_plans": "训练计划",
+    "ai_chat": "AI聊天",
+    "contact_support": "联系支持",
+    "version": "版本",
+    "create_workout_plan": "创建训练计划",
+    "update_workout_plan": "更新训练计划",
+    "users": "用户",
+    "pagination": {
+      "page_of": "第 {{page}} 页，共 {{pageCount}} 页"
+    }
+  }
+}
+
