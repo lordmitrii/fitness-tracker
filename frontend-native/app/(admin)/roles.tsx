@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import { View, Text, ScrollView, StyleSheet, FlatList, Pressable, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, FlatList, Pressable, ActivityIndicator, RefreshControl } from "react-native";
 import { Stack } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/src/context/ThemeContext";
 import { createHeaderOptions } from "@/src/navigation/headerConfig";
 import { LoadingState, ErrorState } from "@/src/states";
 import api from "@/src/api";
-import PullToRefresh from "@/src/components/common/PullToRefresh";
+import { useHapticFeedback } from "@/src/hooks/useHapticFeedback";
 
 type Role = {
   id: number;
@@ -16,9 +16,11 @@ type Role = {
 export default function RolesScreen() {
   const { t } = useTranslation();
   const { theme } = useTheme();
+  const haptics = useHapticFeedback();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
   const styles = createStyles(theme);
 
   const loadRoles = useCallback(async () => {
@@ -39,8 +41,18 @@ export default function RolesScreen() {
   }, [loadRoles]);
 
   const handleRefresh = useCallback(async () => {
-    await loadRoles();
-  }, [loadRoles]);
+    setRefreshing(true);
+    haptics.triggerLight();
+    try {
+      await loadRoles();
+      haptics.triggerSuccess();
+    } catch (err) {
+      haptics.triggerError();
+      console.error("Error refreshing roles:", err);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [loadRoles, haptics]);
 
   if (loading && roles.length === 0) {
     return (
@@ -96,25 +108,32 @@ export default function RolesScreen() {
           title: t("admin.roles") || "Roles",
         })}
       />
-      <PullToRefresh onRefresh={handleRefresh}>
-        <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-          {roles.length > 0 ? (
-            <FlatList
-              data={roles}
-              renderItem={renderRole}
-              keyExtractor={(item) => String(item.id)}
-              contentContainerStyle={styles.listContent}
-              style={styles.list}
-            />
-          ) : (
-            <View style={styles.emptyContainer}>
-              <Text style={[styles.emptyText, { color: theme.colors.text.secondary }]}>
-                {t("admin.no_roles_found") || "No roles found"}
-              </Text>
-            </View>
-          )}
-        </View>
-      </PullToRefresh>
+      <FlatList
+        data={roles}
+        renderItem={renderRole}
+        keyExtractor={(item) => String(item.id)}
+        contentContainerStyle={[
+          styles.listContent,
+          roles.length === 0 && styles.emptyListContent,
+        ]}
+        style={[styles.list, { backgroundColor: theme.colors.background }]}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={theme.colors.button.primary.background}
+            colors={[theme.colors.button.primary.background]}
+            progressBackgroundColor={theme.colors.background}
+          />
+        }
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={[styles.emptyText, { color: theme.colors.text.secondary }]}>
+              {t("admin.no_roles_found") || "No roles found"}
+            </Text>
+          </View>
+        }
+      />
     </>
   );
 }
@@ -129,6 +148,10 @@ const createStyles = (theme: any) => StyleSheet.create({
   listContent: {
     padding: theme.spacing[4],
     gap: theme.spacing[3],
+    flexGrow: 1,
+  },
+  emptyListContent: {
+    justifyContent: "center",
   },
   roleCard: {
     borderRadius: theme.borderRadius.xl,

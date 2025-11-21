@@ -122,15 +122,17 @@ export default function LogPanel({ onClose }: LogPanelProps) {
       <ScrollView style={styles.logsContainer} contentContainerStyle={styles.logsContent}>
         {logs.map((l: LogEntry, i: number) => (
           <View key={i} style={styles.logEntry}>
-            <Text style={[styles.logTime, { color: theme.colors.text.tertiary }]}>
-              {new Date(l.ts || Date.now()).toLocaleTimeString()}
-            </Text>
-            <Text style={[styles.logLevel, { color: levelColor(l.level) }]}>
-              [{String(l.level || "").toUpperCase()}]
-            </Text>{" "}
+            <View style={styles.logHeaderRow}>
+              <Text style={[styles.logTime, { color: theme.colors.text.tertiary }]}>
+                {new Date(l.ts || Date.now()).toLocaleTimeString()}
+              </Text>
+              <Text style={[styles.logLevel, { color: levelColor(l.level) }]}>
+                [{String(l.level || "").toUpperCase()}]
+              </Text>
+            </View>
             <Text style={[styles.logMessage, { color: theme.colors.text.primary }]}>
               {typeof l.msg === "string" ? l.msg : JSON.stringify(l.msg)}
-                </Text>
+            </Text>
             {l.meta && (
               <View style={[styles.logMeta, { backgroundColor: theme.colors.card.background, borderColor: theme.colors.border }]}>
                 <Text style={[styles.logMetaText, { color: theme.colors.text.secondary }]}>
@@ -140,8 +142,8 @@ export default function LogPanel({ onClose }: LogPanelProps) {
             )}
           </View>
         ))}
-          </ScrollView>
-        </View>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -194,12 +196,15 @@ const styles = StyleSheet.create({
   },
   logEntry: {
     marginBottom: 8,
+  },
+  logHeaderRow: {
     flexDirection: "row",
+    alignItems: "center",
     flexWrap: "wrap",
+    gap: 8,
   },
   logTime: {
     fontSize: 11,
-    marginRight: 8,
     fontFamily: Platform.select({ default: "System", ios: "Menlo", android: "monospace" }),
   },
   logLevel: {

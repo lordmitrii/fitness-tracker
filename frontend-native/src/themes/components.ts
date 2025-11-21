@@ -1,25 +1,25 @@
-import { ViewStyle, TextStyle } from 'react-native';
-import { ThemeColors } from './colors';
-import { spacing, borderRadius, shadows } from './spacing';
+import { ViewStyle, TextStyle } from "react-native";
+import { ThemeColors } from "./colors";
+import { spacing, borderRadius, shadows } from "./spacing";
 
 export type ButtonVariant =
-  | 'primary'
-  | 'primaryInverted'
-  | 'primaryLight'
-  | 'secondary'
-  | 'secondaryLight'
-  | 'danger'
-  | 'dangerLight'
-  | 'warning'
-  | 'success'
-  | 'successLight';
+  | "primary"
+  | "primaryInverted"
+  | "primaryLight"
+  | "secondary"
+  | "secondaryLight"
+  | "danger"
+  | "dangerLight"
+  | "warning"
+  | "success"
+  | "successLight";
 
 export const createComponentStyles = (colors: ThemeColors) => {
   const baseButton: ViewStyle = {
     paddingHorizontal: spacing[4],
     paddingVertical: spacing[2],
     borderRadius: borderRadius.lg,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -27,7 +27,7 @@ export const createComponentStyles = (colors: ThemeColors) => {
   };
 
   const baseButtonText: TextStyle = {
-    fontWeight: '600',
+    fontWeight: "600",
     fontSize: 16,
   };
 
@@ -35,7 +35,7 @@ export const createComponentStyles = (colors: ThemeColors) => {
     // Card styles
     card: {
       backgroundColor: colors.card.background,
-      borderRadius: borderRadius['2xl'],
+      borderRadius: borderRadius["2xl"],
       padding: spacing[8],
       margin: spacing[4],
       ...shadows.lg,
@@ -43,7 +43,7 @@ export const createComponentStyles = (colors: ThemeColors) => {
 
     // Input styles
     input: {
-      width: '100%',
+      width: "100%",
       borderWidth: 1,
       borderColor: colors.input.border,
       borderRadius: borderRadius.lg,
@@ -194,7 +194,7 @@ export const createComponentStyles = (colors: ThemeColors) => {
       paddingVertical: spacing[2],
       paddingHorizontal: spacing[3],
       marginBottom: spacing[2],
-      alignItems: 'center',
+      alignItems: "center",
     } as ViewStyle,
 
     containerErrorText: {
@@ -210,7 +210,7 @@ export const createComponentStyles = (colors: ThemeColors) => {
       paddingVertical: spacing[2],
       paddingHorizontal: spacing[3],
       marginBottom: spacing[2],
-      alignItems: 'center',
+      alignItems: "center",
     } as ViewStyle,
 
     containerSuccessText: {
@@ -219,4 +219,3 @@ export const createComponentStyles = (colors: ThemeColors) => {
     } as TextStyle,
   };
 };
-

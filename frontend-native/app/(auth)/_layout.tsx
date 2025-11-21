@@ -9,19 +9,15 @@ export default function AuthLayout() {
     guestOnly: true,
     redirectAuthenticatedTo: "/(tabs)",
   });
-  
+
   const headerOptions = createHeaderOptions(theme, {
     headerShown: true,
+    
   });
 
   if (guard.state !== "allowed") {
     return guard.element;
   }
 
-  return (
-    <Stack
-      screenOptions={headerOptions}
-    />
-  );
+  return <Stack screenOptions={headerOptions} />;
 }
-

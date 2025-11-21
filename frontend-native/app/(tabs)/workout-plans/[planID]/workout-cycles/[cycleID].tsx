@@ -1,14 +1,14 @@
 import { useCallback, useMemo, useState } from "react";
-import { View, Text, ScrollView, StyleSheet, Pressable, FlatList, Alert } from "react-native";
+import { View, Text, StyleSheet, Pressable, FlatList, Alert, RefreshControl } from "react-native";
 import { useLocalSearchParams, router, Stack } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/src/context/ThemeContext";
 import { createHeaderOptions } from "@/src/navigation/headerConfig";
 import { LoadingState, ErrorState } from "@/src/states";
-import PullToRefresh from "@/src/components/common/PullToRefresh";
 import useCycleData from "@/src/hooks/data/useCycleData";
 import usePlansData from "@/src/hooks/data/usePlansData";
 import useSettingsData from "@/src/hooks/data/useSettingsData";
+import { useHapticFeedback } from "@/src/hooks/useHapticFeedback";
 import { MaterialIcons } from "@expo/vector-icons";
 import WorkoutExerciseList from "@/src/components/workout/WorkoutExerciseList";
 import AddWorkoutExerciseModal from "@/src/components/workout/AddWorkoutExerciseModal";
@@ -19,6 +19,7 @@ type Identifier = string | number;
 export default function WorkoutCycleScreen() {
   const { t } = useTranslation();
   const { theme } = useTheme();
+  const haptics = useHapticFeedback();
   const { planID, cycleID } = useLocalSearchParams<{
     planID: string;
     cycleID: string;
@@ -52,10 +53,21 @@ export default function WorkoutCycleScreen() {
   } | null>(null);
   const [menuWorkout, setMenuWorkout] = useState<any | null>(null);
   const [menuCycle, setMenuCycle] = useState<boolean>(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = useCallback(async () => {
-    await refetchAll();
-  }, [refetchAll]);
+    setRefreshing(true);
+    haptics.triggerLight();
+    try {
+      await refetchAll();
+      haptics.triggerSuccess();
+    } catch (error) {
+      haptics.triggerError();
+      console.error("Error refreshing cycle data:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetchAll, haptics]);
 
   const progressPercentage = totalSets > 0 ? (completedSets / totalSets) * 100 : 0;
 
@@ -367,6 +379,115 @@ export default function WorkoutCycleScreen() {
 
   const canCreateWorkout = !cycle?.next_cycle_id && !!plan?.active;
 
+  const renderHeader = () => (
+    <View
+      style={[
+        styles.headerCard,
+        { backgroundColor: theme.colors.card.background, borderColor: theme.colors.border },
+      ]}
+    >
+      <Text style={[styles.planName, { color: theme.colors.text.primary }]}>
+        {t("workout_plan_single.plan_label")} {plan?.name}
+      </Text>
+      <Text style={[styles.cycleName, { color: theme.colors.text.secondary }]}>
+        {cycle?.name}
+      </Text>
+
+      {totalSets > 0 && (
+        <View style={styles.progressContainer}>
+          <View style={styles.progressHeader}>
+            <Text style={[styles.progressLabel, { color: theme.colors.text.secondary }]}>
+              {t("workout_plan_single.progress")}
+            </Text>
+            <Text style={[styles.progressText, { color: theme.colors.text.primary }]}>
+              {completedSets} / {totalSets} {t("measurements.sets")}
+            </Text>
+          </View>
+          <View
+            style={[
+              styles.progressBar,
+              {
+                backgroundColor: theme.colors.border,
+              },
+            ]}
+          >
+            <View
+              style={[
+                styles.progressFill,
+                {
+                  width: `${progressPercentage}%`,
+                  backgroundColor: theme.colors.button.primary.background,
+                },
+              ]}
+            />
+          </View>
+        </View>
+      )}
+
+      {allWorkoutsCompleted && (
+        <Pressable
+          style={[
+            styles.completeButton,
+            {
+              backgroundColor: theme.colors.button.success.background,
+            },
+          ]}
+          onPress={handleCompleteCycle}
+        >
+          <Text
+            style={[
+              styles.completeButtonText,
+              { color: theme.colors.button.success.text },
+            ]}
+          >
+            {t("workout_plan_single.complete_cycle")}
+          </Text>
+        </Pressable>
+      )}
+    </View>
+  );
+
+  const renderEmptyWorkouts = () => (
+    <View
+      style={[
+        styles.emptyContainer,
+        {
+          backgroundColor: theme.colors.card.background,
+          borderColor: theme.colors.border,
+        },
+      ]}
+    >
+      <Text style={[styles.emptyText, { color: theme.colors.text.secondary }]}>
+        {t("workout_plan_single.no_workouts")}
+      </Text>
+    </View>
+  );
+
+  const renderFooter = () =>
+    canCreateWorkout ? (
+      <Pressable
+        style={[
+          styles.createWorkoutButton,
+          { backgroundColor: theme.colors.button.primary.background },
+        ]}
+        onPress={handleCreateWorkoutPress}
+      >
+        <MaterialIcons
+          name="add"
+          size={20}
+          color={theme.colors.button.primary.text}
+        />
+        <Text
+          style={[
+            styles.createWorkoutText,
+            { color: theme.colors.button.primary.text },
+          ]}
+        >
+          {t("workout_plan_single.create_workout")}
+        </Text>
+      </Pressable>
+    ) : null;
+
   return (
     <>
       <Stack.Screen
@@ -389,121 +510,35 @@ export default function WorkoutCycleScreen() {
           ),
         })}
       />
-      <PullToRefresh onRefresh={handleRefresh}>
-        <ScrollView
-          style={[styles.container, { backgroundColor: theme.colors.background }]}
-          contentContainerStyle={styles.content}
-        >
-          <View style={[styles.headerCard, { backgroundColor: theme.colors.card.background, borderColor: theme.colors.border }]}>
-            <Text style={[styles.planName, { color: theme.colors.text.primary }]}>
-              {t("workout_plan_single.plan_label")} {plan?.name}
-            </Text>
-            <Text style={[styles.cycleName, { color: theme.colors.text.secondary }]}>
-              {cycle?.name}
-            </Text>
-
-            {totalSets > 0 && (
-              <View style={styles.progressContainer}>
-                <View style={styles.progressHeader}>
-                  <Text style={[styles.progressLabel, { color: theme.colors.text.secondary }]}>
-                    {t("workout_plan_single.progress")}
-                  </Text>
-                  <Text style={[styles.progressText, { color: theme.colors.text.primary }]}>
-                    {completedSets} / {totalSets} {t("measurements.sets")}
-                  </Text>
-                </View>
-                <View
-                  style={[
-                    styles.progressBar,
-                    {
-                      backgroundColor: theme.colors.border,
-                    },
-                  ]}
-                >
-                  <View
-                    style={[
-                      styles.progressFill,
-                      {
-                        width: `${progressPercentage}%`,
-                        backgroundColor: theme.colors.button.primary.background,
-                      },
-                    ]}
-                  />
-                </View>
-              </View>
-            )}
-
-            {allWorkoutsCompleted && (
-              <Pressable
-                style={[
-                  styles.completeButton,
-                  {
-                    backgroundColor: theme.colors.button.success.background,
-                  },
-                ]}
-                onPress={handleCompleteCycle}
-              >
-                <Text
-                  style={[
-                    styles.completeButtonText,
-                    { color: theme.colors.button.success.text },
-                  ]}
-                >
-                  {t("workout_plan_single.complete_cycle")}
-                </Text>
-              </Pressable>
-            )}
-          </View>
-
-          {workouts.length > 0 ? (
-            <FlatList
-              data={workouts}
-              renderItem={renderWorkout}
-              keyExtractor={(item) => String(item.id)}
-              scrollEnabled={false}
-              contentContainerStyle={styles.workoutsList}
-            />
-          ) : (
-            <View
-              style={[
-                styles.emptyContainer,
-                {
-                  backgroundColor: theme.colors.card.background,
-                  borderColor: theme.colors.border,
-                },
-              ]}
-            >
-              <Text style={[styles.emptyText, { color: theme.colors.text.secondary }]}>
-                {t("workout_plan_single.no_workouts")}
-              </Text>
-            </View>
-          )}
-
-          {canCreateWorkout && (
-            <Pressable
-              style={[
-                styles.createWorkoutButton,
-                { backgroundColor: theme.colors.button.primary.background },
-              ]}
-              onPress={handleCreateWorkoutPress}
-            >
-              <MaterialIcons
-                name="add"
-                size={20}
-                color={theme.colors.button.primary.text}
-              />
-              <Text
-                style={[
-                  styles.createWorkoutText,
-                  { color: theme.colors.button.primary.text },
-                ]}
-              >
-                {t("workout_plan_single.create_workout")}
-              </Text>
-            </Pressable>
-          )}
-        </ScrollView>
-      </PullToRefresh>
+      <FlatList
+        data={workouts}
+        renderItem={renderWorkout}
+        keyExtractor={(item) => String(item.id)}
+        style={[styles.container, { backgroundColor: theme.colors.background }]}
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: theme.spacing[6] },
+        ]}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={theme.colors.button.primary.background}
+            colors={[theme.colors.button.primary.background]}
+            progressBackgroundColor={theme.colors.background}
+          />
+        }
+        ListHeaderComponent={renderHeader}
+        ListHeaderComponentStyle={{ marginBottom: theme.spacing[4] }}
+        ListEmptyComponent={renderEmptyWorkouts}
+        ItemSeparatorComponent={() => (
+          <View style={{ height: theme.spacing[4] }} />
+        )}
+        ListFooterComponent={renderFooter}
+        ListFooterComponentStyle={
+          canCreateWorkout ? { marginTop: theme.spacing[4] } : undefined
+        }
+      />
       {resolvedPlanID && resolvedCycleID && exerciseModal && (
         <AddWorkoutExerciseModal
           visible={!!exerciseModal}
@@ -644,7 +679,7 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   content: {
     padding: theme.spacing[4],
-    gap: theme.spacing[4],
+    flexGrow: 1,
   },
   headerCard: {
     borderRadius: theme.borderRadius['2xl'],
@@ -694,9 +729,6 @@ const createStyles = (theme: any) => StyleSheet.create({
   completeButtonText: {
     fontSize: theme.fontSize.md,
     fontWeight: "600",
-  },
-  workoutsList: {
-    gap: theme.spacing[4],
   },
   workoutCard: {
     borderRadius: theme.borderRadius['2xl'],
@@ -768,7 +800,6 @@ const createStyles = (theme: any) => StyleSheet.create({
     textAlign: "center",
   },
   createWorkoutButton: {
-    marginTop: theme.spacing[2],
     borderRadius: theme.borderRadius.xl,
     paddingVertical: theme.spacing[3.5],
     flexDirection: "row",

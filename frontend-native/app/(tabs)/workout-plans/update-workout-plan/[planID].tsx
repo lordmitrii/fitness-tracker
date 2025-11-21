@@ -1,12 +1,12 @@
 import { useState, useCallback, useEffect } from "react";
-import { View, Text, TextInput, Pressable, ScrollView, StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, TextInput, Pressable, ScrollView, StyleSheet, KeyboardAvoidingView, Platform, RefreshControl } from "react-native";
 import { router, useLocalSearchParams, Stack } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/src/context/ThemeContext";
 import { createHeaderOptions } from "@/src/navigation/headerConfig";
 import { LoadingState, ErrorState } from "@/src/states";
 import usePlansData from "@/src/hooks/data/usePlansData";
-import PullToRefresh from "@/src/components/common/PullToRefresh";
+import { useHapticFeedback } from "@/src/hooks/useHapticFeedback";
 
 export default function UpdateWorkoutPlanScreen() {
   const { t } = useTranslation();
@@ -20,6 +20,8 @@ export default function UpdateWorkoutPlanScreen() {
   const plan = plans.find((p) => String(p.id) === String(planID));
   const [planName, setPlanName] = useState(plan?.name || "");
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [refreshing, setRefreshing] = useState(false);
+  const haptics = useHapticFeedback();
 
   useEffect(() => {
     if (plan?.name) {
@@ -53,6 +55,20 @@ export default function UpdateWorkoutPlanScreen() {
       console.error("Error updating workout plan:", err);
     }
   }, [validate, planID, planName, mutations]);
+  
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    haptics.triggerLight();
+    try {
+      await refetch();
+      haptics.triggerSuccess();
+    } catch (error) {
+      haptics.triggerError();
+      console.error("Error refreshing workout plan:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetch, haptics]);
 
   if (loading)
     return (
@@ -85,15 +101,23 @@ export default function UpdateWorkoutPlanScreen() {
           title: t("update_workout_plan_form.update_workout_plan") || "Update Workout Plan",
         })}
       />
-      <PullToRefresh onRefresh={refetch}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={[styles.container, { backgroundColor: theme.colors.background }]}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={[styles.container, { backgroundColor: theme.colors.background }]}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor={theme.colors.button.primary.background}
+              colors={[theme.colors.button.primary.background]}
+              progressBackgroundColor={theme.colors.background}
+            />
+          }
         >
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            keyboardShouldPersistTaps="handled"
-          >
             <View style={[styles.card, { backgroundColor: theme.colors.card.background, borderColor: theme.colors.border }]}>
               <Text style={[styles.title, { color: theme.colors.text.primary }]}>
                 {t("update_workout_plan_form.update_workout_plan")}
@@ -150,7 +174,6 @@ export default function UpdateWorkoutPlanScreen() {
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
-      </PullToRefresh>
     </>
   );
 }

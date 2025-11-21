@@ -1,35 +1,42 @@
-import { View, Text, Pressable, ScrollView } from "react-native";
+import { View, Text, Pressable, ScrollView, RefreshControl } from "react-native";
 import { useAuth } from "@/src/context/AuthContext";
 import { useTheme } from "@/src/context/ThemeContext";
 import { useState, useCallback } from "react";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { useHapticFeedback } from "@/src/hooks/useHapticFeedback";
 import InstallIcon from "@/src/icons/InstallIcon";
 import { Stack } from "expo-router";
 import { createHeaderOptions } from "@/src/navigation/headerConfig";
-import PullToRefresh from "@/src/components/common/PullToRefresh";
 import { LoadingState, ErrorState } from "@/src/states";
 
 export default function HomeScreen() {
   const { isAuth } = useAuth();
   const { t } = useTranslation();
   const { theme } = useTheme();
+  const haptics = useHapticFeedback();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = useCallback(async () => {
     console.log("[HomeScreen] Pull-to-refresh triggered!");
     console.log("[HomeScreen] Mock refetch - simulating data refresh...");
-    
+
+    setRefreshing(true);
+    haptics.triggerLight();
     setError(null);
-    
+
     try {
       await new Promise((resolve) => setTimeout(resolve, 1500));
       console.log("[HomeScreen] Mock refetch completed!");
+      haptics.triggerSuccess();
     } catch (err) {
       setError(err instanceof Error ? err : new Error(String(err)));
+      haptics.triggerError();
     } finally {
+      setRefreshing(false);
     }
   }, []);
 
@@ -91,13 +98,22 @@ export default function HomeScreen() {
           title: t("general.home"),
         })}
       />
-      <PullToRefresh
-        onRefresh={handleRefresh}
+      <ScrollView
         contentContainerStyle={{
           padding: theme.spacing[4],
           backgroundColor: theme.colors.background,
+          flexGrow: 1,
         }}
         style={{ flex: 1, backgroundColor: theme.colors.background }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={theme.colors.button.primary.background}
+            colors={[theme.colors.button.primary.background]}
+            progressBackgroundColor={theme.colors.background}
+          />
+        }
       >
         <View
           style={[
@@ -173,8 +189,7 @@ export default function HomeScreen() {
             </View>
           </Pressable>
         </View>
-      </PullToRefresh>
+      </ScrollView>
     </>
   );
 }
-

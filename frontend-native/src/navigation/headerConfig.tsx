@@ -1,4 +1,3 @@
-import { NativeStackNavigationOptions } from "@react-navigation/native-stack";
 import { Platform, Text } from "react-native";
 import { Theme } from "@/src/themes";
 import { ReactNode } from "react";
@@ -10,10 +9,27 @@ export interface HeaderConfigOptions {
   headerLeft?: (props: any) => ReactNode;
   headerBackTitle?: string;
   headerBackTitleVisible?: boolean;
-  presentation?: "card" | "modal" | "transparentModal" | "containedModal" | "fullScreenModal" | "formSheet";
+  headerStatusBarHeight?: number;
+  presentation?:
+    | "card"
+    | "modal"
+    | "transparentModal"
+    | "containedModal"
+    | "fullScreenModal"
+    | "formSheet";
   headerShown?: boolean;
   headerTransparent?: boolean;
-  headerBlurEffect?: "light" | "dark" | "extraLight" | "regular" | "prominent" | "systemUltraThinMaterial" | "systemThinMaterial" | "systemMaterial" | "systemThickMaterial" | "systemChromeMaterial";
+  headerBlurEffect?:
+    | "light"
+    | "dark"
+    | "extraLight"
+    | "regular"
+    | "prominent"
+    | "systemUltraThinMaterial"
+    | "systemThinMaterial"
+    | "systemMaterial"
+    | "systemThickMaterial"
+    | "systemChromeMaterial";
   headerStyle?: object;
   headerTitleStyle?: object;
   headerTintColor?: string;
@@ -23,7 +39,7 @@ export interface HeaderConfigOptions {
 export const createHeaderOptions = (
   theme: Theme,
   options: HeaderConfigOptions = {}
-): NativeStackNavigationOptions => {
+): HeaderConfigOptions => {
   const {
     title,
     headerTitle,
@@ -39,6 +55,7 @@ export const createHeaderOptions = (
     headerTitleStyle,
     headerTintColor,
     headerShadowVisible = true,
+    headerStatusBarHeight = Platform.OS === "ios" ? 10 : 0,
   } = options;
 
   return {
@@ -52,20 +69,20 @@ export const createHeaderOptions = (
     headerTransparent,
     headerBlurEffect: Platform.OS === "ios" ? headerBlurEffect : undefined,
     headerStyle: {
-      backgroundColor: headerTransparent ? "transparent" : theme.colors.card.background,
+      backgroundColor: headerTransparent
+        ? "transparent"
+        : theme.colors.card.background,
       ...headerStyle,
     } as any,
     headerTitleStyle: {
-      fontSize: 18,
+      fontSize: theme.fontSize.md,
       fontWeight: "600" as const,
       color: theme.colors.text.primary,
       ...headerTitleStyle,
     },
     headerTintColor: headerTintColor || theme.colors.text.primary,
-    headerBackTitleStyle: {
-      fontSize: 17,
-    },
-    headerTitleAlign: "center" as const,
+    headerShadowVisible,
+    headerStatusBarHeight,
   };
 };
 
@@ -92,4 +109,3 @@ export const createHeaderTitle = (
     );
   };
 };
-

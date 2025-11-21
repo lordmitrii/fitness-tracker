@@ -1,4 +1,5 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
+import { ScrollView, RefreshControl } from "react-native";
 import { router, useLocalSearchParams, Stack } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/src/context/ThemeContext";
@@ -6,7 +7,7 @@ import { createHeaderOptions } from "@/src/navigation/headerConfig";
 import { LoadingState, ErrorState } from "@/src/states";
 import ProfileForm from "@/src/components/ProfileForm";
 import useProfileData from "@/src/hooks/data/useProfileData";
-import PullToRefresh from "@/src/components/common/PullToRefresh";
+import { useHapticFeedback } from "@/src/hooks/useHapticFeedback";
 
 export default function UpdateProfileForm() {
   const { t } = useTranslation();
@@ -19,10 +20,22 @@ export default function UpdateProfileForm() {
   const { loading, error, refetch, mutations } = useProfileData({
     skipQuery: true,
   });
+  const [refreshing, setRefreshing] = useState(false);
+  const haptics = useHapticFeedback();
 
   const handleRefresh = useCallback(async () => {
-    await refetch();
-  }, [refetch]);
+    setRefreshing(true);
+    haptics.triggerLight();
+    try {
+      await refetch();
+      haptics.triggerSuccess();
+    } catch (error) {
+      haptics.triggerError();
+      console.error("Error refreshing profile data:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetch, haptics]);
 
   const handleUpdate = (payload: { age: number; weight: number; height: number; sex: string }) => {
     mutations.upsert.mutate(payload, {
@@ -82,7 +95,19 @@ export default function UpdateProfileForm() {
           title: t("profile_form.update_profile") || "Update Profile",
         })}
       />
-      <PullToRefresh onRefresh={handleRefresh}>
+      <ScrollView
+        style={{ flex: 1, backgroundColor: theme.colors.background }}
+        contentContainerStyle={{ flexGrow: 1, padding: theme.spacing?.[4] ?? 16 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={theme.colors.button.primary.background}
+            colors={[theme.colors.button.primary.background]}
+            progressBackgroundColor={theme.colors.background}
+          />
+        }
+      >
         <ProfileForm
           key={initialData?.id ?? JSON.stringify(initialData)}
           initialData={initialData}
@@ -92,7 +117,7 @@ export default function UpdateProfileForm() {
           submitting={mutations.upsert.isPending}
           unitSystem={(unit_system as "metric" | "imperial") || "metric"}
         />
-      </PullToRefresh>
+      </ScrollView>
     </>
   );
 }

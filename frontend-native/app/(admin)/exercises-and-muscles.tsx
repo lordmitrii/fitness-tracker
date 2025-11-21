@@ -6,6 +6,7 @@ import {
   TextInput,
   ScrollView,
   Pressable,
+  RefreshControl,
   Alert,
 } from "react-native";
 import { useTranslation } from "react-i18next";
@@ -14,7 +15,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { createHeaderOptions } from "@/src/navigation/headerConfig";
 import { useTheme } from "@/src/context/ThemeContext";
 import { LoadingState, ErrorState } from "@/src/states";
-import PullToRefresh from "@/src/components/common/PullToRefresh";
+import { useHapticFeedback } from "@/src/hooks/useHapticFeedback";
 import useExercisesData from "@/src/hooks/data/useExercisesData";
 import AddExerciseOrMuscleModal from "@/src/modals/admin/AddExerciseOrMuscleModal";
 
@@ -23,6 +24,7 @@ type FilterValue = string | number | "all";
 export default function AdminExercisesAndMusclesScreen() {
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const haptics = useHapticFeedback();
   const styles = createStyles(theme);
 
   const [query, setQuery] = useState("");
@@ -31,6 +33,7 @@ export default function AdminExercisesAndMusclesScreen() {
   const [exerciseEditMode, setExerciseEditMode] = useState(false);
   const [muscleEditMode, setMuscleEditMode] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const {
     poolOnlyExercises = [],
@@ -74,6 +77,20 @@ export default function AdminExercisesAndMusclesScreen() {
       };
     });
   }, [muscleGroups, t]);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    haptics.triggerLight();
+    try {
+      await refetch();
+      haptics.triggerSuccess();
+    } catch (error) {
+      haptics.triggerError();
+      console.error("Error refreshing exercises/muscles:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetch, haptics]);
 
   const filteredExercises = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -203,11 +220,19 @@ export default function AdminExercisesAndMusclesScreen() {
           title: t("general.exercises_and_muscles") || "Exercises and Muscles",
         })}
       />
-      <PullToRefresh onRefresh={() => refetch().then(() => {})}>
-        <ScrollView
-          style={[styles.container, { backgroundColor: theme.colors.background }]}
-          contentContainerStyle={styles.content}
-        >
+      <ScrollView
+        style={[styles.container, { backgroundColor: theme.colors.background }]}
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={theme.colors.button.primary.background}
+            colors={[theme.colors.button.primary.background]}
+            progressBackgroundColor={theme.colors.background}
+          />
+        }
+      >
           <View style={styles.header}>
             <Text style={[styles.title, { color: theme.colors.text.primary }]}>
               {t("admin.exercises.title")}
@@ -449,7 +474,6 @@ export default function AdminExercisesAndMusclesScreen() {
             </Text>
           )}
         </ScrollView>
-      </PullToRefresh>
 
       <AddExerciseOrMuscleModal
         visible={modalVisible}

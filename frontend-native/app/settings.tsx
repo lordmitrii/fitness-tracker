@@ -1,13 +1,13 @@
 import { useMemo, useCallback, useState } from "react";
-import { View, Text, ScrollView, StyleSheet, Pressable, Switch, Modal, Platform } from "react-native";
+import { View, Text, ScrollView, StyleSheet, Pressable, Switch, Modal, Platform, RefreshControl } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Stack, router } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/src/context/ThemeContext";
 import { createHeaderOptions } from "@/src/navigation/headerConfig";
 import { LoadingState, ErrorState } from "@/src/states";
-import PullToRefresh from "@/src/components/common/PullToRefresh";
 import useSettingsData from "@/src/hooks/data/useSettingsData";
+import { useHapticFeedback } from "@/src/hooks/useHapticFeedback";
 
 function SettingSwitch({
   checked,
@@ -40,11 +40,23 @@ export default function SettingsScreen() {
   const { settings, loading, error, updateSetting, savingKey, refetch } =
     useSettingsData();
   const [pickerVisible, setPickerVisible] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const haptics = useHapticFeedback();
   const styles = createStyles(theme);
 
   const handleRefresh = useCallback(async () => {
-    await refetch();
-  }, [refetch]);
+    setRefreshing(true);
+    haptics.triggerLight();
+    try {
+      await refetch();
+      haptics.triggerSuccess();
+    } catch (error) {
+      haptics.triggerError();
+      console.error("Error refreshing settings:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetch, haptics]);
 
   const SETTING_DEFS = useMemo(
     () => ({
@@ -132,11 +144,19 @@ export default function SettingsScreen() {
           ),
         })}
       />
-      <PullToRefresh onRefresh={handleRefresh}>
-        <ScrollView
-          style={[styles.container, { backgroundColor: theme.colors.background }]}
-          contentContainerStyle={styles.content}
-        >
+      <ScrollView
+        style={[styles.container, { backgroundColor: theme.colors.background }]}
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={theme.colors.button.primary.background}
+            colors={[theme.colors.button.primary.background]}
+            progressBackgroundColor={theme.colors.background}
+          />
+        }
+      >
           {Object.entries(SETTING_DEFS).map(([key, def]: [string, any]) => {
             const value = settings?.[key];
 
@@ -301,7 +321,6 @@ export default function SettingsScreen() {
             return null;
           })}
         </ScrollView>
-      </PullToRefresh>
     </>
   );
 }

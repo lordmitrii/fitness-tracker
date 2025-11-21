@@ -15,7 +15,7 @@ import LogPanel from "@/src/diagnostics/LogPanel";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false, 
+      refetchOnWindowFocus: false,
       retry: 3,
       staleTime: 5 * 60 * 1000,
       gcTime: 30 * 60 * 1000,
@@ -32,7 +32,12 @@ function RootLayoutContent() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+        <SafeAreaView
+          style={{
+            flex: 1,
+            backgroundColor: theme.colors.background,
+          }}
+        >
           <Stack
             screenOptions={{
               headerShown: false,

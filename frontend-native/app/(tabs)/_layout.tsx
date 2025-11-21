@@ -15,8 +15,16 @@ type TabConfig = {
 
 const TAB_CONFIGS: TabConfig[] = [
   { name: "index", iconName: "home", translationKey: "general.home" },
-  { name: "workout-plans", iconName: "fitness-center", translationKey: "general.plans" },
-  { name: "current-workout", iconName: "directions-run", translationKey: "general.workout" },
+  {
+    name: "workout-plans",
+    iconName: "fitness-center",
+    translationKey: "general.plans",
+  },
+  {
+    name: "current-workout",
+    iconName: "directions-run",
+    translationKey: "general.workout",
+  },
   { name: "profile", iconName: "person", translationKey: "general.profile" },
   { name: "more", iconName: "more-horiz", translationKey: "general.more" },
 ];
@@ -47,7 +55,7 @@ export default function TabLayout() {
   const headerOptions = createHeaderOptions(theme, {
     headerShown: true,
   });
-  
+
   const tabHeaderOptions = {
     headerShown: headerOptions.headerShown,
     headerTitle: headerOptions.headerTitle,
@@ -56,30 +64,41 @@ export default function TabLayout() {
     headerStyle: headerOptions.headerStyle,
     headerRight: headerOptions.headerRight,
     headerLeft: headerOptions.headerLeft,
+    headerStatusBarHeight: headerOptions.headerStatusBarHeight,
   };
 
   const isTabActive = (tabName: string): boolean => {
     if (tabName === "workout-plans") {
-      const exactMatch = pathname === `/(tabs)/workout-plans` || pathname === `/workout-plans`;
-      const planDetailMatch = pathname.match(/^\/\(tabs\)\/workout-plans\/\[planID\]$/);
+      const exactMatch =
+        pathname === `/(tabs)/workout-plans` || pathname === `/workout-plans`;
+      const planDetailMatch = pathname.match(
+        /^\/\(tabs\)\/workout-plans\/\[planID\]$/
+      );
       const isCyclePage = pathname.includes("/workout-cycles/");
       return Boolean((exactMatch || planDetailMatch) && !isCyclePage);
     }
-    
+
     if (tabName === "current-workout") {
       return pathname.includes("/workout-cycles/");
     }
-    
-    const exactMatch = pathname === `/(tabs)/${tabName}` || pathname === `/${tabName}`;
+
+    const exactMatch =
+      pathname === `/(tabs)/${tabName}` || pathname === `/${tabName}`;
     const nestedMatch =
-      pathname.startsWith(`/(tabs)/${tabName}/`) || pathname.startsWith(`/${tabName}/`);
+      pathname.startsWith(`/(tabs)/${tabName}/`) ||
+      pathname.startsWith(`/${tabName}/`);
     return Boolean(exactMatch || nestedMatch);
   };
 
   const getTabColor = (isActive: boolean) =>
-    isActive ? theme.colors.button.primary.background : theme.colors.text.tertiary;
+    isActive
+      ? theme.colors.button.primary.background
+      : theme.colors.text.tertiary;
 
-  const createTabIcon = (iconName: keyof typeof MaterialIcons.glyphMap, tabName: string) => {
+  const createTabIcon = (
+    iconName: keyof typeof MaterialIcons.glyphMap,
+    tabName: string
+  ) => {
     return ({ focused, size }: { focused: boolean; size: number }) => {
       const isActive = focused || isTabActive(tabName);
       const iconColor = getTabColor(isActive);
@@ -92,7 +111,13 @@ export default function TabLayout() {
       const isActive = focused || isTabActive(tabName);
       const labelColor = getTabColor(isActive);
       return (
-        <Text style={{ color: labelColor, fontSize: theme.fontSize.sm, fontWeight: "500" }}>
+        <Text
+          style={{
+            color: labelColor,
+            fontSize: theme.fontSize.sm,
+            fontWeight: "500",
+          }}
+        >
           {t(translationKey)}
         </Text>
       );
@@ -114,8 +139,8 @@ export default function TabLayout() {
           borderTopColor: theme.colors.border,
           borderTopWidth: 1,
           paddingTop: Platform.OS === "ios" ? 8 : 4,
-          paddingBottom: Platform.OS === "ios" ? 20 : 8,
-          height: Platform.OS === "ios" ? 88 : 64,
+          paddingBottom: Platform.OS === "ios" ? 10 : 8,
+          height: Platform.OS === "ios" ? 64 : 64,
         },
         tabBarLabelStyle: {
           fontSize: theme.fontSize.sm,
@@ -153,4 +178,3 @@ export default function TabLayout() {
     </Tabs>
   );
 }
-

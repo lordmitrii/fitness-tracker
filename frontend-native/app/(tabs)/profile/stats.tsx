@@ -1,11 +1,10 @@
 import { useCallback, useMemo, useState } from "react";
-import { View, Text, ScrollView, StyleSheet, Pressable } from "react-native";
+import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/src/context/ThemeContext";
 import { Stack } from "expo-router";
 import { createHeaderOptions } from "@/src/navigation/headerConfig";
 import { LoadingState, ErrorState } from "@/src/states";
-import PullToRefresh from "@/src/components/common/PullToRefresh";
 import useStatsHook from "@/src/hooks/data/useStatsHook";
 import useSettingsData from "@/src/hooks/data/useSettingsData";
 import { toDisplayWeight } from "@/src/utils/numberUtils";
@@ -13,6 +12,7 @@ import { e1RM } from "@/src/utils/exerciseStatsUtils";
 import CheckBox from "@/src/components/CheckBox";
 import ProfileNav from "@/src/components/profile/ProfileNav";
 import MuscleGroupRadar from "@/src/components/MuscleGroupRadar";
+import { useHapticFeedback } from "@/src/hooks/useHapticFeedback";
 
 const Stats = () => {
   const { t } = useTranslation();
@@ -20,6 +20,8 @@ const Stats = () => {
   const { stats, bestPerformances, loading, error, refetch } = useStatsHook();
   const { settings } = useSettingsData();
   const [showE1RM, setShowE1RM] = useState<Record<number, boolean>>({});
+  const [refreshing, setRefreshing] = useState(false);
+  const haptics = useHapticFeedback();
   const styles = createStyles(theme);
 
   const filteredStats = useMemo(() => {
@@ -28,8 +30,18 @@ const Stats = () => {
   }, [stats]);
 
   const handleRefresh = useCallback(async () => {
-    await refetch();
-  }, [refetch]);
+    setRefreshing(true);
+    haptics.triggerLight();
+    try {
+      await refetch();
+      haptics.triggerSuccess();
+    } catch (error) {
+      haptics.triggerError();
+      console.error("Error refreshing stats:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetch, haptics]);
 
   const toggleE1RM = (id: number) => {
     setShowE1RM((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -65,10 +77,18 @@ const Stats = () => {
           title: t("exercise_stats.stats") || "Stats",
         })}
       />
-      <PullToRefresh onRefresh={handleRefresh}>
       <ScrollView
           style={[styles.container, { backgroundColor: theme.colors.background }]}
           contentContainerStyle={styles.content}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor={theme.colors.button.primary.background}
+              colors={[theme.colors.button.primary.background]}
+              progressBackgroundColor={theme.colors.background}
+            />
+          }
         >
           <ProfileNav />
           {filteredStats.length > 0 ? (
@@ -184,7 +204,6 @@ const Stats = () => {
             </View>
           )}
       </ScrollView>
-      </PullToRefresh>
     </>
   );
 };

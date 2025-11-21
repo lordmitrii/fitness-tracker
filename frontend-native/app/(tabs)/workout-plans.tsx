@@ -1,15 +1,15 @@
 import { useCallback, useLayoutEffect, useState } from "react";
-import { View, Text, Pressable, ScrollView, StyleSheet, FlatList, Alert } from "react-native";
+import { View, Text, Pressable, RefreshControl, StyleSheet, FlatList, Alert } from "react-native";
 import { router, useLocalSearchParams, Stack } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/src/context/ThemeContext";
 import { createHeaderOptions } from "@/src/navigation/headerConfig";
 import { LoadingState, ErrorState } from "@/src/states";
-import PullToRefresh from "@/src/components/common/PullToRefresh";
 import usePlansData from "@/src/hooks/data/usePlansData";
 import useCurrentCycleData from "@/src/hooks/data/useCurrentCycleData";
 import { MaterialIcons } from "@expo/vector-icons";
 import ActionMenu from "@/src/components/common/ActionMenu";
+import { useHapticFeedback } from "@/src/hooks/useHapticFeedback";
 
 export default function WorkoutPlansScreen() {
   const { t, i18n } = useTranslation();
@@ -27,6 +27,8 @@ export default function WorkoutPlansScreen() {
     mutations,
   } = usePlansData();
   const [menuPlan, setMenuPlan] = useState<any | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const haptics = useHapticFeedback();
 
   useLayoutEffect(() => {
     if (showCurrent === "true" && plans.length) {
@@ -43,9 +45,18 @@ export default function WorkoutPlansScreen() {
   }, [showCurrent, plans, currentCycle]);
 
   const handleRefresh = useCallback(async () => {
-    await refetch();
-    await refetchCurrentCycle();
-  }, [refetch, refetchCurrentCycle]);
+    setRefreshing(true);
+    try {
+      haptics.triggerLight();
+      await Promise.all([refetch(), refetchCurrentCycle()]);
+      haptics.triggerSuccess();
+    } catch (error) {
+      haptics.triggerError();
+      console.error("Error refreshing workout plans:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetch, refetchCurrentCycle, haptics]);
 
   const handlePlanPress = (planId: number | string, currentCycleId?: number | string) => {
     if (currentCycleId) {
@@ -205,6 +216,43 @@ export default function WorkoutPlansScreen() {
     </Pressable>
   );
 
+  const renderEmptyState = () => (
+    <View
+      style={[
+        styles.emptyContainer,
+        {
+          backgroundColor: theme.colors.card.background,
+          borderColor: theme.colors.border,
+        },
+      ]}
+    >
+      <Text style={[styles.emptyText, { color: theme.colors.text.secondary }]}>
+        {t("workout_plans.no_plans_found")}
+      </Text>
+      <Pressable
+        style={[
+          styles.emptyButton,
+          { backgroundColor: theme.colors.button.primary.background },
+        ]}
+        onPress={() => router.push("/(tabs)/workout-plans/create-workout-plan")}
+      >
+        <MaterialIcons
+          name="add"
+          size={20}
+          color={theme.colors.button.primary.text}
+        />
+        <Text
+          style={[
+            styles.emptyButtonText,
+            { color: theme.colors.button.primary.text },
+          ]}
+        >
+          {t("workout_plans.create_new_plan")}
+        </Text>
+      </Pressable>
+    </View>
+  );
+
   return (
     <>
       <Stack.Screen
@@ -237,52 +285,26 @@ export default function WorkoutPlansScreen() {
           ),
         })}
       />
-      <PullToRefresh onRefresh={handleRefresh}>
-        {sortedPlans.length > 0 ? (
-          <FlatList
-            data={sortedPlans}
-            renderItem={renderPlan}
-            keyExtractor={(item) => String(item.id)}
-            contentContainerStyle={styles.listContent}
-            style={[styles.container, { backgroundColor: theme.colors.background }]}
+      <FlatList
+        data={sortedPlans}
+        renderItem={renderPlan}
+        keyExtractor={(item) => String(item.id)}
+        contentContainerStyle={[
+          styles.listContent,
+          sortedPlans.length === 0 && styles.emptyListContent,
+        ]}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={theme.colors.button.primary.background}
+            colors={[theme.colors.button.primary.background]}
+            progressBackgroundColor={theme.colors.background}
           />
-        ) : (
-      <View
-            style={[
-              styles.emptyContainer,
-              {
-                backgroundColor: theme.colors.card.background,
-                borderColor: theme.colors.border,
-              },
-            ]}
-          >
-            <Text style={[styles.emptyText, { color: theme.colors.text.secondary }]}>
-              {t("workout_plans.no_plans_found")}
-            </Text>
-            <Pressable
-              style={[
-                styles.emptyButton,
-                { backgroundColor: theme.colors.button.primary.background },
-              ]}
-              onPress={() => router.push("/(tabs)/workout-plans/create-workout-plan")}
-      >
-              <MaterialIcons
-                name="add"
-                size={20}
-                color={theme.colors.button.primary.text}
-              />
-              <Text
-                style={[
-                  styles.emptyButtonText,
-                  { color: theme.colors.button.primary.text },
-                ]}
-              >
-                {t("workout_plans.create_new_plan")}
-        </Text>
-            </Pressable>
-      </View>
-        )}
-      </PullToRefresh>
+        }
+        style={[styles.container, { backgroundColor: theme.colors.background }]}
+        ListEmptyComponent={renderEmptyState}
+      />
       {menuPlan && (
         <ActionMenu
           visible={!!menuPlan}
@@ -322,6 +344,10 @@ const createStyles = (theme: any) => StyleSheet.create({
   listContent: {
     padding: theme.spacing[4],
     gap: theme.spacing[4],
+    flexGrow: 1,
+  },
+  emptyListContent: {
+    justifyContent: "center",
   },
   planCard: {
     borderRadius: theme.borderRadius['2xl'],

@@ -20,9 +20,5 @@ export default function AdminLayout() {
     headerShown: true,
   });
 
-  return (
-    <Stack
-      screenOptions={headerOptions}
-    />
-  );
+  return <Stack screenOptions={headerOptions} />;
 }
