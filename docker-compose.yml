@@ -33,7 +33,6 @@ services:
       - ./frontend-native:/app
       - /app/node_modules
     environment:
-      - EXPO_PUBLIC_API_URL=http://backend:8080/api
       - CHOKIDAR_USEPOLLING=true
     command: >
       sh -lc '

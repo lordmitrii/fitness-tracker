@@ -196,29 +196,27 @@ export default function MoreScreen() {
         </View>
 
         <View style={styles.policiesContainer}>
-          <Text style={[styles.policiesText, { color: theme.colors.text.secondary }]}>
-            <Trans
-              i18nKey="general.our_policies"
-              components={[
-                <Pressable
-                  key="privacy-policy-link"
-                  onPress={() => router.push("/(policies)/privacy-policy")}
-                >
-                  <Text style={[styles.policyLink, { color: theme.colors.button.primary.background }]}>
-                    {t("general.privacy_policy")}
-                  </Text>
-                </Pressable>,
-                <Pressable
-                  key="health-data-policy-link"
-                  onPress={() => router.push("/(policies)/health-data-policy")}
-                >
-                  <Text style={[styles.policyLink, { color: theme.colors.button.primary.background }]}>
-                    {t("general.health_data_policy")}
-                  </Text>
-                </Pressable>,
-              ]}
-            />
-          </Text>
+          <Trans
+            i18nKey="general.our_policies"
+            parent={Text}
+            style={[styles.policiesText, { color: theme.colors.text.secondary }]}
+            components={[
+              <Text
+                key="privacy-policy-link"
+                onPress={() => router.push("/(policies)/privacy-policy")}
+                style={[styles.policyLink, { color: theme.colors.button.primary.background }]}
+              >
+                {t("privacy_policy.title")}
+              </Text>,
+              <Text
+                key="health-data-policy-link"
+                onPress={() => router.push("/(policies)/health-data-policy")}
+                style={[styles.policyLink, { color: theme.colors.button.primary.background }]}
+              >
+                {t("health_data_policy.title")}
+              </Text>,
+            ]}
+          />
         </View>
       </ScrollView>
     </>

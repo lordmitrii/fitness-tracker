@@ -49,8 +49,17 @@ interface CustomAxiosError extends Error {
 const isOffline = async (): Promise<boolean> => {
   try {
     const state = await NetInfo.fetch();
-    return !(state.isConnected && state.isInternetReachable);
+    // Only treat as offline if:
+    // 1. Not connected, OR
+    // 2. Connected but isInternetReachable is explicitly false
+    // If isInternetReachable is null/undefined, assume online (let request try)
+    if (!state.isConnected) {
+      return true;
+    }
+    // If connected, only offline if internet is explicitly unreachable
+    return state.isInternetReachable === false;
   } catch {
+    // If we can't determine, assume online (let the request fail naturally)
     return false;
   }
 };

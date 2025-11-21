@@ -1,42 +1,704 @@
 {
   "general": {
-    "home": "Home",
-    "plans": "Plans",
-    "workout": "Workout",
-    "profile": "Profile",
-    "more": "More",
-    "settings": "Settings",
-    "language": "Language",
+    "back_home": "Back to Home",
+    "back": "Back",
+    "create": "Create",
+    "update": "Update",
+    "replace": "Replace",
+    "edit": "Edit",
+    "add": "Add",
+    "delete": "Delete",
+    "continue": "Continue",
+    "cancel": "Cancel",
+    "create_profile": "Create Profile",
     "login": "Login",
     "register": "Register",
     "logout": "Logout",
-    "create": "Create",
-    "update": "Update",
-    "delete": "Delete",
-    "save": "Save",
-    "cancel": "Cancel",
-    "close": "Close",
-    "back": "Back",
-    "next": "Next",
-    "prev": "Previous",
-    "loading": "Loading...",
-    "error": "Error",
-    "success": "Success",
-    "active": "Active",
-    "inactive": "Inactive",
-    "n_a": "N/A",
-    "last_updated": "Last updated",
-    "admin_panel": "Admin Panel",
+    "home": "Home",
     "workout_plans": "Workout Plans",
+    "plans": "Plans",
+    "more": "More",
+    "close": "Close",
+    "exercise_stats": "Exercise Stats",
+    "stats": "Stats",
+    "profile": "Profile",
     "ai_chat": "AI Chat",
+    "n_a": "N/A",
+    "active": "Active",
     "contact_support": "Contact Support",
-    "version": "Version",
-    "create_workout_plan": "Create Workout Plan",
-    "update_workout_plan": "Update Workout Plan",
-    "users": "Users",
+    "our_policies": "<0>Privacy</0> and <1>Health Data Policy</1>",
+    "loading": "Loading...",
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "day": "Day",
+    "workout": "Workout",
+    "to": "to",
+    "last_updated": "Last updated:",
+    "completed": "Completed",
+    "yes": "Yes",
+    "no": "No",
+    "submit": "Submit",
+    "new": "New",
+    "page_no_permissions": "You do not have permission to access this page.",
+    "admin_panel": "Admin Panel",
+    "actions": "Actions",
+    "clear": "Clear",
+    "prev": "Prev",
+    "next": "Next",
+    "save": "Save",
+    "saving": "Saving…",
+    "working": "Working…",
+    "forbidden": "Forbidden",
     "pagination": {
       "page_of": "Page {{page}} of {{pageCount}}"
+    },
+    "no_results_for": "No results for \"{{search}}\"",
+    "version": "Version",
+    "name_too_long": "Name must be less than {{limit}} characters.",
+    "refreshing": "Refreshing...",
+    "release_to_refresh": "Release to refresh",
+    "pull_to_refresh": "Pull to refresh",
+    "diagnostics": "Diagnostics",
+    "share": "Share",
+    "download": "Download",
+    "settings": "Settings",
+    "username": "Username",
+    "unknown": "Unknown"
+  },
+  "measurements": {
+    "weight": {
+      "kg": "kg",
+      "lbs": "lbs",
+      "lbs_of": "lbs"
+    },
+    "height": {
+      "cm": "cm",
+      "ft": "ft",
+      "ft_of": "ft"
+    },
+    "reps": "reps",
+    "set": "set",
+    "sets": "sets",
+    "seconds": "seconds"
+  },
+  "errors": {
+    "network_error": "Network error. Please, check server status.",
+    "registration_error": "Registration failed. Please, try again.",
+    "login_error": "Login failed. Please, check your credentials.",
+    "logout_error": "Logout failed. Please, try again.",
+    "send_verification_error": "Error sending verification email. Please, try again."
+  },
+  "global_loading": {
+    "welcome": "Welcome to the FTracker!",
+    "loading_message": "Loading, please wait"
+  },
+  "home": {
+    "welcome_back": "Welcome Back!",
+    "welcome": "Welcome to Fitness Tracker",
+    "logged_in": "You are logged in!",
+    "please_login_or_register": "Please login or register to get started.",
+    "no_purpose_yet": "This page has no purpose (yet)",
+    "install_app": "Install the App",
+    "loading_home_page": "Loading the home page..."
+  },
+  "layout": {
+    "all_rights_reserved": "All Rights Reserved"
+  },
+  "network_banner": {
+    "you_are_offline": "You are offline.",
+    "you_are_online": "You are online!"
+  },
+  "exercise_stats": {
+    "your_stats": "Your Exercise Stats",
+    "current_best": "Current Best",
+    "no_stats": "No stats available yet.",
+    "loading_stats": "Loading your stats...",
+    "start_logging": "Start logging workouts to see your progress!",
+    "muscle_groups_strength": "Muscle Groups Strength",
+    "best_exercise": "Best Exercise",
+    "estimated_1rm": "Estimated 1-RM",
+    "with_bodyweight": "with bodyweight",
+    "estimated": "estimated",
+    "1rm_not_applicable_for_time_based": "1RM metric is not applicable for time-based exercises",
+    "best_performances": "Best Results"
+  },
+  "not_found": {
+    "page_not_found": "Page Not Found",
+    "oops_message": "Oops! The page you are looking for doesn't exist or has been moved."
+  },
+  "profile": {
+    "loading_profile": "Loading your profile...",
+    "your_profile": "Your Profile",
+    "age_label": "Age:",
+    "weight_label": "Weight:",
+    "height_label": "Height:",
+    "sex_label": "Sex:",
+    "no_profile_found": "No profile found. Get started:",
+    "nav": {
+      "health": "Health",
+      "stats": "Stats"
+    }
+  },
+  "workout_plans": {
+    "loading_plans": "Loading your plans...",
+    "workout_plans": "Workout Plans",
+    "no_plans_found": "No workout plans found. Create your first plan!",
+    "create_new_plan": "Create Workout Plan"
+  },
+  "installation_guide": {
+    "installation_guide": "Installation Guide",
+    "steps_below": "Steps below for iOS and Android.",
+    "ios_steps": {
+      "1": "Tap <0>Share</0> <1/> at the bottom of Safari",
+      "2": "Select <0>Add to Home Screen</0> <1/>",
+      "3": "Tap <0>Add</0> in the top-right corner"
+    },
+    "android_steps": {
+      "1": "Open <0>Chrome</0> (or your browser)",
+      "2": "Tap <0>Menu</0> <1/> at the top-right",
+      "3": "Select <0>Add to Home screen</0> or <1>Install app</1>",
+      "4": "Tap <0>Add</0>"
+    },
+    "success_message": "You'll now see the app on your home screen!",
+    "need_help": "Need help?"
+  },
+  "workout_plan_single": {
+    "loading_workouts": "Loading your workouts...",
+    "plan_label": "Plan:",
+    "cycle_label": "Cycle:",
+    "view_previous_cycle": "View Previous Cycle",
+    "view_next_cycle": "View Next Cycle",
+    "no_workouts_found": "No workouts found for this cycle.",
+    "create_workout": "Create Workout",
+    "complete_cycle": "Complete Cycle",
+    "confirm_complete": "Are you sure you want to complete this cycle? Some workouts are not completed.",
+    "add_exercise": "Add Exercise",
+    "exercise_label": "Exercise",
+    "set_label": "Set",
+    "weight_label": "Weight",
+    "reps_label": "Reps",
+    "badge_label": "Badge",
+    "done_label": "Done",
+    "set_completed": "Set completed",
+    "time_label": "Seconds",
+    "bodyweight_exercise": "Bodyweight exercise",
+    "validation": {
+      "please_check_fields": "Please check the fields before completing the set.",
+      "reps_required": "Reps are required.",
+      "reps_number": "Reps must be a number.",
+      "reps_integer": "Reps must be an integer.",
+      "reps_range": "Reps must be between {{min}} and {{max}}.",
+      "weight_required": "Weight is required.",
+      "weight_number": "Weight must be a number.",
+      "weight_range": "Weight must be between {{min}} and {{max}} {{unit}}."
+    },
+    "estimated_calories_burned": "Estimated calories burned"
+  },
+  "error_state": {
+    "oops_message": "Oops! Something went wrong",
+    "description": "The app hit an error. You can reload, or share details with support.",
+    "try_again": "Try Again",
+    "reload": "Reload",
+    "copy_report": "Copy Report",
+    "copied_success": "Copied successfully!",
+    "show_details": "Show Details",
+    "hide_details": "Hide Details",
+    "unknown_error": "Unknown error occured."
+  },
+  "workout_form": {
+    "workout_name_label": "Workout Name",
+    "workout_name_placeholder": "Enter workout name",
+    "workout_name_required": "Workout name is required.",
+    "loading_workout": "Loading workout...",
+    "create_workout": "Create Workout",
+    "update_workout": "Update Workout",
+    "workout_name_too_long": "Workout name must be less than {{limit}} characters."
+  },
+  "update_workout_plan_form": {
+    "loading_workout_plan": "Loading workout plan...",
+    "update_workout_plan": "Update Workout Plan",
+    "plan_name_label": "Plan Name",
+    "plan_name_placeholder": "Enter plan name",
+    "plan_name_required": "Workout plan name is required.",
+    "plan_name_too_long": "Plan name must be less than {{limit}} characters."
+  },
+  "register_form": {
+    "register_title": "Register",
+    "password_min_length": "Password must be at least {{minLength}} characters.",
+    "password_placeholder": "Create a password",
+    "already_have_account": "Already have an account?",
+    "privacy_policy_consent": "I agree to the <0>Privacy Policy</0>.",
+    "health_data_consent": "I agree to the <0>Health Data Policy</0>.",
+    "privacy_policy_consent_missing": "You must agree to the Privacy Policy.",
+    "health_data_consent_missing": "You must agree to the Health Data Policy.",
+    "email_required": "Email is required.",
+    "email_invalid": "Invalid email address.",
+    "email_too_long": "Email must be less than {{limit}} characters.",
+    "username_min_length": "Username must be at least {{minLength}} characters.",
+    "username_required": "Username is required.",
+    "username_too_long": "Username must be less than {{limit}} characters.",
+    "password_required": "Password is required.",
+    "password_too_long": "Password must be less than {{limit}} characters."
+  },
+  "login_form": {
+    "login_title": "Login",
+    "password_placeholder": "Enter your password",
+    "not_registered": "Not registered yet?",
+    "forgot_password": "Forgot Password?"
+  },
+  "profile_form": {
+    "create_profile": "Create Profile",
+    "update_profile": "Update Profile",
+    "loading_profile": "Loading your profile...",
+    "age_label": "Age",
+    "age_placeholder": "Your age",
+    "age_required": "Age is required.",
+    "age_must_be_number": "Age must be a number.",
+    "weight_label": "Weight",
+    "weight_placeholder": "Weight in",
+    "weight_required": "Weight is required.",
+    "weight_must_be_number": "Weight must be a number.",
+    "height_label": "Height",
+    "height_placeholder": "Height in",
+    "height_required": "Height is required.",
+    "height_must_be_number": "Height must be a number.",
+    "sex_label": "Sex",
+    "sex_required": "Please select a sex.",
+    "sex_male": "Male",
+    "sex_female": "Female",
+    "age_out_of_range": "Age must be between {{min}} and {{max}} years",
+    "weight_out_of_range": "Weight must be between {{min}} and {{max}} {{unit}}",
+    "height_out_of_range": "Height must be between {{min}} and {{max}} {{unit}}"
+  },
+  "forgot_password": {
+    "title": "Forgot Password",
+    "email_placeholder": "Enter your email",
+    "email_invalid": "Invalid email address.",
+    "send_reset_link": "Send Reset Link",
+    "reset_link_sent": "Reset link has been sent.",
+    "error_sending_email": "Error sending reset link. Please try again later."
+  },
+  "reset_password": {
+    "title": "Reset Password",
+    "new_password_label": "New Password",
+    "confirm_password_label": "Confirm Password",
+    "new_password_placeholder": "Enter new password",
+    "confirm_password_placeholder": "Confirm your new password",
+    "passwords_mismatch": "Passwords do not match.",
+    "password_min_length": "Password must be at least {{minLength}} characters.",
+    "password_too_long": "Password must be less than {{limit}} characters.",
+    "reset_password_button": "Reset",
+    "invalid_link": "Invalid or expired reset link.",
+    "verifying_link": "Verifying link..."
+  },
+  "account_verification": {
+    "title": "Account Verification",
+    "send_code": "Send Code",
+    "resend_code": "Resend Code",
+    "email_placeholder": "Enter your email",
+    "email_invalid": "Invalid email address.",
+    "email_too_long": "Email must be less than {{limit}} characters.",
+    "email_required": "Email is required.",
+    "error_sending_email": "Error sending verification code. Please, try again or contact the support team.",
+    "code_sent": "Verification code has been sent.",
+    "verification_success": "Your account is now verified!",
+    "code_label": "Verification Code",
+    "code_placeholder": "Enter verification code",
+    "error_verifying": "Couldn't verify the code. Please, try again.",
+    "verify": "Verify",
+    "error_registering": "Registration failed. Please, try again.",
+    "error_updating_email": "Error updating email. Please, try again."
+  },
+  "add_workout_plan_form": {
+    "create_workout_plan": "Create Workout Plan",
+    "clear_draft": "Clear Draft",
+    "plan_name_label": "Plan Name",
+    "plan_name_placeholder": "e.g. Upper/Lower Split, Full Body, etc.",
+    "plan_name_required": "Plan name is required.",
+    "plan_days_more_than_one": "Plan should have at least one workout.",
+    "days_per_cycle_label": "Workouts Per Cycle",
+    "days_per_cycle_tooltip": "You can think of a cycle as a week.",
+    "step_of": "Step {{step}} of {{total}}",
+    "preview_title": "Preview Your Plan",
+    "days_per_cycle_value": "Workouts per cycle",
+    "no_exercises": "No exercises",
+    "add_exercises": "Add Exercises",
+    "skip_to_preview": "Skip to Preview",
+    "exercise_list_title": "Exercise list",
+    "no_exercises_yet": "No exercises added yet",
+    "add_exercise_button": "Add Exercise",
+    "go_to_next_day": "Go to Next Day",
+    "skip_to_preview_confirm": "Are you sure you want to skip to preview? Note that you can add exercises later.",
+    "plan_days_less_than_fifteen": "Plan should have no more than 14 workouts."
+  },
+  "add_workout_exercise_modal": {
+    "exercise_title": "Exercise",
+    "select_muscle_group": "Select Muscle Group",
+    "all_muscle_groups": "All Muscle Groups",
+    "select_exercise": "Select Exercise",
+    "exercise_name_placeholder": "Exercise Name",
+    "create_custom_exercise": "Create custom exercise",
+    "select_from_exercise_pool": "Select from exercise pool",
+    "custom_suffix": "(custom)",
+    "is_bodyweight": "Bodyweight Exercise",
+    "is_time_based": "Time Based Exercise",
+    "name_required": "Exercise name is required.",
+    "sets_required": "Sets are required.",
+    "muscle_group_required": "Muscle group is required.",
+    "exercise_required": "Exercise is required.",
+    "exercise_already_exists": "This exercise already exists.",
+    "sets_limit_exceeded": "You can only add up to {{limit}} sets per exercise."
+  },
+  "days_per_cycle_selector": {
+    "more": "More",
+    "days": "Days"
+  },
+  "private_route": {
+    "checking_auth": "Checking authentication..."
+  },
+  "menus": {
+    "delete_cycle": "Delete Cycle",
+    "delete_workout": "Delete Workout",
+    "delete_workout_plan": "Delete Plan",
+    "delete_set": "Delete Set",
+    "delete_exercise": "Delete Exercise",
+    "update_exercise": "Update Exercise",
+    "update_workout": "Update Workout",
+    "update_workout_plan": "Update Plan",
+    "replace_exercise": "Replace Exercise",
+    "add_set_below": "Add Set Below",
+    "add_set_above": "Add Set Above",
+    "move_up": "Move Up",
+    "move_down": "Move Down",
+    "plan_already_active": "This plan is already active.",
+    "activate_plan": "Activate Plan",
+    "confirm_delete_cycle": "Are you sure you want to delete cycle {{cycleName}}? This action cannot be undone.",
+    "confirm_delete_workout": "Are you sure you want to delete workout {{workoutName}}? This action cannot be undone.",
+    "confirm_delete_workout_plan": "Are you sure you want to delete workout plan {{planName}}? This action cannot be undone.",
+    "confirm_delete_set": "Are you sure you want to delete this set? This action cannot be undone.",
+    "confirm_delete_exercise": "Are you sure you want to delete this exercise? This action cannot be undone.",
+    "cannot_delete_first_cycle": "Cannot delete the first cycle in a workout plan.",
+    "delete_this_cycle": "Delete this workout cycle",
+    "cannot_delete_only_set": "Cannot delete the only set of an exercise",
+    "delete_this_set": "Delete this set",
+    "skip_set": "Skip Set",
+    "skip_exercise": "Skip Incomplete Sets",
+    "skip_cycle": "Skip Cycle"
+  },
+  "exercise": {
+    "bench-press": "Bench Press",
+    "incline-bench-press": "Incline Bench Press",
+    "incline-dumbbell-press": "Incline Dumbbell Press",
+    "dumbbell-flyes": "Dumbbell Flyes",
+    "cable-crossovers": "Cable Crossovers",
+    "chest-press-machine": "Chest Press Machine",
+    "pec-deck": "Pec Deck",
+    "push-ups": "Push-Ups",
+    "chest-dips": "Chest Dips",
+    "cable-flyes": "Cable Flyes",
+    "incline-cable-flyes": "Incline Cable Flyes",
+    "dumbbell-bench-press": "Dumbbell Bench Press",
+    "smith-machine-bench-press": "Smith Machine Bench Press",
+    "incline-smith-machine-press": "Incline Smith Machine Press",
+    "barbell-rows": "Barbell Rows",
+    "pull-ups": "Pull-Ups",
+    "chin-ups": "Chin-Ups",
+    "lat-pulldowns": "Lat Pulldowns",
+    "pullovers": "Pullovers",
+    "narrow-grip-seated-cable-rows": "Narrow Grip Seated Cable Rows",
+    "t-bar-rows": "T-Bar Rows",
+    "single-arm-dumbbell-rows": "Single Arm Dumbbell Rows",
+    "single-arm-lat-pulldowns": "Single Arm Lat Pulldowns",
+    "machine-horizontal-rows": "Machine Horizontal Rows",
+    "single-arm-cable-rows": "Single Arm Cable Rows",
+    "wide-grip-seated-cable-rows": "Wide Grip Seated Cable Rows",
+    "seated-machine-rows": "Seated Machine Rows",
+    "overhead-press": "Overhead Press",
+    "dumbbell-lateral-raises": "Dumbbell Lateral Raises",
+    "front-raises": "Front Raises",
+    "rear-delt-flyes": "Rear Delt Flyes",
+    "arnold-press": "Arnold Press",
+    "dumbbell-shoulder-press": "Dumbbell Shoulder Press",
+    "cable-lateral-raises": "Cable Lateral Raises",
+    "face-pulls": "Face Pulls",
+    "upright-rows": "Upright Rows",
+    "delts-machine": "Delts Machine",
+    "barbell-curls": "Barbell Curls",
+    "hammer-curls": "Hammer Curls",
+    "preacher-curls": "Preacher Curls",
+    "concentration-curls": "Concentration Curls",
+    "cable-curls": "Cable Curls",
+    "incline-dumbbell-curls": "Incline Dumbbell Curls",
+    "zottman-curls": "Zottman Curls",
+    "bayesian-curls": "Bayesian Curls",
+    "ez-bar-curls": "EZ Bar Curls",
+    "dumbbell-curls": "Dumbbell Curls",
+    "machine-preacher-curls": "Machine Preacher Curls",
+    "tricep-pushdowns": "Pushdowns",
+    "overhead-tricep-extensions": "Overhead Tricep Extensions",
+    "skullcrusher": "Skullcrusher",
+    "dips": "Dips",
+    "close-grip-bench-press": "Close-Grip Bench Press",
+    "tricep-kickbacks": "Tricep Kickbacks",
+    "diamond-push-ups": "Diamond Push-Ups",
+    "cable-rope-pushdowns": "Cable Rope Pushdowns",
+    "squats": "Squats",
+    "leg-press": "Leg Press",
+    "bulgarian-split-squats": "Bulgarian Split Squats",
+    "front-squats": "Front Squats",
+    "leg-press-machine": "Leg Press Machine",
+    "step-ups": "Step-Ups",
+    "leg-extensions": "Leg Extensions",
+    "smith-machine-squats": "Smith Machine Squats",
+    "goblet-squats": "Goblet Squats",
+    "hack-squats": "Hack Squats",
+    "sissy-squats": "Sissy Squats",
+    "adductor-machine": "Adductor Machine",
+    "deadlift": "Deadlift",
+    "romanian-deadlift": "Romanian Deadlift",
+    "seated-leg-curls": "Seated Leg Curls",
+    "lying-leg-curls": "Lying Leg Curls",
+    "glute-ham-raises": "Glute-Ham Raises",
+    "good-mornings": "Good Mornings",
+    "kettlebell-swings": "Kettlebell Swings",
+    "nordic-curls": "Nordic Curls",
+    "stiff-legged-deadlifts": "Stiff-Legged Deadlifts",
+    "hip-thrusts": "Hip Thrusts",
+    "glute-bridges": "Glute Bridges",
+    "cable-kickbacks": "Cable Kickbacks",
+    "lunges": "Lunges",
+    "abductor-machine": "Abductor Machine",
+    "crunches": "Crunches",
+    "hanging-leg-raises": "Hanging Leg Raises",
+    "plank": "Plank",
+    "cable-crunches": "Cable Crunches",
+    "russian-twists": "Russian Twists",
+    "decline-crunches": "Decline Crunches",
+    "calf-raises": "Machine Calf Raises",
+    "standing-calf-raises": "Standing Calf Raises",
+    "smith-machine-calf-raises": "Smith Machine Calf Raises",
+    "wrist-curls": "Wrist Curls",
+    "reverse-curls": "Reverse Curls",
+    "dumbbell-shrugs": "Dumbbell Shrugs",
+    "farmers-walk": "Farmer's Walk"
+  },
+  "muscle_group": {
+    "chest": "Chest",
+    "back": "Back",
+    "shoulders": "Shoulders",
+    "biceps": "Biceps",
+    "triceps": "Triceps",
+    "quads": "Quads",
+    "hamstrings": "Hamstrings",
+    "glutes": "Glutes",
+    "abs": "Abs",
+    "calves": "Calves",
+    "forearms": "Forearms",
+    "traps": "Traps",
+    "arms": "Arms",
+    "legs": "Legs",
+    "core": "Core"
+  },
+  "ai_chat": {
+    "choose_topic": "Choose a topic",
+    "select_topic_helper": "Please select a topic to start the conversation.",
+    "topic_general": {
+      "label": "General",
+      "description": "Ask general questions about fitness.",
+      "welcome_message": "Welcome! Ask me anything about fitness."
+    },
+    "topic_workouts": {
+      "label": "Workouts",
+      "description": "Ask about your active workout plan or workouts and get some insights.",
+      "welcome_message": "Welcome! Ask me anything about your workouts."
+    },
+    "topic_stats": {
+      "label": "Statistics",
+      "description": "Ask for your latest stats and progress reports.",
+      "welcome_message": "Welcome! Ask me about your stats or progress."
+    },
+    "user_input_placeholder": "Type your message...",
+    "user_input_placeholder_select_topic": "Select a topic to start chatting...",
+    "send_button": "Send",
+    "thinking": "Thinking...",
+    "error": "Something went wrong.",
+    "error_response": "Sorry, I couldn't process your request.",
+    "error_select_topic_first": "Please select a topic before sending a message.",
+    "error_insufficient_permissions": "You do not have permission to use this feature.",
+    "rate_limit_exceeded": "You are sending too many requests. Please wait {{time}} seconds.",
+    "wait_seconds": "Please wait {{seconds}} seconds."
+  },
+  "consent_modal": {
+    "title": "Consent Required",
+    "description": "To use AI features, your health and exercise data will be shared with third parties like <0>OpenAI</0>. This is needed for analytics and to provide AI-powered responses.",
+    "privacy_policy": "Please read our <0>Privacy Policy</0> and <1>Health Data Policy</1> for more details.",
+    "accept": "Accept",
+    "decline": "Decline"
+  },
+  "privacy_policy": {
+    "title": "Privacy Policy",
+    "intro": "Your privacy is important to us. This Privacy Policy explains how we collect, use, and protect your information.",
+    "sections": {
+      "information_we_collect": {
+        "title": "Information We Collect",
+        "description": "We may collect the following types of information:",
+        "list": {
+          "personal_info": "Personal information (e.g., name, email address)",
+          "usage_data": "Usage data (e.g., how you use the service)",
+          "cookies": "Cookies and tracking technologies",
+          "health_data": "<0>Health data</0> (e.g., weight, height)",
+          "exercise_data": "Exercise data (e.g., workout plans, exercise logs)"
+        }
+      },
+      "use_of_information": {
+        "title": "How We Use Your Information",
+        "description": "We use your information to:",
+        "list": {
+          "to_provide_services": "Provide and maintain our services",
+          "to_improve_services": "Improve and personalize your experience",
+          "to_communicate": "Communicate with you about updates or offers"
+        }
+      },
+      "data_sharing": {
+        "title": "Data Sharing",
+        "description": "We may share your health and exercise data with trusted third-party providers, such as <0>OpenAI</0>, to deliver features like AI chat and analytics. When you use these features, relevant data is securely sent to engaged parties to generate personalized responses. For details on how OpenAI handles your data, please refer to the <1>OpenAI Privacy Policy</1>. We only share the minimum data required, and require all partners to protect your information in accordance with applicable laws. Explicit consent will always be requested before your data is shared with OpenAI or similar providers."
+      },
+      "data_security": {
+        "title": "Data Security",
+        "description": "We take reasonable measures to protect your information from unauthorized access, disclosure, or loss."
+      },
+      "your_rights": {
+        "title": "Your Rights",
+        "description": "You have the right to access, update, or delete your personal information. Contact us to exercise these rights."
+      },
+      "changes": {
+        "title": "Changes to This Policy",
+        "description": "We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new policy on this page."
+      },
+      "contact_us": {
+        "title": "Contact Us",
+        "description": "If you have any questions about this Privacy Policy, please contact us at <0>support@ftrackerapp.co.uk</0>."
+      }
+    }
+  },
+  "health_data_policy": {
+    "title": "Health Data Policy",
+    "intro": "We value the privacy and security of your health information. This policy explains how we collect, use, and protect your health data.",
+    "sections": {
+      "what_is_health_data": {
+        "title": "What Is Health Data?",
+        "description": "Health data includes information such as your weight, age, exercise stats, and any other health-related information you provide when using our services."
+      },
+      "how_we_use": {
+        "title": "How We Use Your Health Data",
+        "description": "We use your health data to provide personalized insights, track your progress, improve our services, and enable features like AI-powered chat."
+      },
+      "data_sharing": {
+        "title": "Sharing Your Health Data",
+        "description": "We may share your health data with trusted third-party providers, such as OpenAI, for features like AI chat and analytics. For details on how OpenAI handles your data, please refer to the <0>OpenAI Privacy Policy</0>. We only share the minimum necessary data and require our partners to protect your information according to the law. Explicit consent will always be requested before your data is shared with OpenAI or similar providers."
+      },
+      "data_security": {
+        "title": "How We Protect Your Health Data",
+        "description": "We use industry-standard measures to secure your health data and protect it from unauthorized access or loss."
+      },
+      "your_rights": {
+        "title": "Your Rights",
+        "description": "You have the right to access, update, or delete your health data. You may withdraw your consent at any time by contacting us."
+      },
+      "consent": {
+        "title": "Your Consent",
+        "description": "We only process and share your health data when you give explicit consent, as required by law. You will be specifically asked for this consent before you use any AI features that involve sharing your data with third-party providers."
+      },
+      "contact_us": {
+        "title": "Contact Us",
+        "description": "If you have any questions about this Health Data Policy, or wish to withdraw your consent, please contact us at <0>support@ftrackerapp.co.uk</0>."
+      }
+    }
+  },
+  "admin": {
+    "title_main": "Admin",
+    "nav": {
+      "dashboard": "Dashboard",
+      "users": "Users",
+      "roles": "Roles",
+      "audit": "Audit",
+      "exercises_and_muscles": "Exercises & Muscles"
+    },
+    "users": {
+      "title": "Users",
+      "search_placeholder": "Search users…",
+      "search_label": "Search users",
+      "filter": {
+        "last_seen_at": "Last Seen At",
+        "created_at": "Created At",
+        "email": "Email",
+        "username": "Username"
+      }
+    },
+    "exercises": {
+      "title": "Exercises",
+      "search_placeholder": "Search exercises…",
+      "search_label": "Search exercises",
+      "exercise": "Exercise",
+      "muscles_title": "Muscle Groups",
+      "muscles_hint": "Select the muscle group the exercise should target.",
+      "all_muscles": "All Muscles",
+      "muscle_group": "Muscle Group",
+      "muscle_groups": "Muscle Groups",
+      "add_exercise": "Add Exercise",
+      "muscle_group_required": "Muscle group is required.",
+      "name_required": "Exercise name is required.",
+      "name_too_long": "Exercise name must be less than {{limit}} characters.",
+      "exercise_already_exists": "This exercise already exists.",
+      "muscle_group_already_exists": "This muscle group already exists.",
+      "muscle_group_name_placeholder": "Enter muscle group name (in english)",
+      "exercise_name_placeholder": "Enter exercise name (in english)",
+      "confirm_delete_exercise": "Are you sure you want to delete this exercise?",
+      "auto_translate": "Auto-translate",
+      "name": "Name",
+      "is_time_based": "Is Time Based",
+      "is_bodyweight": "Is Bodyweight"
+    },
+    "table": {
+      "email": "Email",
+      "username": "Username",
+      "roles": "Roles",
+      "joined_at": "Joined",
+      "last_seen_at": "Last Seen",
+      "exercise": "Exercise"
+    },
+    "no_users": "No users yet.",
+    "no_roles": "No roles",
+    "no_roles_defined": "No roles defined.",
+    "no_exercises": "No exercises",
+    "edit_roles": "Edit roles",
+    "edit_roles_for": "Edit roles for {{username}}",
+    "edit_roles_hint": "Select the roles this user should have.",
+    "reset_password": "Reset password",
+    "confirm_password_reset": "Are you sure you want to reset user's password? This will send an email to user.",
+    "type_delete_to_confirm": "Type DELETE to confirm deleting this user"
+  },
+  "settings": {
+    "title": "Settings",
+    "loading": "Loading your settings...",
+    "unit_system": {
+      "title": "Unit System",
+      "hint": "Select your preferred unit system.",
+      "metric": "Metric (kg, cm)",
+      "imperial": "Imperial (lbs, ft)"
+    },
+    "beta_opt_in": {
+      "title": "Beta Features",
+      "hint": "Opt-in to access new features before they are officially released."
+    },
+    "email_notifications": {
+      "title": "Email Notifications",
+      "hint": "Allow email notifications for important updates and news."
+    },
+    "calculate_calories": {
+      "title": "Calculate Calories",
+      "hint": "Allow the app to calculate estimated calories burned during workouts."
     }
   }
 }
-

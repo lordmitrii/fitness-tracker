@@ -3,8 +3,8 @@ import {
   ChartUpIcon,
   ChartDownIcon,
   ChartEqualIcon,
-} from "@/components/icons/ChartIcon";
-import SkipIcon from "@/components/icons/SkipIcon";
+} from "@/src/components/icons/ChartIcon";
+import SkipIcon from "@/src/components/icons/SkipIcon";
 import { e1RM } from "./exerciseStatsUtils";
 import {
   BODYWEIGHT_FACTOR,
@@ -77,6 +77,7 @@ export function getExerciseProgressBadge(
   const currE = computeE1RM(currWeight, currReps, isBW, BODYWEIGHT_FACTOR);
   const dE = pctDelta(currE, prevE);
 
+  // TODO: optional PR detection if passing best_e1rm_all_time on the set (for the future)
   const isPR =
     typeof set.best_e1rm_all_time === "number" &&
     currE > set.best_e1rm_all_time * (1 + strengthTol);

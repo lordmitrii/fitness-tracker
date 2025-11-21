@@ -2,9 +2,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { BackendModule, ReadCallback } from "i18next";
 
 interface AsyncStorageBackendOptions {
-  expirationTime?: number; // Cache expiration time in milliseconds
-  versions?: Record<string, Record<string, string>>; // Version map: language -> namespace -> version
-  prefix?: string; // Storage key prefix
+  expirationTime?: number; 
+  versions?: Record<string, Record<string, string>>; 
+  prefix?: string; 
 }
 
 const DEFAULT_PREFIX = "i18next_res_";
@@ -31,7 +31,7 @@ class AsyncStorageBackend implements BackendModule {
   }
 
   init(services: any, backendOptions: AsyncStorageBackendOptions, i18nextOptions: any): void {
-    // Initialization handled in constructor
+    
   }
 
   read(language: string, namespace: string, callback: ReadCallback): void {
@@ -43,19 +43,19 @@ class AsyncStorageBackend implements BackendModule {
       .then((results) => {
         const [[, data], [, version], [, expiration]] = results;
 
-        // Check if cache is expired
+        
         if (expiration) {
           const expirationTime = parseInt(expiration, 10);
           if (Date.now() > expirationTime) {
-            return callback(null, null); // Cache expired
+            return callback(null, null); 
           }
         }
 
-        // Check version
+        
         const langVersions = this.options.versions[language];
         const expectedVersion = langVersions?.[namespace];
         if (expectedVersion && version !== expectedVersion) {
-          return callback(null, null); // Version mismatch
+          return callback(null, null); 
         }
 
         // Return cached data
@@ -76,7 +76,7 @@ class AsyncStorageBackend implements BackendModule {
   }
 
   create(languages: string[], namespace: string, key: string, fallbackValue: string): void {
-    // Not needed for our use case, but required by interface
+    
   }
 
   store(language: string, namespace: string, data: any): void {

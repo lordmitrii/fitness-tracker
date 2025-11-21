@@ -1,284 +1,231 @@
-import i18n from "i18next";
-import { initReactI18next } from "react-i18next";
-import * as Localization from "expo-localization";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import HttpBackend from "i18next-http-backend";
-import ChainedBackend from "i18next-chained-backend";
-import type { BackendModule, ReadCallback } from "i18next";
-import { Platform } from "react-native";
-import AsyncStorageBackend from "./asyncStorageBackend";
-import { reportMissing } from "./missingReporter";
-import api from "../api";
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import { I18N_CONFIG, type SupportedLanguage } from './config';
+import { detectLanguage, getDeviceLanguageSync } from './detection/language';
+import { loadBundledTranslation } from './loading/bundled';
+import { loadAndMergeTranslation } from './loading/manager';
+import { startUpdateChecker, stopUpdateChecker } from './sync/updater';
+import { getCachedMeta, getCachedTranslation } from './storage/cache';
+import { saveLanguage, getSavedLanguage } from './storage/preferences';
+import { logError } from './utils/errors';
 
-import enTranslation from "./locales/en/translation.json";
-import ruTranslation from "./locales/ru/translation.json";
-import zhTranslation from "./locales/zh/translation.json";
+let isInitialized = false;
+let initializationPromise: Promise<void> | null = null;
+let currentLanguage: SupportedLanguage = I18N_CONFIG.defaultLanguage;
 
-const isDev = __DEV__;
-
-const supportedLngs = ["en", "ru", "zh"];
-const namespaces = ["translation"];
-const canUseAsyncStorage = Platform.OS !== "web" || typeof window !== "undefined";
-
-const params = new URLSearchParams({
-  locales: supportedLngs.join(","),
-  namespaces: namespaces.join(","),
-});
-
-let latestMeta: Record<string, Record<string, string>> = {};
-let metaETag: string | undefined;
-
-const safeGetItem = async (key: string): Promise<string | null> => {
-  if (!canUseAsyncStorage) return null;
-  try {
-    return await AsyncStorage.getItem(key);
-  } catch {
-    return null;
-  }
-};
-
-const safeSetItem = async (key: string, value: string): Promise<void> => {
-  if (!canUseAsyncStorage) return;
-  try {
-    await AsyncStorage.setItem(key, value);
-  } catch {
-  }
-};
-
-async function loadCachedMeta(): Promise<void> {
-  try {
-    const cachedMetaStr = await safeGetItem("i18n:meta");
-    if (cachedMetaStr) {
-      latestMeta = JSON.parse(cachedMetaStr);
-    }
-    const etag = await safeGetItem("i18n:meta:etag");
-    if (etag) {
-      metaETag = etag;
-    }
-  } catch (error) {
-    console.error("Failed to load cached i18n meta:", error);
-    latestMeta = {};
-  }
+function normalizeLanguage(language: string | null | undefined): SupportedLanguage {
+  const base = (language || I18N_CONFIG.defaultLanguage).split('-')[0] as SupportedLanguage;
+  return I18N_CONFIG.supportedLanguages.includes(base)
+    ? base
+    : I18N_CONFIG.defaultLanguage;
 }
 
-function flatten(
-  meta: Record<string, Record<string, string>>
-): Record<string, string> {
-  return Object.fromEntries(
-    supportedLngs.map((lng) => [
-      lng,
-      namespaces.map((ns) => meta[lng]?.[ns] ?? "1").join("|"),
-    ])
-  );
-}
+function handleLanguageChanged(language: string): void {
+  const normalized = normalizeLanguage(language);
+  currentLanguage = normalized;
 
-loadCachedMeta();
-let lsVersions = flatten(latestMeta);
-
-function getDeviceLanguage(): string {
-  const locales = Localization.getLocales();
-  if (locales && locales.length > 0) {
-    const locale = locales[0];
-    const languageCode = locale.languageCode?.toLowerCase() || "en";
-
-    if (supportedLngs.includes(languageCode)) {
-      return languageCode;
-    }
-
-    const baseLanguage = languageCode.split("-")[0];
-    if (supportedLngs.includes(baseLanguage)) {
-      return baseLanguage;
-    }
-  }
-
-  return "en";
-}
-
-const bundledTranslations: Record<string, Record<string, any>> = {
-  en: {
-    translation: enTranslation,
-  },
-  ru: {
-    translation: ruTranslation,
-  },
-  zh: {
-    translation: zhTranslation,
-  },
-};
-
-class BundledResourceBackend implements BackendModule {
-  type = "backend" as const;
-
-  init(services: any, backendOptions: any, i18nextOptions: any): void {
-  }
-
-  read(language: string, namespace: string, callback: ReadCallback): void {
-    const lang = language.split("-")[0];
-    const translations = bundledTranslations[lang]?.[namespace];
-
-    if (translations) {
-      callback(null, translations);
-    } else {
-      const fallback = bundledTranslations.en?.[namespace];
-      if (fallback) {
-        callback(null, fallback);
-      } else {
-        callback(new Error(`Translation not found: ${lang}/${namespace}`), null);
-      }
-    }
-  }
-}
-
-const resourceBackend = new BundledResourceBackend();
-
-const httpBackendOptions = {
-  loadPath: "/i18n/{{lng}}/{{ns}}",
-  allowMultiLoading: true,
-  request: (
-    options: any,
-    url: string,
-    payload: any,
-    callback: (error: Error | null, data?: any) => void
-  ) => {
-    api
-      .get(url)
-      .then((res) => {
-        callback(null, {
-          data: res.data,
-          status: res.status,
-          headers: res.headers,
-        });
-      })
-      .catch((err) => {
-        callback(err as Error);
-      });
-  },
-};
-
-async function getSavedLanguage(): Promise<string | null> {
-  return safeGetItem("i18n:language");
-}
-
-async function initI18n(): Promise<void> {
-  const savedLanguage = await getSavedLanguage();
-  const deviceLanguage = getDeviceLanguage();
-  const initialLanguage = savedLanguage || deviceLanguage;
-
-  const backends = canUseAsyncStorage
-    ? [AsyncStorageBackend, HttpBackend, resourceBackend]
-    : [HttpBackend, resourceBackend];
-
-  const backendOptions = canUseAsyncStorage
-    ? [
-        {
-          expirationTime: 7 * 24 * 60 * 60 * 1000,
-          versions: lsVersions,
-        },
-        httpBackendOptions,
-        {},
-      ]
-    : [httpBackendOptions, {}];
-
-  await i18n
-    .use(ChainedBackend)
-    .use(initReactI18next)
-    .init({
-      lng: initialLanguage,
-      backend: {
-        backends,
-        backendOptions,
-      },
-      ns: namespaces,
-      defaultNS: "translation",
-      load: "languageOnly",
-      supportedLngs,
-      fallbackLng: "en",
-      nonExplicitSupportedLngs: true,
-      preload: ["en"],
-      interpolation: { escapeValue: false },
-      saveMissing: true,
-      saveMissingTo: "current",
-      missingKeyHandler: (languages, namespace, key) => {
-        if (isDev) return;
-        reportMissing([...languages], namespace, key, {
-          meta: latestMeta,
-          batchMs: 1000,
-          includeMeta: true,
-        });
-      },
-    });
-
-  i18n.on("languageChanged", (lng) => {
-    void safeSetItem("i18n:language", lng);
+  void saveLanguage(normalized).catch(error => {
+    logError(error, 'handleLanguageChanged', { language: normalized });
   });
 }
 
-function getAsyncStorageBackend(): AsyncStorageBackend | null {
-  if (!canUseAsyncStorage) return null;
-  return (i18n.services.backendConnector?.backend?.backends?.[0] as AsyncStorageBackend) || null;
-}
-
-function setBackendVersions(v: Record<string, string>): void {
-  const backend = getAsyncStorageBackend();
-  if (backend && (backend as any).options) {
-    (backend as any).options.versions = v;
+async function determineInitialLanguage(): Promise<SupportedLanguage> {
+  const saved = await getSavedLanguage();
+  if (saved) {
+    return saved;
   }
+
+  return normalizeLanguage(getDeviceLanguageSync());
 }
 
-async function refreshMeta(): Promise<void> {
-  try {
-    const res = await api.get(`/i18n/meta?${params.toString()}`, {
-      headers: {
-        "Cache-Control": "no-cache",
-        ...(metaETag ? { "If-None-Match": metaETag } : {}),
+function initializeWithBundled(initialLanguage: SupportedLanguage): void {
+  if (isInitialized) {
+    return;
+  }
+
+  currentLanguage = initialLanguage;
+
+  const resources: Record<string, Record<string, any>> = {};
+  
+  for (const lang of I18N_CONFIG.supportedLanguages) {
+    resources[lang] = {};
+    for (const ns of I18N_CONFIG.namespaces) {
+      resources[lang][ns] = loadBundledTranslation(lang, ns);
+    }
+  }
+  
+  i18n
+    .use(initReactI18next)
+    .init({
+      resources,
+      lng: currentLanguage,
+      fallbackLng: I18N_CONFIG.defaultLanguage,
+      supportedLngs: I18N_CONFIG.supportedLanguages,
+      ns: I18N_CONFIG.namespaces,
+      defaultNS: I18N_CONFIG.defaultNamespace,
+      interpolation: {
+        escapeValue: false, 
       },
-      validateStatus: (s) => (s >= 200 && s < 300) || s === 304,
+      react: {
+        useSuspense: false, 
+      },
+      
+      initImmediate: true,
     });
 
-    if (res.status === 304) return;
-
-    metaETag = res.headers?.etag;
-    if (metaETag) {
-      await safeSetItem("i18n:meta:etag", metaETag);
-    }
-
-    const newMeta = res.data?.versions ?? {};
-    const newLsVersions = flatten(newMeta);
-
-    if (JSON.stringify(newLsVersions) !== JSON.stringify(lsVersions)) {
-      latestMeta = newMeta;
-      lsVersions = newLsVersions;
-
-      await safeSetItem("i18n:meta", JSON.stringify(latestMeta));
-
-      setBackendVersions(lsVersions);
-
-      const currentBase = i18n.language?.split("-")[0] || "en";
-      await i18n.reloadResources([currentBase], namespaces);
-
-      i18n.emit("languageChanged", i18n.language);
-    }
-  } catch (err) {
-    const error = err as any;
-    if (!error?.isOffline) {
-      console.error("i18n meta refresh failed", err);
-    }
+  i18n.on('languageChanged', handleLanguageChanged);
+  
+  isInitialized = true;
+  
+  if (__DEV__) {
+    console.log(`[i18n] Initialized with bundled translations (language: ${currentLanguage})`);
   }
 }
 
-const i18nInitPromise = (async () => {
+async function enhanceTranslations(): Promise<void> {
   try {
-    await initI18n();
-    await refreshMeta();
-  } catch (error) {
-    const err = error as any;
-    if (!err?.isOffline) {
-      console.error("Failed to initialize i18n:", error);
-      throw error;
+    
+    const meta = await getCachedMeta();
+    const versions = meta?.versions[currentLanguage];
+    
+    
+    for (const namespace of I18N_CONFIG.namespaces) {
+      const version = versions?.[namespace];
+      const result = await loadAndMergeTranslation(currentLanguage, namespace, version);
+      
+      if (result.success && result.data) {
+        
+        i18n.addResourceBundle(
+          currentLanguage,
+          namespace,
+          result.data,
+          true, 
+          true  
+        );
+      }
     }
+    
+    
+    i18n.emit('languageChanged', currentLanguage);
+    
+    if (__DEV__) {
+      console.log(`[i18n] Enhanced translations for: ${currentLanguage}`);
+    }
+  } catch (error) {
+    logError(error, 'enhanceTranslations');
+    
   }
-})();
+}
 
-export const waitForI18n = (): Promise<void> => i18nInitPromise;
+export async function initializeI18n(): Promise<void> {
+  
+  if (isInitialized && initializationPromise) {
+    return initializationPromise;
+  }
+  
+  if (isInitialized) {
+    return Promise.resolve();
+  }
+  
+  
+  initializationPromise = (async () => {
+    try {
+      
+      const initialLanguage = await determineInitialLanguage();
+      initializeWithBundled(initialLanguage);
+      
+      
+      const detection = await detectLanguage();
+      const detectedLanguage = normalizeLanguage(detection.language);
+      if (detectedLanguage !== currentLanguage) {
+        currentLanguage = detectedLanguage;
+        await i18n.changeLanguage(detectedLanguage);
+        await saveLanguage(detectedLanguage);
+      }
+      
+      
+      
+      void enhanceTranslations();
+      
+      
+      startUpdateChecker(() => currentLanguage);
+      
+      if (__DEV__) {
+        console.log(`[i18n] Initialization complete (language: ${currentLanguage})`);
+      }
+    } catch (error) {
+      logError(error, 'initializeI18n');
+      
+    }
+  })();
+  
+  return initializationPromise;
+}
+
+export async function changeLanguage(language: SupportedLanguage): Promise<void> {
+  const normalized = normalizeLanguage(language);
+
+  if (!I18N_CONFIG.supportedLanguages.includes(normalized)) {
+    return;
+  }
+
+  if (normalized === currentLanguage) {
+    return;
+  }
+
+  currentLanguage = normalized;
+
+  try {
+    
+    await i18n.changeLanguage(normalized);
+    
+    
+    await saveLanguage(normalized);
+    
+    
+    void enhanceTranslations();
+    
+    if (__DEV__) {
+      console.log(`[i18n] Language changed to: ${normalized}`);
+    }
+  } catch (error) {
+    logError(error, 'changeLanguage', { language: normalized });
+    throw error;
+  }
+}
+
+export function getCurrentLanguage(): SupportedLanguage {
+  return currentLanguage;
+}
+
+export async function waitForI18n(): Promise<void> {
+  if (!isInitialized) {
+    await initializeI18n();
+  }
+  
+  
+  
+  await Promise.race([
+    enhanceTranslations(),
+    new Promise(resolve => setTimeout(resolve, 100)),
+  ]);
+}
+
+export function cleanup(): void {
+  i18n.off('languageChanged', handleLanguageChanged);
+  stopUpdateChecker();
+  isInitialized = false;
+  initializationPromise = null;
+}
+
+void initializeI18n();
+
+export { i18n };
+
+export { useTranslation } from './hooks/useTranslation';
+export { useLanguage } from './hooks/useLanguage';
+
+export type { SupportedLanguage, Namespace } from './config';
+export type { TranslationData, I18nState, LanguageDetectionResult } from './types';
 
 export default i18n;
