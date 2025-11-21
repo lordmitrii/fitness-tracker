@@ -1,6 +1,6 @@
 import { lightColors, darkColors, createThemeColors, ThemeColors } from './colors';
 import { createTypography, TypographyVariant } from './typography';
-import { spacing, borderRadius, layout, shadows } from './spacing';
+import { spacing, borderRadius, layout, shadows, fontSize, lineHeight } from './spacing';
 import { createComponentStyles, ButtonVariant } from './components';
 import {
   animationDurations,
@@ -19,6 +19,8 @@ export type Theme = {
   gradients: ReturnType<typeof createGradients>;
   spacing: typeof spacing;
   borderRadius: typeof borderRadius;
+  fontSize: typeof fontSize;
+  lineHeight: typeof lineHeight;
   layout: typeof layout;
   shadows: typeof shadows;
   isDark: boolean;
@@ -37,18 +39,19 @@ export const createTheme = (isDark: boolean = false): Theme => {
     gradients,
     spacing,
     borderRadius,
+    fontSize,
+    lineHeight,
     layout,
     shadows,
     isDark,
   };
 };
 
-// Export individual theme modules
 export { lightColors, darkColors, createThemeColors };
 export type { ThemeColors };
 export { createTypography };
 export type { TypographyVariant };
-export { spacing, borderRadius, layout, shadows };
+export { spacing, borderRadius, fontSize, lineHeight, layout, shadows };
 export { createComponentStyles };
 export type { ButtonVariant };
 export {
@@ -61,7 +64,6 @@ export {
 };
 export { createGradients };
 
-// Export default themes
 export const lightTheme = createTheme(false);
 export const darkTheme = createTheme(true);
 

@@ -1,12 +1,26 @@
-import { useWindowDimensions } from "react-native";
+import { useState, useEffect } from "react";
+import { Dimensions, ScaledSize } from "react-native";
 
-interface Options {
-  breakpoint?: number;
+const SM_BREAKPOINT = 640;
+
+export default function useIsBelowSm() {
+  const [isBelowSm, setIsBelowSm] = useState(() => {
+    const { width } = Dimensions.get("window");
+    return width < SM_BREAKPOINT;
+  });
+
+  useEffect(() => {
+    const subscription = Dimensions.addEventListener(
+      "change",
+      ({ window }: { window: ScaledSize }) => {
+        setIsBelowSm(window.width < SM_BREAKPOINT);
 }
+    );
 
-export function useIsBelowSm({ breakpoint = 640 }: Options = {}) {
-  const { width } = useWindowDimensions();
-  return width <= breakpoint;
+    return () => {
+      subscription?.remove();
+    };
+  }, []);
+
+  return isBelowSm;
 }
-
-export default useIsBelowSm;

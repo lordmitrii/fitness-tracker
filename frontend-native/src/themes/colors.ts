@@ -1,9 +1,7 @@
 export const lightColors = {
-  // Base colors
   black: '#000000',
   white: '#ffffff',
 
-  // Gray scale (Tailwind defaults for light mode)
   gray: {
     50: '#f9fafb',
     100: '#f3f4f6',
@@ -17,7 +15,6 @@ export const lightColors = {
     900: '#111827',
   },
 
-  // Blue scale (Tailwind defaults for light mode)
   blue: {
     50: '#eff6ff',
     100: '#dbeafe',
@@ -34,7 +31,6 @@ export const lightColors = {
     600: '#0284c7',
   },
 
-  // Green scale (Tailwind defaults for light mode)
   green: {
     50: '#f0fdf4',
     100: '#dcfce7',
@@ -48,7 +44,6 @@ export const lightColors = {
     900: '#14532d',
   },
 
-  // Red scale (Tailwind defaults for light mode)
   red: {
     50: '#fef2f2',
     100: '#fee2e2',
@@ -62,7 +57,6 @@ export const lightColors = {
     900: '#7f1d1d',
   },
 
-  // Pink scale (Tailwind defaults for light mode)
   pink: {
     50: '#fdf2f8',
     100: '#fce7f3',
@@ -76,7 +70,6 @@ export const lightColors = {
     900: '#831843',
   },
 
-  // Yellow scale (Tailwind defaults for light mode)
   yellow: {
     50: '#fefce8',
     100: '#fef9c3',
@@ -92,11 +85,9 @@ export const lightColors = {
 };
 
 export const darkColors = {
-  // Base colors (inverted for dark mode)
   black: '#ffffff',
-  white: '#4b5365', // rgb(75, 83, 101)
+  white: '#4b5365',
 
-  // Gray scale (from CSS dark mode)
   gray: {
     50: '#646d81', // rgb(100, 109, 129)
     100: '#383d49',
@@ -110,7 +101,6 @@ export const darkColors = {
     900: '#ffffff',
   },
 
-  // Blue scale (from CSS dark mode)
   blue: {
     50: '#273c5c',
     100: '#385780',
@@ -127,7 +117,6 @@ export const darkColors = {
     600: '#309ccf',
   },
 
-  // Green scale (from CSS dark mode)
   green: {
     50: '#1a3d2b',
     100: '#2cb36d',
@@ -141,7 +130,6 @@ export const darkColors = {
     900: '#56f5b7',
   },
 
-  // Red scale (using Tailwind defaults, adjust if needed)
   red: {
     50: '#7f1d1d',
     100: '#991b1b',
@@ -155,7 +143,6 @@ export const darkColors = {
     900: '#fef2f2',
   },
 
-  // Pink scale (using Tailwind defaults, adjust if needed)
   pink: {
     50: '#831843',
     100: '#9f1239',
@@ -169,7 +156,6 @@ export const darkColors = {
     900: '#fdf2f8',
   },
 
-  // Yellow scale (using Tailwind defaults, adjust if needed)
   yellow: {
     50: '#713f12',
     100: '#854d0e',

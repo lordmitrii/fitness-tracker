@@ -1,6 +1,5 @@
 import { Animated } from 'react-native';
 
-// Animation durations (from CSS)
 export const animationDurations = {
   fast: 200, // fade-in
   normal: 600, // shake, slide-down-in
@@ -8,14 +7,12 @@ export const animationDurations = {
   verySlow: 2200, // slide-up-out
 };
 
-// Animation easing functions
 export const easing = {
   easeOut: 'ease-out',
   linear: 'linear',
   cubicBezier: 'cubic-bezier(0.16, 1, 0.3, 1)', // Used in slide animations
 };
 
-// Helper function to create shake animation
 export const createShakeAnimation = () => {
   const shakeValue = new Animated.Value(0);
 
@@ -61,7 +58,6 @@ export const createShakeAnimation = () => {
   };
 };
 
-// Helper function to create fade-in animation
 export const createFadeInAnimation = () => {
   const fadeValue = new Animated.Value(0);
 
@@ -80,7 +76,6 @@ export const createFadeInAnimation = () => {
   };
 };
 
-// Helper function to create slide-down animation
 export const createSlideDownAnimation = () => {
   const slideValue = new Animated.Value(-100);
 
@@ -100,7 +95,6 @@ export const createSlideDownAnimation = () => {
   };
 };
 
-// Helper function to create spin animation
 export const createSpinAnimation = () => {
   const spinValue = new Animated.Value(0);
 

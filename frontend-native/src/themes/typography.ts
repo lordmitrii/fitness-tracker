@@ -24,15 +24,14 @@ export const createTypography = (colors: ThemeColors): Record<TypographyVariant,
     titleBlueGradient: {
       fontSize: 24,
       fontWeight: '400',
-      // Note: Gradients in React Native require LinearGradient component
-      // This is a fallback color, use LinearGradient for actual gradient
+      // TODO: This is a fallback color, use LinearGradient for actual gradient
       color: colors.button.primary.background,
       lineHeight: 32,
     },
     titleRedGradient: {
       fontSize: 24,
       fontWeight: '400',
-      // Note: Gradients in React Native require LinearGradient component
+      // TODO: This is a fallback color, use LinearGradient for actual gradient
       color: colors.button.danger.background,
       lineHeight: 32,
     },

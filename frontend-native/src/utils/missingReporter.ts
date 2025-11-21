@@ -67,8 +67,6 @@ export function reportMissing(
     key,
     meta: options?.includeMeta
       ? {
-          // In web version you used window.location.pathname;
-          // in RN we leave this empty (you can wire navigation path later if you want).
           path: "",
         }
       : undefined,

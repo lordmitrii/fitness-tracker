@@ -2,7 +2,7 @@ import { useCallback, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import api from "@/src/api";
-import { QK } from "@/lib/utils/queryKeys";
+import { QK } from "@/src/utils/queryKeys";
 
 export async function fetchCycle(
   planID: string | number,

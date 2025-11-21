@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import api from "@/src/api";
-import { QK } from "@/lib/utils/queryKeys";
+import { QK } from "@/src/utils/queryKeys";
 import type { ExerciseStat } from "@/src/hooks/data/types";
 
 async function fetchExerciseStats(): Promise<ExerciseStat[]> {

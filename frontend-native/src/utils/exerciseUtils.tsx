@@ -1,5 +1,3 @@
-// lib/utils/exerciseProgress.tsx
-
 import React from "react";
 import {
   ChartUpIcon,
@@ -60,7 +58,6 @@ export function getExerciseProgressBadge(
   if (!set?.completed) return null;
 
   if (set.skipped) {
-    // Removed className to be RN-friendly; you can add style/props later
     return <SkipIcon title="Skipped" />;
   }
 
@@ -76,17 +73,14 @@ export function getExerciseProgressBadge(
   const currWeight = safeNum(set.weight);
   const isBW = !!set.is_bodyweight;
 
-  // compare estimated 1RM (bodyweight scaled)
   const prevE = computeE1RM(prevWeight, prevReps, isBW, BODYWEIGHT_FACTOR);
   const currE = computeE1RM(currWeight, currReps, isBW, BODYWEIGHT_FACTOR);
   const dE = pctDelta(currE, prevE);
 
-  // optional PR detection if passing best_e1rm_all_time on the set (for the future)
   const isPR =
     typeof set.best_e1rm_all_time === "number" &&
     currE > set.best_e1rm_all_time * (1 + strengthTol);
 
-  // if strength moved meaningfully
   if (Math.abs(dE) > strengthTol) {
     if (dE > 0) {
       const reason = isPR ? "New PR (e1RM↑)" : "Strength up (e1RM)";
@@ -104,7 +98,6 @@ export function getExerciseProgressBadge(
     }
   }
 
-  // check training volume (still useful for hypertrophy)
   const prevVol =
     prevReps * (isBW ? prevWeight * bodyweightFactor : prevWeight);
   const currVol =

@@ -17,6 +17,7 @@ import Animated, {
   Extrapolation,
 } from "react-native-reanimated";
 import { useTheme } from "@/src/context/ThemeContext";
+import { useHapticFeedback } from "@/src/hooks/useHapticFeedback";
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
@@ -31,17 +32,8 @@ const SPRING_CONFIG = {
 type RefreshHandler = () => void | Promise<void>;
 
 interface PullToRefreshProps extends Omit<ScrollViewProps, "onScroll"> {
-  /**
-   * Handler function to execute when user pulls to refresh
-   */
   onRefresh?: RefreshHandler;
-  /**
-   * Children to render inside the ScrollView
-   */
   children?: React.ReactNode;
-  /**
-   * Custom refresh indicator component
-   */
   refreshIndicator?: React.ReactNode;
 }
 
@@ -52,6 +44,7 @@ export default function PullToRefresh({
   ...scrollViewProps
 }: PullToRefreshProps) {
   const { theme } = useTheme();
+  const haptics = useHapticFeedback();
   const translateY = useSharedValue(0);
   const isRefreshingShared = useSharedValue(false);
   const scrollOffset = useSharedValue(0);
@@ -64,10 +57,13 @@ export default function PullToRefresh({
     
     isRefreshingShared.value = true;
     setIsRefreshing(true);
+    haptics.triggerLight();
     try {
       await Promise.resolve(onRefresh());
+      haptics.triggerSuccess();
     } catch (error) {
       console.error("Pull-to-refresh handler failed:", error);
+      haptics.triggerError();
     } finally {
       setTimeout(() => {
         isRefreshingShared.value = false;
@@ -76,7 +72,7 @@ export default function PullToRefresh({
         rotation.value = withTiming(0, { duration: 200 });
       }, 500);
     }
-  }, [onRefresh]);
+  }, [onRefresh, haptics]);
 
   const panGesture = Gesture.Pan()
     .activeOffsetY(10)
@@ -172,7 +168,7 @@ export default function PullToRefresh({
   );
 
   return (
-    <GestureHandlerRootView style={styles.container}>
+    <GestureHandlerRootView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <GestureDetector gesture={panGesture}>
         <AnimatedScrollView
           ref={scrollViewRef}
@@ -180,7 +176,11 @@ export default function PullToRefresh({
           onScroll={scrollHandler}
           scrollEventThrottle={16}
           bounces={false}
-          style={[scrollViewProps.style, scrollViewStyle]}
+          style={[
+            { backgroundColor: theme.colors.background },
+            scrollViewProps.style,
+            scrollViewStyle,
+          ]}
         >
           <Animated.View style={refreshIndicatorStyle}>
             {refreshIndicator || defaultRefreshIndicator}

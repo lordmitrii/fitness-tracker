@@ -37,7 +37,7 @@ export function ThemedText({
   // Get style from theme if variant exists, otherwise use custom color
   const themeStyle = theme.typography[mappedVariant] || theme.typography.body;
   
-  // Use custom color if provided (for backward compatibility)
+  // for backward compatibility
   const color = lightColor || darkColor || themeStyle.color;
 
   return (

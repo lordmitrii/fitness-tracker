@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Platform } from "react-native";
 import api from "../api";
 
 const STORAGE_KEY = "i18n_missing_reported_v1";
@@ -10,31 +11,33 @@ let queue: Array<{
   meta?: { path?: string };
 }> = [];
 let timer: number | null = null;
+const canUseAsyncStorage =
+  Platform.OS !== "web" || typeof window !== "undefined";
 
-// Load reported keys from AsyncStorage on initialization
-(async function boot() {
-  try {
-    const saved = await AsyncStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed)) {
-        parsed.forEach((id: string) => reported.add(id));
+if (canUseAsyncStorage) {
+  (async function boot() {
+    try {
+      const saved = await AsyncStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          parsed.forEach((id: string) => reported.add(id));
+        }
       }
+    } catch (error) {
     }
-  } catch (error) {
-    // Ignore errors
-  }
-})();
+  })();
+}
 
 function persistSoon() {
+  if (!canUseAsyncStorage) return;
   try {
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(reported))).catch(
-      () => {
-        // Ignore errors
-      }
-    );
+    AsyncStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(Array.from(reported))
+    ).catch(() => {
+    });
   } catch {
-    // Ignore errors
   }
 }
 
@@ -83,15 +86,11 @@ export function reportMissing(
   persistSoon();
 
   const item = {
-    languages: Array.from(
-      new Set(languages.map((l) => l.split("-")[0]))
-    ),
+    languages: Array.from(new Set(languages.map((l) => l.split("-")[0]))),
     namespace,
     key,
     meta: options?.includeMeta
       ? {
-          // In React Native, we don't have window.location, so we skip path
-          // You could use expo-router's usePathname() if needed
         }
       : undefined,
   };
@@ -113,7 +112,6 @@ async function flush(): Promise<void> {
   try {
     await api.post("/i18n/missing/batch", { items });
   } catch {
-    // Fallback to individual requests
     await Promise.allSettled(
       items.map((it) =>
         api.post("/i18n/missing", {
@@ -125,4 +123,3 @@ async function flush(): Promise<void> {
     );
   }
 }
-

@@ -1,25 +1,112 @@
-import { Tabs } from "expo-router";
+import { Tabs, usePathname } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "@/src/context/ThemeContext";
-import { useAuth } from "@/src/context/AuthContext";
 import { HapticTab } from "@/src/components/haptic-tab";
-import { Platform } from "react-native";
+import { Platform, Text } from "react-native";
 import { createHeaderOptions } from "@/src/navigation/headerConfig";
 import { useTranslation } from "react-i18next";
+import { useRouteGuard } from "@/src/hooks/auth/useRouteGuard";
+
+type TabConfig = {
+  name: string;
+  iconName: keyof typeof MaterialIcons.glyphMap;
+  translationKey: string;
+};
+
+const TAB_CONFIGS: TabConfig[] = [
+  { name: "index", iconName: "home", translationKey: "general.home" },
+  { name: "workout-plans", iconName: "fitness-center", translationKey: "general.plans" },
+  { name: "current-workout", iconName: "directions-run", translationKey: "general.workout" },
+  { name: "profile", iconName: "person", translationKey: "general.profile" },
+  { name: "more", iconName: "more-horiz", translationKey: "general.more" },
+];
+
+const HIDDEN_ROUTES = [
+  "workout-plans/[planID]",
+  "workout-plans/create-workout-plan",
+  "workout-plans/update-workout-plan/[planID]",
+  "workout-plans/[planID]/workout-cycles/[cycleID]",
+  "workout-plans/[planID]/workout-cycles/[cycleID]/create-workout",
+  "workout-plans/[planID]/workout-cycles/[cycleID]/update-workout/[workoutID]",
+  "profile/health",
+  "profile/stats",
+  "profile/health/create-profile",
+  "profile/health/update-profile",
+];
 
 export default function TabLayout() {
   const { theme } = useTheme();
-  const { isAuth } = useAuth();
   const { t } = useTranslation();
+  const pathname = usePathname();
+  const guard = useRouteGuard({
+    requireAuth: true,
+    restrictedRoles: ["restricted"],
+    redirectRestrictedTo: "/(auth)/account-verification",
+  });
 
   const headerOptions = createHeaderOptions(theme, {
     headerShown: true,
   });
+  
+  const tabHeaderOptions = {
+    headerShown: headerOptions.headerShown,
+    headerTitle: headerOptions.headerTitle,
+    headerTitleStyle: headerOptions.headerTitleStyle,
+    headerTintColor: headerOptions.headerTintColor,
+    headerStyle: headerOptions.headerStyle,
+    headerRight: headerOptions.headerRight,
+    headerLeft: headerOptions.headerLeft,
+  };
+
+  const isTabActive = (tabName: string): boolean => {
+    if (tabName === "workout-plans") {
+      const exactMatch = pathname === `/(tabs)/workout-plans` || pathname === `/workout-plans`;
+      const planDetailMatch = pathname.match(/^\/\(tabs\)\/workout-plans\/\[planID\]$/);
+      const isCyclePage = pathname.includes("/workout-cycles/");
+      return Boolean((exactMatch || planDetailMatch) && !isCyclePage);
+    }
+    
+    if (tabName === "current-workout") {
+      return pathname.includes("/workout-cycles/");
+    }
+    
+    const exactMatch = pathname === `/(tabs)/${tabName}` || pathname === `/${tabName}`;
+    const nestedMatch =
+      pathname.startsWith(`/(tabs)/${tabName}/`) || pathname.startsWith(`/${tabName}/`);
+    return Boolean(exactMatch || nestedMatch);
+  };
+
+  const getTabColor = (isActive: boolean) =>
+    isActive ? theme.colors.button.primary.background : theme.colors.text.tertiary;
+
+  const createTabIcon = (iconName: keyof typeof MaterialIcons.glyphMap, tabName: string) => {
+    return ({ focused, size }: { focused: boolean; size: number }) => {
+      const isActive = focused || isTabActive(tabName);
+      const iconColor = getTabColor(isActive);
+      return <MaterialIcons name={iconName} size={size} color={iconColor} />;
+    };
+  };
+
+  const createTabLabel = (translationKey: string, tabName: string) => {
+    return ({ focused }: { focused: boolean }) => {
+      const isActive = focused || isTabActive(tabName);
+      const labelColor = getTabColor(isActive);
+      return (
+        <Text style={{ color: labelColor, fontSize: theme.fontSize.sm, fontWeight: "500" }}>
+          {t(translationKey)}
+        </Text>
+      );
+    };
+  };
+
+  if (guard.state !== "allowed") {
+    return guard.element;
+  }
 
   return (
     <Tabs
       screenOptions={{
-        ...headerOptions,
+        ...tabHeaderOptions,
         tabBarActiveTintColor: theme.colors.button.primary.background,
         tabBarInactiveTintColor: theme.colors.text.tertiary,
         tabBarStyle: {
@@ -31,139 +118,38 @@ export default function TabLayout() {
           height: Platform.OS === "ios" ? 88 : 64,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: theme.fontSize.sm,
           fontWeight: "500",
         },
         tabBarIconStyle: {
-          marginTop: 4,
+          marginTop: theme.spacing[1],
+        },
+        tabBarItemStyle: {
+          paddingHorizontal: 5, // Keep as is - specific tab bar spacing
+          marginTop: -5,
         },
       }}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: t("general.home"),
-          headerTitle: t("general.home"),
-          tabBarLabel: t("general.home"),
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="home" size={size} color={color} />
-          ),
-          tabBarButton: HapticTab,
-        }}
-      />
-      
-      <Tabs.Screen
-        name="workout-plans"
-        options={{
-          title: t("general.plans"),
-          headerTitle: t("general.plans"),
-          tabBarLabel: t("general.plans"),
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="fitness-center" size={size} color={color} />
-          ),
-          tabBarButton: HapticTab,
-        }}
-      />
-      
-      <Tabs.Screen
-        name="current-workout"
-        options={{
-          title: t("general.workout"),
-          headerTitle: t("general.workout"),
-          tabBarLabel: t("general.workout"),
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="directions-run" size={size} color={color} />
-          ),
-          tabBarButton: HapticTab,
-        }}
-      />
-      
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: t("general.profile"),
-          headerTitle: t("general.profile"),
-          tabBarLabel: t("general.profile"),
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="person" size={size} color={color} />
-          ),
-          tabBarButton: HapticTab,
-        }}
-      />
-      
-      <Tabs.Screen
-        name="more"
-        options={{
-          title: t("general.more"),
-          headerTitle: t("general.more"),
-          tabBarLabel: t("general.more"),
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="more-horiz" size={size} color={color} />
-          ),
-          tabBarButton: HapticTab,
-        }}
-      />
+      {TAB_CONFIGS.map(({ name, iconName, translationKey }) => {
+        const title = t(translationKey);
+        return (
+          <Tabs.Screen
+            key={name}
+            name={name}
+            options={{
+              title,
+              headerTitle: title,
+              tabBarLabel: createTabLabel(translationKey, name),
+              tabBarIcon: createTabIcon(iconName, name),
+              tabBarButton: HapticTab,
+            }}
+          />
+        );
+      })}
 
-      <Tabs.Screen
-        name="workout-plans/[planID]"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="workout-plans/create-workout-plan"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="workout-plans/update-workout-plan/[planID]"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="workout-plans/[planID]/workout-cycles/[cycleID]"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="workout-plans/[planID]/workout-cycles/[cycleID]/create-workout"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="workout-plans/[planID]/workout-cycles/[cycleID]/update-workout/[workoutID]"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="profile/health"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="profile/stats"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="profile/health/create-profile"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="profile/health/update-profile"
-        options={{
-          href: null,
-        }}
-      />
+      {HIDDEN_ROUTES.map((route) => (
+        <Tabs.Screen key={route} name={route} options={{ href: null }} />
+      ))}
     </Tabs>
   );
 }

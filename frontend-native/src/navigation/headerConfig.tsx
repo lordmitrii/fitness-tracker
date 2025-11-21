@@ -1,4 +1,4 @@
-import { StackNavigationOptions } from "@react-navigation/stack";
+import { NativeStackNavigationOptions } from "@react-navigation/native-stack";
 import { Platform, Text } from "react-native";
 import { Theme } from "@/src/themes";
 import { ReactNode } from "react";
@@ -23,7 +23,7 @@ export interface HeaderConfigOptions {
 export const createHeaderOptions = (
   theme: Theme,
   options: HeaderConfigOptions = {}
-): StackNavigationOptions => {
+): NativeStackNavigationOptions => {
   const {
     title,
     headerTitle,
@@ -48,20 +48,13 @@ export const createHeaderOptions = (
     headerRight,
     headerLeft,
     headerBackTitle: Platform.OS === "ios" ? headerBackTitle : undefined,
-    headerBackTitleVisible: Platform.OS === "ios" ? headerBackTitleVisible : false,
     presentation,
     headerTransparent,
     headerBlurEffect: Platform.OS === "ios" ? headerBlurEffect : undefined,
     headerStyle: {
       backgroundColor: headerTransparent ? "transparent" : theme.colors.card.background,
-      borderBottomWidth: headerShadowVisible ? 1 : 0,
-      borderBottomColor: theme.colors.border,
-      elevation: headerShadowVisible && Platform.OS === "android" ? 2 : 0,
-      shadowOpacity: headerShadowVisible && Platform.OS === "ios" ? 0.1 : 0,
-      shadowOffset: { width: 0, height: 1 },
-      shadowRadius: 2,
       ...headerStyle,
-    },
+    } as any,
     headerTitleStyle: {
       fontSize: 18,
       fontWeight: "600" as const,

@@ -2,13 +2,13 @@ import { useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import api from "@/src/api";
-import { QK } from "@/lib/utils/queryKeys";
+import { QK } from "@/src/utils/queryKeys";
 import type { VersionEntry } from "@/src/hooks/data/types";
 
 const FALLBACK_VERSION = "0.0";
 
 export async function fetchVersions(): Promise<VersionEntry[]> {
-  const res = await api.get("versions");
+  const res = await api.get("/versions/");
   const data = res?.data;
   return Array.isArray(data) ? (data as VersionEntry[]) : [];
 }

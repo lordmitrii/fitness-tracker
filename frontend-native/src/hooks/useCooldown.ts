@@ -1,22 +1,35 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { AppState } from "react-native";
-
-interface UseCooldownResult {
-  cooldown: number;
-  start: (seconds: number) => Promise<void>;
-  clear: () => Promise<void>;
-  isActive: boolean;
-}
-
-type Timer = ReturnType<typeof setInterval> | null;
 
 export default function useCooldown(
-  storageKey = "cooldown:default"
-): UseCooldownResult {
+  storageKey: string = "cooldown:default"
+) {
   const [cooldown, setCooldown] = useState(0);
-  const timerRef = useRef<Timer>(null);
-  const expiryRef = useRef<number | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const readExpiry = useCallback(async (): Promise<number | null> => {
+    try {
+      const raw = await AsyncStorage.getItem(storageKey);
+      const n = raw ? Number(raw) : NaN;
+      return Number.isFinite(n) ? n : null;
+    } catch {
+      return null;
+    }
+  }, [storageKey]);
+
+  const writeExpiry = useCallback(
+    async (expiresAtMs: number | null) => {
+      try {
+        if (expiresAtMs && Number.isFinite(expiresAtMs)) {
+          await AsyncStorage.setItem(storageKey, String(expiresAtMs));
+        } else {
+          await AsyncStorage.removeItem(storageKey);
+        }
+      } catch {
+      }
+    },
+    [storageKey]
+  );
 
   const clearTimer = useCallback(() => {
     if (timerRef.current) {
@@ -25,96 +38,55 @@ export default function useCooldown(
     }
   }, []);
 
-  const persistExpiry = useCallback(
-    async (expiresAt: number | null) => {
-      expiryRef.current = expiresAt;
-      try {
-        if (expiresAt && Number.isFinite(expiresAt)) {
-          await AsyncStorage.setItem(storageKey, String(expiresAt));
-        } else {
-          await AsyncStorage.removeItem(storageKey);
-        }
-      } catch (error) {
-        console.warn("useCooldown persist error", error);
-      }
-    },
-    [storageKey]
-  );
-
-  const sync = useCallback(() => {
-    const expiresAt = expiryRef.current;
-    if (!expiresAt) {
-      void persistExpiry(null);
-      setCooldown(0);
-      clearTimer();
-      return;
-    }
-
+  const sync = useCallback(async () => {
     const now = Date.now();
-    const remaining = Math.max(0, Math.ceil((expiresAt - now) / 1000));
+    const exp = await readExpiry();
+    const remaining = exp ? Math.max(0, Math.ceil((exp - now) / 1000)) : 0;
     setCooldown(remaining);
-
     if (remaining === 0) {
-      void persistExpiry(null);
+      await writeExpiry(null);
       clearTimer();
     }
-  }, [clearTimer, persistExpiry]);
+  }, [readExpiry, writeExpiry, clearTimer]);
 
   const start = useCallback(
     async (seconds: number) => {
       clearTimer();
-      const duration = Number.isFinite(seconds) && seconds > 0 ? seconds : 60;
-      const expiresAt = Date.now() + duration * 1000;
-      await persistExpiry(expiresAt);
-      sync();
+      const secs = Number.isFinite(seconds) && seconds > 0 ? seconds : 60;
+      const expiresAt = Date.now() + secs * 1000;
+      await writeExpiry(expiresAt);
+      await sync();
       timerRef.current = setInterval(sync, 1000);
     },
-    [clearTimer, persistExpiry, sync]
+    [writeExpiry, sync, clearTimer]
   );
 
   const clear = useCallback(async () => {
-    await persistExpiry(null);
+    await writeExpiry(null);
     setCooldown(0);
     clearTimer();
-  }, [persistExpiry, clearTimer]);
+  }, [writeExpiry, clearTimer]);
 
   useEffect(() => {
-    let cancelled = false;
-
-    const hydrate = async () => {
-      try {
-        const raw = await AsyncStorage.getItem(storageKey);
-        if (cancelled) return;
-        const parsed = raw ? Number(raw) : NaN;
-        expiryRef.current = Number.isFinite(parsed) ? parsed : null;
         sync();
-        if (expiryRef.current && expiryRef.current > Date.now()) {
-          timerRef.current = setInterval(sync, 1000);
-        }
-      } catch (error) {
-        console.warn("useCooldown hydrate error", error);
-      }
+
+    const hasRemaining = async () => {
+      const exp = await readExpiry();
+      return exp && exp > Date.now();
     };
 
-    hydrate();
-
-    const sub = AppState.addEventListener("change", (state) => {
-      if (state === "active") {
-        sync();
+    hasRemaining().then((has) => {
+      if (has && !timerRef.current) {
+          timerRef.current = setInterval(sync, 1000);
       }
     });
 
     return () => {
-      cancelled = true;
-      sub.remove();
       clearTimer();
     };
-  }, [storageKey, sync, clearTimer]);
+  }, [sync, readExpiry, clearTimer]);
 
-  return {
-    cooldown,
-    start,
-    clear,
-    isActive: cooldown > 0,
-  };
+  return { cooldown, start, clear, isActive: cooldown > 0 };
 }
+
+export { useCooldown };

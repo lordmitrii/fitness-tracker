@@ -66,6 +66,8 @@ export interface Exercise extends Record<string, unknown> {
   name?: string;
   muscle_group_id?: Identifier | null;
   source?: "pool" | "custom";
+  is_time_based?: boolean;
+  is_bodyweight?: boolean;
 }
 
 export interface MuscleGroup extends Record<string, unknown> {

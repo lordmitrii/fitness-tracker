@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-query";
 
 import api from "@/src/api";
-import { QK } from "@/lib/utils/queryKeys";
+import { QK } from "@/src/utils/queryKeys";
 import type { Settings } from "@/src/hooks/data/types";
 
 export async function fetchSettings(): Promise<Settings> {

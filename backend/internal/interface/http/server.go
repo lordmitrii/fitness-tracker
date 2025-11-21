@@ -2,6 +2,7 @@ package http
 
 import (
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -24,18 +25,33 @@ func NewServer(exerciseService usecase.ExerciseService, workoutService usecase.W
 
 	r := gin.Default()
 
-	if os.Getenv("DEVELOPMENT_MODE") == "true" {
-		r.Use(cors.New(cors.Config{
-			AllowOriginFunc: func(origin string) bool {
-				return true
-			},
-			AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-			AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization", "X-Debug-Label", "X-HTTP-Method", "X-Route-Pattern", "Cache-Control"},
-			ExposeHeaders:    []string{"Content-Length"},
-			AllowCredentials: true,
-			MaxAge:           12 * time.Hour,
-		}))
+	corsConfig := cors.Config{
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"*"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
 	}
+
+	if os.Getenv("DEVELOPMENT_MODE") == "true" {
+		corsConfig.AllowOriginFunc = func(origin string) bool { return true }
+	} else if origins := strings.TrimSpace(os.Getenv("CORS_ALLOWED_ORIGINS")); origins != "" {
+		splitOrigins := strings.Split(origins, ",")
+		for i := range splitOrigins {
+			splitOrigins[i] = strings.TrimSpace(splitOrigins[i])
+		}
+		corsConfig.AllowOrigins = splitOrigins
+	} else {
+		// Safe local defaults when no origins are provided in non-development
+		corsConfig.AllowOrigins = []string{
+			"http://localhost:8081",
+			"http://127.0.0.1:8081",
+			"http://localhost:5173",
+			"http://127.0.0.1:5173",
+		}
+	}
+
+	r.Use(cors.New(corsConfig))
 
 	api := r.Group("/api")
 	// api.Use(middleware.DebugHeaders())  // middleware to add debug headers to responses

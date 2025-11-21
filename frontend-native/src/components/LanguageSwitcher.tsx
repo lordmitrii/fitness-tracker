@@ -11,10 +11,6 @@ const languages = [
 ];
 
 interface LanguageSwitcherProps {
-  /**
-   * Display mode: 'dropdown' shows a picker, 'buttons' shows all languages as buttons
-   * @default 'dropdown'
-   */
   mode?: "dropdown" | "buttons";
 }
 
@@ -63,8 +59,9 @@ export default function LanguageSwitcher({
     );
   }
 
-  // Dropdown mode - shows current language with icon
-  // For a full dropdown, you might want to use a library like react-native-picker-select
+
+  // dropdown button
+  // TODO: add library like react-native-picker-select or react-native-dropdown-picker for better UX
   return (
     <TouchableOpacity
       style={[

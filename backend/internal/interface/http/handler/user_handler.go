@@ -118,7 +118,10 @@ func (h *UserHandler) Login(c *gin.Context) {
 	}
 
 	c.SetCookie("refresh_token", refreshToken, 60*60*24*7, "/", "", false, true)
-	c.JSON(http.StatusOK, dto.TokenResponse{AccessToken: accessToken})
+	c.JSON(http.StatusOK, dto.TokenResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	})
 }
 
 // Logout godoc
@@ -146,6 +149,12 @@ func (h *UserHandler) Logout(c *gin.Context) {
 func (h *UserHandler) RefreshToken(c *gin.Context) {
 	refreshToken, err := c.Cookie("refresh_token")
 	if err != nil || refreshToken == "" {
+		var body dto.RefreshRequest
+		if bindErr := c.ShouldBindJSON(&body); bindErr == nil && body.RefreshToken != "" {
+			refreshToken = body.RefreshToken
+		}
+	}
+	if refreshToken == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "refresh token missing"})
 		return
 	}
@@ -164,7 +173,18 @@ func (h *UserHandler) RefreshToken(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not generate token"})
 		return
 	}
-	c.JSON(http.StatusOK, dto.TokenResponse{AccessToken: accessToken})
+
+	newRefresh, err := middleware.GenerateRefreshToken(claims.UserID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not generate refresh token"})
+		return
+	}
+	c.SetCookie("refresh_token", newRefresh, 60*60*24*7, "/", "", false, true)
+
+	c.JSON(http.StatusOK, dto.TokenResponse{
+		AccessToken:  accessToken,
+		RefreshToken: newRefresh,
+	})
 }
 
 // GetProfile godoc
@@ -219,7 +239,7 @@ func (h *UserHandler) UpdateAccount(c *gin.Context) {
 	}
 
 	updates := dto.BuildUpdatesFromPatchDTO(&req)
-	
+
 	account, err := h.svc.UpdateAccount(c.Request.Context(), userID, updates)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -267,6 +287,7 @@ func (h *UserHandler) CreateProfile(c *gin.Context) {
 	}
 	c.JSON(http.StatusCreated, dto.ToProfileResponse(p))
 }
+
 // UpdateProfile godoc
 // @Summary      Update profile
 // @Tags         users
@@ -300,6 +321,7 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, dto.ToProfileResponse(p))
 }
+
 // DeleteProfile godoc
 // @Summary      Delete profile
 // @Tags         users
@@ -321,6 +343,7 @@ func (h *UserHandler) DeleteProfile(c *gin.Context) {
 	}
 	c.Status(http.StatusNoContent)
 }
+
 // GetConsents godoc
 // @Summary      List consents
 // @Tags         users
@@ -349,6 +372,7 @@ func (h *UserHandler) GetConsents(c *gin.Context) {
 
 	c.JSON(http.StatusOK, resp)
 }
+
 // CreateConsent godoc
 // @Summary      Create consent
 // @Tags         users

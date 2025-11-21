@@ -1,15 +1,19 @@
 import { Stack } from "expo-router";
-import { useAuth } from "@/src/context/AuthContext";
-import { Redirect } from "expo-router";
 import { useTheme } from "@/src/context/ThemeContext";
 import { createHeaderOptions } from "@/src/navigation/headerConfig";
+import { useRouteGuard } from "@/src/hooks/auth/useRouteGuard";
 
 export default function AdminLayout() {
-  const { isAuth, hasRole } = useAuth();
   const { theme } = useTheme();
+  const guard = useRouteGuard({
+    requireAuth: true,
+    requiredRoles: ["admin"],
+    restrictedRoles: ["restricted"],
+    redirectInsufficientRoleTo: "/(tabs)",
+  });
 
-  if (!isAuth || !hasRole("admin")) {
-    return <Redirect href="/" />;
+  if (guard.state !== "allowed") {
+    return guard.element;
   }
 
   const headerOptions = createHeaderOptions(theme, {

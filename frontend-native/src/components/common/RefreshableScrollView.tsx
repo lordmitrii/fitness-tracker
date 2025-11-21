@@ -5,13 +5,7 @@ import { useTheme } from "@/src/context/ThemeContext";
 type RefreshHandler = () => void | Promise<void>;
 
 interface RefreshableScrollViewProps extends Omit<ScrollViewProps, "refreshControl"> {
-  /**
-   * Handler function to execute when user pulls to refresh
-   */
   onRefresh?: RefreshHandler;
-  /**
-   * Children to render inside the ScrollView
-   */
   children?: React.ReactNode;
 }
 

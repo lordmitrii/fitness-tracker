@@ -22,7 +22,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [themeMode, setThemeModeState] = useState<ThemeMode>('auto');
   const [isDark, setIsDark] = useState(false);
 
-  // Load saved theme preference
   useEffect(() => {
     const loadTheme = async () => {
       try {
@@ -37,7 +36,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     loadTheme();
   }, []);
 
-  // Determine if dark mode should be active
+  // dark mode should be active ?
   useEffect(() => {
     if (themeMode === 'auto') {
       setIsDark(systemColorScheme === 'dark');
@@ -46,7 +45,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
   }, [themeMode, systemColorScheme]);
 
-  // Save theme preference
   const setThemeMode = async (mode: ThemeMode) => {
     try {
       await AsyncStorage.setItem(THEME_STORAGE_KEY, mode);

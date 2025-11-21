@@ -1,6 +1,6 @@
 services:
   frontend:
-    profiles: ["old-frontend"]       
+    profiles: ["old-frontend"]
     container_name: ft-frontend-dev
     image: ft-frontend-dev:latest
     build:
@@ -11,7 +11,6 @@ services:
       - "5173:5173"
     depends_on:
       - backend
-      - redis
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -19,7 +18,7 @@ services:
       - CHOKIDAR_USEPOLLING=true
 
   frontend-native:
-    profiles: ["new-frontend"]  
+    profiles: ["new-frontend"]
     container_name: ft-frontend-native-dev
     image: ft-frontend-native-dev:latest
     build:
@@ -30,11 +29,11 @@ services:
       - "8081:8081"
     depends_on:
       - backend
-      - redis
     volumes:
       - ./frontend-native:/app
       - /app/node_modules
     environment:
+      - EXPO_PUBLIC_API_URL=http://backend:8080/api
       - CHOKIDAR_USEPOLLING=true
     command: >
       sh -lc '
@@ -45,7 +44,7 @@ services:
   backend:
     container_name: ft-backend-dev
     image: ft-backend-dev:latest
-    build: 
+    build:
       context: ./backend
       dockerfile: Dockerfile
     restart: unless-stopped
@@ -54,10 +53,13 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
       - ./backend:/app
-   
+
   db:
     container_name: ft-db-dev
     image: postgres:16
@@ -68,6 +70,11 @@ services:
       - "5432:5432"
     volumes:
       - ./data/db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     container_name: ft-redis-dev
@@ -86,7 +93,16 @@ services:
       - .env.dev
     volumes:
       - ./data/redis:/data
-  
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'sh -lc ''redis-cli $${REDIS_PASSWORD:+-a "$$REDIS_PASSWORD"} ping | grep PONG''',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   pgadmin:
     container_name: ft-pgadmin-dev
     image: dpage/pgadmin4
@@ -96,4 +112,5 @@ services:
     ports:
       - "5050:80"
     depends_on:
-      - db
+      db:
+        condition: service_healthy

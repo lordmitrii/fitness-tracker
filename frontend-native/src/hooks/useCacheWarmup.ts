@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { useAuth } from "@/src/context/AuthContext";
-import { QK } from "@/lib/utils/queryKeys";
+import { QK } from "@/src/utils/queryKeys";
 import { fetchProfile } from "@/src/hooks/data/useProfileData";
 import { fetchPlans } from "@/src/hooks/data/usePlansData";
 import { fetchCurrentCycle } from "@/src/hooks/data/useCurrentCycleData";

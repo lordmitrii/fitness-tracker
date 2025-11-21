@@ -1,35 +1,12 @@
-import { RefObject, useEffect } from "react";
-import { usePathname } from "expo-router";
+import { useRef } from "react";
+import { ScrollView } from "react-native";
 
-interface ScrollableNode {
-  scrollToOffset?: (options: { offset: number; animated?: boolean }) => void;
-  scrollTo?: (options: { x?: number; y?: number; animated?: boolean }) => void;
-  scrollToTop?: () => void;
-}
+export default function useScrollToTop() {
+  const scrollViewRef = useRef<ScrollView>(null);
 
-type ScrollRef = RefObject<ScrollableNode | null | undefined> | undefined;
+  const scrollToTop = () => {
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+  };
 
-export default function useScrollToTop(ref?: ScrollRef) {
-  const pathname = usePathname();
-
-  useEffect(() => {
-    if (!ref?.current) return;
-
-    const node = ref.current;
-    requestAnimationFrame(() => {
-      try {
-        if (node?.scrollToOffset) {
-          node.scrollToOffset({ offset: 0, animated: false });
-          return;
-        }
-        if (node?.scrollToTop) {
-          node.scrollToTop();
-          return;
-        }
-        node?.scrollTo?.({ x: 0, y: 0, animated: false });
-      } catch (error) {
-        console.warn("useScrollToTop failed", error);
-      }
-    });
-  }, [pathname, ref]);
+  return { scrollViewRef, scrollToTop };
 }

@@ -5,9 +5,6 @@ import { useTheme } from "@/src/context/ThemeContext";
 type RefreshHandler = () => void | Promise<void>;
 
 interface RefreshableFlatListProps<ItemT> extends Omit<FlatListProps<ItemT>, "refreshControl"> {
-  /**
-   * Handler function to execute when user pulls to refresh
-   */
   onRefresh?: RefreshHandler;
 }
 

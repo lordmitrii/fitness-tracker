@@ -16,7 +16,7 @@ export function ThemedView({
 }: ThemedViewProps) {
   const { theme } = useTheme();
 
-  // Use custom color if provided (for backward compatibility)
+  // for backward compatibility
   let backgroundColor = lightColor || darkColor;
   
   if (!backgroundColor) {

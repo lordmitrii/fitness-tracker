@@ -59,7 +59,6 @@ export default function useStorageObject<T extends object>(
     save();
   }, [key, value, restoring]);
 
-  // Clear & reset
   const clear = useCallback(async () => {
     try {
       await AsyncStorage.removeItem(key);

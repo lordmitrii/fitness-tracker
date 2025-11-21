@@ -1,261 +1,226 @@
-import type { ReactNode } from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Modal,
-  Pressable,
-  ScrollView,
-  Share,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useState, useEffect, useMemo } from "react";
+import { View, Text, Pressable, ScrollView, StyleSheet, Platform } from "react-native";
 import { useTranslation } from "react-i18next";
-
 import { useAuth } from "@/src/context/AuthContext";
-import { logStore, type LogEntry } from "./LogStore";
+import { useTheme } from "@/src/context/ThemeContext";
+import { logStore, LogEntry } from "./LogStore";
+import { copyText } from "@/src/utils/copyText";
 
 interface LogPanelProps {
-  visible?: boolean;
-  onClose?: () => void;
+  onClose: () => void;
 }
 
-export default function LogPanel({
-  visible = true,
-  onClose,
-}: LogPanelProps): ReactNode | null {
+export default function LogPanel({ onClose }: LogPanelProps) {
   const { t } = useTranslation();
   const { hasAnyRole } = useAuth();
-  const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
 
   const allowed = useMemo(
     () => (hasAnyRole ? hasAnyRole(["tester", "admin"]) : false),
     [hasAnyRole]
   );
 
+  const [, setTick] = useState(0);
   useEffect(() => {
-    if (!allowed && visible) {
+    if (!allowed) {
       onClose?.();
+      return;
     }
-  }, [allowed, visible, onClose]);
-
-  const [, forceUpdate] = useState(0);
+    const unsubscribe = logStore.subscribe(() => setTick((t) => t + 1));
+    return unsubscribe;
+  }, [allowed, onClose]);
 
   useEffect(() => {
-    const unsubscribe = logStore.subscribe(() => forceUpdate((tick) => tick + 1));
-    return () => {
-      if (typeof unsubscribe === "function") {
-        unsubscribe();
-      }
-    };
-  }, []);
+    if (!allowed) onClose?.();
+  }, [allowed, onClose]);
+
+  if (!allowed) return null;
 
   const logs = logStore.list();
 
-  const buildLogsText = useCallback(() => {
-    return JSON.stringify(
-      {
-        platform: "react-native",
-        logs,
-      },
-      null,
-      2
-    );
-  }, [logs]);
-
-  const shareLogs = useCallback(async () => {
-    try {
-      await Share.share({
-        title: t("general.diagnostics", "Diagnostics"),
-        message: buildLogsText(),
-      });
-    } catch (error) {
-      console.warn("Failed to share logs", error);
-    }
-  }, [buildLogsText, t]);
-
-  if (!visible || !allowed) {
-    return null;
-  }
-
-  const levelColor = (level?: LogEntry["level"]) => {
+  const levelColor = (level?: string) => {
     switch (level) {
       case "error":
-        return styles.levelError;
+        return theme.colors.status.error.text;
       case "warn":
-        return styles.levelWarn;
+        return theme.colors.button.warning.text;
       case "info":
-        return styles.levelInfo;
+        return theme.colors.button.primary.background;
       default:
-        return styles.levelDefault;
+        return theme.colors.text.tertiary;
+    }
+  };
+
+  const buildLogsText = () =>
+    JSON.stringify({ platform: "react-native", logs: logStore.list() }, null, 2);
+
+  const download = async () => {
+    try {
+      const text = buildLogsText();
+      await copyText(text);
+    } catch (error) {
+      console.error("Failed to copy logs:", error);
+    }
+  };
+
+  const share = async () => {
+    try {
+      const text = buildLogsText();
+      await copyText(text);
+    } catch (error) {
+      console.error("Failed to share logs:", error);
     }
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: theme.colors.card.background,
+          borderTopColor: theme.colors.border,
+        },
+      ]}
     >
-      <View style={styles.overlay}>
         <View
           style={[
-            styles.panel,
-            { paddingBottom: insets.bottom ? insets.bottom + 12 : 16 },
-          ]}
-        >
-          <View style={styles.header}>
-            <Text style={styles.title}>
-              {t("general.diagnostics", "Diagnostics")}
+          styles.header,
+          {
+            borderBottomColor: theme.colors.border,
+            backgroundColor: theme.colors.card.background,
+          },
+        ]}
+      >
+        <Text style={[styles.headerTitle, { color: theme.colors.text.primary }]}>
+          {t("general.diagnostics")}
+        </Text>
+
+        <View style={styles.headerActions}>
+          <Pressable onPress={() => logStore.clear()} style={styles.headerButton}>
+            <Text style={[styles.headerButtonText, { color: theme.colors.text.secondary }]}>
+              {t("general.clear")}
             </Text>
-            <View style={styles.actions}>
-              <PanelButton
-                label={t("general.clear", "Clear")}
-                onPress={() => logStore.clear()}
-              />
-              <PanelButton
-                label={t("general.share", "Share")}
-                onPress={shareLogs}
-              />
-              <PanelButton
-                label={t("general.close", "Close")}
-                onPress={onClose}
-              />
+          </Pressable>
+          <Pressable onPress={download} style={styles.headerButton}>
+            <Text style={[styles.headerButtonText, { color: theme.colors.text.secondary }]}>
+              {t("general.download")}
+            </Text>
+          </Pressable>
+          <Pressable onPress={share} style={styles.headerButton}>
+            <Text style={[styles.headerButtonText, { color: theme.colors.text.secondary }]}>
+              {t("general.share")}
+            </Text>
+          </Pressable>
+          <Pressable onPress={onClose} style={styles.headerButton}>
+            <Text style={[styles.headerButtonText, { color: theme.colors.text.secondary }]}>
+              {t("general.close")}
+            </Text>
+          </Pressable>
             </View>
           </View>
 
-          <ScrollView
-            style={styles.scroll}
-            contentContainerStyle={styles.scrollContent}
-          >
-            {logs.map((entry, index) => (
-              <View key={`${entry.ts}-${index}`} style={styles.logRow}>
-                <Text style={styles.timestamp}>
-                  {new Date(entry.ts || Date.now()).toLocaleTimeString()}
+      <ScrollView style={styles.logsContainer} contentContainerStyle={styles.logsContent}>
+        {logs.map((l: LogEntry, i: number) => (
+          <View key={i} style={styles.logEntry}>
+            <Text style={[styles.logTime, { color: theme.colors.text.tertiary }]}>
+              {new Date(l.ts || Date.now()).toLocaleTimeString()}
+            </Text>
+            <Text style={[styles.logLevel, { color: levelColor(l.level) }]}>
+              [{String(l.level || "").toUpperCase()}]
+            </Text>{" "}
+            <Text style={[styles.logMessage, { color: theme.colors.text.primary }]}>
+              {typeof l.msg === "string" ? l.msg : JSON.stringify(l.msg)}
                 </Text>
-                <Text style={[styles.level, levelColor(entry.level)]}>
-                  [{String(entry.level || "").toUpperCase()}]
+            {l.meta && (
+              <View style={[styles.logMeta, { backgroundColor: theme.colors.card.background, borderColor: theme.colors.border }]}>
+                <Text style={[styles.logMetaText, { color: theme.colors.text.secondary }]}>
+                  {JSON.stringify(l.meta, null, 2)}
                 </Text>
-                <Text style={styles.message}>{entry.msg}</Text>
-                {entry.meta ? (
-                  <Text style={styles.meta}>
-                    {JSON.stringify(entry.meta, null, 2)}
-                  </Text>
-                ) : null}
               </View>
-            ))}
-            {!logs.length && (
-              <Text style={styles.empty}>
-                {t("general.no_data", "No diagnostics yet")}
-              </Text>
             )}
+          </View>
+        ))}
           </ScrollView>
         </View>
-      </View>
-    </Modal>
   );
 }
 
-const PanelButton = ({
-  label,
-  onPress,
-}: {
-  label: string;
-  onPress?: () => void;
-}) => (
-  <Pressable onPress={onPress} style={styles.button}>
-    <Text style={styles.buttonText}>{label}</Text>
-  </Pressable>
-);
-
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "flex-end",
-  },
-  panel: {
-    backgroundColor: "#ffffff",
+  container: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: "65%",
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    maxHeight: "80%",
+    borderTopWidth: 1,
     shadowColor: "#000",
-    shadowOpacity: 0.2,
     shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 8,
   },
   header: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
     flexDirection: "row",
     alignItems: "center",
-    columnGap: 12,
+    justifyContent: "space-between",
   },
-  title: {
-    fontSize: 16,
-    fontWeight: "600",
+  headerTitle: {
+    fontSize: 14,
+    fontWeight: "bold",
+    fontFamily: Platform.select({ default: "System", ios: "Menlo", android: "monospace" }),
   },
-  actions: {
-    marginLeft: "auto",
+  headerActions: {
     flexDirection: "row",
-    columnGap: 8,
-    rowGap: 4,
-    flexWrap: "wrap",
-    justifyContent: "flex-end",
+    gap: 12,
+    alignItems: "center",
   },
-  button: {
-    paddingHorizontal: 8,
+  headerButton: {
     paddingVertical: 4,
   },
-  buttonText: {
-    fontSize: 14,
-    color: "#2563eb",
-  },
-  scroll: {
-    marginTop: 12,
-  },
-  scrollContent: {
-    paddingBottom: 16,
-  },
-  logRow: {
-    marginBottom: 10,
-  },
-  timestamp: {
+  headerButtonText: {
     fontSize: 12,
-    color: "#6b7280",
+    textDecorationLine: "underline",
   },
-  level: {
-    fontWeight: "700",
+  logsContainer: {
+    flex: 1,
+  },
+  logsContent: {
+    padding: 12,
+  },
+  logEntry: {
+    marginBottom: 8,
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  logTime: {
+    fontSize: 11,
     marginRight: 8,
+    fontFamily: Platform.select({ default: "System", ios: "Menlo", android: "monospace" }),
   },
-  levelError: {
-    color: "#dc2626",
+  logLevel: {
+    fontSize: 11,
+    fontWeight: "bold",
+    fontFamily: Platform.select({ default: "System", ios: "Menlo", android: "monospace" }),
   },
-  levelWarn: {
-    color: "#d97706",
+  logMessage: {
+    fontSize: 11,
+    flex: 1,
+    fontFamily: Platform.select({ default: "System", ios: "Menlo", android: "monospace" }),
   },
-  levelInfo: {
-    color: "#2563eb",
-  },
-  levelDefault: {
-    color: "#4b5563",
-  },
-  message: {
-    fontSize: 13,
-    fontFamily: "monospace",
-  },
-  meta: {
+  logMeta: {
     marginTop: 4,
-    fontFamily: "monospace",
-    fontSize: 12,
-    color: "#374151",
+    padding: 8,
+    borderRadius: 4,
+    borderWidth: 1,
+    width: "100%",
   },
-  empty: {
-    textAlign: "center",
-    color: "#6b7280",
-    marginTop: 32,
+  logMetaText: {
+    fontSize: 10,
+    fontFamily: Platform.select({ default: "System", ios: "Menlo", android: "monospace" }),
   },
 });
-

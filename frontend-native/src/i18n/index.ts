@@ -5,6 +5,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import HttpBackend from "i18next-http-backend";
 import ChainedBackend from "i18next-chained-backend";
 import type { BackendModule, ReadCallback } from "i18next";
+import { Platform } from "react-native";
 import AsyncStorageBackend from "./asyncStorageBackend";
 import { reportMissing } from "./missingReporter";
 import api from "../api";
@@ -17,6 +18,7 @@ const isDev = __DEV__;
 
 const supportedLngs = ["en", "ru", "zh"];
 const namespaces = ["translation"];
+const canUseAsyncStorage = Platform.OS !== "web" || typeof window !== "undefined";
 
 const params = new URLSearchParams({
   locales: supportedLngs.join(","),
@@ -26,13 +28,30 @@ const params = new URLSearchParams({
 let latestMeta: Record<string, Record<string, string>> = {};
 let metaETag: string | undefined;
 
+const safeGetItem = async (key: string): Promise<string | null> => {
+  if (!canUseAsyncStorage) return null;
+  try {
+    return await AsyncStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+
+const safeSetItem = async (key: string, value: string): Promise<void> => {
+  if (!canUseAsyncStorage) return;
+  try {
+    await AsyncStorage.setItem(key, value);
+  } catch {
+  }
+};
+
 async function loadCachedMeta(): Promise<void> {
   try {
-    const cachedMetaStr = await AsyncStorage.getItem("i18n:meta");
+    const cachedMetaStr = await safeGetItem("i18n:meta");
     if (cachedMetaStr) {
       latestMeta = JSON.parse(cachedMetaStr);
     }
-    const etag = await AsyncStorage.getItem("i18n:meta:etag");
+    const etag = await safeGetItem("i18n:meta:etag");
     if (etag) {
       metaETag = etag;
     }
@@ -121,7 +140,6 @@ const httpBackendOptions = {
     payload: any,
     callback: (error: Error | null, data?: any) => void
   ) => {
-    // Use the API instance which already has baseURL configured
     api
       .get(url)
       .then((res) => {
@@ -138,11 +156,7 @@ const httpBackendOptions = {
 };
 
 async function getSavedLanguage(): Promise<string | null> {
-  try {
-    return await AsyncStorage.getItem("i18n:language");
-  } catch {
-    return null;
-  }
+  return safeGetItem("i18n:language");
 }
 
 async function initI18n(): Promise<void> {
@@ -150,21 +164,29 @@ async function initI18n(): Promise<void> {
   const deviceLanguage = getDeviceLanguage();
   const initialLanguage = savedLanguage || deviceLanguage;
 
-  i18n
+  const backends = canUseAsyncStorage
+    ? [AsyncStorageBackend, HttpBackend, resourceBackend]
+    : [HttpBackend, resourceBackend];
+
+  const backendOptions = canUseAsyncStorage
+    ? [
+        {
+          expirationTime: 7 * 24 * 60 * 60 * 1000,
+          versions: lsVersions,
+        },
+        httpBackendOptions,
+        {},
+      ]
+    : [httpBackendOptions, {}];
+
+  await i18n
     .use(ChainedBackend)
     .use(initReactI18next)
     .init({
       lng: initialLanguage,
       backend: {
-        backends: [AsyncStorageBackend, HttpBackend, resourceBackend],
-        backendOptions: [
-          {
-            expirationTime: 7 * 24 * 60 * 60 * 1000,
-            versions: lsVersions,
-          },
-          httpBackendOptions,
-          {},
-        ],
+        backends,
+        backendOptions,
       },
       ns: namespaces,
       defaultNS: "translation",
@@ -187,12 +209,12 @@ async function initI18n(): Promise<void> {
     });
 
   i18n.on("languageChanged", (lng) => {
-    AsyncStorage.setItem("i18n:language", lng).catch(() => {
-    });
+    void safeSetItem("i18n:language", lng);
   });
 }
 
 function getAsyncStorageBackend(): AsyncStorageBackend | null {
+  if (!canUseAsyncStorage) return null;
   return (i18n.services.backendConnector?.backend?.backends?.[0] as AsyncStorageBackend) || null;
 }
 
@@ -217,7 +239,7 @@ async function refreshMeta(): Promise<void> {
 
     metaETag = res.headers?.etag;
     if (metaETag) {
-      await AsyncStorage.setItem("i18n:meta:etag", metaETag);
+      await safeSetItem("i18n:meta:etag", metaETag);
     }
 
     const newMeta = res.data?.versions ?? {};
@@ -227,7 +249,7 @@ async function refreshMeta(): Promise<void> {
       latestMeta = newMeta;
       lsVersions = newLsVersions;
 
-      await AsyncStorage.setItem("i18n:meta", JSON.stringify(latestMeta));
+      await safeSetItem("i18n:meta", JSON.stringify(latestMeta));
 
       setBackendVersions(lsVersions);
 
@@ -237,17 +259,26 @@ async function refreshMeta(): Promise<void> {
       i18n.emit("languageChanged", i18n.language);
     }
   } catch (err) {
-    console.error("i18n meta refresh failed", err);
+    const error = err as any;
+    if (!error?.isOffline) {
+      console.error("i18n meta refresh failed", err);
+    }
   }
 }
 
-initI18n()
-  .then(() => {
-    return refreshMeta();
-  })
-  .catch((error) => {
-    console.error("Failed to initialize i18n:", error);
-  });
+const i18nInitPromise = (async () => {
+  try {
+    await initI18n();
+    await refreshMeta();
+  } catch (error) {
+    const err = error as any;
+    if (!err?.isOffline) {
+      console.error("Failed to initialize i18n:", error);
+      throw error;
+    }
+  }
+})();
+
+export const waitForI18n = (): Promise<void> => i18nInitPromise;
 
 export default i18n;
-

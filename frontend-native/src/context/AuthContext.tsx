@@ -7,18 +7,20 @@ import {
   useRef,
   ReactNode,
 } from "react";
-import { AppState, AppStateStatus } from "react-native";
 import NetInfo, { NetInfoState } from "@react-native-community/netinfo";
 import api, {
+  clearAuthTokens,
   loginRequest,
   registerRequest,
-  setAccessToken,
-  clearAccessToken,
 } from "@/src/api";
 import { useTranslation } from "react-i18next";
 import useStorageObject from "@/src/hooks/useStorageObject";
+import {
+  SessionRefreshReason,
+  SessionRefreshResult,
+  useAuthSession,
+} from "@/src/hooks/useAuthSession";
 
-// Types
 export interface Role {
   name: string;
   [key: string]: unknown;
@@ -90,13 +92,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   );
 
-  const refreshInFlightRef = useRef<Promise<"authenticated" | "unauthenticated" | "offline"> | null>(null);
+  const refreshInFlightRef = useRef<Promise<SessionRefreshResult> | null>(null);
   const lastAuthRef = useRef<AuthSnapshot>(authSnap);
-  const hydratedRef = useRef(false);
-
-  useEffect(() => {
-    lastAuthRef.current = authSnap;
-  }, [authSnap]);
+  const initializedRef = useRef(false);
 
   const loadMe = useCallback(async () => {
     const res = await api.get("/users/me");
@@ -111,89 +109,101 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setAuthSnap(next);
   }, [setAuthSnap]);
 
-  const refresh = useCallback(async (): Promise<"authenticated" | "unauthenticated" | "offline"> => {
-    if (refreshInFlightRef.current) return refreshInFlightRef.current;
-
-    setLoading(true);
-    const p = (async () => {
-      try {
-        const res = await api.post("/users/refresh");
-        if (res.data?.access_token) {
-          setAccessToken(res.data.access_token);
-          setIsAuth(true);
+  const handleSessionResult = useCallback(
+    async (result: SessionRefreshResult, _reason?: SessionRefreshReason) => {
+      if (result === "authenticated") {
+        try {
           await loadMe();
-          return "authenticated";
+          setIsAuth(true);
+        } catch (error) {
+          console.error("Load me failed after refresh:", error);
+          clearAuthTokens();
+          setIsAuth(false);
+          setRoles([]);
+          setUser(null);
+          const next: AuthSnapshot = { user: null, roles: [], isAuth: false };
+          lastAuthRef.current = next;
+          setAuthSnap(next);
         }
-        clearAccessToken();
-        setIsAuth(false);
-        setRoles([]);
-        setUser(null);
-        const next: AuthSnapshot = { user: null, roles: [], isAuth: false };
-        lastAuthRef.current = next;
-        setAuthSnap(next);
-        return "unauthenticated";
-      } catch (error: unknown) {
-        console.error("Refresh error:", error);
-        const err = error as { isOffline?: boolean };
-        if (err?.isOffline) {
-          setIsAuth(!!lastAuthRef.current.isAuth);
-          setRoles(lastAuthRef.current.roles || []);
-          setUser(lastAuthRef.current.user || null);
-          return "offline";
-        }
-        clearAccessToken();
-        setIsAuth(false);
-        setRoles([]);
-        setUser(null);
-        const next: AuthSnapshot = { user: null, roles: [], isAuth: false };
-        lastAuthRef.current = next;
-        setAuthSnap(next);
-        return "unauthenticated";
-      } finally {
-        setLoading(false);
+        return;
       }
-    })();
 
-    refreshInFlightRef.current = p;
-    p.finally(() => {
-      if (refreshInFlightRef.current === p) refreshInFlightRef.current = null;
-    });
-    return p;
-  }, [loadMe, setAuthSnap]);
+      if (result === "offline") {
+        setIsAuth(!!lastAuthRef.current.isAuth);
+        setRoles(lastAuthRef.current.roles || []);
+        setUser(lastAuthRef.current.user || null);
+        return;
+      }
+
+      clearAuthTokens();
+      setIsAuth(false);
+      setRoles([]);
+      setUser(null);
+      const next: AuthSnapshot = { user: null, roles: [], isAuth: false };
+      lastAuthRef.current = next;
+      setAuthSnap(next);
+    },
+    [loadMe, setAuthSnap]
+  );
+
+  const {
+    hydrated: sessionHydrated,
+    isRefreshing: sessionIsRefreshing,
+    refreshSession,
+    setSessionTokens,
+    clearSession,
+  } = useAuthSession({ onPostRefresh: handleSessionResult });
 
   useEffect(() => {
-    if (hydratedRef.current || snapRestoring) return;
+    lastAuthRef.current = authSnap;
+  }, [authSnap]);
+
+
+  const refresh = useCallback(
+    async (reason: SessionRefreshReason = "manual"): Promise<SessionRefreshResult> => {
+      if (refreshInFlightRef.current) return refreshInFlightRef.current;
+
+      if (reason === "manual") {
+        setLoading(true);
+      }
+      const promise = refreshSession(reason);
+
+      refreshInFlightRef.current = promise;
+      promise.finally(() => {
+        if (refreshInFlightRef.current === promise) refreshInFlightRef.current = null;
+        if (reason === "manual") {
+          setLoading(false);
+        }
+      });
+      return promise;
+    },
+    [refreshSession]
+  );
+
+  useEffect(() => {
+    if (initializedRef.current || snapRestoring || !sessionHydrated) return;
 
     setIsAuth(!!authSnap.isAuth);
     setUser(authSnap.user || null);
     setRoles(authSnap.roles || []);
     setLoading(false);
 
-    hydratedRef.current = true;
+    initializedRef.current = true;
     refresh();
-  }, [authSnap, snapRestoring, refresh]);
+  }, [authSnap, snapRestoring, refresh, sessionHydrated]);
 
-  // Listen to network changes and app state changes
   useEffect(() => {
     const handleNetworkChange = (state: NetInfoState) => {
       const isConnected = state.isConnected && state.isInternetReachable;
       if (isConnected) {
-        refresh();
+        refresh("focus");
       }
     };
 
     const unsubscribeNetInfo = NetInfo.addEventListener(handleNetworkChange);
 
-    // Also refresh when app comes to foreground
-    const subscription = AppState.addEventListener("change", (nextAppState: AppStateStatus) => {
-      if (nextAppState === "active") {
-        refresh();
-      }
-    });
-
     return () => {
       unsubscribeNetInfo();
-      subscription.remove();
     };
   }, [refresh]);
 
@@ -201,7 +211,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       const response = await loginRequest(username, password);
       if (response?.data?.access_token) {
-        setAccessToken(response.data.access_token);
+        setSessionTokens({
+          accessToken: response.data.access_token || null,
+          refreshToken: response.data?.refresh_token || null,
+        });
         setIsAuth(true);
         await loadMe();
       }
@@ -246,7 +259,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const logout = () => {
     setIsAuth(false);
-    clearAccessToken();
+    clearSession();
     setRoles([]);
     setUser(null);
     try {
@@ -266,9 +279,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const status: AuthStatus = loading
     ? "loading"
     : isAuth
-    ? "authenticated"
-    : "unauthenticated";
-  const isRefreshing = !!refreshInFlightRef.current;
+      ? "authenticated"
+      : "unauthenticated";
+  const isRefreshing = sessionIsRefreshing || !!refreshInFlightRef.current;
 
   return (
     <AuthContext.Provider

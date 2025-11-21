@@ -1,101 +1,89 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useState, useEffect } from "react";
+import api from "@/src/api";
+import useVersionsData from "./data/userVersionsData";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import api from "@/src/api";
-import useVersionsData from "@/src/hooks/data/userVersionsData";
-
-type ConsentType = string;
-
-interface UseConsentResult {
-  consentGiven: boolean;
-  ready: boolean;
-  giveConsent: () => Promise<void>;
-  revokeConsent: () => Promise<void>;
-}
-
-export default function useConsent(type: ConsentType): UseConsentResult {
+const useConsent = (type: string) => {
   const { getVersion } = useVersionsData();
   const version = getVersion(type);
-  const storageKey = useMemo(
-    () => `${type}_consent_v${version ?? "0"}`,
-    [type, version]
-  );
+  const storageKey = `${type}_consent_v${version}`;
 
   const [consentGiven, setConsentGiven] = useState(false);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    let cancelled = false;
+    let isMounted = true;
 
-    const hydrate = async () => {
+    const init = async () => {
       try {
-        const cached = await AsyncStorage.getItem(storageKey);
-        if (cancelled) return;
-
-        if (cached != null) {
-          setConsentGiven(cached === "true");
+        const stored = await AsyncStorage.getItem(storageKey);
+        if (stored !== null) {
+          const given = stored === "true";
+          if (isMounted) {
+            setConsentGiven(given);
           setReady(true);
+          }
           return;
         }
 
-        const response = await api.get("/users/consents");
-        const collection = Array.isArray(response.data)
-          ? response.data
-          : [];
-        const consent = collection.find(
-          (c) => c?.type === type && c?.version === version
+        if (isMounted && !ready) {
+          try {
+            const response = await api.get("users/consents");
+            const consent = response.data.find(
+              (c: { type: string; version: string }) =>
+                c.type === type && c.version === version
         );
-        const given = Boolean(consent?.given);
+            if (!isMounted) return;
 
+            const given = !!(consent && consent.given);
+            setConsentGiven(given);
         await AsyncStorage.setItem(storageKey, given ? "true" : "false");
-        if (!cancelled) {
-          setConsentGiven(given);
-          setReady(true);
+          } catch (error) {
+            console.error("Failed to fetch consent status:", error);
+            if (isMounted) {
+              setConsentGiven(false);
+            }
+          } finally {
+            if (isMounted) setReady(true);
+          }
         }
       } catch (error) {
-        console.error("useConsent hydrate error", error);
-        if (!cancelled) {
+        console.error("Failed to read consent from storage:", error);
+        if (isMounted) {
           setConsentGiven(false);
           setReady(true);
         }
       }
     };
 
-    hydrate();
+    init();
 
     return () => {
-      cancelled = true;
+      isMounted = false;
     };
-  }, [storageKey, type, version]);
+  }, [ready, storageKey, type, version]);
 
-  const giveConsent = useCallback(async () => {
+  const giveConsent = async () => {
     setConsentGiven(true);
     await AsyncStorage.setItem(storageKey, "true");
     try {
-      await api.post("/users/consents", {
-        type,
-        version,
-        given: true,
-      });
+      await api.post("users/consents", { type, version, given: true });
     } catch (error) {
-      console.error("Failed to persist consent", error);
+      console.error("Failed to give consent:", error);
     }
-  }, [storageKey, type, version]);
+  };
 
-  const revokeConsent = useCallback(async () => {
+  const revokeConsent = async () => {
     setConsentGiven(false);
     await AsyncStorage.setItem(storageKey, "false");
     try {
-      await api.delete("/users/consents", { data: { type, version } });
+      await api.delete("users/consents", { data: { type, version } });
     } catch (error) {
-      console.error("Failed to revoke consent", error);
+      console.error("Failed to revoke consent:", error);
     }
-  }, [storageKey, type, version]);
-
-  return {
-    consentGiven,
-    ready,
-    giveConsent,
-    revokeConsent,
   };
-}
+
+  return { consentGiven, giveConsent, revokeConsent, ready };
+  };
+
+export default useConsent;
