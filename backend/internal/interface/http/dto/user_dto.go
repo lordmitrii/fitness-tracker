@@ -29,7 +29,7 @@ type AccountUpdateRequest struct {
 // swagger:model
 type ProfileCreateRequest struct {
 	Age    int    `json:"age"    binding:"min=16,max=150" example:"28"`
-	Height int    `json:"height" binding:"min=200,max=5000" example:"1720"`     // mm
+	Height int    `json:"height" binding:"min=200,max=5000" example:"1720"`      // mm
 	Weight int    `json:"weight" binding:"min=20000,max=500000" example:"65000"` // grams
 	Sex    string `json:"sex"    example:"female"`
 }
@@ -94,7 +94,13 @@ type ConsentResponse struct {
 
 // swagger:model
 type TokenResponse struct {
-	AccessToken string `json:"access_token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
+	AccessToken  string `json:"access_token"  example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
+	RefreshToken string `json:"refresh_token,omitempty" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
+}
+
+// swagger:model
+type RefreshRequest struct {
+	RefreshToken string `json:"refresh_token" binding:"omitempty"`
 }
 
 // swagger:model

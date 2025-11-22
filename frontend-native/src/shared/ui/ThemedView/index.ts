@@ -1,0 +1,2 @@
+export { ThemedView } from "./ThemedView";
+
