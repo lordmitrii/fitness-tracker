@@ -7,7 +7,7 @@ if (!(globalThis as { TextEncoder?: typeof TextEncoder }).TextEncoder) {
 }
 
 if (!(globalThis as { TextDecoder?: typeof TextDecoder }).TextDecoder) {
-  (globalThis as { TextDecoder?: typeof TextDecoder }).TextDecoder = TextDecoder as unknown as typeof globalThis.TextDecoder;
+  (globalThis as { TextDecoder?: typeof TextDecoder }).TextDecoder = TextDecoder as any;
 }
 
 (globalThis as { __DEV__?: boolean }).__DEV__ = (globalThis as { __DEV__?: boolean }).__DEV__ ?? false;
@@ -40,8 +40,8 @@ vi.mock('react-native', async () => {
         }
         return { width: 375, height: 812, scale: 2, fontScale: 1 };
       },
-      addEventListener: () => ({ remove: () => {} }),
-      removeEventListener: () => {},
+      addEventListener: () => ({ remove: () => { } }),
+      removeEventListener: () => { },
     },
   };
 });
@@ -102,7 +102,7 @@ vi.mock('expo-secure-store', () => ({
 vi.mock('@react-native-community/netinfo', () => ({
   default: {
     fetch: vi.fn(() => Promise.resolve({ isConnected: true, isInternetReachable: true })),
-    addEventListener: vi.fn(() => () => {}),
+    addEventListener: vi.fn(() => () => { }),
   },
 }));
 

@@ -1,5 +1,5 @@
 import { Platform, Switch, SwitchProps } from "react-native";
-import { useTheme } from "@/src/context/ThemeContext";
+import { useTheme } from "@/src/shared/lib/context/ThemeContext";
 
 interface PlatformSwitchProps extends Omit<SwitchProps, "trackColor" | "thumbColor"> {
   value: boolean;
@@ -31,5 +31,6 @@ export default function PlatformSwitch({
     />
   );
 }
+
 
 

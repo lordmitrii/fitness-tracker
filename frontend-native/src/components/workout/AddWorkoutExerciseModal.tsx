@@ -14,12 +14,12 @@ import {
   BackHandler,
 } from "react-native";
 import { useTranslation } from "react-i18next";
-import { useTheme } from "@/src/context/ThemeContext";
+import { useTheme } from "@/src/shared/lib/context/ThemeContext";
 import { MaterialIcons } from "@expo/vector-icons";
-import useExercisesData from "@/src/hooks/data/useExercisesData";
+import { useExercisesData } from "@/src/entities/exercise";
 import ExerciseSelect from "./ExerciseSelect";
 import MuscleGroupSelect from "./MuscleGroupSelect";
-import { useCooldown } from "@/src/hooks/useCooldown"; // optional for future use
+import { useCooldown } from "@/src/shared/hooks/interaction"; // optional for future use
 
 type Identifier = string | number;
 

@@ -1,0 +1,2 @@
+export { ParallaxScrollView } from "./ParallaxScrollView";
+

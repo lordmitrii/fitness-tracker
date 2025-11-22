@@ -8,7 +8,7 @@ import {
   FlatList,
   Modal,
 } from "react-native";
-import { useTheme } from "@/src/context/ThemeContext";
+import { useTheme } from "@/src/shared/lib/context/ThemeContext";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 
