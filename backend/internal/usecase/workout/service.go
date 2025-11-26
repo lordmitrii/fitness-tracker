@@ -1,6 +1,7 @@
 package workout
 
 import (
+	"github.com/lordmitrii/golang-web-gin/internal/domain/shared/domainevt"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/eventbus"
@@ -20,6 +21,7 @@ type workoutServiceImpl struct {
 
 	db  *gorm.DB
 	bus eventbus.Bus
+	dispatcher *domainevt.Dispatcher
 }
 
 func NewWorkoutService(
@@ -34,6 +36,7 @@ func NewWorkoutService(
 
 	db *gorm.DB,
 	bus eventbus.Bus,
+	dispatcher *domainevt.Dispatcher,
 ) usecase.WorkoutService {
 	return &workoutServiceImpl{
 		profileRepo:            profileRepo,
@@ -46,5 +49,6 @@ func NewWorkoutService(
 		exerciseRepo:           exerciseRepo,
 		db:                     db,
 		bus:                    bus,
+		dispatcher:             dispatcher,
 	}
 }

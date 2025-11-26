@@ -17,6 +17,7 @@ package main
 
 import (
 	// "github.com/lordmitrii/golang-web-gin/internal/domain/workout"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/shared/domainevt"
 	"github.com/lordmitrii/golang-web-gin/internal/events"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/ai"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/email"
@@ -38,12 +39,11 @@ import (
 	"context"
 	"time"
 
-	"log"
-
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/postgres"
 	myredis "github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/redis"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/job"
 	"github.com/lordmitrii/golang-web-gin/internal/interface/http"
+	"log"
 )
 
 func main() {
@@ -128,9 +128,10 @@ func main() {
 	)
 
 	bus := eventbus.NewInproc()
+	dispatcher := domainevt.NewDispatcher()
 
 	var exerciseService usecase.ExerciseService = exercise.NewExerciseService(exerciseRepo, muscleGroupRepo, translator, translationRepo, versionRepo)
-	var workoutService usecase.WorkoutService = workout_usecase.NewWorkoutService(profileRepo, workoutPlanRepo, workoutCycleRepo, workoutRepo, workoutExerciseRepo, workoutSetRepo, individualExerciseRepo, exerciseRepo, db, bus)
+	var workoutService usecase.WorkoutService = workout_usecase.NewWorkoutService(profileRepo, workoutPlanRepo, workoutCycleRepo, workoutRepo, workoutExerciseRepo, workoutSetRepo, individualExerciseRepo, exerciseRepo, db, bus, dispatcher)
 	var userService usecase.UserService = user.NewUserService(userRepo, profileRepo, userConsentRepo, roleRepo, permissionRepo, userSettingsRepo)
 	var aiService usecase.AIService = ai_usecase.NewAIService(workoutService, exerciseService, userService, openai)
 	var emailService usecase.EmailService = email_usecase.NewEmailService(userRepo, roleRepo, emailSender, emailTokenRepo)
@@ -138,6 +139,11 @@ func main() {
 	var adminService usecase.AdminService = admin.NewAdminService(userRepo, roleRepo, emailService)
 	var translationService usecase.TranslationService = translations_usecase.NewTranslationService(translationRepo, missingTranslationRepo, versionRepo)
 	var versionsService usecase.VersionsService = versions.NewVersionsService(versionRepo)
+
+	events.RegisterSyncAll(events.SyncDeps{
+		Dispatcher:     dispatcher,
+		WorkoutService: workoutService,
+	})
 
 	events.RegisterAll(
 		context.Background(),

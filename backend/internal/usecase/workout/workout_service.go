@@ -201,7 +201,7 @@ func (s *workoutServiceImpl) CompleteWorkout(ctx context.Context, userId, planId
 
 		if wkCompleted {
 			w.Complete(now, userId)
-			resKcal, _, _, _ = s.CalculateWorkoutSummary(ctx, userId, w.ID)
+			// resKcal, _, _, _ = s.CalculateWorkoutSummary(ctx, userId, w.ID)
 		} else if wkSkipped {
 			w.MarkSkipped()
 		} else {
@@ -214,14 +214,21 @@ func (s *workoutServiceImpl) CompleteWorkout(ctx context.Context, userId, planId
 			return nil, err
 		}
 
-		acc.Add(toAnySlice(w.PendingEvents())...)
+		events := w.PendingEvents()
+
+		if err := s.dispatcher.Dispatch(ctx, events); err != nil {
+			return nil, err
+		}
+
+		acc.Add(toAnySlice(events)...)
 		w.ClearPendingEvents()
 
 		w, err = s.workoutRepo.GetByID(ctx, userId, planId, cycleId, id)
 		if err != nil {
 			return nil, err
 		}
-
+		resKcal = w.EstimatedCalories
+		
 		return w, nil
 	})
 	if err != nil {

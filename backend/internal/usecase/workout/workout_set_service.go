@@ -168,7 +168,7 @@ func (s *workoutServiceImpl) CompleteWorkoutSet(ctx context.Context, userId, pla
 
 		if wkCompleted {
 			workout.Complete(now, userId)
-			resKcal, _, _, _ = s.CalculateWorkoutSummary(ctx, userId, workoutId)
+			// resKcal, _, _, _ = s.CalculateWorkoutSummary(ctx, userId, workoutId)
 		}
 
 		ie, err := s.individualExerciseRepo.GetByID(ctx, userId, we.IndividualExerciseID)
@@ -188,9 +188,20 @@ func (s *workoutServiceImpl) CompleteWorkoutSet(ctx context.Context, userId, pla
 			}
 		}
 
-		acc.Add(toAnySlice(workout.PendingEvents())...)
+		events := workout.PendingEvents()
+		if err := s.dispatcher.Dispatch(ctx, events); err != nil {
+			return nil, err
+		}
+
+		acc.Add(toAnySlice(events)...)
 		workout.ClearPendingEvents()
 
+		workout, err = s.workoutRepo.GetByID(ctx, userId, planId, cycleId, workoutId)
+		if err != nil {
+			return nil, err
+		}
+
+		resKcal = workout.EstimatedCalories
 		return ws, nil
 	})
 	if err != nil {
@@ -334,11 +345,22 @@ func (s *workoutServiceImpl) DeleteWorkoutSet(ctx context.Context, userId, planI
 		}
 		if wkCompleted {
 			workout.Complete(now, userId)
-			resKcal, _, _, _ = s.CalculateWorkoutSummary(ctx, userId, workoutId)
+			// resKcal, _, _, _ = s.CalculateWorkoutSummary(ctx, userId, workoutId)
 		}
 
-		acc.Add(toAnySlice(workout.PendingEvents())...)
+		events := workout.PendingEvents()
+		if err := s.dispatcher.Dispatch(ctx, events); err != nil {
+			return err
+		}
+		acc.Add(toAnySlice(events)...)
 		workout.ClearPendingEvents()
+
+		workout, err = s.workoutRepo.GetByID(ctx, userId, planId, cycleId, workoutId)
+		if err != nil {
+			return err
+		}
+
+		resKcal = workout.EstimatedCalories
 
 		return nil
 	})
