@@ -3,15 +3,15 @@ package workout
 import (
 	"context"
 	"fmt"
-	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
-	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/uow"
 	"time"
+
+	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
 )
 
 // Order of locks used:
 // 1. workout_cycles
 func (s *workoutServiceImpl) CreateWorkoutCycle(ctx context.Context, userId, planId uint, wc *workout.WorkoutCycle) error {
-	return uow.Do(ctx, s.db, func(ctx context.Context) error {
+	return s.tx.Do(ctx, func(ctx context.Context) error {
 		return s.workoutCycleRepo.Create(ctx, userId, planId, wc)
 	})
 }
@@ -20,23 +20,25 @@ func (s *workoutServiceImpl) CreateWorkoutCycle(ctx context.Context, userId, pla
 // 1. workout_cycles
 // 2. workout_exercises
 func (s *workoutServiceImpl) GetWorkoutCycleByID(ctx context.Context, userId, planId, id uint) (*workout.WorkoutCycle, error) {
-	return uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.WorkoutCycle, error) {
-		cycle, err := s.workoutCycleRepo.GetByIDForUpdate(ctx, userId, planId, id)
+	var cycle *workout.WorkoutCycle
+	err := s.tx.Do(ctx, func(ctx context.Context) error {
+		res, err := s.workoutCycleRepo.GetByIDForUpdate(ctx, userId, planId, id)
 		if err != nil {
-			return nil, err
+			return err
 		}
+		cycle = res
 
 		if len(cycle.Workouts) != 0 || cycle.PreviousCycleID == nil {
-			return cycle, nil
+			return nil
 		}
 
 		prevCycle, err := s.workoutCycleRepo.GetByID(ctx, userId, planId, *cycle.PreviousCycleID)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		if len(prevCycle.Workouts) == 0 {
-			return cycle, nil
+			return nil
 		}
 
 		var newWorkouts []*workout.Workout
@@ -50,7 +52,6 @@ func (s *workoutServiceImpl) GetWorkoutCycleByID(ctx context.Context, userId, pl
 				Completed:         false,
 				PreviousWorkoutID: &w.ID,
 			}
-			// Copy exercises from the previous workout
 			for _, we := range w.WorkoutExercises {
 				newExercise := &workout.WorkoutExercise{
 					WorkoutID:            newWorkout.ID,
@@ -58,9 +59,7 @@ func (s *workoutServiceImpl) GetWorkoutCycleByID(ctx context.Context, userId, pl
 					Index:                we.Index,
 					Completed:            false,
 				}
-				// Copy sets from the previous workout exercise
 				for _, ws := range we.WorkoutSets {
-					// Add previous weight and reps if these are null
 					if ws.Weight == nil {
 						ws.Weight = ws.PreviousWeight
 					}
@@ -81,19 +80,14 @@ func (s *workoutServiceImpl) GetWorkoutCycleByID(ctx context.Context, userId, pl
 			newWorkouts = append(newWorkouts, newWorkout)
 		}
 
-		// Save new workouts
 		if err := s.workoutRepo.BulkCreate(ctx, userId, planId, id, newWorkouts); err != nil {
-			return nil, err
+			return err
 		}
 
-		// Reload cycle with workouts
 		cycle, err = s.workoutCycleRepo.GetByID(ctx, userId, planId, id)
-		if err != nil {
-			return nil, err
-		}
-
-		return cycle, nil
+		return err
 	})
+	return cycle, err
 }
 
 func (s *workoutServiceImpl) GetWorkoutCyclesByWorkoutPlanID(ctx context.Context, userId, planId uint) ([]*workout.WorkoutCycle, error) {
@@ -101,33 +95,38 @@ func (s *workoutServiceImpl) GetWorkoutCyclesByWorkoutPlanID(ctx context.Context
 }
 
 func (s *workoutServiceImpl) UpdateWorkoutCycle(ctx context.Context, userId, planId, id uint, updates map[string]any) (*workout.WorkoutCycle, error) {
-	return uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.WorkoutCycle, error) {
-		return s.workoutCycleRepo.UpdateReturning(ctx, userId, planId, id, updates)
+	var wc *workout.WorkoutCycle
+	err := s.tx.Do(ctx, func(ctx context.Context) error {
+		res, err := s.workoutCycleRepo.UpdateReturning(ctx, userId, planId, id, updates)
+		if err != nil {
+			return err
+		}
+		wc = res
+		return nil
 	})
+	return wc, err
 }
 
 // Order of locks used:
 // 1. workout_plans
 // 2. workout_cycles
 func (s *workoutServiceImpl) CompleteWorkoutCycle(ctx context.Context, userId, planId, id uint, completed, skipped bool) (*workout.WorkoutCycle, error) {
-	return uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.WorkoutCycle, error) {
+	var wc *workout.WorkoutCycle
+	err := s.tx.Do(ctx, func(ctx context.Context) error {
 		wp, err := s.workoutPlanRepo.GetByIDForUpdate(ctx, userId, planId)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		wc, err := s.workoutCycleRepo.UpdateReturning(ctx, userId, planId, id, map[string]any{"completed": completed, "skipped": skipped})
+		wc, err = s.workoutCycleRepo.UpdateReturning(ctx, userId, planId, id, map[string]any{"completed": completed, "skipped": skipped})
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		if !wc.Completed {
-			return wc, nil
+			return nil
 		}
 
-		// If the cycle is completed, we need to create a new cycle for the next week if it is not already created
 		if wp.CurrentCycleID != nil && *wp.CurrentCycleID == wc.ID {
-			// Create a new cycle for the next week
-
 			newCycle := &workout.WorkoutCycle{
 				WorkoutPlanID:   wp.ID,
 				WeekNumber:      wc.WeekNumber + 1,
@@ -136,29 +135,30 @@ func (s *workoutServiceImpl) CompleteWorkoutCycle(ctx context.Context, userId, p
 			}
 
 			if err := s.workoutCycleRepo.Create(ctx, userId, wp.ID, newCycle); err != nil {
-				return nil, err
+				return err
 			}
 
 			if err := s.workoutCycleRepo.Update(ctx, userId, planId, wc.ID, map[string]any{"next_cycle_id": newCycle.ID}); err != nil {
-				return nil, err
+				return err
 			}
 
 			wc.NextCycleID = &newCycle.ID
 
 			if err := s.workoutPlanRepo.Update(ctx, userId, wp.ID, map[string]any{"current_cycle_id": newCycle.ID}); err != nil {
-				return nil, err
+				return err
 			}
 		}
 
-		return wc, nil
+		return nil
 	})
+	return wc, err
 }
 
 // Order of locks used:
 // 1. workout_plans
 // 2. workout_cycles
 func (s *workoutServiceImpl) DeleteWorkoutCycle(ctx context.Context, userId, planId, id uint) error {
-	return uow.Do(ctx, s.db, func(ctx context.Context) error {
+	return s.tx.Do(ctx, func(ctx context.Context) error {
 		plan, err := s.workoutPlanRepo.GetByIDForUpdate(ctx, userId, planId)
 		if err != nil {
 			return err

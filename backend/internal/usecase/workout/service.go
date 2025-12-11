@@ -4,9 +4,7 @@ import (
 	"github.com/lordmitrii/golang-web-gin/internal/domain/shared/domainevt"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/user"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
-	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/eventbus"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
-	"gorm.io/gorm"
 )
 
 type workoutServiceImpl struct {
@@ -19,8 +17,8 @@ type workoutServiceImpl struct {
 	individualExerciseRepo workout.IndividualExerciseRepository
 	exerciseRepo           workout.ExerciseRepository
 
-	db  *gorm.DB
-	bus eventbus.Bus
+	tx         usecase.TxManager
+	bus        usecase.EventBus
 	dispatcher *domainevt.Dispatcher
 }
 
@@ -34,8 +32,8 @@ func NewWorkoutService(
 	individualExerciseRepo workout.IndividualExerciseRepository,
 	exerciseRepo workout.ExerciseRepository,
 
-	db *gorm.DB,
-	bus eventbus.Bus,
+	tx usecase.TxManager,
+	bus usecase.EventBus,
 	dispatcher *domainevt.Dispatcher,
 ) usecase.WorkoutService {
 	return &workoutServiceImpl{
@@ -47,7 +45,7 @@ func NewWorkoutService(
 		workoutSetRepo:         workoutSetRepo,
 		individualExerciseRepo: individualExerciseRepo,
 		exerciseRepo:           exerciseRepo,
-		db:                     db,
+		tx:                     tx,
 		bus:                    bus,
 		dispatcher:             dispatcher,
 	}

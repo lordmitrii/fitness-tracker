@@ -2,23 +2,25 @@ package workout
 
 import (
 	"context"
+
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
-	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/uow"
 )
 
 // Order of locks used:
 // 1. workout_plans
 // 2. workout_cycles
 func (s *workoutServiceImpl) CreateWorkoutPlan(ctx context.Context, userId uint, in *workout.WorkoutPlan) (*workout.WorkoutPlan, error) {
-	return uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.WorkoutPlan, error) {
-		wp, err := s.workoutPlanRepo.CreateReturning(ctx, userId, &workout.WorkoutPlan{
+	var wp *workout.WorkoutPlan
+	err := s.tx.Do(ctx, func(ctx context.Context) error {
+		res, err := s.workoutPlanRepo.CreateReturning(ctx, userId, &workout.WorkoutPlan{
 			Name:   in.Name,
 			UserID: in.UserID,
 			Active: false,
 		})
 		if err != nil {
-			return nil, err
+			return err
 		}
+		wp = res
 
 		firstCycle := &workout.WorkoutCycle{
 			WorkoutPlanID: wp.ID,
@@ -27,29 +29,30 @@ func (s *workoutServiceImpl) CreateWorkoutPlan(ctx context.Context, userId uint,
 		}
 
 		if err := s.workoutCycleRepo.Create(ctx, userId, wp.ID, firstCycle); err != nil {
-			return nil, err
+			return err
 		}
 
 		wp, err = s.workoutPlanRepo.UpdateReturning(ctx, userId, wp.ID, map[string]any{
 			"current_cycle_id": firstCycle.ID,
 		})
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		if in.Active {
 			if err := s.workoutPlanRepo.DeactivateOthers(ctx, wp.UserID, wp.ID); err != nil {
-				return nil, err
+				return err
 			}
 			wp, err = s.workoutPlanRepo.UpdateReturning(ctx, userId, wp.ID, map[string]any{
 				"active": true,
 			})
 			if err != nil {
-				return nil, err
+				return err
 			}
 		}
-		return wp, nil
+		return nil
 	})
+	return wp, err
 }
 
 func (s *workoutServiceImpl) GetWorkoutPlanByID(ctx context.Context, userId, id uint) (*workout.WorkoutPlan, error) {
@@ -64,15 +67,22 @@ func (s *workoutServiceImpl) GetWorkoutPlansByUserID(ctx context.Context, userID
 // Order of locks used:
 // 1. workout_plans
 func (s *workoutServiceImpl) UpdateWorkoutPlan(ctx context.Context, userId, id uint, updates map[string]any) (*workout.WorkoutPlan, error) {
-	return uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.WorkoutPlan, error) {
-		return s.workoutPlanRepo.UpdateReturning(ctx, userId, id, updates)
+	var wp *workout.WorkoutPlan
+	err := s.tx.Do(ctx, func(ctx context.Context) error {
+		res, err := s.workoutPlanRepo.UpdateReturning(ctx, userId, id, updates)
+		if err != nil {
+			return err
+		}
+		wp = res
+		return nil
 	})
+	return wp, err
 }
 
 // Order of locks used:
 // 1. workout_plans
 func (s *workoutServiceImpl) DeleteWorkoutPlan(ctx context.Context, userId, id uint) error {
-	return uow.Do(ctx, s.db, func(ctx context.Context) error {
+	return s.tx.Do(ctx, func(ctx context.Context) error {
 		return s.workoutPlanRepo.Delete(ctx, userId, id)
 	})
 }
@@ -80,23 +90,27 @@ func (s *workoutServiceImpl) DeleteWorkoutPlan(ctx context.Context, userId, id u
 // Order of locks used:
 // 1. workout_plans
 func (s *workoutServiceImpl) SetActiveWorkoutPlan(ctx context.Context, userId, id uint, active bool) (*workout.WorkoutPlan, error) {
-	return uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.WorkoutPlan, error) {
-		wp, err := s.workoutPlanRepo.GetByIDForUpdate(ctx, userId, id)
+	var wp *workout.WorkoutPlan
+	err := s.tx.Do(ctx, func(ctx context.Context) error {
+		res, err := s.workoutPlanRepo.GetByIDForUpdate(ctx, userId, id)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		if wp.Active == active {
-			return wp, nil
+		if res.Active == active {
+			wp = res
+			return nil
 		}
 		if active {
-			if err := s.workoutPlanRepo.DeactivateOthers(ctx, userId, wp.ID); err != nil {
-				return nil, err
+			if err := s.workoutPlanRepo.DeactivateOthers(ctx, userId, res.ID); err != nil {
+				return err
 			}
 		}
 
-		return s.workoutPlanRepo.UpdateReturning(ctx, userId, wp.ID, map[string]any{"active": active})
+		wp, err = s.workoutPlanRepo.UpdateReturning(ctx, userId, res.ID, map[string]any{"active": active})
+		return err
 	})
+	return wp, err
 }
 
 func (s *workoutServiceImpl) GetActivePlanByUserID(ctx context.Context, userID uint) (*workout.WorkoutPlan, error) {

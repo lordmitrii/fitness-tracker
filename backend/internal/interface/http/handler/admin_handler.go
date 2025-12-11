@@ -65,13 +65,13 @@ func (h *AdminHandler) GetUsers(c *gin.Context) {
 	respUsers := make([]dto.UserResponse, 0, len(users))
 	for _, user := range users {
 		respUsers = append(respUsers, dto.UserResponse{
-			ID:        user.ID,
+			ID:         user.ID,
 			Username:   user.Username,
 			Email:      user.Email,
 			IsVerified: user.IsVerified,
 			LastSeenAt: user.LastSeenAt,
-			CreatedAt: user.CreatedAt,
-			Roles:     dto.ToRoleResponses(user.Roles),
+			CreatedAt:  user.CreatedAt,
+			Roles:      dto.ToRoleResponses(user.Roles),
 		})
 	}
 
@@ -110,7 +110,6 @@ func (h *AdminHandler) GetRoles(c *gin.Context) {
 
 	c.JSON(http.StatusOK, respRoles)
 }
-
 
 // SetUserRoles godoc
 // @Summary      Set user roles (admin)

@@ -7,6 +7,6 @@ type MessageResponse struct {
 
 // swagger:model
 type RoleResponse struct {
-	ID uint `json:"id" example:"1"`
+	ID   uint   `json:"id" example:"1"`
 	Name string `json:"name" example:"admin"`
 }

@@ -82,6 +82,7 @@ func (h *ExerciseHandler) CreateExercise(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, dto.ToExerciseResponse(&ex))
 }
+
 // GetExerciseByID godoc
 // @Summary      Get exercise by ID
 // @Tags         exercises
@@ -106,6 +107,7 @@ func (h *ExerciseHandler) GetExerciseByID(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, dto.ToExerciseResponse(exercise))
 }
+
 // GetAllExercises godoc
 // @Summary      List exercises
 // @Tags         exercises

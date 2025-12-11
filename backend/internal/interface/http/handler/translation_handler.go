@@ -36,7 +36,6 @@ func NewTranslationHandler(r *gin.RouterGroup, svc usecase.TranslationService) {
 	}
 }
 
-
 // GetTranslations godoc
 // @Summary      Get translations map
 // @Description  Returns a key->value map for a given locale and namespace. Supports ETag caching.
@@ -89,7 +88,6 @@ func (h *TranslationHandler) GetTranslations(c *gin.Context) {
 	// c.Header("Cache-Control", "public, max-age=300, stale-while-revalidate=86400")
 	c.JSON(http.StatusOK, resp)
 }
-
 
 // GetI18nMeta godoc
 // @Summary      Get i18n metadata (versions)
@@ -148,7 +146,6 @@ func (h *TranslationHandler) GetI18nMeta(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"versions": vers})
 }
 
-
 // ReportMissingTranslation godoc
 // @Summary      Report a missing translation
 // @Description  Publishes a missing translation entry for all provided languages.
@@ -183,7 +180,6 @@ func (h *TranslationHandler) ReportMissingTranslation(c *gin.Context) {
 
 	c.Status(http.StatusNoContent)
 }
-
 
 // ReportMissingTranslationBatch godoc
 // @Summary      Report multiple missing translations

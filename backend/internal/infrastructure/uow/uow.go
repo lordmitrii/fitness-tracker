@@ -3,45 +3,31 @@ package uow
 import (
 	"context"
 	"fmt"
+
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/txctx"
 	"gorm.io/gorm"
 )
 
-func Do(ctx context.Context, db *gorm.DB, fn func(ctx context.Context) error) error {
-	return db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+// Manager wraps GORM transactions and exposes a TxManager implementation.
+type Manager struct {
+	db *gorm.DB
+}
+
+func NewManager(db *gorm.DB) *Manager {
+	return &Manager{db: db}
+}
+
+func (m *Manager) Do(ctx context.Context, fn func(ctx context.Context) error) error {
+	return m.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		return fn(txctx.WithTx(ctx, tx))
 	})
 }
 
-func DoR[T any](ctx context.Context, db *gorm.DB, fn func(ctx context.Context) (T, error)) (T, error) {
-	var zero T
-	var out T
-	err := db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		res, err := fn(txctx.WithTx(ctx, tx))
-		if err != nil {
-			return err
-		}
-		out = res
-		return nil
-	})
-	if err != nil {
-		return zero, err
-	}
-	return out, nil
-}
-
-func DoIfNotInTx(ctx context.Context, db *gorm.DB, fn func(ctx context.Context) error) error {
+func (m *Manager) DoIfNotInTx(ctx context.Context, fn func(ctx context.Context) error) error {
 	if _, ok := txctx.From(ctx); ok {
 		return fn(ctx)
 	}
-	return Do(ctx, db, fn)
-}
-
-func DoRIfNotInTx[T any](ctx context.Context, db *gorm.DB, fn func(ctx context.Context) (T, error)) (T, error) {
-	if _, ok := txctx.From(ctx); ok {
-		return fn(ctx)
-	}
-	return DoR(ctx, db, fn)
+	return m.Do(ctx, fn)
 }
 
 func MustInTx(ctx context.Context) error {
