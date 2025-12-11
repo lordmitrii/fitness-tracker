@@ -1185,7 +1185,7 @@ func (h *WorkoutHandler) DeleteWorkoutExercise(c *gin.Context) {
 		return
 	}
 
-	resKcal, err := h.svc.DeleteWorkoutExercise(c.Request.Context(), userId, planId, cycleID, workoutID, id); 
+	resKcal, err := h.svc.DeleteWorkoutExercise(c.Request.Context(), userId, planId, cycleID, workoutID, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -1317,7 +1317,7 @@ func (h *WorkoutHandler) DeleteWorkoutSet(c *gin.Context) {
 		return
 	}
 
-	resKcal, err := h.svc.DeleteWorkoutSet(c.Request.Context(), userId, planId, cycleID, workoutID, weId, id); 
+	resKcal, err := h.svc.DeleteWorkoutSet(c.Request.Context(), userId, planId, cycleID, workoutID, weId, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

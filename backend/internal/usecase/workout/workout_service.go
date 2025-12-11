@@ -9,14 +9,14 @@ import (
 
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
-	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/uow"
+	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 )
 
 // Order of locks used:
 // 1. workout_cycles
 // 2. workouts
 func (s *workoutServiceImpl) CreateWorkout(ctx context.Context, userId, planId, cycleId uint, w *workout.Workout) error {
-	return uow.Do(ctx, s.db, func(ctx context.Context) error {
+	return s.tx.Do(ctx, func(ctx context.Context) error {
 		if err := s.workoutCycleRepo.LockByIDForUpdate(ctx, userId, planId, cycleId); err != nil {
 			return err
 		}
@@ -36,7 +36,7 @@ func (s *workoutServiceImpl) CreateWorkout(ctx context.Context, userId, planId, 
 // 4. workout_exercises
 // 5. workout_sets
 func (s *workoutServiceImpl) CreateMultipleWorkouts(ctx context.Context, userId, planId, id uint, workouts []*workout.Workout) error {
-	return uow.Do(ctx, s.db, func(ctx context.Context) error {
+	return s.tx.Do(ctx, func(ctx context.Context) error {
 		if err := s.workoutCycleRepo.LockByIDForUpdate(ctx, userId, planId, id); err != nil {
 			return err
 		}
@@ -90,16 +90,23 @@ func (s *workoutServiceImpl) GetWorkoutsByWorkoutCycleID(ctx context.Context, us
 // 1. workout_cycles
 // 2. workouts
 func (s *workoutServiceImpl) UpdateWorkout(ctx context.Context, userId, planId, cycleId, id uint, updates map[string]any) (*workout.Workout, error) {
-	return uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.Workout, error) {
-		return s.workoutRepo.UpdateReturning(ctx, userId, planId, cycleId, id, updates)
+	var res *workout.Workout
+	err := s.tx.Do(ctx, func(ctx context.Context) error {
+		r, err := s.workoutRepo.UpdateReturning(ctx, userId, planId, cycleId, id, updates)
+		if err != nil {
+			return err
+		}
+		res = r
+		return nil
 	})
+	return res, err
 }
 
 // Order of locks used:
 // 1. workout_cycles
 // 2. workouts
 func (s *workoutServiceImpl) DeleteWorkout(ctx context.Context, userId, planId, cycleId, id uint) error {
-	return uow.Do(ctx, s.db, func(ctx context.Context) error {
+	return s.tx.Do(ctx, func(ctx context.Context) error {
 		if err := s.workoutCycleRepo.LockByIDForUpdate(ctx, userId, planId, cycleId); err != nil {
 			return err
 		}
@@ -133,7 +140,7 @@ func (s *workoutServiceImpl) DeleteWorkout(ctx context.Context, userId, planId, 
 // 2. workouts
 // 3. workout_exercises
 func (s *workoutServiceImpl) CompleteWorkout(ctx context.Context, userId, planId, cycleId, id uint, completed, skipped bool) (*workout.Workout, float64, error) {
-	acc := &uow.EventAccumulator{}
+	acc := &usecase.EventAccumulator{}
 	now := time.Now()
 	var resKcal float64
 	if completed {
@@ -141,53 +148,54 @@ func (s *workoutServiceImpl) CompleteWorkout(ctx context.Context, userId, planId
 	} else if skipped {
 		completed = false
 	}
-	resWorkout, err := uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.Workout, error) {
+	var resWorkout *workout.Workout
+	err := s.tx.Do(ctx, func(ctx context.Context) error {
 		if err := s.workoutCycleRepo.LockByIDForUpdate(ctx, userId, planId, cycleId); err != nil {
-			return nil, err
+			return err
 		}
 
 		w, err := s.workoutRepo.GetByIDForUpdate(ctx, userId, planId, cycleId, id)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		switch {
 		case completed:
 			if err := s.workoutExerciseRepo.MarkAllExercisesCompleted(ctx, userId, planId, cycleId, id); err != nil {
-				return nil, err
+				return err
 			}
 			// Mark all sets completed, not skipped
 			if err := s.workoutSetRepo.MarkAllSetsCompletedByWorkoutID(ctx, userId, planId, cycleId, id); err != nil {
-				return nil, err
+				return err
 			}
 		case skipped:
 			if err := s.workoutExerciseRepo.MarkAllPendingExercisesSkipped(ctx, userId, planId, cycleId, id); err != nil {
-				return nil, err
+				return err
 			}
 			// Mark all *pending* sets skipped (don’t touch completed ones)
 			if err := s.workoutSetRepo.MarkAllPendingSetsSkippedByWorkoutID(ctx, userId, planId, cycleId, id); err != nil {
-				return nil, err
+				return err
 			}
 		default:
 			if err := s.workoutExerciseRepo.MarkAllExercisesPending(ctx, userId, planId, cycleId, id); err != nil {
-				return nil, err
+				return err
 			}
 			if err := s.workoutSetRepo.MarkAllSetsPendingByWorkoutID(ctx, userId, planId, cycleId, id); err != nil {
-				return nil, err
+				return err
 			}
 		}
 
 		pendingExercises, err := s.workoutExerciseRepo.GetPendingExercisesCount(ctx, userId, planId, cycleId, id)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		skippedExercises, err := s.workoutExerciseRepo.GetSkippedExercisesCount(ctx, userId, planId, cycleId, id)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		totalExercises, err := s.workoutExerciseRepo.GetTotalExercisesCount(ctx, userId, planId, cycleId, id)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		var wkCompleted, wkSkipped bool
@@ -201,7 +209,7 @@ func (s *workoutServiceImpl) CompleteWorkout(ctx context.Context, userId, planId
 
 		if wkCompleted {
 			w.Complete(now, userId)
-			resKcal, _, _, _ = s.CalculateWorkoutSummary(ctx, userId, w.ID)
+			// resKcal, _, _, _ = s.CalculateWorkoutSummary(ctx, userId, w.ID)
 		} else if wkSkipped {
 			w.MarkSkipped()
 		} else {
@@ -211,18 +219,26 @@ func (s *workoutServiceImpl) CompleteWorkout(ctx context.Context, userId, planId
 
 		if err := s.workoutRepo.Update(ctx, userId, planId, cycleId, id,
 			map[string]any{"completed": w.Completed, "skipped": w.Skipped}); err != nil {
-			return nil, err
+			return err
 		}
 
-		acc.Add(toAnySlice(w.PendingEvents())...)
+		events := w.PendingEvents()
+
+		if err := s.dispatcher.Dispatch(ctx, events); err != nil {
+			return err
+		}
+
+		acc.Add(toAnySlice(events)...)
 		w.ClearPendingEvents()
 
 		w, err = s.workoutRepo.GetByID(ctx, userId, planId, cycleId, id)
 		if err != nil {
-			return nil, err
+			return err
 		}
+		resKcal = w.EstimatedCalories
 
-		return w, nil
+		resWorkout = w
+		return nil
 	})
 	if err != nil {
 		return nil, 0, err
@@ -241,7 +257,7 @@ func (s *workoutServiceImpl) CompleteWorkout(ctx context.Context, userId, planId
 // 1. workout_cycles
 // 2. workouts
 func (s *workoutServiceImpl) MoveWorkout(ctx context.Context, userId, planId, cycleID, workoutID uint, direction string) error {
-	return uow.DoIfNotInTx(ctx, s.db, func(ctx context.Context) error {
+	return s.tx.DoIfNotInTx(ctx, func(ctx context.Context) error {
 		if err := s.workoutCycleRepo.LockByIDForUpdate(ctx, userId, planId, cycleID); err != nil {
 			return err
 		}
@@ -278,10 +294,11 @@ func (s *workoutServiceImpl) MoveWorkout(ctx context.Context, userId, planId, cy
 }
 
 func (s *workoutServiceImpl) CalculateWorkoutSummary(ctx context.Context, userID, workoutID uint) (float64, float64, float64, error) {
-	res, err := uow.DoRIfNotInTx(ctx, s.db, func(ctx context.Context) (map[string]float64, error) {
+	var res map[string]float64
+	err := s.tx.DoIfNotInTx(ctx, func(ctx context.Context) error {
 		profile, err := s.profileRepo.GetByUserID(ctx, userID)
 		if err != nil && err != custom_err.ErrProfileNotFound {
-			return nil, err
+			return err
 		}
 		// fallback defaults
 		var (
@@ -299,7 +316,7 @@ func (s *workoutServiceImpl) CalculateWorkoutSummary(ctx context.Context, userID
 
 		w, err := s.workoutRepo.GetOnlyByID(ctx, userID, workoutID)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		var totalCalories, totalActiveMin, totalRestMin float64
 
@@ -312,7 +329,7 @@ func (s *workoutServiceImpl) CalculateWorkoutSummary(ctx context.Context, userID
 				if err == custom_err.ErrNotFound {
 					continue
 				}
-				return nil, err
+				return err
 			}
 
 			exCal, _, exActiveMin, exRestMin := s.estimateExerciseEnergy(ie, we, userWeightKg)
@@ -328,7 +345,7 @@ func (s *workoutServiceImpl) CalculateWorkoutSummary(ctx context.Context, userID
 		}
 
 		totalCalories = adjustCaloriesForUser(totalCalories, userAge, userSex)
-		res := map[string]float64{
+		res = map[string]float64{
 			"calories":   math.Round(totalCalories*10) / 10.0,
 			"active_min": math.Round(totalActiveMin*10) / 10.0,
 			"rest_min":   math.Round(totalRestMin*10) / 10.0,
@@ -339,9 +356,9 @@ func (s *workoutServiceImpl) CalculateWorkoutSummary(ctx context.Context, userID
 			"estimated_active_min": res["active_min"],
 			"estimated_rest_min":   res["rest_min"],
 		}); err != nil {
-			return nil, err
+			return err
 		}
-		return res, nil
+		return nil
 	})
 	if err != nil {
 		return 0, 0, 0, err

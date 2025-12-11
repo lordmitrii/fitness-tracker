@@ -2,7 +2,7 @@ package eventbus
 
 import "context"
 
-type Handler func(context.Context, any) error
+type Handler = func(context.Context, any) error
 
 type Bus interface {
 	Subscribe(string, Handler)

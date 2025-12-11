@@ -45,7 +45,7 @@ func BuildUpdatesFromPatchDTO(payload any) map[string]any {
 			continue
 		}
 
-		// Case 2: Optional[T] 
+		// Case 2: Optional[T]
 		if fv.Kind() == reflect.Struct {
 			setF := fv.FieldByName("Set")
 			nullF := fv.FieldByName("Null")

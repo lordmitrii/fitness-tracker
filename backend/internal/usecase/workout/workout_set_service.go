@@ -7,7 +7,7 @@ import (
 
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
-	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/uow"
+	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 )
 
 // Order of locks used:
@@ -15,7 +15,7 @@ import (
 // 2. workout_exercises
 // 3. workout_sets
 func (s *workoutServiceImpl) CreateWorkoutSet(ctx context.Context, userId, planId, cycleId, workoutId, weId uint, ws *workout.WorkoutSet) error {
-	return uow.Do(ctx, s.db, func(ctx context.Context) error {
+	return s.tx.Do(ctx, func(ctx context.Context) error {
 		if err := s.workoutRepo.LockByIDForUpdate(ctx, userId, planId, cycleId, workoutId); err != nil {
 			return err
 		}
@@ -60,31 +60,34 @@ func (s *workoutServiceImpl) GetWorkoutSetsByWorkoutExerciseID(ctx context.Conte
 // 2. workout_exercises
 // 3. workout_sets
 func (s *workoutServiceImpl) UpdateWorkoutSet(ctx context.Context, userId, planId, cycleId, workoutId, weId, id uint, updates map[string]any) (*workout.WorkoutSet, error) {
-	return uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.WorkoutSet, error) {
+	var ws *workout.WorkoutSet
+	err := s.tx.Do(ctx, func(ctx context.Context) error {
 		if err := s.workoutRepo.LockByIDForUpdate(ctx, userId, planId, cycleId, workoutId); err != nil {
-			return nil, err
+			return err
 		}
 		if err := s.workoutExerciseRepo.LockByIDForUpdate(ctx, userId, planId, cycleId, workoutId, weId); err != nil {
-			return nil, err
+			return err
 		}
 		// Set skipped and completed to false if updating workout set
 		updates["skipped"] = false
 		updates["completed"] = false
 
-		ws, err := s.workoutSetRepo.UpdateReturning(ctx, userId, planId, cycleId, workoutId, weId, id, updates)
+		res, err := s.workoutSetRepo.UpdateReturning(ctx, userId, planId, cycleId, workoutId, weId, id, updates)
 		if err != nil {
-			return nil, err
+			return err
 		}
+		ws = res
 		if err := s.workoutExerciseRepo.Update(ctx, userId, planId, cycleId, workoutId, ws.WorkoutExerciseID, map[string]any{"completed": false, "skipped": false}); err != nil {
-			return nil, err
+			return err
 		}
 
 		if err := s.workoutRepo.Update(ctx, userId, planId, cycleId, workoutId, map[string]any{"completed": false, "skipped": false}); err != nil {
-			return nil, err
+			return err
 		}
 
-		return ws, nil
+		return nil
 	})
+	return ws, err
 }
 
 // Order of locks used:
@@ -93,42 +96,43 @@ func (s *workoutServiceImpl) UpdateWorkoutSet(ctx context.Context, userId, planI
 // 3. workout_sets
 // 4. individual_exercises
 func (s *workoutServiceImpl) CompleteWorkoutSet(ctx context.Context, userId, planId, cycleId, workoutId, weId, id uint, completed, skipped bool) (*workout.WorkoutSet, float64, error) {
-	acc := &uow.EventAccumulator{}
+	acc := &usecase.EventAccumulator{}
 	now := time.Now()
 	var resKcal float64
+	var resSet *workout.WorkoutSet
 
 	if completed {
 		skipped = false
 	} else if skipped {
 		completed = false
 	}
-	resSet, err := uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.WorkoutSet, error) {
+	err := s.tx.Do(ctx, func(ctx context.Context) error {
 		workout, err := s.workoutRepo.GetByIDForUpdate(ctx, userId, planId, cycleId, workoutId)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		if err := s.workoutExerciseRepo.LockByIDForUpdate(ctx, userId, planId, cycleId, workoutId, weId); err != nil {
-			return nil, err
+			return err
 		}
 		ws, err := s.workoutSetRepo.UpdateReturning(ctx, userId, planId, cycleId, workoutId, weId, id, map[string]any{"completed": completed, "skipped": skipped})
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		pendingSetsCount, err := s.workoutSetRepo.GetPendingSetsCount(ctx, userId, planId, cycleId, workoutId, ws.WorkoutExerciseID)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		skippedSetsCount, err := s.workoutSetRepo.GetSkippedSetsCount(ctx, userId, planId, cycleId, workoutId, ws.WorkoutExerciseID)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		totalSetsCount, err := s.workoutSetRepo.GetTotalSetsCount(ctx, userId, planId, cycleId, workoutId, ws.WorkoutExerciseID)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		weCompleted := pendingSetsCount == 0
@@ -136,22 +140,22 @@ func (s *workoutServiceImpl) CompleteWorkoutSet(ctx context.Context, userId, pla
 
 		we, err := s.workoutExerciseRepo.UpdateReturning(ctx, userId, planId, cycleId, workoutId, ws.WorkoutExerciseID, map[string]any{"completed": weCompleted, "skipped": weSkipped})
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		pendingExercisesCount, err := s.workoutExerciseRepo.GetPendingExercisesCount(ctx, userId, planId, cycleId, workoutId)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		skippedExercisesCount, err := s.workoutExerciseRepo.GetSkippedExercisesCount(ctx, userId, planId, cycleId, workoutId)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		totalExercisesCount, err := s.workoutExerciseRepo.GetTotalExercisesCount(ctx, userId, planId, cycleId, workoutId)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		wkCompleted := pendingExercisesCount == 0
@@ -163,35 +167,47 @@ func (s *workoutServiceImpl) CompleteWorkoutSet(ctx context.Context, userId, pla
 		}
 
 		if err := s.workoutRepo.Update(ctx, userId, planId, cycleId, workoutId, map[string]any{"completed": wkCompleted, "skipped": wkSkipped}); err != nil {
-			return nil, err
+			return err
 		}
 
 		if wkCompleted {
 			workout.Complete(now, userId)
-			resKcal, _, _, _ = s.CalculateWorkoutSummary(ctx, userId, workoutId)
+			// resKcal, _, _, _ = s.CalculateWorkoutSummary(ctx, userId, workoutId)
 		}
 
 		ie, err := s.individualExerciseRepo.GetByID(ctx, userId, we.IndividualExerciseID)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		if ie.LastCompletedWorkoutExerciseID != nil {
 			if err := s.workoutExerciseRepo.Update(ctx, userId, planId, cycleId, workoutId, we.ID, map[string]any{"previous_exercise_id": ie.LastCompletedWorkoutExerciseID}); err != nil {
-				return nil, err
+				return err
 			}
 		}
 
 		if ws.Completed {
 			if err := s.individualExerciseRepo.Update(ctx, userId, ie.ID, map[string]any{"last_completed_workout_exercise_id": we.ID}); err != nil {
-				return nil, err
+				return err
 			}
 		}
 
-		acc.Add(toAnySlice(workout.PendingEvents())...)
+		events := workout.PendingEvents()
+		if err := s.dispatcher.Dispatch(ctx, events); err != nil {
+			return err
+		}
+
+		acc.Add(toAnySlice(events)...)
 		workout.ClearPendingEvents()
 
-		return ws, nil
+		workout, err = s.workoutRepo.GetByID(ctx, userId, planId, cycleId, workoutId)
+		if err != nil {
+			return err
+		}
+
+		resKcal = workout.EstimatedCalories
+		resSet = ws
+		return nil
 	})
 	if err != nil {
 		return nil, 0, err
@@ -212,7 +228,7 @@ func (s *workoutServiceImpl) CompleteWorkoutSet(ctx context.Context, userId, pla
 // 1. workout_exercises
 // 2. workout_sets
 func (s *workoutServiceImpl) MoveWorkoutSet(ctx context.Context, userId, planId, cycleId, workoutId, weId, id uint, direction string) error {
-	return uow.DoIfNotInTx(ctx, s.db, func(ctx context.Context) error {
+	return s.tx.DoIfNotInTx(ctx, func(ctx context.Context) error {
 		if err := s.workoutExerciseRepo.LockByIDForUpdate(ctx, userId, planId, cycleId, workoutId, weId); err != nil {
 			return err
 		}
@@ -253,10 +269,10 @@ func (s *workoutServiceImpl) MoveWorkoutSet(ctx context.Context, userId, planId,
 // 2. workout_exercises
 // 3. workout_sets
 func (s *workoutServiceImpl) DeleteWorkoutSet(ctx context.Context, userId, planId, cycleId, workoutId, weId, id uint) (float64, error) {
-	acc := &uow.EventAccumulator{}
+	acc := &usecase.EventAccumulator{}
 	now := time.Now()
 	var resKcal float64
-	err := uow.Do(ctx, s.db, func(ctx context.Context) error {
+	err := s.tx.Do(ctx, func(ctx context.Context) error {
 		workout, err := s.workoutRepo.GetByIDForUpdate(ctx, userId, planId, cycleId, workoutId)
 		if err != nil {
 			return err
@@ -334,11 +350,22 @@ func (s *workoutServiceImpl) DeleteWorkoutSet(ctx context.Context, userId, planI
 		}
 		if wkCompleted {
 			workout.Complete(now, userId)
-			resKcal, _, _, _ = s.CalculateWorkoutSummary(ctx, userId, workoutId)
+			// resKcal, _, _, _ = s.CalculateWorkoutSummary(ctx, userId, workoutId)
 		}
 
-		acc.Add(toAnySlice(workout.PendingEvents())...)
+		events := workout.PendingEvents()
+		if err := s.dispatcher.Dispatch(ctx, events); err != nil {
+			return err
+		}
+		acc.Add(toAnySlice(events)...)
 		workout.ClearPendingEvents()
+
+		workout, err = s.workoutRepo.GetByID(ctx, userId, planId, cycleId, workoutId)
+		if err != nil {
+			return err
+		}
+
+		resKcal = workout.EstimatedCalories
 
 		return nil
 	})

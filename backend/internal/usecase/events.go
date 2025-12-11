@@ -1,10 +1,12 @@
-package uow
+package usecase
 
+// EventAccumulator collects events to be published after a successful transaction.
 type EventAccumulator struct{ Evs []any }
 
 func (a *EventAccumulator) Add(evs ...any) {
 	a.Evs = append(a.Evs, evs...)
 }
+
 func (a *EventAccumulator) Drain() []any {
 	out := a.Evs
 	a.Evs = nil

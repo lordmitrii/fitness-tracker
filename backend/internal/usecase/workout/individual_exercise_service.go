@@ -5,7 +5,6 @@ import (
 	"fmt"
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
-	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/uow"
 )
 
 func (s *workoutServiceImpl) GetIndividualExercisesByUserID(ctx context.Context, userID uint) ([]*workout.IndividualExercise, error) {
@@ -32,53 +31,52 @@ func (s *workoutServiceImpl) GetIndividualExercisesByUserID(ctx context.Context,
 // }                                          }
 
 func (s *workoutServiceImpl) GetOrCreateIndividualExercise(ctx context.Context, userId uint, individualExercise *workout.IndividualExercise) (*workout.IndividualExercise, error) {
-	return uow.DoR(ctx, s.db, func(ctx context.Context) (*workout.IndividualExercise, error) {
-		// Case 1 & 3: exerciseID is provided
+	var result *workout.IndividualExercise
+	err := s.tx.Do(ctx, func(ctx context.Context) error {
 		if individualExercise.ExerciseID != nil {
 			existingIndividualExercise, err := s.individualExerciseRepo.GetByUserAndExerciseID(ctx, userId, *individualExercise.ExerciseID)
 			if err == nil {
-				// Case 1: Found existing individual exercise
-				return existingIndividualExercise, nil
+				result = existingIndividualExercise
+				return nil
 			}
 			if err != custom_err.ErrIndividualExerciseNotFound {
-				return nil, err
+				return err
 			}
 
-			// Case 3: Not found, create a new individual exercise with linked exercise
 			exercise, err := s.exerciseRepo.GetByID(ctx, *individualExercise.ExerciseID)
 			if err != nil {
-				return nil, err
+				return err
 			}
 
-			// Set the name and muscle group from the exercise
 			individualExercise.Name = exercise.Name
 			individualExercise.MuscleGroupID = exercise.MuscleGroupID
 			if err := s.individualExerciseRepo.Create(ctx, userId, individualExercise); err != nil {
-				return nil, err
+				return err
 			}
-			return individualExercise, nil
+			result = individualExercise
+			return nil
 		}
 
-		// Case 2 & 4: exerciseID is not provided (0)
 		existingIndividualExercise, err := s.individualExerciseRepo.GetByNameMuscleGroupAndUser(ctx, userId, individualExercise.Name, individualExercise.MuscleGroupID)
 		if err == nil {
-			// Case 2: Found existing individual exercise
-			return existingIndividualExercise, nil
+			result = existingIndividualExercise
+			return nil
 		}
 		if err != custom_err.ErrIndividualExerciseNotFound {
-			return nil, err
+			return err
 		}
 
 		if individualExercise.Name == "" || individualExercise.MuscleGroupID == nil {
-			return nil, fmt.Errorf("name and muscle group must be provided for creating a new individual exercise if exerciseID is not provided")
+			return fmt.Errorf("name and muscle group must be provided for creating a new individual exercise if exerciseID is not provided")
 		}
 
-		// Case 4: Not found, create a new individual exercise without linking it to an exercise
 		if err := s.individualExerciseRepo.Create(ctx, userId, individualExercise); err != nil {
-			return nil, err
+			return err
 		}
-		return individualExercise, nil
+		result = individualExercise
+		return nil
 	})
+	return result, err
 }
 
 func (s *workoutServiceImpl) GetIndividualExerciseStats(ctx context.Context, userId uint) ([]*workout.IndividualExercise, error) {

@@ -2,9 +2,10 @@ package postgres
 
 import (
 	"context"
+
+	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/translations"
 	"gorm.io/gorm"
-	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 )
 
 type missingTranslationsRepo struct {

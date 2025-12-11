@@ -152,3 +152,13 @@ type VersionsService interface {
 type RateLimiter interface {
 	Allow(ctx context.Context, key string, limit int, per time.Duration) (bool, time.Duration, error)
 }
+
+type TxManager interface {
+	Do(ctx context.Context, fn func(ctx context.Context) error) error
+	DoIfNotInTx(ctx context.Context, fn func(ctx context.Context) error) error
+}
+
+type EventBus interface {
+	Publish(ctx context.Context, evs ...any) error
+	Subscribe(eventType string, h func(context.Context, any) error)
+}

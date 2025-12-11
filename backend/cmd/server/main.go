@@ -16,12 +16,14 @@
 package main
 
 import (
+	"context"
+	"log"
 	// "github.com/lordmitrii/golang-web-gin/internal/domain/workout"
-	"github.com/lordmitrii/golang-web-gin/internal/events"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/ai"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/email"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/eventbus"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/translations"
+	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/uow"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/admin"
 	ai_usecase "github.com/lordmitrii/golang-web-gin/internal/usecase/ai"
@@ -32,28 +34,18 @@ import (
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/user"
 	"github.com/lordmitrii/golang-web-gin/internal/usecase/versions"
 	workout_usecase "github.com/lordmitrii/golang-web-gin/internal/usecase/workout"
-	"os"
 
-	// "github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/inmemory"
-	"context"
-	"time"
-
-	"log"
-
+	"github.com/lordmitrii/golang-web-gin/internal/app"
+	"github.com/lordmitrii/golang-web-gin/internal/domain/shared/domainevt"
 	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/postgres"
 	myredis "github.com/lordmitrii/golang-web-gin/internal/infrastructure/db/redis"
-	"github.com/lordmitrii/golang-web-gin/internal/infrastructure/job"
-	"github.com/lordmitrii/golang-web-gin/internal/interface/http"
 )
 
 func main() {
-	// repo := inmemory.NewWorkoutRepo()
-	var dsn string
-	if dsn = os.Getenv("DATABASE_URL"); dsn == "" {
-		dsn = "postgres://username:password@localhost:5432/fitness_tracker?sslmode=disable" // Default DSN if not set
-	}
+	cfg := app.LoadConfig()
 
-	db, err := postgres.NewPostgresDB(dsn)
+	// repo := inmemory.NewWorkoutRepo()
+	db, err := postgres.NewPostgresDB(cfg.DSN)
 	if err != nil {
 		panic(err)
 	}
@@ -71,7 +63,7 @@ func main() {
 		panic(err)
 	}
 
-	redisLimiter := myredis.NewRedisLimiter(os.Getenv("REDIS_ADDR"), os.Getenv("REDIS_PASSWORD"), 0)
+	redisLimiter := myredis.NewRedisLimiter(cfg.RedisAddr, cfg.RedisPassword, 0)
 
 	exerciseRepo := postgres.NewExerciseRepo(db)
 	muscleGroupRepo := postgres.NewMuscleGroupRepo(db)
@@ -109,8 +101,8 @@ func main() {
 	// )
 
 	emailSender := email.NewSendGridSender(
-		os.Getenv("SENDGRID_FROM_EMAIL"),
-		os.Getenv("SENDGRID_API_KEY"),
+		cfg.SendgridFrom,
+		cfg.SendgridAPIKey,
 	)
 
 	if err := email.LoadTemplates("./"); err != nil {
@@ -118,19 +110,21 @@ func main() {
 	}
 
 	translator := translations.NewDeepLTranslator(
-		os.Getenv("DEEPL_AUTH_KEY"),
-		os.Getenv("DEEPL_API_URL"),
+		cfg.DeepLAuthKey,
+		cfg.DeepLAPIURL,
 	)
 
 	openai := ai.NewOpenAI(
-		os.Getenv("OPENAI_API_KEY"),
+		cfg.OpenAIKey,
 		1.0, // temperature
 	)
 
 	bus := eventbus.NewInproc()
+	txManager := uow.NewManager(db)
+	dispatcher := domainevt.NewDispatcher()
 
 	var exerciseService usecase.ExerciseService = exercise.NewExerciseService(exerciseRepo, muscleGroupRepo, translator, translationRepo, versionRepo)
-	var workoutService usecase.WorkoutService = workout_usecase.NewWorkoutService(profileRepo, workoutPlanRepo, workoutCycleRepo, workoutRepo, workoutExerciseRepo, workoutSetRepo, individualExerciseRepo, exerciseRepo, db, bus)
+	var workoutService usecase.WorkoutService = workout_usecase.NewWorkoutService(profileRepo, workoutPlanRepo, workoutCycleRepo, workoutRepo, workoutExerciseRepo, workoutSetRepo, individualExerciseRepo, exerciseRepo, txManager, bus, dispatcher)
 	var userService usecase.UserService = user.NewUserService(userRepo, profileRepo, userConsentRepo, roleRepo, permissionRepo, userSettingsRepo)
 	var aiService usecase.AIService = ai_usecase.NewAIService(workoutService, exerciseService, userService, openai)
 	var emailService usecase.EmailService = email_usecase.NewEmailService(userRepo, roleRepo, emailSender, emailTokenRepo)
@@ -139,30 +133,10 @@ func main() {
 	var translationService usecase.TranslationService = translations_usecase.NewTranslationService(translationRepo, missingTranslationRepo, versionRepo)
 	var versionsService usecase.VersionsService = versions.NewVersionsService(versionRepo)
 
-	events.RegisterAll(
-		context.Background(),
-		events.Deps{
-			DB:             db,
-			Bus:            bus,
-			WorkoutService: workoutService,
-			// AnalyticsSvc: analyticsSvc,
-			// BadgeSvc:     badgeSvc,
-		},
-	)
+	app.RegisterEvents(context.Background(), db, bus, dispatcher, workoutService)
+	app.StartCleanup(cfg, db)
 
-	if os.Getenv("DEVELOPMENT_MODE") == "false" {
-		cleanupJob := job.NewCleanupJob(db)
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
+	server := app.NewServer(cfg, exerciseService, workoutService, userService, aiService, emailService, redisLimiter, adminService, rbacService, translationService, versionsService)
 
-		go cleanupJob.Run(ctx, 24*time.Hour)
-	}
-
-	server := http.NewServer(exerciseService, workoutService, userService, aiService, emailService, redisLimiter, adminService, rbacService, translationService, versionsService)
-
-	var port string
-	if port = os.Getenv("PORT"); port == "" {
-		port = "8080" // Default port if not set
-	}
-	server.Run(":" + port)
+	server.Run(":" + cfg.Port)
 }

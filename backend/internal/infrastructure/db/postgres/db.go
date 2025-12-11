@@ -53,7 +53,7 @@ func AutoMigrate(db *gorm.DB) error {
 		&rbac.Permission{}, &rbac.RolePermission{},
 
 		&email.EmailToken{},
-		
+
 		&workout.MuscleGroup{},
 		&workout.Exercise{},
 		&workout.IndividualExercise{},

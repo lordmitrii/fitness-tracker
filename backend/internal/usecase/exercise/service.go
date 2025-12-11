@@ -27,6 +27,6 @@ func NewExerciseService(
 		muscleGroupRepo: muscleGroupRepo,
 		translator:      translator,
 		translationRepo: translationRepo,
-		versionRepo:    versionRepo,
+		versionRepo:     versionRepo,
 	}
 }
