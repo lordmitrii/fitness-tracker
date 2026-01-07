@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 // diagnostics
 import { logStore } from "./diagnostics/LogStore";
 import { installGlobalErrorHooks } from "./diagnostics/installGlobalErrorHooks";
+import { ToastProvider } from "./context/ToastContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -53,12 +54,14 @@ const Devtools = import.meta.env.DEV
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <App />
-      {import.meta.env.DEV && (
-        <Suspense fallback={null}>
-          <Devtools initialIsOpen={false} />
-        </Suspense>
-      )}
+      <ToastProvider>
+        <App />
+        {import.meta.env.DEV && (
+          <Suspense fallback={null}>
+            <Devtools initialIsOpen={false} />
+          </Suspense>
+        )}
+      </ToastProvider>
     </QueryClientProvider>
   </StrictMode>
 );

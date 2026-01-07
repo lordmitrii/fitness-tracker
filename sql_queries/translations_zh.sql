@@ -293,6 +293,7 @@ VALUES
 ('translation', 'zh', 'days_per_cycle_selector.days','天', NOW(), NOW()),
 ('translation', 'zh', 'private_route.checking_auth','正在验证身份...', NOW(), NOW()),
 ('translation', 'zh', 'menus.delete_cycle','删除周期', NOW(), NOW()),
+('translation', 'zh', 'menus.copy_structure','复制结构', NOW(), NOW()),
 ('translation', 'zh', 'menus.delete_workout','删除锻炼', NOW(), NOW()),
 ('translation', 'zh', 'menus.delete_workout_plan','删除计划', NOW(), NOW()),
 ('translation', 'zh', 'menus.delete_set','删除组', NOW(), NOW()),
@@ -557,7 +558,10 @@ VALUES
 ('translation', 'zh', 'settings.email_notifications.title','电子邮件通知', NOW(), NOW()),
 ('translation', 'zh', 'settings.email_notifications.hint','允许电子邮件通知以获取重要更新和新闻。', NOW(), NOW()),
 ('translation', 'zh', 'settings.calculate_calories.title','计算卡路里', NOW(), NOW()),
-('translation', 'zh', 'settings.calculate_calories.hint','允许应用程序计算锻炼期间估计的卡路里消耗。', NOW(), NOW())
+('translation', 'zh', 'settings.calculate_calories.hint','允许应用程序计算锻炼期间估计的卡路里消耗。', NOW(), NOW()),
+('translation', 'zh', 'copy_toast.structure_success','结构已复制到剪贴板。', NOW(), NOW()),
+('translation', 'zh', 'copy_toast.structure_error','无法复制。请重试。', NOW(), NOW()),
+('translation', 'zh', 'copy_toast.generic_error','无法复制。请重试。', NOW(), NOW())
 ON CONFLICT (namespace, locale, key) DO UPDATE
 SET value = EXCLUDED.value,
     updated_at = NOW();

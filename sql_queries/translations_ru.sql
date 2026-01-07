@@ -293,6 +293,7 @@ VALUES
 ('translation', 'ru', 'days_per_cycle_selector.days','Дней', NOW(), NOW()),
 ('translation', 'ru', 'private_route.checking_auth','Проверка авторизации...', NOW(), NOW()),
 ('translation', 'ru', 'menus.delete_cycle','Удалить цикл', NOW(), NOW()),
+('translation', 'ru', 'menus.copy_structure','Копировать структуру', NOW(), NOW()),
 ('translation', 'ru', 'menus.delete_workout','Удалить тренировку', NOW(), NOW()),
 ('translation', 'ru', 'menus.delete_workout_plan','Удалить план', NOW(), NOW()),
 ('translation', 'ru', 'menus.delete_set','Удалить подход', NOW(), NOW()),
@@ -557,7 +558,10 @@ VALUES
 ('translation', 'ru', 'settings.email_notifications.title','Email-уведомления', NOW(), NOW()),
 ('translation', 'ru', 'settings.email_notifications.hint','Разрешить email-уведомления о важных обновлениях и новостях.', NOW(), NOW()),
 ('translation', 'ru', 'settings.calculate_calories.title','Расчет калорий', NOW(), NOW()),
-('translation', 'ru', 'settings.calculate_calories.hint','Разрешить приложению рассчитывать примерное количество сожженных калорий во время тренировок.', NOW(), NOW())
+('translation', 'ru', 'settings.calculate_calories.hint','Разрешить приложению рассчитывать примерное количество сожженных калорий во время тренировок.', NOW(), NOW()),
+('translation', 'ru', 'copy_toast.structure_success','Структура скопирована в буфер обмена.', NOW(), NOW()),
+('translation', 'ru', 'copy_toast.structure_error','Не удалось скопировать. Попробуйте еще раз.', NOW(), NOW()),
+('translation', 'ru', 'copy_toast.generic_error','Не удалось скопировать. Попробуйте еще раз.', NOW(), NOW())
 ON CONFLICT (namespace, locale, key) DO UPDATE
 SET value = EXCLUDED.value,
     updated_at = NOW();

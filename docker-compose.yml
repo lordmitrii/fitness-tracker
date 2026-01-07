@@ -1,16 +1,13 @@
 services:
   frontend:
     profiles: ["old-frontend"]
-    container_name: ft-frontend-dev
-    image: ft-frontend-dev:latest
+    container_name: ft-old-frontend-dev
     build:
       context: ./frontend
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
       - "5173:5173"
-    depends_on:
-      - backend
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -19,16 +16,13 @@ services:
 
   frontend-native:
     profiles: ["new-frontend"]
-    container_name: ft-frontend-native-dev
-    image: ft-frontend-native-dev:latest
+    container_name: ft-old-frontend-native-dev
     build:
       context: ./frontend-native
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
       - "8081:8081"
-    depends_on:
-      - backend
     volumes:
       - ./frontend-native:/app
       - /app/node_modules
@@ -41,8 +35,7 @@ services:
       '
 
   backend:
-    container_name: ft-backend-dev
-    image: ft-backend-dev:latest
+    container_name: ft-old-backend-dev
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -60,7 +53,7 @@ services:
       - ./backend:/app
 
   db:
-    container_name: ft-db-dev
+    container_name: ft-old-db-dev
     image: postgres:16
     restart: unless-stopped
     env_file:
@@ -68,7 +61,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./data/db:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
       interval: 10s
@@ -76,7 +69,7 @@ services:
       retries: 5
 
   redis:
-    container_name: ft-redis-dev
+    container_name: ft-old-redis-dev
     image: redis:7-alpine
     restart: unless-stopped
     ports:
@@ -91,7 +84,7 @@ services:
     env_file:
       - .env.dev
     volumes:
-      - ./data/redis:/data
+      - redis-data:/data
     healthcheck:
       test:
         [
@@ -102,14 +95,6 @@ services:
       timeout: 5s
       retries: 5
 
-  pgadmin:
-    container_name: ft-pgadmin-dev
-    image: dpage/pgadmin4
-    restart: unless-stopped
-    env_file:
-      - .env.dev
-    ports:
-      - "5050:80"
-    depends_on:
-      db:
-        condition: service_healthy
+volumes:
+  postgres-data:
+  redis-data:

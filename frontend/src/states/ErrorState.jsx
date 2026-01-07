@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import ErrorIcon from "../icons/ErrorIcon";
 import { useTranslation } from "react-i18next";
 import { copyText } from "../utils/copyText";
+import { useToast } from "../context/ToastContext";
 
 const pickMessage = (error, t) => {
   if (!error) return t("error_state.unknown_error");
@@ -52,6 +53,7 @@ const ErrorState = ({ error, onRetry }) => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const { showToast } = useToast();
 
   const message = useMemo(() => pickMessage(error, t), [error, t]);
   const details = useMemo(() => buildDetails(error), [error]);
@@ -73,6 +75,21 @@ const ErrorState = ({ error, onRetry }) => {
     if (success) {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
+      showToast({
+        type: "success",
+        title: t("error_state.copy_report"),
+        message: t("error_state.copied_success", {
+          defaultValue: "Copied to clipboard",
+        }),
+      });
+    } else {
+      showToast({
+        type: "error",
+        title: t("error_state.copy_report"),
+        message: t("copy_toast.generic_error", {
+          defaultValue: "Could not copy. Please try again.",
+        }),
+      });
     }
   };
 

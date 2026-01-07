@@ -206,6 +206,11 @@
     "hide_details": "隐藏详细信息",
     "unknown_error": "发生未知错误。"
   },
+  "copy_toast": {
+    "structure_success": "结构已复制到剪贴板。",
+    "structure_error": "无法复制。请重试。",
+    "generic_error": "无法复制。请重试。"
+  },
   "workout_form": {
     "workout_name_label": "锻炼名称",
     "workout_name_placeholder": "输入锻炼名称",
@@ -359,6 +364,7 @@
   },
   "menus": {
     "delete_cycle": "删除周期",
+    "copy_structure": "复制结构",
     "delete_workout": "删除锻炼",
     "delete_workout_plan": "删除计划",
     "delete_set": "删除组",

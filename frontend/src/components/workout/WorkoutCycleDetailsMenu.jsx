@@ -4,6 +4,9 @@ import { useTranslation } from "react-i18next";
 import { memo, useCallback } from "react";
 import { ArrowLeftIcon, ArrowRightIcon } from "../../icons/ArrowIcon";
 import useCycleData from "../../hooks/data/useCycleData";
+import CopyIcon from "../../icons/CopyIcon";
+import { copyText } from "../../utils/copyText";
+import { useToast } from "../../context/ToastContext";
 
 const WorkoutCycleDetailsMenu = ({
   closeMenu,
@@ -15,12 +18,59 @@ const WorkoutCycleDetailsMenu = ({
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { mutations } = useCycleData({
+  const { mutations, cycle } = useCycleData({
     planID,
     cycleID,
     skipQuery: true,
   });
+  const { showToast } = useToast();
   const pending = !!mutations.deleteCycle.isPending;
+
+  const handleCopyStructure = useCallback(async () => {
+    const structure = {
+      workouts: (cycle?.workouts ?? []).map((w) => ({
+        name: w?.name ?? "",
+        exercises: (w?.workout_exercises ?? []).map((ex) => ({
+          name:
+            ex?.individual_exercise?.exercise?.slug ??
+            ex?.name ??
+            "",
+          muscle_group: ex?.individual_exercise?.muscle_group?.slug,
+          sets_number: (ex?.workout_sets ?? []).length,
+        })),
+      })),
+    };
+
+    try {
+      const success = await copyText(JSON.stringify(structure, null, 2));
+      if (success) {
+        showToast({
+          type: "success",
+          title: t("menus.copy_structure"),
+          message: t("copy_toast.structure_success", {
+            defaultValue: "Structure copied to clipboard.",
+          }),
+        });
+      } else {
+        showToast({
+          type: "error",
+          title: t("menus.copy_structure"),
+          message: t("copy_toast.structure_error", {
+            defaultValue: "Could not copy. Please try again.",
+          }),
+        });
+      }
+    } catch (err) {
+      console.error("Failed to copy structure", err);
+      showToast({
+        type: "error",
+        title: t("menus.copy_structure"),
+        message: t("copy_toast.structure_error", {
+          defaultValue: "Could not copy. Please try again.",
+        }),
+      });
+    }
+  }, [cycle, showToast, t]);
 
   const handleDeleteCycle = useCallback(async () => {
     if (!previousCycleID) return;
@@ -91,6 +141,16 @@ const WorkoutCycleDetailsMenu = ({
           )}
         </div>
       </div>
+      <button
+        className={`btn btn-primary-light text-left`}
+        onClick={handleCopyStructure}
+        title={t("menus.copy_structure")}
+      >
+        <span className="flex items-center gap-2">
+          <CopyIcon />
+          {t("menus.copy_structure")}
+        </span>
+      </button>
       <button
         className={`btn btn-danger-light text-left  ${
           !previousCycleID || pending ? "opacity-50 cursor-not-allowed" : ""

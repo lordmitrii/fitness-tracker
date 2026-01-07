@@ -206,6 +206,11 @@
     "hide_details": "Hide Details",
     "unknown_error": "Unknown error occured."
   },
+  "copy_toast": {
+    "structure_success": "Structure copied to clipboard.",
+    "structure_error": "Could not copy. Please try again.",
+    "generic_error": "Could not copy. Please try again."
+  },
   "workout_form": {
     "workout_name_label": "Workout Name",
     "workout_name_placeholder": "Enter workout name",
@@ -359,6 +364,7 @@
   },
   "menus": {
     "delete_cycle": "Delete Cycle",
+    "copy_structure": "Copy Structure",
     "delete_workout": "Delete Workout",
     "delete_workout_plan": "Delete Plan",
     "delete_set": "Delete Set",

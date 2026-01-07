@@ -2,8 +2,11 @@ import { Component } from "react";
 import ErrorIcon from "../icons/ErrorIcon";
 import { Trans } from "react-i18next";
 import { copyText } from "../utils/copyText";
+import { ToastContext } from "../context/ToastContext";
 
 export class ErrorBoundary extends Component {
+  static contextType = ToastContext;
+
   constructor(props) {
     super(props);
     this.state = {
@@ -41,6 +44,21 @@ export class ErrorBoundary extends Component {
     if (success) {
       this.setState({ copied: true });
       setTimeout(() => this.setState({ copied: false }), 1500);
+      this.context?.showToast?.({
+        type: "success",
+        title: this.props.t?.("error_state.copy_report") ?? "Copy report",
+        message:
+          this.props.t?.("error_state.copied_success") ??
+          "Copied to clipboard",
+      });
+    } else {
+      this.context?.showToast?.({
+        type: "error",
+        title: this.props.t?.("error_state.copy_report") ?? "Copy report",
+        message:
+          this.props.t?.("copy_toast.generic_error") ??
+          "Could not copy. Please try again.",
+      });
     }
   };
 

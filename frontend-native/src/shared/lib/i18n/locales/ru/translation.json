@@ -206,6 +206,11 @@
     "hide_details": "Скрыть детали",
     "unknown_error": "Произошла неизвестная ошибка."
   },
+  "copy_toast": {
+    "structure_success": "Структура скопирована в буфер обмена.",
+    "structure_error": "Не удалось скопировать. Попробуйте еще раз.",
+    "generic_error": "Не удалось скопировать. Попробуйте еще раз."
+  },
   "workout_form": {
     "workout_name_label": "Название тренировки",
     "workout_name_placeholder": "Введите название тренировки",
@@ -359,6 +364,7 @@
   },
   "menus": {
     "delete_cycle": "Удалить цикл",
+    "copy_structure": "Копировать структуру",
     "delete_workout": "Удалить тренировку",
     "delete_workout_plan": "Удалить план",
     "delete_set": "Удалить подход",

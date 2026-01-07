@@ -293,6 +293,7 @@ VALUES
 ('translation', 'en', 'days_per_cycle_selector.days','Days', NOW(), NOW()),
 ('translation', 'en', 'private_route.checking_auth','Checking authentication...', NOW(), NOW()),
 ('translation', 'en', 'menus.delete_cycle','Delete Cycle', NOW(), NOW()),
+('translation', 'en', 'menus.copy_structure','Copy Structure', NOW(), NOW()),
 ('translation', 'en', 'menus.delete_workout','Delete Workout', NOW(), NOW()),
 ('translation', 'en', 'menus.delete_workout_plan','Delete Plan', NOW(), NOW()),
 ('translation', 'en', 'menus.delete_set','Delete Set', NOW(), NOW()),
@@ -557,7 +558,10 @@ VALUES
 ('translation', 'en', 'settings.email_notifications.title','Email Notifications', NOW(), NOW()),
 ('translation', 'en', 'settings.email_notifications.hint','Allow email notifications for important updates and news.', NOW(), NOW()),
 ('translation', 'en', 'settings.calculate_calories.title','Calculate Calories', NOW(), NOW()),
-('translation', 'en', 'settings.calculate_calories.hint','Allow the app to calculate estimated calories burned during workouts.', NOW(), NOW())
+('translation', 'en', 'settings.calculate_calories.hint','Allow the app to calculate estimated calories burned during workouts.', NOW(), NOW()),
+('translation', 'en', 'copy_toast.structure_success','Structure copied to clipboard.', NOW(), NOW()),
+('translation', 'en', 'copy_toast.structure_error','Could not copy. Please try again.', NOW(), NOW()),
+('translation', 'en', 'copy_toast.generic_error','Could not copy. Please try again.', NOW(), NOW())
 ON CONFLICT (namespace, locale, key) DO UPDATE
 SET value = EXCLUDED.value,
     updated_at = NOW();
