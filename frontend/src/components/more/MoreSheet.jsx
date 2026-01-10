@@ -42,9 +42,14 @@ const MoreSheet = ({ open, onClose }) => {
     if (!node) return;
 
     let startY = 0;
+    let startScrollTop = 0;
+    let swipingToClose = false;
+    const CLOSE_SWIPE_THRESHOLD = 80;
 
     const onTouchStart = (e) => {
       startY = e.touches?.[0]?.clientY ?? 0;
+      startScrollTop = node.scrollTop;
+      swipingToClose = false;
     };
 
     const onTouchMove = (e) => {
@@ -55,17 +60,35 @@ const MoreSheet = ({ open, onClose }) => {
       // Prevent pulling the sheet downward (negative scroll) when already at the top.
       if (atTop && deltaY > 0) {
         e.preventDefault();
+        if (
+          !swipingToClose &&
+          startScrollTop <= 0 &&
+          deltaY > CLOSE_SWIPE_THRESHOLD
+        ) {
+          swipingToClose = true;
+          onClose();
+        }
       }
+    };
+
+    const onTouchEnd = () => {
+      startY = 0;
+      startScrollTop = 0;
+      swipingToClose = false;
     };
 
     node.addEventListener("touchstart", onTouchStart, { passive: true });
     node.addEventListener("touchmove", onTouchMove, { passive: false });
+    node.addEventListener("touchend", onTouchEnd, { passive: true });
+    node.addEventListener("touchcancel", onTouchEnd, { passive: true });
 
     return () => {
       node.removeEventListener("touchstart", onTouchStart);
       node.removeEventListener("touchmove", onTouchMove);
+      node.removeEventListener("touchend", onTouchEnd);
+      node.removeEventListener("touchcancel", onTouchEnd);
     };
-  }, [mounted]);
+  }, [mounted, onClose]);
 
   const onBackdropMouseDown = (e) => {
     if (e.target === e.currentTarget) onClose();
