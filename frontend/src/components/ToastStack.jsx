@@ -77,7 +77,7 @@ const ToastStack = ({ toasts, onDismiss }) => {
   if (!toasts?.length) return null;
 
   return createPortal(
-    <div className="pointer-events-none fixed inset-x-0 top-4 z-[999999] flex justify-center px-4 sm:px-0">
+    <div className="pointer-events-none fixed inset-x-0 top-[var(--safe-area-top)] z-[999999] flex justify-center px-4 sm:px-0">
       <div className="flex w-full max-w-md flex-col gap-3">
         {toasts.map(({ id, title, message, type, closing }) => {
           const color = tone[type] ?? tone.info;
