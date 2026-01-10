@@ -28,9 +28,25 @@ a:visited {
 }
 
 :root {
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --viewport-height: 100vh;
   --custom-header-size: 3rem;
-  --menubar-height: 5rem;
+  --menubar-base-height: 4.25rem;
+  --menubar-height: var(--menubar-base-height);
   --menubar-width: 0px;
+}
+
+@supports (height: 100svh) {
+  :root {
+    --viewport-height: 100svh;
+  }
+}
+
+@supports (height: 100dvh) {
+  :root {
+    --viewport-height: 100dvh;
+  }
 }
 
 @media (min-width: 640px) {

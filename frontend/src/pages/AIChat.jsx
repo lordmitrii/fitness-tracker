@@ -12,8 +12,6 @@ import { useAuth } from "../context/AuthContext";
 import ErrorState from "../states/ErrorState";
 import LoadingState from "../states/LoadingState";
 import { LayoutHeader } from "../layout/LayoutHeader";
-import { createPortal } from "react-dom";
-import { useIsBelowSm } from "../hooks/useIsBelowSm";
 
 const TOPICS = [
   {
@@ -43,12 +41,6 @@ const AIChat = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { hasAnyRole } = useAuth();
-
-  const isBelowSm = useIsBelowSm();
-  const portalHost =
-    typeof document !== "undefined"
-      ? document.getElementById("above-menubar-portal")
-      : null;
 
   const [store, setStore, { restoring }] = useStorageState("aiChatState", {
     selectedTopic: "askGeneral", // Set to null if want to show "choose topic" first. Now general topic will be preselected.
@@ -346,9 +338,7 @@ const AIChat = () => {
             </div>
           )}
         </div>
-        {isBelowSm && portalHost
-          ? createPortal(inputArea, portalHost)
-          : inputArea}
+        {inputArea}
       </div>
       {showConsent && (
         <ConsentModal onAccept={giveConsent} onDecline={() => navigate("/")} />

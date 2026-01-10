@@ -60,7 +60,7 @@ const MoreContent = ({ onDone, variant = "sheet" }) => {
     <div
       className={`${
         isSheet ? "px-4 rounded-t-4xl bg-white" : "px-3"
-      } flex flex-col justify-between h-full pb-[calc(env(safe-area-inset-bottom)+1rem)] mt-[1rem]`}
+      } flex flex-col justify-between h-full pb-[max(var(--safe-area-bottom),1rem)] mt-[1rem]`}
     >
       <div>
         <div className="flex items-center justify-between mt-4 mb-6">
@@ -158,7 +158,7 @@ const MoreContent = ({ onDone, variant = "sheet" }) => {
         </div>
 
         {isSheet && (
-          <div className="mt-3 mb-[max(calc(1rem-env(safe-area-inset-bottom)),0px)]">
+          <div className="mt-3 mb-2">
             <button
               className="btn border-2 w-full text-lg text-gray-600"
               onClick={() => onDone?.()}

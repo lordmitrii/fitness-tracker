@@ -85,7 +85,13 @@ const MenuPanel = () => {
 
   return (
     <>
-      <nav className="h-[var(--menubar-height)] bg-gradient-to-r from-blue-500 to-blue-700 text-white pb-[env(safe-area-inset-bottom)] pt">
+      <nav
+        className="h-[var(--menubar-height)] bg-gradient-to-r from-blue-500 to-blue-700 text-white"
+        style={{
+          paddingBottom: "calc(var(--safe-area-bottom) + 3rem)",
+          paddingTop: "0.35rem",
+        }}
+      >
         <ul className="flex px-1 space-x-1">
           {visibleTabs.map((link) =>
             link.kind === "link" ? (

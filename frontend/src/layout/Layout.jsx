@@ -83,6 +83,36 @@ const Layout = ({ children }) => {
   });
 
   useEffect(() => {
+    const docEl = document.documentElement;
+    const vv = window.visualViewport;
+
+    const updateViewportHeight = () => {
+      const height =
+        (vv && vv.height) ||
+        window.innerHeight ||
+        (docEl ? docEl.clientHeight : 0);
+
+      if (height) {
+        docEl.style.setProperty("--viewport-height", `${Math.round(height)}px`);
+      }
+    };
+
+    updateViewportHeight();
+
+    vv && vv.addEventListener("resize", updateViewportHeight);
+    vv && vv.addEventListener("scroll", updateViewportHeight);
+    window.addEventListener("resize", updateViewportHeight);
+    window.addEventListener("orientationchange", updateViewportHeight);
+
+    return () => {
+      vv && vv.removeEventListener("resize", updateViewportHeight);
+      vv && vv.removeEventListener("scroll", updateViewportHeight);
+      window.removeEventListener("resize", updateViewportHeight);
+      window.removeEventListener("orientationchange", updateViewportHeight);
+    };
+  }, []);
+
+  useEffect(() => {
     console.log(
       "[layout] warmupDone",
       warmupDone,
@@ -101,7 +131,14 @@ const Layout = ({ children }) => {
       )}
 
       <HeaderContext.Provider value={ctxValue}>
-        <div className="flex h-dvh  flex-col overflow-hidden pt-[env(safe-area-inset-top)] bg-white">
+        <div
+          className="flex flex-col overflow-hidden bg-white"
+          style={{
+            minHeight: "var(--viewport-height)",
+            height: "var(--viewport-height)",
+            paddingTop: "var(--safe-area-top)",
+          }}
+        >
           <NetworkStatusBanner />
 
           <div className="flex-1 min-h-0 flex flex-col sm:flex-row">
@@ -112,7 +149,7 @@ const Layout = ({ children }) => {
                 <div
                   className={`bg-white ${
                     !headerConfig.disablePaddingBottom && "pb-[1rem]"
-                  } pt-[max(calc(1rem-env(safe-area-inset-top)),_0px)] sm:pt-4`}
+                  } pt-[max(calc(1rem-var(--safe-area-top)),_0px)] sm:pt-4`}
                 >
                   {headerConfig.node}
                 </div>
@@ -121,7 +158,6 @@ const Layout = ({ children }) => {
               <ScrollAreaWithPTR>{children}</ScrollAreaWithPTR>
             </div>
           </div>
-          <div id="above-menubar-portal" className="sm:hidden" />
           <div className={`sm:hidden ${keyboardVisible ? "hidden" : ""}`}>
             <MenuPanel />
           </div>

@@ -37,6 +37,36 @@ const MoreSheet = ({ open, onClose }) => {
     return () => document.removeEventListener("keydown", onKey);
   }, [mounted, onClose]);
 
+  useEffect(() => {
+    const node = sheetRef.current;
+    if (!node) return;
+
+    let startY = 0;
+
+    const onTouchStart = (e) => {
+      startY = e.touches?.[0]?.clientY ?? 0;
+    };
+
+    const onTouchMove = (e) => {
+      const currentY = e.touches?.[0]?.clientY ?? 0;
+      const deltaY = currentY - startY;
+      const atTop = node.scrollTop <= 0;
+
+      // Prevent pulling the sheet downward (negative scroll) when already at the top.
+      if (atTop && deltaY > 0) {
+        e.preventDefault();
+      }
+    };
+
+    node.addEventListener("touchstart", onTouchStart, { passive: true });
+    node.addEventListener("touchmove", onTouchMove, { passive: false });
+
+    return () => {
+      node.removeEventListener("touchstart", onTouchStart);
+      node.removeEventListener("touchmove", onTouchMove);
+    };
+  }, [mounted]);
+
   const onBackdropMouseDown = (e) => {
     if (e.target === e.currentTarget) onClose();
   };
@@ -65,7 +95,7 @@ const MoreSheet = ({ open, onClose }) => {
     bg-transparent shadow-2xl
     pt-[env(safe-area-inset-top)]
     sm:max-w-md sm:mx-auto w-full
-    h-full overflow-auto
+    h-full overflow-y-auto overscroll-contain touch-pan-y
     transform-gpu will-change-transform
     transition-transform ${animDur} ${animEase}
   `.replace(/\s+/g, " ");
