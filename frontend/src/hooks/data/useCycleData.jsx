@@ -361,6 +361,7 @@ export default function useCycleData({
         workouts: (cycle.workouts || []).concat({
           ...vars.payload,
           id: tempId,
+          index: (cycle.workouts?.length ?? 0) + 1,
         }),
       }));
       return { ...ctx, tempId };
@@ -455,6 +456,51 @@ export default function useCycleData({
         );
         return { ...old, workouts: next };
       });
+    },
+  });
+
+  const moveWorkout = useMutation({
+    mutationKey: ["moveWorkout", planID, cycleID],
+    mutationFn: async ({ workoutID, direction }) => {
+      const res = await api.post(
+        `/workout-plans/${planID}/workout-cycles/${cycleID}/workouts/${workoutID}/move`,
+        { direction } // "up" | "down"
+      );
+      return res?.data ?? null;
+    },
+    onMutate: async (vars) => {
+      await queryClient.cancelQueries({ queryKey: QK.cycle(planID, cycleID) });
+      const previous = queryClient.getQueryData(QK.cycle(planID, cycleID));
+
+      updateCycleInCache(queryClient, planID, cycleID, (old) => {
+        const workouts = [...(old?.workouts ?? [])];
+        const me = workouts.find((w) => w.id === vars.workoutID);
+        if (!me) return old;
+
+        const targetIndex =
+          vars.direction === "up" ? me.index - 1 : me.index + 1;
+        const swap = workouts.find((w) => w.index === targetIndex);
+        if (!swap) return old;
+
+        // swap indices
+        return {
+          ...old,
+          workouts: workouts.map((w) =>
+            w.id === me.id
+              ? { ...w, index: targetIndex }
+              : w.id === swap.id
+              ? { ...w, index: me.index }
+              : w
+          ),
+        };
+      });
+
+      return { previous };
+    },
+    onError: (_e, _vars, ctx) => {
+      if (ctx?.previous !== undefined) {
+        queryClient.setQueryData(QK.cycle(planID, cycleID), ctx.previous);
+      }
     },
   });
 
@@ -1211,6 +1257,7 @@ export default function useCycleData({
         toggleSetCompleted,
         addWorkout,
         updateWorkout,
+        moveWorkout,
         deleteWorkout,
         upsertExercise,
         deleteCycle,

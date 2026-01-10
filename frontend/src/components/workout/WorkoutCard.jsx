@@ -3,6 +3,7 @@ import DropdownMenu from "../DropdownMenu";
 import WorkoutDetailsMenu from "./WorkoutDetailsMenu";
 import { useTranslation } from "react-i18next";
 import { memo, useCallback } from "react";
+import { useMemo } from "react";
 
 const WorkoutCard = ({
   planID,
@@ -13,6 +14,7 @@ const WorkoutCard = ({
   onOpenReplaceExercise,
   unitSystem = "metric",
   calculateCalories = true,
+  allWorkouts,
 }) => {
   const { t, i18n } = useTranslation();
 
@@ -26,6 +28,11 @@ const WorkoutCard = ({
     [onOpenReplaceExercise, workout.id, workout.name]
   );
 
+  const workoutOrder = useMemo(
+      () => allWorkouts.map((e) => ({ id: e.id, index: e.index })),
+      [allWorkouts]
+    );
+
   const renderWorkoutDetailsMenu = useCallback(
     ({ close }) => (
       <WorkoutDetailsMenu
@@ -34,9 +41,10 @@ const WorkoutCard = ({
         cycleID={cycleID}
         workoutID={workout.id}
         workoutName={workout.name}
+        workoutOrder={workoutOrder}
       />
     ),
-    [planID, cycleID, workout.id, workout.name]
+    [planID, cycleID, workout.id, workout.name, workoutOrder]
   );
 
   return (

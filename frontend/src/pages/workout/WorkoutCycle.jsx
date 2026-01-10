@@ -43,6 +43,11 @@ const WorkoutCycle = () => {
     [plans, planID]
   );
 
+  const sortedWorkouts = useMemo(
+    () => (workouts || []).slice().sort((a, b) => a.index - b.index),
+    [workouts]
+  );
+
   const { settings } = useSettingsData();
 
   const handlers = useSwipeable({
@@ -185,6 +190,7 @@ const WorkoutCycle = () => {
                         onOpenReplaceExercise={openReplaceExercise}
                         unitSystem={settings?.unit_system}
                         calculateCalories={settings?.calculate_calories}
+                        allWorkouts={sortedWorkouts}
                       />
                     </div>
                   ))}
