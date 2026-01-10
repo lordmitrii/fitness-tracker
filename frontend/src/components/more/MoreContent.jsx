@@ -60,7 +60,7 @@ const MoreContent = ({ onDone, variant = "sheet" }) => {
     <div
       className={`${
         isSheet ? "px-4 rounded-t-4xl bg-white" : "px-3"
-      } flex flex-col justify-between h-full pb-[max(var(--safe-area-bottom),1rem)] mt-[1rem]`}
+      } flex flex-col justify-between h-full pb-[max(var(--safe-area-bottom),1rem)]`}
     >
       <div>
         <div className="flex items-center justify-between mt-4 mb-6">

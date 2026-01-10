@@ -132,12 +132,8 @@ const Layout = ({ children }) => {
 
       <HeaderContext.Provider value={ctxValue}>
         <div
-          className="flex flex-col overflow-hidden bg-white"
-          style={{
-            minHeight: "var(--viewport-height)",
-            height: "var(--viewport-height)",
-            paddingTop: "var(--safe-area-top)",
-          }}
+          className="flex flex-col overflow-hidden bg-white h-[calc(100dvh-var(--safe-area-top))]
+          mt-[calc(var(--safe-area-top))]"
         >
           <NetworkStatusBanner />
 
