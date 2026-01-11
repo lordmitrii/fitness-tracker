@@ -7,6 +7,7 @@ export const QK = {
     asKeyId(cycleID), 
   ],
   exerciseStats: ["exerciseStats"],
+  exerciseHistory: (exerciseId) => ["exerciseHistory", asKeyId(exerciseId)],
   profile: ["profile"],
   exercisesBundle: ["exercisesBundle"],
   settings: ["settings"],

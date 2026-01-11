@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
@@ -25,6 +26,7 @@ func NewWorkoutHandler(r *gin.RouterGroup, svc usecase.WorkoutService) {
 		ie.GET("", h.GetIndividualExercises)
 		ie.POST("", h.GetOrCreateIndividualExercise)
 		ie.GET("/stats", h.GetIndividualExercisesStats)
+		ie.GET("/:id/performance-history", h.GetIndividualExercisePerformanceHistory)
 	}
 
 	// Workout Plan Routes
@@ -1603,6 +1605,39 @@ func (h *WorkoutHandler) GetIndividualExercisesStats(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, resp)
+}
+
+// GetIndividualExercisePerformanceHistory godoc
+// @Summary      Performance history for an individual exercise
+// @Tags         individual-exercises
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id   path      int  true  "Individual Exercise ID"
+// @Success      200  {array}   dto.ExercisePerformanceResponse
+// @Failure      400  {object}  dto.MessageResponse
+// @Failure      401  {object}  dto.MessageResponse
+// @Failure      500  {object}  dto.MessageResponse
+// @Router       /individual-exercises/{id}/performance-history [get]
+func (h *WorkoutHandler) GetIndividualExercisePerformanceHistory(c *gin.Context) {
+	userID, exists := currentUserID(c)
+	if !exists {
+		return
+	}
+
+	idParam := c.Param("id")
+	ieID, err := strconv.ParseUint(idParam, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid individual exercise id"})
+		return
+	}
+
+	history, err := h.svc.GetIndividualExercisePerformanceHistory(c.Request.Context(), userID, uint(ieID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.ToExercisePerformanceResponses(history))
 }
 
 // GetCurrentWorkoutCycle godoc

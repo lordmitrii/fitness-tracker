@@ -10,6 +10,7 @@ import useSettingsData from "../../hooks/data/useSettingsData";
 import { toDisplayWeight } from "../../utils/numberUtils";
 import SearchableSelect from "../../components/SearchableSelect";
 import ExerciseTrendChart from "../../components/ExerciseTrendChart";
+import useExerciseHistory from "../../hooks/data/useExerciseHistory";
 
 const Stats = () => {
   const { t } = useTranslation();
@@ -25,32 +26,24 @@ const Stats = () => {
     return stats.filter((s) => s.current_reps && s.current_weight) || [];
   }, [stats]);
 
-  const exercisesWithHistory = useMemo(
-    () =>
-      filteredStats.filter(
-        (ex) => ex.recent_performances && ex.recent_performances.length > 0
-      ),
-    [filteredStats]
-  );
-
-  const selectedExercise = useMemo(() => {
-    if (!exercisesWithHistory.length) return null;
-    const match = exercisesWithHistory.find(
-      (ex) => String(ex.id) === String(selectedExerciseId)
-    );
-    return match || exercisesWithHistory[0];
-  }, [exercisesWithHistory, selectedExerciseId]);
-
   const exerciseOptions = useMemo(
     () =>
-      exercisesWithHistory.map((ex) => {
+      filteredStats.map((ex) => {
         const label = !!ex.exercise?.slug
           ? t(`exercise.${ex.exercise.slug}`)
           : ex.name;
         return { ...ex, _label: label, _labelLower: label.toLowerCase() };
       }),
-    [exercisesWithHistory, t]
+    [filteredStats, t]
   );
+
+  const selectedExercise = useMemo(() => {
+    if (!exerciseOptions.length) return null;
+    const match = exerciseOptions.find(
+      (ex) => String(ex.id) === String(selectedExerciseId)
+    );
+    return match || exerciseOptions[0];
+  }, [exerciseOptions, selectedExerciseId]);
 
   const selectedExerciseLabel = useMemo(() => {
     if (!selectedExercise) return "";
@@ -58,20 +51,32 @@ const Stats = () => {
     return opt?._label || "";
   }, [exerciseOptions, selectedExercise]);
 
+  const {
+    history,
+    loading: historyLoading,
+    error: historyError,
+    refetch: refetchHistory,
+  } = useExerciseHistory(selectedExercise?.id, {
+    enabled: !!selectedExercise?.id,
+  });
+
   usePullToRefreshOverride(
     useCallback(async () => {
-      await refetch();
-    }, [refetch])
+      await Promise.all([
+        refetch(),
+        selectedExercise?.id ? refetchHistory() : Promise.resolve(),
+      ]);
+    }, [refetch, refetchHistory, selectedExercise?.id])
   );
 
   useEffect(() => {
-    if (selectedExerciseId || !exercisesWithHistory.length) return;
-    setSelectedExerciseId(exercisesWithHistory[0].id);
-  }, [exercisesWithHistory, selectedExerciseId]);
+    if (selectedExerciseId || !exerciseOptions.length) return;
+    setSelectedExerciseId(exerciseOptions[0].id);
+  }, [exerciseOptions, selectedExerciseId]);
 
   const exerciseTrend = useMemo(() => {
-    if (!selectedExercise?.recent_performances?.length) return [];
-    return selectedExercise.recent_performances
+    if (!history?.length) return [];
+    return history
       .filter((p) => p.weight && p.reps)
       .map((p, idx) => {
         const weight = toDisplayWeight(p.weight, settings?.unit_system);
@@ -80,12 +85,12 @@ const Stats = () => {
         return {
           session: completedAt
             ? completedAt.toLocaleDateString()
-            : t("exercise_stats.recent_session") + ` #${idx + 1}`,
+            : t("exercise_stats.session") + ` #${idx + 1}`,
           e1rm: Math.round(e1RM(weight, reps)),
           volume: Math.round(weight * reps),
         };
       });
-  }, [selectedExercise?.recent_performances, settings?.unit_system, t]);
+  }, [history, settings?.unit_system, t]);
 
   const scrollToPane = useCallback((index) => {
     setActivePane(index);
@@ -150,7 +155,7 @@ const Stats = () => {
                 <h2 className="text-title">
                   {t("exercise_stats.exercise_trend")}
                 </h2>
-                {exercisesWithHistory.length > 0 && (
+                {exerciseOptions.length > 0 && (
                   <div className="w-full sm:w-64">
                     <SearchableSelect
                       items={exerciseOptions}
@@ -174,7 +179,15 @@ const Stats = () => {
                   </div>
                 )}
               </div>
-              {selectedExercise && exerciseTrend.length > 0 ? (
+              {historyError ? (
+                <div className="text-body text-center text-red-600 py-6">
+                  {historyError.message || t("general.error")}
+                </div>
+              ) : historyLoading ? (
+                <div className="text-body text-center text-gray-600 py-6">
+                  {t("exercise_stats.loading_stats")}
+                </div>
+              ) : selectedExercise && exerciseTrend.length > 0 ? (
                 <ExerciseTrendChart
                   data={exerciseTrend}
                   unitSystem={settings?.unit_system}
@@ -187,7 +200,7 @@ const Stats = () => {
               )}
             </div>
           </div>
-        </div>
+          </div>
         <div className="flex justify-center gap-3 mt-2">
           {[0, 1].map((idx) => (
             <button

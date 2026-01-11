@@ -88,54 +88,31 @@ func (s *workoutServiceImpl) GetIndividualExerciseStats(ctx context.Context, use
 		return individualExercise, nil
 	}
 
+	ids := make([]uint, 0, len(individualExercise))
 	for _, ie := range individualExercise {
-		last5WorkoutExercises, err := s.workoutExerciseRepo.GetLast5ByIndividualExerciseID(ctx, userId, ie.ID)
-		if err != nil {
-			return nil, err
-		}
-		if len(last5WorkoutExercises) == 0 {
-			continue
-		}
-
-		bestWeight := 0
-		bestReps := 0
-		recentPerformances := make([]*workout.ExercisePerformance, 0, len(last5WorkoutExercises))
-
-		for i := len(last5WorkoutExercises) - 1; i >= 0; i-- {
-			we := last5WorkoutExercises[i]
-			sessionBestWeight := 0
-			sessionBestReps := 0
-
-			for _, ws := range we.WorkoutSets {
-				if ws.Weight == nil || ws.Reps == nil {
-					continue
-				}
-				if *ws.Weight*(*ws.Reps) > sessionBestWeight*sessionBestReps {
-					sessionBestWeight = *ws.Weight
-					sessionBestReps = *ws.Reps
-				}
-				if *ws.Weight*(*ws.Reps) > bestWeight*bestReps {
-					bestWeight = *ws.Weight
-					bestReps = *ws.Reps
-				}
-			}
-
-			if sessionBestWeight > 0 && sessionBestReps > 0 {
-				weight := sessionBestWeight
-				reps := sessionBestReps
-				recentPerformances = append(recentPerformances, &workout.ExercisePerformance{
-					CompletedAt: we.CreatedAt,
-					Weight:      &weight,
-					Reps:        &reps,
-				})
-			}
-		}
-
-		ie.CurrentWeight = bestWeight
-		ie.CurrentReps = bestReps
-		ie.RecentPerformances = recentPerformances
+		ids = append(ids, ie.ID)
 	}
-	// Find best weight and reps for each individual exercise in the
+
+	bestPerformances, err := s.workoutExerciseRepo.GetBestPerformanceByIndividualExerciseIDs(ctx, userId, ids)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, ie := range individualExercise {
+		if perf, ok := bestPerformances[ie.ID]; ok && perf != nil {
+			if perf.Weight != nil {
+				ie.CurrentWeight = *perf.Weight
+			}
+			if perf.Reps != nil {
+				ie.CurrentReps = *perf.Reps
+			}
+		}
+	}
+
 	return individualExercise, nil
 
+}
+
+func (s *workoutServiceImpl) GetIndividualExercisePerformanceHistory(ctx context.Context, userId, individualExerciseID uint) ([]*workout.ExercisePerformance, error) {
+	return s.workoutExerciseRepo.GetSessionPerformancesByIndividualExerciseID(ctx, userId, individualExerciseID)
 }

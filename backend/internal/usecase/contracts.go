@@ -62,6 +62,7 @@ type (
 		GetIndividualExercisesByUserID(ctx context.Context, userId uint) ([]*workout.IndividualExercise, error)
 		GetOrCreateIndividualExercise(ctx context.Context, userId uint, individualExercise *workout.IndividualExercise) (*workout.IndividualExercise, error)
 		GetIndividualExerciseStats(ctx context.Context, userId uint) ([]*workout.IndividualExercise, error)
+		GetIndividualExercisePerformanceHistory(ctx context.Context, userId, individualExerciseID uint) ([]*workout.ExercisePerformance, error)
 	}
 
 	ExerciseService interface {

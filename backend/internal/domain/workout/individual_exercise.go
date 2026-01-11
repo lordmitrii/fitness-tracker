@@ -18,8 +18,6 @@ type IndividualExercise struct {
 	CurrentWeight int `gorm:"-"`
 	CurrentReps   int `gorm:"-"`
 
-	RecentPerformances []*ExercisePerformance `gorm:"-"`
-
 	LastCompletedWorkoutExerciseID *uint
 	// TODO: find a way to enable this without causing circular dependency
 	// Can't create the schema with this line because of circular dependency

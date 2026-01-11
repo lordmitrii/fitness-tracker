@@ -61,7 +61,8 @@ type WorkoutExerciseRepository interface {
 	GetPendingExercisesCount(ctx context.Context, userId, planId, cycleId, workoutId uint) (int64, error)
 	GetTotalExercisesCount(ctx context.Context, userId, planId, cycleId, workoutId uint) (int64, error)
 	GetSkippedExercisesCount(ctx context.Context, userId, planId, cycleId, workoutId uint) (int64, error)
-	GetLast5ByIndividualExerciseID(ctx context.Context, userId, individualExerciseIDs uint) ([]*WorkoutExercise, error)
+	GetBestPerformanceByIndividualExerciseIDs(ctx context.Context, userId uint, individualExerciseIDs []uint) (map[uint]*ExercisePerformance, error)
+	GetSessionPerformancesByIndividualExerciseID(ctx context.Context, userId, individualExerciseID uint) ([]*ExercisePerformance, error)
 	GetMaxIndexByWorkoutID(ctx context.Context, userId, planId, cycleId, workoutId uint) (int, error)
 	DecrementIndexesAfter(ctx context.Context, userId, planId, cycleId, workoutId uint, deletedIndex int) error
 	IncrementIndexesAfter(ctx context.Context, userId, planId, cycleId, workoutId uint, index int) error

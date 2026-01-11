@@ -233,9 +233,6 @@ func ToIndividualExerciseStatsResponse(e *workout.IndividualExercise) Individual
 	if e.Exercise != nil {
 		resp.Exercise = ToExerciseResponse(e.Exercise)
 	}
-	if len(e.RecentPerformances) > 0 {
-		resp.RecentPerformances = ToExercisePerformanceResponses(e.RecentPerformances)
-	}
 
 	return resp
 }

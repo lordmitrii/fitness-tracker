@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"errors"
+	"time"
 
 	custom_err "github.com/lordmitrii/golang-web-gin/internal/domain/errors"
 	"github.com/lordmitrii/golang-web-gin/internal/domain/workout"
@@ -212,23 +213,102 @@ func (r *WorkoutExerciseRepo) GetSkippedExercisesCount(ctx context.Context, user
 	return count, err
 }
 
-func (r *WorkoutExerciseRepo) GetLast5ByIndividualExerciseID(ctx context.Context, userId, individualExerciseID uint) ([]*workout.WorkoutExercise, error) {
+func (r *WorkoutExerciseRepo) GetBestPerformanceByIndividualExerciseIDs(ctx context.Context, userId uint, individualExerciseIDs []uint) (map[uint]*workout.ExercisePerformance, error) {
 	db := r.dbFrom(ctx)
+	result := make(map[uint]*workout.ExercisePerformance)
+	if len(individualExerciseIDs) == 0 {
+		return result, nil
+	}
 
-	var exercises []*workout.WorkoutExercise
-	err := db.Model(&workout.WorkoutExercise{}).
-		Joins("JOIN individual_exercises ie ON ie.id = workout_exercises.individual_exercise_id").
-		Where("workout_exercises.individual_exercise_id = ? AND ie.user_id = ?", individualExerciseID, userId).
-		Joins("JOIN workout_sets ON workout_sets.workout_exercise_id = workout_exercises.id").
-		Where("workout_sets.reps IS NOT NULL AND workout_sets.weight IS NOT NULL").
-		Order("workout_exercises.created_at DESC").
-		Preload("WorkoutSets").
-		Limit(5).
-		Find(&exercises).Error
+	type bestPerformanceRow struct {
+		IndividualExerciseID uint
+		Weight               int
+		Reps                 int
+	}
+
+	var rows []bestPerformanceRow
+	err := db.Raw(`
+		SELECT individual_exercise_id, weight, reps FROM (
+			SELECT
+				we.individual_exercise_id,
+				ws.weight,
+				ws.reps,
+				ROW_NUMBER() OVER (
+					PARTITION BY we.individual_exercise_id
+					ORDER BY ws.weight * ws.reps DESC, ws.weight DESC
+				) AS rn
+			FROM workout_sets ws
+			JOIN workout_exercises we ON ws.workout_exercise_id = we.id
+			JOIN individual_exercises ie ON ie.id = we.individual_exercise_id
+			WHERE ie.user_id = ? AND ws.weight IS NOT NULL AND ws.reps IS NOT NULL AND we.individual_exercise_id IN (?)
+		) ranked
+		WHERE rn = 1
+	`, userId, individualExerciseIDs).Scan(&rows).Error
 	if err != nil {
 		return nil, err
 	}
-	return exercises, nil
+
+	for _, row := range rows {
+		w := row.Weight
+		rp := row.Reps
+		result[row.IndividualExerciseID] = &workout.ExercisePerformance{
+			Weight: &w,
+			Reps:   &rp,
+		}
+	}
+
+	return result, nil
+}
+
+func (r *WorkoutExerciseRepo) GetSessionPerformancesByIndividualExerciseID(ctx context.Context, userId, individualExerciseID uint) ([]*workout.ExercisePerformance, error) {
+	db := r.dbFrom(ctx)
+
+	type sessionPerformanceRow struct {
+		CompletedAt *time.Time
+		Weight      int
+		Reps        int
+	}
+
+	var rows []sessionPerformanceRow
+	err := db.Raw(`
+		SELECT
+			we_outer.created_at AS completed_at,
+			ranked.weight,
+			ranked.reps
+		FROM (
+			SELECT
+				ws.workout_exercise_id,
+				ws.weight,
+				ws.reps,
+				ROW_NUMBER() OVER (
+					PARTITION BY ws.workout_exercise_id
+					ORDER BY ws.weight * ws.reps DESC, ws.weight DESC
+				) AS rn
+			FROM workout_sets ws
+			JOIN workout_exercises we ON ws.workout_exercise_id = we.id
+			JOIN individual_exercises ie ON ie.id = we.individual_exercise_id
+			WHERE ie.user_id = ? AND we.individual_exercise_id = ? AND ws.weight IS NOT NULL AND ws.reps IS NOT NULL
+		) ranked
+		JOIN workout_exercises we_outer ON we_outer.id = ranked.workout_exercise_id
+		WHERE ranked.rn = 1
+		ORDER BY we_outer.created_at ASC
+	`, userId, individualExerciseID).Scan(&rows).Error
+	if err != nil {
+		return nil, err
+	}
+
+	perf := make([]*workout.ExercisePerformance, 0, len(rows))
+	for _, row := range rows {
+		w := row.Weight
+		rp := row.Reps
+		perf = append(perf, &workout.ExercisePerformance{
+			CompletedAt: row.CompletedAt,
+			Weight:      &w,
+			Reps:        &rp,
+		})
+	}
+
+	return perf, nil
 }
 
 func (r *WorkoutExerciseRepo) GetMaxIndexByWorkoutID(ctx context.Context, userId, planId, cycleId, workoutId uint) (int, error) {
