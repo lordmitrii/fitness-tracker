@@ -133,8 +133,20 @@ export default function useExercisesData(onError) {
   });
 
   const createExercise = useMutation({
-    mutationFn: async ({ name, muscle_group_id, auto_translate, is_time_based, is_bodyweight }) => {
-      const { data } = await api.post("exercises/", { name, muscle_group_id, auto_translate, is_time_based, is_bodyweight });
+    mutationFn: async ({
+      name,
+      muscle_group_id,
+      auto_translate,
+      is_time_based,
+      is_bodyweight,
+    }) => {
+      const { data } = await api.post("exercises/", {
+        name,
+        muscle_group_id,
+        auto_translate,
+        is_time_based,
+        is_bodyweight,
+      });
       return data;
     },
     onSuccess: (newExercise) => {
@@ -142,8 +154,11 @@ export default function useExercisesData(onError) {
         if (!old) return old;
         return {
           ...old,
-          exercises: [...old.exercises, newExercise],
-          poolOnlyExercises: [...old.poolOnlyExercises, newExercise],
+          exercises: [...old.exercises, { ...newExercise, source: "pool" }],
+          poolOnlyExercises: [
+            ...old.poolOnlyExercises,
+            { ...newExercise, source: "pool" },
+          ],
         };
       });
     },
@@ -152,7 +167,10 @@ export default function useExercisesData(onError) {
   const updateExercise = useMutation({
     mutationFn: async (exercise) => {
       const { id, name, muscle_group_id } = exercise;
-      const { data } = await api.put(`exercises/${id}`, { name, muscle_group_id });
+      const { data } = await api.put(`exercises/${id}`, {
+        name,
+        muscle_group_id,
+      });
       return data;
     },
     onSuccess: (updatedExercise) => {
@@ -179,7 +197,9 @@ export default function useExercisesData(onError) {
         return {
           ...old,
           exercises: old.exercises.filter((ex) => ex.id !== deletedExerciseID),
-          poolOnlyExercises: old.poolOnlyExercises.filter((ex) => ex.id !== deletedExerciseID),
+          poolOnlyExercises: old.poolOnlyExercises.filter(
+            (ex) => ex.id !== deletedExerciseID
+          ),
         };
       });
     },
@@ -187,7 +207,10 @@ export default function useExercisesData(onError) {
 
   const createMuscleGroup = useMutation({
     mutationFn: async ({ name, auto_translate }) => {
-      const { data } = await api.post("muscle-groups/", { name, auto_translate });
+      const { data } = await api.post("muscle-groups/", {
+        name,
+        auto_translate,
+      });
       return data;
     },
     onSuccess: (newMuscleGroup) => {
@@ -228,7 +251,9 @@ export default function useExercisesData(onError) {
         if (!old) return old;
         return {
           ...old,
-          muscleGroups: old.muscleGroups.filter((mg) => mg.id !== deletedMuscleGroupID),
+          muscleGroups: old.muscleGroups.filter(
+            (mg) => mg.id !== deletedMuscleGroupID
+          ),
         };
       });
     },
