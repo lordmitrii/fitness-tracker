@@ -34,6 +34,7 @@ const SearchableSelect = ({
   clearRowLabel,
 
   listId,
+  maxCapPx,
 }) => {
   const containerRef = useRef(null);
   const inputRef = useRef(null);
@@ -64,9 +65,9 @@ const SearchableSelect = ({
     const gap = 28;
     const available = Math.max(visibleH - rect.bottom - gap, 120);
 
-    const maxCap = Math.round(visibleH * 0.9);
+    const maxCap = maxCapPx || Math.round(visibleH * 0.9);
     setListMaxPx(Math.min(available, maxCap));
-  }, [isOpen]);
+  }, [isOpen, maxCapPx]);
 
   useEffect(() => {
     if (!isOpen) {

@@ -233,6 +233,9 @@ func ToIndividualExerciseStatsResponse(e *workout.IndividualExercise) Individual
 	if e.Exercise != nil {
 		resp.Exercise = ToExerciseResponse(e.Exercise)
 	}
+	if len(e.RecentPerformances) > 0 {
+		resp.RecentPerformances = ToExercisePerformanceResponses(e.RecentPerformances)
+	}
 
 	return resp
 }
@@ -242,6 +245,18 @@ func ToCurrentCycleResponse(cycle *workout.WorkoutCycle) CurrentCycleResponse {
 		return CurrentCycleResponse{}
 	}
 	return CurrentCycleResponse{ID: cycle.ID, WorkoutPlanID: cycle.WorkoutPlanID}
+}
+
+func ToExercisePerformanceResponses(perf []*workout.ExercisePerformance) []ExercisePerformanceResponse {
+	resp := make([]ExercisePerformanceResponse, 0, len(perf))
+	for _, p := range perf {
+		resp = append(resp, ExercisePerformanceResponse{
+			CompletedAt: p.CompletedAt,
+			Weight:      p.Weight,
+			Reps:        p.Reps,
+		})
+	}
+	return resp
 }
 
 func ToUserSettingsResponse(us *user.UserSettings) UserSettingsResponse {

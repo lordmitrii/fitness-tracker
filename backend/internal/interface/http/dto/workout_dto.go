@@ -240,18 +240,26 @@ type WorkoutSetResponse struct {
 
 // swagger:model
 type IndividualExerciseStatsResponse struct {
-	ID            uint                `json:"id,omitempty"           example:"101"`
-	Name          string              `json:"name,omitempty"         example:"Dumbbell Row"`
-	IsBodyweight  bool                `json:"is_bodyweight,omitempty" example:"false"`
-	IsTimeBased   bool                `json:"is_time_based,omitempty" example:"false"`
-	MuscleGroupID *uint               `json:"muscle_group_id,omitempty" example:"3"`
-	MuscleGroup   MuscleGroupResponse `json:"muscle_group"`
-	ExerciseID    *uint               `json:"exercise_id,omitempty"    example:"12"`
-	Exercise      ExerciseResponse    `json:"exercise"`
-	CurrentWeight int                 `json:"current_weight,omitempty" example:"60000"`
-	CurrentReps   int                 `json:"current_reps,omitempty"   example:"10"`
-	CreatedAt     *time.Time          `json:"created_at" example:"2025-09-20T12:34:56Z"`
-	UpdatedAt     *time.Time          `json:"updated_at" example:"2025-09-25T12:34:56Z"`
+	ID                 uint                          `json:"id,omitempty"           example:"101"`
+	Name               string                        `json:"name,omitempty"         example:"Dumbbell Row"`
+	IsBodyweight       bool                          `json:"is_bodyweight,omitempty" example:"false"`
+	IsTimeBased        bool                          `json:"is_time_based,omitempty" example:"false"`
+	MuscleGroupID      *uint                         `json:"muscle_group_id,omitempty" example:"3"`
+	MuscleGroup        MuscleGroupResponse           `json:"muscle_group"`
+	ExerciseID         *uint                         `json:"exercise_id,omitempty"    example:"12"`
+	Exercise           ExerciseResponse              `json:"exercise"`
+	CurrentWeight      int                           `json:"current_weight,omitempty" example:"60000"`
+	CurrentReps        int                           `json:"current_reps,omitempty"   example:"10"`
+	RecentPerformances []ExercisePerformanceResponse `json:"recent_performances,omitempty"`
+	CreatedAt          *time.Time                    `json:"created_at" example:"2025-09-20T12:34:56Z"`
+	UpdatedAt          *time.Time                    `json:"updated_at" example:"2025-09-25T12:34:56Z"`
+}
+
+// swagger:model
+type ExercisePerformanceResponse struct {
+	CompletedAt *time.Time `json:"completed_at,omitempty" example:"2025-09-20T12:34:56Z"`
+	Weight      *int       `json:"weight,omitempty" example:"60000"`
+	Reps        *int       `json:"reps,omitempty" example:"10"`
 }
 
 // swagger:model

@@ -99,21 +99,41 @@ func (s *workoutServiceImpl) GetIndividualExerciseStats(ctx context.Context, use
 
 		bestWeight := 0
 		bestReps := 0
+		recentPerformances := make([]*workout.ExercisePerformance, 0, len(last5WorkoutExercises))
 
-		for _, we := range last5WorkoutExercises {
+		for i := len(last5WorkoutExercises) - 1; i >= 0; i-- {
+			we := last5WorkoutExercises[i]
+			sessionBestWeight := 0
+			sessionBestReps := 0
+
 			for _, ws := range we.WorkoutSets {
 				if ws.Weight == nil || ws.Reps == nil {
 					continue
+				}
+				if *ws.Weight*(*ws.Reps) > sessionBestWeight*sessionBestReps {
+					sessionBestWeight = *ws.Weight
+					sessionBestReps = *ws.Reps
 				}
 				if *ws.Weight*(*ws.Reps) > bestWeight*bestReps {
 					bestWeight = *ws.Weight
 					bestReps = *ws.Reps
 				}
 			}
+
+			if sessionBestWeight > 0 && sessionBestReps > 0 {
+				weight := sessionBestWeight
+				reps := sessionBestReps
+				recentPerformances = append(recentPerformances, &workout.ExercisePerformance{
+					CompletedAt: we.CreatedAt,
+					Weight:      &weight,
+					Reps:        &reps,
+				})
+			}
 		}
 
 		ie.CurrentWeight = bestWeight
 		ie.CurrentReps = bestReps
+		ie.RecentPerformances = recentPerformances
 	}
 	// Find best weight and reps for each individual exercise in the
 	return individualExercise, nil
